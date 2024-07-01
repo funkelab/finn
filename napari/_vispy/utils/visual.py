@@ -6,6 +6,7 @@ import numpy as np
 from vispy.scene.widgets.viewbox import ViewBox
 
 from napari._vispy.layers.base import VispyBaseLayer
+from napari._vispy.layers.graph import VispyGraphLayer
 from napari._vispy.layers.image import VispyImageLayer
 from napari._vispy.layers.labels import VispyLabelsLayer
 from napari._vispy.layers.points import VispyPointsLayer
@@ -37,6 +38,7 @@ from napari.components.overlays import (
 )
 from napari.layers import (
     Image,
+    Graph,
     Labels,
     Layer,
     Points,
@@ -48,6 +50,7 @@ from napari.layers import (
 from napari.utils.translations import trans
 
 layer_to_visual = {
+    Graph: VispyGraphLayer,
     Image: VispyImageLayer,
     Labels: VispyLabelsLayer,
     Points: VispyPointsLayer,

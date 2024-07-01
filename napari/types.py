@@ -2,6 +2,7 @@ from collections.abc import Iterable, Sequence
 from functools import partial, wraps
 from pathlib import Path
 from types import TracebackType
+from napari_graph import BaseGraph
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -101,7 +102,7 @@ class SampleDict(TypedDict):
 
 ArrayBase: type[np.ndarray] = np.ndarray
 
-
+GraphData = NewType('GraphData', BaseGraph) # type: ignore [valid-newtype]
 ImageData = NewType('ImageData', np.ndarray)
 LabelsData = NewType('LabelsData', np.ndarray)
 PointsData = NewType('PointsData', np.ndarray)
@@ -110,6 +111,7 @@ SurfaceData = NewType('SurfaceData', tuple[np.ndarray, np.ndarray, np.ndarray])
 TracksData = NewType('TracksData', np.ndarray)
 VectorsData = NewType('VectorsData', np.ndarray)
 _LayerData = Union[
+    GraphData,
     ImageData,
     LabelsData,
     PointsData,

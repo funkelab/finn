@@ -3,6 +3,7 @@ from qtpy.QtWidgets import QFrame, QStackedWidget
 from napari._qt.layer_controls.qt_image_controls import QtImageControls
 from napari._qt.layer_controls.qt_labels_controls import QtLabelsControls
 from napari._qt.layer_controls.qt_points_controls import QtPointsControls
+from napari._qt.layer_controls.qt_graph_controls import QtGraphControls
 from napari._qt.layer_controls.qt_shapes_controls import QtShapesControls
 from napari._qt.layer_controls.qt_surface_controls import QtSurfaceControls
 from napari._qt.layer_controls.qt_tracks_controls import QtTracksControls
@@ -11,6 +12,7 @@ from napari.layers import (
     Image,
     Labels,
     Points,
+    Graph,
     Shapes,
     Surface,
     Tracks,
@@ -26,6 +28,7 @@ layer_to_controls = {
     Surface: QtSurfaceControls,
     Vectors: QtVectorsControls,
     Tracks: QtTracksControls,
+    Graph: QtGraphControls,
 }
 
 
