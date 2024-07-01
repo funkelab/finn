@@ -33,6 +33,11 @@ class VispyGraphLayer(VispyBaseLayer):
         self.layer.events.face_color.connect(self._on_data_change)
         self.layer._face.events.colors.connect(self._on_data_change)
         self.layer._face.events.color_properties.connect(self._on_data_change)
+
+        self.layer.events.edge_color.connect(self._on_data_change)
+        self.layer._edge.events.colors.connect(self._on_data_change)
+        self.layer._edge.events.color_properties.connect(self._on_data_change)
+
         self.layer.events.highlight.connect(self._on_highlight_change)
         self.layer.text.events.connect(self._on_text_change)
         self.layer.events.shading.connect(self._on_shading_change)
@@ -104,6 +109,8 @@ class VispyGraphLayer(VispyBaseLayer):
         subvisual.visible = True
         flat_edges = edges.reshape((-1, edges.shape[-1]))  # (N x 2, D)
         flat_edges = flat_edges[:, ::-1]
+
+        edge_color = self.layer._view_edge_color
 
         # clearing up buffer, there was a vispy error otherwise
         subvisual._line_visual._pos_vbo = gloo.VertexBuffer()
