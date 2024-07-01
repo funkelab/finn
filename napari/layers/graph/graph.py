@@ -7,7 +7,7 @@ from psygnal.containers import Selection
 
 from napari.layers.base._base_constants import ActionType
 from napari.layers.graph._slice import _GraphSliceRequest, _GraphSliceResponse
-from napari.layers.points.points import _BasePoints
+from napari.layers.graph._base_points import _BasePoints
 from napari.layers.utils._slice_input import _SliceInput, _ThickNDSlice
 from napari.utils.events import Event
 from napari.utils.translations import trans

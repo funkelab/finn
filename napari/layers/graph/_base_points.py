@@ -1,5 +1,6 @@
 import numbers
 import warnings
+from abc import abstractmethod
 from collections.abc import Sequence
 from copy import copy, deepcopy
 from itertools import cycle
@@ -16,6 +17,7 @@ from typing import (
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
+from numpy.typing import ArrayLike
 from psygnal.containers import Selection
 from scipy.stats import gmean
 
@@ -69,254 +71,12 @@ if TYPE_CHECKING:
 DEFAULT_COLOR_CYCLE = np.array([[1, 0, 1, 1], [0, 1, 0, 1]])
 
 
-class Points(Layer):
-    """Points layer.
+class _BasePoints(Layer):
+    """
+    Implements the basic functionality of spatially distributed coordinates.
+    Used by to display points and graph nodes.
 
-    Parameters
-    ----------
-    data : array (N, D)
-        Coordinates for N points in D dimensions.
-    ndim : int
-        Number of dimensions for shapes. When data is not None, ndim must be D.
-        An empty points layer can be instantiated with arbitrary ndim.
-    affine : n-D array or napari.utils.transforms.Affine
-        (N+1, N+1) affine transformation matrix in homogeneous coordinates.
-        The first (N, N) entries correspond to a linear transform and
-        the final column is a length N translation vector and a 1 or a napari
-        `Affine` transform object. Applied as an extra transform on top of the
-        provided scale, rotate, and shear values.
-    antialiasing: float
-        Amount of antialiasing in canvas pixels.
-    blending : str
-        One of a list of preset blending modes that determines how RGB and
-        alpha values of the layer visual get mixed. Allowed values are
-        {'opaque', 'translucent', 'translucent_no_depth', 'additive', and 'minimum'}.
-    border_color : str, array-like, dict
-        Color of the point marker border. Numeric color values should be RGB(A).
-    border_color_cycle : np.ndarray, list
-        Cycle of colors (provided as string name, RGB, or RGBA) to map to border_color if a
-        categorical attribute is used color the vectors.
-    border_colormap : str, napari.utils.Colormap
-        Colormap to set border_color if a continuous attribute is used to set face_color.
-    border_contrast_limits : None, (float, float)
-        clims for mapping the property to a color map. These are the min and max value
-        of the specified property that are mapped to 0 and 1, respectively.
-        The default value is None. If set the none, the clims will be set to
-        (property.min(), property.max())
-    border_width : float, array
-        Width of the symbol border in pixels.
-    border_width_is_relative : bool
-        If enabled, border_width is interpreted as a fraction of the point size.
-    cache : bool
-        Whether slices of out-of-core datasets should be cached upon retrieval.
-        Currently, this only applies to dask arrays.
-    canvas_size_limits : tuple of float
-        Lower and upper limits for the size of points in canvas pixels.
-    experimental_clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
-        Each dict defines a clipping plane in 3D in data coordinates.
-        Valid dictionary keys are {'position', 'normal', and 'enabled'}.
-        Values on the negative side of the normal are discarded if the plane is enabled.
-    face_color : str, array-like, dict
-        Color of the point marker body. Numeric color values should be RGB(A).
-    face_color_cycle : np.ndarray, list
-        Cycle of colors (provided as string name, RGB, or RGBA) to map to face_color if a
-        categorical attribute is used color the vectors.
-    face_colormap : str, napari.utils.Colormap
-        Colormap to set face_color if a continuous attribute is used to set face_color.
-    face_contrast_limits : None, (float, float)
-        clims for mapping the property to a color map. These are the min and max value
-        of the specified property that are mapped to 0 and 1, respectively.
-        The default value is None. If set the none, the clims will be set to
-        (property.min(), property.max())
-    feature_defaults : dict[str, Any] or DataFrame
-        The default value of each feature in a table with one row.
-    features : dict[str, array-like] or DataFrame
-        Features table where each row corresponds to a point and each column
-        is a feature.
-    metadata : dict
-        Layer metadata.
-    n_dimensional : bool
-        This property will soon be deprecated in favor of 'out_of_slice_display'.
-        Use that instead.
-    name : str
-        Name of the layer. If not provided then will be guessed using heuristics.
-    opacity : float
-        Opacity of the layer visual, between 0.0 and 1.0.
-    out_of_slice_display : bool
-        If True, renders points not just in central plane but also slightly out of slice
-        according to specified point marker size.
-    projection_mode : str
-        How data outside the viewed dimensions but inside the thick Dims slice will
-        be projected onto the viewed dimensions. Must fit to cls._projectionclass.
-    properties : dict {str: array (N,)}, DataFrame
-        Properties for each point. Each property should be an array of length N,
-        where N is the number of points.
-    property_choices : dict {str: array (N,)}
-        possible values for each property.
-    rotate : float, 3-tuple of float, or n-D array.
-        If a float convert into a 2D rotation matrix using that value as an
-        angle. If 3-tuple convert into a 3D rotation matrix, using a yaw,
-        pitch, roll convention. Otherwise assume an nD rotation. Angles are
-        assumed to be in degrees. They can be converted from radians with
-        np.degrees if needed.
-    scale : tuple of float
-        Scale factors for the layer.
-    shading : str, Shading
-        Render lighting and shading on points. Options are:
-
-        * 'none'
-          No shading is added to the points.
-        * 'spherical'
-          Shading and depth buffer are changed to give a 3D spherical look to the points
-    shear : 1-D array or n-D array
-        Either a vector of upper triangular values, or an nD shear matrix with
-        ones along the main diagonal.
-    shown : 1-D array of bool
-        Whether to show each point.
-    size : float, array
-        Size of the point marker in data pixels. If given as a scalar, all points are made
-        the same size. If given as an array, size must be the same or broadcastable
-        to the same shape as the data.
-    symbol : str, array
-        Symbols to be used for the point markers. Must be one of the
-        following: arrow, clobber, cross, diamond, disc, hbar, ring,
-        square, star, tailed_arrow, triangle_down, triangle_up, vbar, x.
-    text : str, dict
-        Text to be displayed with the points. If text is set to a key in properties,
-        the value of that property will be displayed. Multiple properties can be
-        composed using f-string-like syntax (e.g., '{property_1}, {float_property:.2f}).
-        A dictionary can be provided with keyword arguments to set the text values
-        and display properties. See TextManager.__init__() for the valid keyword arguments.
-        For example usage, see /napari/examples/add_points_with_text.py.
-    translate : tuple of float
-        Translation values for the layer.
-    visible : bool
-        Whether the layer visual is currently being displayed.
-
-    Attributes
-    ----------
-    data : array (N, D)
-        Coordinates for N points in D dimensions.
-    features : DataFrame-like
-        Features table where each row corresponds to a point and each column
-        is a feature.
-    feature_defaults : DataFrame-like
-        Stores the default value of each feature in a table with one row.
-    properties : dict {str: array (N,)} or DataFrame
-        Annotations for each point. Each property should be an array of length N,
-        where N is the number of points.
-    text : str
-        Text to be displayed with the points. If text is set to a key in properties, the value of
-        that property will be displayed. Multiple properties can be composed using f-string-like
-        syntax (e.g., '{property_1}, {float_property:.2f}).
-        For example usage, see /napari/examples/add_points_with_text.py.
-    symbol : array of str
-        Array of symbols for each point.
-    size : array (N,)
-        Array of sizes for each point. Must have the same shape as the layer `data`.
-    border_width : array (N,)
-        Width of the marker borders in pixels for all points
-    border_width : array (N,)
-        Width of the marker borders for all points as a fraction of their size.
-    border_color : Nx4 numpy array
-        Array of border color RGBA values, one for each point.
-    border_color_cycle : np.ndarray, list
-        Cycle of colors (provided as string name, RGB, or RGBA) to map to border_color if a
-        categorical attribute is used color the vectors.
-    border_colormap : str, napari.utils.Colormap
-        Colormap to set border_color if a continuous attribute is used to set face_color.
-    border_contrast_limits : None, (float, float)
-        clims for mapping the property to a color map. These are the min and max value
-        of the specified property that are mapped to 0 and 1, respectively.
-        The default value is None. If set the none, the clims will be set to
-        (property.min(), property.max())
-    face_color : Nx4 numpy array
-        Array of face color RGBA values, one for each point.
-    face_color_cycle : np.ndarray, list
-        Cycle of colors (provided as string name, RGB, or RGBA) to map to face_color if a
-        categorical attribute is used color the vectors.
-    face_colormap : str, napari.utils.Colormap
-        Colormap to set face_color if a continuous attribute is used to set face_color.
-    face_contrast_limits : None, (float, float)
-        clims for mapping the property to a color map. These are the min and max value
-        of the specified property that are mapped to 0 and 1, respectively.
-        The default value is None. If set the none, the clims will be set to
-        (property.min(), property.max())
-    current_symbol : Symbol
-        Symbol for the next point to be added or the currently selected points.
-    current_size : float
-        Size of the marker for the next point to be added or the currently
-        selected point.
-    current_border_width : float
-        Border width of the marker for the next point to be added or the currently
-        selected point.
-    current_border_color : str
-        Border color of the marker border for the next point to be added or the currently
-        selected point.
-    current_face_color : str
-        Face color of the marker border for the next point to be added or the currently
-        selected point.
-    out_of_slice_display : bool
-        If True, renders points not just in central plane but also slightly out of slice
-        according to specified point marker size.
-    selected_data : Selection
-        Integer indices of any selected points.
-    mode : str
-        Interactive mode. The normal, default mode is PAN_ZOOM, which
-        allows for normal interactivity with the canvas.
-
-        In ADD mode clicks of the cursor add points at the clicked location.
-
-        In SELECT mode the cursor can select points by clicking on them or
-        by dragging a box around them. Once selected points can be moved,
-        have their properties edited, or be deleted.
-    face_color_mode : str
-        Face color setting mode.
-
-        DIRECT (default mode) allows each point to be set arbitrarily
-
-        CYCLE allows the color to be set via a color cycle over an attribute
-
-        COLORMAP allows color to be set via a color map over an attribute
-    border_color_mode : str
-        Border color setting mode.
-
-        DIRECT (default mode) allows each point to be set arbitrarily
-
-        CYCLE allows the color to be set via a color cycle over an attribute
-
-        COLORMAP allows color to be set via a color map over an attribute
-    shading : Shading
-        Shading mode.
-    antialiasing: float
-        Amount of antialiasing in canvas pixels.
-    canvas_size_limits : tuple of float
-        Lower and upper limits for the size of points in canvas pixels.
-    shown : 1-D array of bool
-        Whether each point is shown.
-
-    Notes
-    -----
-    _view_data : array (M, D)
-        coordinates of points in the currently viewed slice.
-    _view_size : array (M, )
-        Size of the point markers in the currently viewed slice.
-    _view_symbol : array (M, )
-        Symbols of the point markers in the currently viewed slice.
-    _view_border_width : array (M, )
-        Border width of the point markers in the currently viewed slice.
-    _indices_view : array (M, )
-        Integer indices of the points in the currently viewed slice and are shown.
-    _selected_view :
-        Integer indices of selected points in the currently viewed slice within
-        the `_view_data` array.
-    _selected_box : array (4, 2) or None
-        Four corners of any box either around currently selected points or
-        being created during a drag action. Starting in the top left and
-        going clockwise.
-    _drag_start : list or None
-        Coordinates of first cursor click during a drag action. Gets reset to
-        None after dragging is done.
+    Refer to Points documentation.
     """
 
     _modeclass = Mode
@@ -348,36 +108,6 @@ class Points(Layer):
     # If more points are present then they are randomly subsampled
     _max_points_thumbnail = 1024
 
-    @rename_argument(
-        'edge_width', 'border_width', since_version='0.5.0', version='0.6.0'
-    )
-    @rename_argument(
-        'edge_width_is_relative',
-        'border_width_is_relative',
-        since_version='0.5.0',
-        version='0.6.0',
-    )
-    @rename_argument(
-        'edge_color', 'border_color', since_version='0.5.0', version='0.6.0'
-    )
-    @rename_argument(
-        'edge_color_cycle',
-        'border_color_cycle',
-        since_version='0.5.0',
-        version='0.6.0',
-    )
-    @rename_argument(
-        'edge_colormap',
-        'border_colormap',
-        since_version='0.5.0',
-        version='0.6.0',
-    )
-    @rename_argument(
-        'edge_contrast_limits',
-        'border_contrast_limits',
-        since_version='0.5.0',
-        version='0.6.0',
-    )
     def __init__(
         self,
         data=None,
@@ -420,18 +150,6 @@ class Points(Layer):
         translate=None,
         visible=True,
     ) -> None:
-        if ndim is None:
-            if scale is not None:
-                ndim = len(scale)
-            elif (
-                data is not None
-                and hasattr(data, 'shape')
-                and len(data.shape) == 2
-            ):
-                ndim = data.shape[1]
-
-        data, ndim = fix_data_points(data, ndim)
-
         # Indices of selected points
         self._selected_data_stored = set()
         self._selected_data_history = set()
@@ -498,37 +216,12 @@ class Points(Layer):
             feature_defaults=Event,
         )
 
-        deprecated_events = {}
-        for attr in [
-            '{}_width',
-            'current_{}_width',
-            '{}_width_is_relative',
-            '{}_color',
-            'current_{}_color',
-        ]:
-            old_attr = attr.format('edge')
-            new_attr = attr.format('border')
-            old_emitter = deprecation_warning_event(
-                'layer.events',
-                old_attr,
-                new_attr,
-                since_version='0.5.0',
-                version='0.6.0',
-            )
-            getattr(self.events, new_attr).connect(old_emitter)
-            deprecated_events[old_attr] = old_emitter
-
-        self.events.add(**deprecated_events)
-
-        # Save the point coordinates
-        self._data = np.asarray(data)
-
         self._feature_table = _FeatureTable.from_layer(
             features=features,
             feature_defaults=feature_defaults,
             properties=properties,
             property_choices=property_choices,
-            num_data=len(self.data),
+            num_data=len(self._points_data),
         )
 
         self._text = TextManager._from_layer(
@@ -566,9 +259,16 @@ class Points(Layer):
 
         color_properties = (
             self._feature_table.properties()
-            if self._data.size > 0
+            if len(self._points_data)
             else self._feature_table.currents()
         )
+
+        if n_dimensional is not None:
+            self._out_of_slice_display = n_dimensional
+        else:
+            self._out_of_slice_display = out_of_slice_display
+
+        # Save the point style params
         self._border = ColorManager._from_layer_kwargs(
             n_colors=len(data),
             colors=border_color,
@@ -585,13 +285,6 @@ class Points(Layer):
             categorical_colormap=face_color_cycle,
             properties=color_properties,
         )
-
-        if n_dimensional is not None:
-            self._out_of_slice_display = n_dimensional
-        else:
-            self._out_of_slice_display = out_of_slice_display
-
-        # Save the point style params
         self.size = size
         self.shown = shown
         self.symbol = symbol
@@ -605,34 +298,17 @@ class Points(Layer):
         # Trigger generation of view slice and thumbnail
         self.refresh()
 
-    @classmethod
-    def _add_deprecated_properties(cls) -> None:
-        """Adds deprecated properties to class."""
-        deprecated_properties = [
-            'edge_width',
-            'edge_width_is_relative',
-            'current_edge_width',
-            'edge_color',
-            'edge_color_cycle',
-            'edge_colormap',
-            'edge_contrast_limits',
-            'current_edge_color',
-            'edge_color_mode',
-        ]
-        for old_property in deprecated_properties:
-            new_property = old_property.replace('edge', 'border')
-            add_deprecated_property(
-                cls,
-                old_property,
-                new_property,
-                since_version='0.5.0',
-                version='0.6.0',
-            )
+    @property
+    def _points_data(self) -> np.ndarray:
+        """Spatially distributed coordinates."""
+        raise NotImplementedError
 
     @property
-    def data(self) -> np.ndarray:
-        """(N, D) array: coordinates for N points in D dimensions."""
-        return self._data
+    def data(self) -> Any:
+        raise NotImplementedError
+
+    def _set_data(self, data: Any) -> None:
+        raise NotImplementedError
 
     @data.setter
     def data(self, data: Optional[np.ndarray]) -> None:
@@ -670,75 +346,6 @@ class Points(Layer):
             kwargs['action'] = ActionType.REMOVED
         self.events.data(**kwargs)
 
-    def _set_data(self, data: Optional[np.ndarray]) -> None:
-        """Set the .data array attribute, without emitting an event."""
-        data, _ = fix_data_points(data, self.ndim)
-        cur_npoints = len(self._data)
-        self._data = data
-
-        # Add/remove property and style values based on the number of new points.
-        with (
-            self.events.blocker_all(),
-            self._border.events.blocker_all(),
-            self._face.events.blocker_all(),
-        ):
-            self._feature_table.resize(len(data))
-            self.text.apply(self.features)
-            if len(data) < cur_npoints:
-                # If there are now fewer points, remove the size and colors of the
-                # extra ones
-                if len(self._border.colors) > len(data):
-                    self._border._remove(
-                        np.arange(len(data), len(self._border.colors))
-                    )
-                if len(self._face.colors) > len(data):
-                    self._face._remove(
-                        np.arange(len(data), len(self._face.colors))
-                    )
-                self._shown = self._shown[: len(data)]
-                self._size = self._size[: len(data)]
-                self._border_width = self._border_width[: len(data)]
-                self._symbol = self._symbol[: len(data)]
-
-            elif len(data) > cur_npoints:
-                # If there are now more points, add the size and colors of the
-                # new ones
-                adding = len(data) - cur_npoints
-                size = np.repeat(self.current_size, adding, axis=0)
-
-                if len(self._border_width) > 0:
-                    new_border_width = copy(self._border_width[-1])
-                else:
-                    new_border_width = self.current_border_width
-                border_width = np.repeat([new_border_width], adding, axis=0)
-
-                if len(self._symbol) > 0:
-                    new_symbol = copy(self._symbol[-1])
-                else:
-                    new_symbol = self.current_symbol
-                symbol = np.repeat([new_symbol], adding, axis=0)
-
-                # Add new colors, updating the current property value before
-                # to handle any in-place modification of feature_defaults.
-                # Also see: https://github.com/napari/napari/issues/5634
-                current_properties = self._feature_table.currents()
-                self._border._update_current_properties(current_properties)
-                self._border._add(n_colors=adding)
-                self._face._update_current_properties(current_properties)
-                self._face._add(n_colors=adding)
-
-                shown = np.repeat([True], adding, axis=0)
-                self._shown = np.concatenate((self._shown, shown), axis=0)
-
-                self.size = np.concatenate((self._size, size), axis=0)
-                self.border_width = np.concatenate(
-                    (self._border_width, border_width), axis=0
-                )
-                self.symbol = np.concatenate((self._symbol, symbol), axis=0)
-
-        self._update_dims()
-        self._reset_editable()
-
     def _on_selection(self, selected: bool) -> None:
         if selected:
             self._set_highlight()
@@ -770,7 +377,9 @@ class Points(Layer):
         self,
         features: Union[dict[str, np.ndarray], pd.DataFrame],
     ) -> None:
-        self._feature_table.set_values(features, num_data=len(self.data))
+        self._feature_table.set_values(
+            features, num_data=len(self._points_data)
+        )
         self._update_color_manager(
             self._face, self._feature_table, 'face_color'
         )
@@ -878,9 +487,10 @@ class Points(Layer):
         """
         self.text.refresh(self.features)
 
+    @abstractmethod
     def _get_ndim(self) -> int:
         """Determine number of dimensions of the layer."""
-        return self.data.shape[1]
+        raise NotImplementedError
 
     @property
     def _extent_data(self) -> np.ndarray:
@@ -890,11 +500,11 @@ class Points(Layer):
         -------
         extent_data : array, shape (2, D)
         """
-        if len(self.data) == 0:
+        if len(self._points_data) == 0:
             extrema = np.full((2, self.ndim), np.nan)
         else:
-            maxs = np.max(self.data, axis=0)
-            mins = np.min(self.data, axis=0)
+            maxs = np.max(self._points_data, axis=0)
+            mins = np.min(self._points_data, axis=0)
             extrema = np.vstack([mins, maxs])
         return extrema.astype(float)
 
@@ -941,12 +551,8 @@ class Points(Layer):
 
     @symbol.setter
     def symbol(self, symbol: Union[str, np.ndarray, list]) -> None:
-        coerced_symbols = coerce_symbols(symbol)
-        # If a single symbol has been converted, this will broadcast it to
-        # the number of points in the data. If symbols is alread an array,
-        # this will check that it is the correct length.
-        coerced_symbols = np.broadcast_to(coerced_symbols, self.data.shape[0])
-        self._symbol = coerced_symbols
+        symbol = np.broadcast_to(symbol, len(self._points_data))
+        self._symbol = coerce_symbols(symbol)
         self.events.symbol()
         self.events.highlight()
 
@@ -971,18 +577,22 @@ class Points(Layer):
 
     @size.setter
     def size(self, size: Union[float, np.ndarray, list]) -> None:
+        size = np.asarray(size)
         try:
-            self._size = np.broadcast_to(size, len(self.data)).copy()
+            self._size = np.broadcast_to(size, len(self._points_data)).copy()
         except ValueError as e:
             # deprecated anisotropic sizes; extra check should be removed in future version
             try:
                 self._size = np.broadcast_to(
-                    size, self.data.shape[::-1]
+                    size, self._points_data.shape[::-1]
                 ).T.copy()
             except ValueError:
                 raise ValueError(
                     trans._(
-                        'Size is not compatible for broadcasting',
+                        'Size of shape {size_shape} is not compatible for broadcasting '
+                        'with shape {points_shape}',
+                        size_shape=size.shape,
+                        points_shape=self._points_data.shape,
                         deferred=True,
                     )
                 ) from e
@@ -1093,7 +703,9 @@ class Points(Layer):
 
     @shown.setter
     def shown(self, shown):
-        self._shown = np.broadcast_to(shown, self.data.shape[0]).astype(bool)
+        self._shown = np.broadcast_to(shown, len(self._points_data)).astype(
+            bool
+        )
         self.refresh()
 
     @property
@@ -1106,7 +718,9 @@ class Points(Layer):
         self, border_width: Union[float, np.ndarray, list]
     ) -> None:
         # broadcast to np.array
-        border_width = np.broadcast_to(border_width, self.data.shape[0]).copy()
+        border_width = np.broadcast_to(
+            border_width, len(self._points_data)
+        ).copy()
 
         # border width cannot be negative
         if np.any(border_width < 0):
@@ -1125,7 +739,7 @@ class Points(Layer):
                 )
             )
 
-        self._border_width = border_width
+        self._border_width: np.ndarray = border_width
         self.events.border_width(value=border_width)
         self.refresh()
 
@@ -1172,7 +786,7 @@ class Points(Layer):
     def border_color(self, border_color):
         self._border._set_color(
             color=border_color,
-            n_colors=len(self.data),
+            n_colors=len(self._points_data),
             properties=self.properties,
             current_properties=self.current_properties,
         )
@@ -1263,7 +877,7 @@ class Points(Layer):
     def face_color(self, face_color):
         self._face._set_color(
             color=face_color,
-            n_colors=len(self.data),
+            n_colors=len(self._points_data),
             properties=self.properties,
             current_properties=self.current_properties,
         )
@@ -1434,25 +1048,27 @@ class Points(Layer):
         state : dict
             Dictionary of layer state.
         """
+
+        # must be self.data and not self._points_data
+        # self._points_data includes invalid nodes from graph buffer.
+        not_empty = len(self.data) > 0
         state = self._get_base_state()
         state.update(
             {
                 'symbol': (
-                    self.symbol if self.data.size else [self.current_symbol]
+                    self.symbol if not_empty else [self.current_symbol]
                 ),
                 'border_width': self.border_width,
                 'border_width_is_relative': self.border_width_is_relative,
                 'face_color': (
-                    self.face_color
-                    if self.data.size
-                    else [self.current_face_color]
+                    self.face_color if not_empty else [self.current_face_color]
                 ),
                 'face_color_cycle': self.face_color_cycle,
                 'face_colormap': self.face_colormap.dict(),
                 'face_contrast_limits': self.face_contrast_limits,
                 'border_color': (
                     self.border_color
-                    if self.data.size
+                    if not_empty
                     else [self.current_border_color]
                 ),
                 'border_color_cycle': self.border_color_cycle,
@@ -1605,7 +1221,7 @@ class Points(Layer):
             Array of coordinates for the N points in view
         """
         if len(self._indices_view) > 0:
-            data = self.data[
+            data = self._points_data[
                 np.ix_(self._indices_view, self._slice_input.displayed)
             ]
         else:
@@ -1924,17 +1540,11 @@ class Points(Layer):
         data_slice = slice_input.data_slice(self._data_to_world.inverse)
         return self._make_slice_request_internal(slice_input, data_slice)
 
+    @abstractmethod
     def _make_slice_request_internal(
         self, slice_input: _SliceInput, data_slice: _ThickNDSlice
     ) -> _PointSliceRequest:
-        return _PointSliceRequest(
-            slice_input=slice_input,
-            data=self.data,
-            data_slice=data_slice,
-            projection_mode=self.projection_mode,
-            out_of_slice_display=self.out_of_slice_display,
-            size=self.size,
-        )
+        raise NotImplementedError
 
     def _update_slice_response(self, response: _PointSliceResponse) -> None:
         """Handle a slicing response."""
@@ -2076,7 +1686,8 @@ class Points(Layer):
         colormapped[..., 3] *= self.opacity
         self.thumbnail = colormapped
 
-    def add(self, coords):
+    @abstractmethod
+    def add(self, coords: ArrayLike) -> None:
         """Adds points at coordinates.
 
         Parameters
@@ -2084,66 +1695,12 @@ class Points(Layer):
         coords : array
             Point or points to add to the layer data.
         """
-        cur_points = len(self.data)
-        self.events.data(
-            value=self.data,
-            action=ActionType.ADDING,
-            data_indices=(-1,),
-            vertex_indices=((),),
-        )
-        self._set_data(np.append(self.data, np.atleast_2d(coords), axis=0))
-        self.events.data(
-            value=self.data,
-            action=ActionType.ADDED,
-            data_indices=(-1,),
-            vertex_indices=((),),
-        )
-        self.selected_data = set(np.arange(cur_points, len(self.data)))
+        raise NotImplementedError
 
+    @abstractmethod
     def remove_selected(self) -> None:
         """Removes selected points if any."""
-        index = list(self.selected_data)
-        index.sort()
-        if len(index):
-            self.events.data(
-                value=self.data,
-                action=ActionType.REMOVING,
-                data_indices=tuple(
-                    self.selected_data,
-                ),
-                vertex_indices=((),),
-            )
-            self._shown = np.delete(self._shown, index, axis=0)
-            self._size = np.delete(self._size, index, axis=0)
-            self._symbol = np.delete(self._symbol, index, axis=0)
-            self._border_width = np.delete(self._border_width, index, axis=0)
-            with self._border.events.blocker_all():
-                self._border._remove(indices_to_remove=index)
-            with self._face.events.blocker_all():
-                self._face._remove(indices_to_remove=index)
-            self._feature_table.remove(index)
-            self.text.remove(index)
-            if self._value in self.selected_data:
-                self._value = None
-            else:
-                if self._value is not None:
-                    # update the index of self._value to account for the
-                    # data being removed
-                    indices_removed = np.array(index) < self._value
-                    offset = np.sum(indices_removed)
-                    self._value -= offset
-                    self._value_stored -= offset
-
-            self._set_data(np.delete(self.data, index, axis=0))
-            self.events.data(
-                value=self.data,
-                action=ActionType.REMOVED,
-                data_indices=tuple(
-                    self.selected_data,
-                ),
-                vertex_indices=((),),
-            )
-            self.selected_data = set()
+        raise NotImplementedError
 
     def _move(
         self,
@@ -2159,15 +1716,15 @@ class Points(Layer):
         position : tuple
             Position to move points to in data coordinates.
         """
+
         if len(selection_indices) > 0:
             selection_indices = list(selection_indices)
             disp = list(self._slice_input.displayed)
             self._set_drag_start(selection_indices, position)
-            center = self.data[np.ix_(selection_indices, disp)].mean(axis=0)
+            ixgrid = np.ix_(selection_indices, disp)
+            center = self._points_data[ixgrid].mean(axis=0)
             shift = np.array(position)[disp] - center - self._drag_start
-            self.data[np.ix_(selection_indices, disp)] = (
-                self.data[np.ix_(selection_indices, disp)] + shift
-            )
+            self._move_points(ixgrid, shift)
             self.refresh()
             self.events.data(
                 value=self.data,
@@ -2175,6 +1732,21 @@ class Points(Layer):
                 data_indices=tuple(selection_indices),
                 vertex_indices=((),),
             )
+
+    @abstractmethod
+    def _move_points(
+        self, ixgrid: tuple[np.ndarray, np.ndarray], shift: np.ndarray
+    ) -> None:
+        """Move points along a set a coordinates given a shift.
+
+        Parameters
+        ----------
+        ixgrid : Tuple[np.ndarray, np.ndarray]
+            Crossproduct indexing grid of node indices and dimensions, see `np.ix_`
+        shift : np.ndarray
+            Selected coordinates shift
+        """
+        raise NotImplementedError
 
     def _set_drag_start(
         self,
@@ -2199,166 +1771,10 @@ class Points(Layer):
         if self._drag_start is None:
             self._drag_start = np.array(position, dtype=float)[dims_displayed]
             if len(selection_indices) > 0 and center_by_data:
-                center = self.data[
+                center = self._points_data[
                     np.ix_(selection_indices, dims_displayed)
                 ].mean(axis=0)
                 self._drag_start -= center
-
-    def _paste_data(self) -> None:
-        """Paste any point from clipboard and select them."""
-        npoints = len(self._view_data)
-        totpoints = len(self.data)
-
-        if len(self._clipboard.keys()) > 0:
-            not_disp = self._slice_input.not_displayed
-            data = deepcopy(self._clipboard['data'])
-            offset = [
-                self._data_slice[i] - self._clipboard['indices'][i]
-                for i in not_disp
-            ]
-            data[:, not_disp] = data[:, not_disp] + np.array(offset)
-            self._data = np.append(self.data, data, axis=0)
-            self._shown = np.append(
-                self.shown, deepcopy(self._clipboard['shown']), axis=0
-            )
-            self._size = np.append(
-                self.size, deepcopy(self._clipboard['size']), axis=0
-            )
-            self._symbol = np.append(
-                self.symbol, deepcopy(self._clipboard['symbol']), axis=0
-            )
-
-            self._feature_table.append(self._clipboard['features'])
-
-            self.text._paste(**self._clipboard['text'])
-
-            self._border_width = np.append(
-                self.border_width,
-                deepcopy(self._clipboard['border_width']),
-                axis=0,
-            )
-            self._border._paste(
-                colors=self._clipboard['border_color'],
-                properties=_features_to_properties(
-                    self._clipboard['features']
-                ),
-            )
-            self._face._paste(
-                colors=self._clipboard['face_color'],
-                properties=_features_to_properties(
-                    self._clipboard['features']
-                ),
-            )
-
-            self._selected_view = list(
-                range(npoints, npoints + len(self._clipboard['data']))
-            )
-            self._selected_data.update(
-                set(range(totpoints, totpoints + len(self._clipboard['data'])))
-            )
-            self.refresh()
-
-    def _copy_data(self) -> None:
-        """Copy selected points to clipboard."""
-        if len(self.selected_data) > 0:
-            index = list(self.selected_data)
-            self._clipboard = {
-                'data': deepcopy(self.data[index]),
-                'border_color': deepcopy(self.border_color[index]),
-                'face_color': deepcopy(self.face_color[index]),
-                'shown': deepcopy(self.shown[index]),
-                'size': deepcopy(self.size[index]),
-                'symbol': deepcopy(self.symbol[index]),
-                'border_width': deepcopy(self.border_width[index]),
-                'features': deepcopy(self.features.iloc[index]),
-                'indices': self._data_slice,
-                'text': self.text._copy(index),
-            }
-        else:
-            self._clipboard = {}
-
-    def to_mask(
-        self,
-        *,
-        shape: tuple,
-        data_to_world: Optional[Affine] = None,
-        isotropic_output: bool = True,
-    ) -> npt.NDArray:
-        """Return a binary mask array of all the points as balls.
-
-        Parameters
-        ----------
-        shape : tuple
-            The shape of the mask to be generated.
-        data_to_world : Optional[Affine]
-            The data-to-world transform of the output mask image. This likely comes from a reference image.
-            If None, then this is the same as this layer's data-to-world transform.
-        isotropic_output : bool
-            If True, then force the output mask to always contain isotropic balls in data/pixel coordinates.
-            Otherwise, allow the anisotropy in the data-to-world transform to squash the balls in certain dimensions.
-            By default this is True, but you should set it to False if you are going to create a napari image
-            layer from the result with the same data-to-world transform and want the visualized balls to be
-            roughly isotropic.
-
-        Returns
-        -------
-        np.ndarray
-            The output binary mask array of the given shape containing this layer's points as balls.
-        """
-        if data_to_world is None:
-            data_to_world = self._data_to_world
-        mask = np.zeros(shape, dtype=bool)
-        mask_world_to_data = data_to_world.inverse
-        points_data_to_mask_data = self._data_to_world.compose(
-            mask_world_to_data
-        )
-        points_in_mask_data_coords = np.atleast_2d(
-            points_data_to_mask_data(self.data)
-        )
-
-        # Calculating the radii of the output points in the mask is complex.
-        radii = self.size / 2
-
-        # Scale each radius by the geometric mean scale of the Points layer to
-        # keep the balls isotropic when visualized in world coordinates.
-        # The geometric means are used instead of the arithmetic mean
-        # to maintain the volume scaling factor of the transforms.
-        point_data_to_world_scale = gmean(np.abs(self._data_to_world.scale))
-        mask_world_to_data_scale = (
-            gmean(np.abs(mask_world_to_data.scale))
-            if isotropic_output
-            else np.abs(mask_world_to_data.scale)
-        )
-        radii_scale = point_data_to_world_scale * mask_world_to_data_scale
-
-        output_data_radii = radii[:, np.newaxis] * np.atleast_2d(radii_scale)
-
-        for coords, radii in zip(
-            points_in_mask_data_coords, output_data_radii
-        ):
-            # Define a minimal set of coordinates where the mask could be present
-            # by defining an inclusive lower and exclusive upper bound for each dimension.
-            lower_coords = np.maximum(np.floor(coords - radii), 0).astype(int)
-            upper_coords = np.minimum(
-                np.ceil(coords + radii) + 1, shape
-            ).astype(int)
-            # Generate every possible coordinate within the bounds defined above
-            # in a grid of size D1 x D2 x ... x Dd x D (e.g. for D=2, this might be 4x5x2).
-            submask_coords = [
-                range(lower_coords[i], upper_coords[i])
-                for i in range(self.ndim)
-            ]
-            submask_grids = np.stack(
-                np.meshgrid(*submask_coords, copy=False, indexing='ij'),
-                axis=-1,
-            )
-            # Update the mask coordinates based on the normalized square distance
-            # using a logical or to maintain any existing positive mask locations.
-            normalized_square_distances = np.sum(
-                ((submask_grids - coords) / radii) ** 2, axis=-1
-            )
-            mask[np.ix_(*submask_coords)] |= normalized_square_distances <= 1
-        return mask
 
     def get_status(
         self,
@@ -2485,5 +1901,3 @@ class Points(Layer):
             and not (isinstance(v[value], float) and np.isnan(v[value]))
         ]
 
-
-Points._add_deprecated_properties()
