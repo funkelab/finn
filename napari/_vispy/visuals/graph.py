@@ -44,6 +44,11 @@ class GraphVisual(ClippingPlanesMixin, Compound):
         return self._subvisuals[3]
 
     @property
+    def edges(self) -> Text:
+        """Edges visual"""
+        return self._subvisuals[4]
+
+    @property
     def scaling(self) -> bool:
         """
         Scaling property for both the markers visuals. If set to true,
