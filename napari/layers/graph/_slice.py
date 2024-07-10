@@ -125,7 +125,7 @@ class _GraphSliceRequest:
         roi = np.array([low, high])
         print("Roi", roi)
         nodes, edges = self.data.query_in_roi(roi, edge_inclusion="incident")
-        edges = np.array([[random.choice(nodes), random.choice(nodes)] for _ in range(100)])
+        edges = np.array([[random.choice(nodes), random.choice(nodes)] for _ in range(100)]).copy()
         print("Nodes", nodes)
         print("Edges! ", edges)
         return nodes, edges

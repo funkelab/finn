@@ -62,9 +62,9 @@ class VispyGraphLayer(VispyBaseLayer):
         """Sets the LineVisual with the graph edges data"""
         subvisual = self.node.edges
         edges = self.layer.viewed_edges
-        start_nodes = edges[:,0]
+        start_nodes = np.array(edges[:,0])
         print(start_nodes.shape)
-        end_nodes = edges[:, 1]
+        end_nodes = np.array(edges[:, 1])
         print(end_nodes.shape)
 
         if len(edges) == 0:
@@ -72,13 +72,15 @@ class VispyGraphLayer(VispyBaseLayer):
             return
 
         subvisual.visible = True
-        start_node_locations = self.layer.data.node_attrs[start_nodes].position
-        end_node_locations = self.layer.data.node_attrs[end_nodes].position
-        flat_edges = np.stack(start_node_locations, end_node_locations)  # (N x 2, D)
+        start_node_locations = self.layer.data.node_attrs[start_nodes].position[:, ::-1]
+        print("Start node locations\n", start_node_locations)
+        end_node_locations = self.layer.data.node_attrs[end_nodes].position[:,::-1]
+        print("End node locations\n", end_node_locations)
+        flat_edges = np.stack((start_node_locations, end_node_locations))  # (N x 2, D)
         print("Flat edges shape:", flat_edges.shape)
-        flat_edges = flat_edges[:, ::-1]
+        # flat_edges = flat_edges[:, ::-1]
 
-        edge_color = self.layer._view_edge_color
+        # edge_color = self.layer._view_edge_color
 
         # clearing up buffer, there was a vispy error otherwise
         subvisual._line_visual._pos_vbo = gloo.VertexBuffer()
