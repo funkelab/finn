@@ -1,87 +1,23 @@
-from typing import Any, Dict, Optional, Tuple, Union, cast
-import spatial_graph as sg
-import numpy as npt
-from numpy.typing import ArrayLike
-from psygnal.containers import Selection
-
-from napari.layers.base._base_constants import ActionType
-from napari.layers.graph._slice import _GraphSliceRequest, _GraphSliceResponse
-from napari.layers.utils._slice_input import _SliceInput, _ThickNDSlice
-from napari.utils.events import Event
-from napari.utils.translations import trans
-
-import numbers
-import warnings
-from abc import abstractmethod
-from collections.abc import Sequence
-from copy import copy, deepcopy
-from itertools import cycle
+import time
 from typing import (
-    TYPE_CHECKING,
     Any,
     Callable,
     ClassVar,
-    Literal,
     Optional,
-    Union,
 )
 
 import numpy as np
 import numpy.typing as npt
-import pandas as pd
-from numpy.typing import ArrayLike
-from psygnal.containers import Selection
-from scipy.stats import gmean
 
 from napari.layers.base import Layer, no_op
-from napari.layers.base._base_constants import ActionType
-from napari.layers.base._base_mouse_bindings import (
-    highlight_box_handles,
-    transform_with_box,
-)
-from napari.layers.points._points_constants import (
-    Mode,
-    PointsProjectionMode,
-    Shading,
-)
-from napari.layers.points._points_mouse_bindings import add, highlight, select
-from napari.layers.points._points_utils import (
-    _create_box_from_corners_3d,
-    coerce_symbols,
-    create_box,
-    fix_data_points,
-    points_to_squares,
-)
-from napari.layers.points._slice import _PointSliceRequest, _PointSliceResponse
-from napari.layers.utils._color_manager_constants import ColorMode
-from napari.layers.utils._slice_input import _SliceInput, _ThickNDSlice
-from napari.layers.utils.color_manager import ColorManager
-from napari.layers.utils.color_transformations import ColorType
-from napari.layers.utils.interactivity_utils import (
-    displayed_plane_from_nd_line_segment,
-)
-from napari.layers.utils.layer_utils import (
-    _features_to_properties,
-    _FeatureTable,
-    _unique_element,
-)
-from napari.layers.utils.text_manager import TextManager
-from napari.utils.colormaps import Colormap, ValidColormapArg
-from napari.utils.colormaps.standardize_color import hex_to_name, rgb_to_hex
+from napari.layers.graph._graph_constants import Mode
+from napari.layers.points._points_constants import PointsProjectionMode
+from napari.layers.graph._graph_actions import select
+from napari.layers.graph._slice import _GraphSliceRequest
+from napari.utils.colormaps import AVAILABLE_COLORMAPS
 from napari.utils.events import Event
-from napari.utils.events.custom_types import Array
-from napari.utils.events.migrations import deprecation_warning_event
-from napari.utils.geometry import project_points_onto_plane, rotate_points
-from napari.utils.migrations import add_deprecated_property, rename_argument
-from napari.utils.status_messages import generate_layer_coords_status
-from napari.utils.transforms import Affine
-from napari.utils.translations import trans
-
-if TYPE_CHECKING:
-    from napari.components.dims import Dims
 
 DEFAULT_COLOR_CYCLE = np.array([[1, 0, 1, 1], [0, 1, 0, 1]])
-
 
 
 class Graph(Layer):
@@ -95,7 +31,22 @@ class Graph(Layer):
     name: str
         The name of the layer
     """
+    _modeclass = Mode
+    _projectionclass = PointsProjectionMode
 
+    _drag_modes: ClassVar[dict[Mode, Callable[['Graph', Event], Any]]] = {
+        Mode.PAN_ZOOM: no_op,
+        Mode.SELECT: select,
+    }
+
+    _move_modes: ClassVar[dict[Mode, Callable[['Graph', Event], Any]]] = {
+        Mode.PAN_ZOOM: no_op,
+        Mode.SELECT: no_op,
+    }
+    _cursor_modes: ClassVar[dict[Mode, str]] = {
+        Mode.PAN_ZOOM: 'standard',
+        Mode.SELECT: 'standard',
+    }
 
     def __init__(
         self,
@@ -111,16 +62,25 @@ class Graph(Layer):
             name=name,
         )
 
-        # self.events.add(
-        #     size=Event,
-        #     ...
-        # )
+        self.events.add(
+            highlight=Event,
+        )
+
+        self._mode = Mode.PAN_ZOOM
 
         self.size = 5
+        self.node_properties = list(self.data.node_attr_dtypes.keys())
+        self._current_face_color_property = self.node_properties[1]
+        self.colormap = AVAILABLE_COLORMAPS["viridis"]
+        self.viewed_nodes = np.array([], dtype=self.data.node_dtype)
+        self.viewed_edges = np.zeros(shape=(0, 2), dtype=self.data.node_dtype)
+        self.selected_data = set()  # currently just nodes
+        self.highlighted_nodes  = np.array([], dtype=self.data.node_dtype)
+        self._projection_mode = PointsProjectionMode.ALL
 
         # Trigger generation of view slice and thumbnail
         self.refresh()
-    
+
     @property
     def data(self):
         # user writes own docstring
@@ -149,7 +109,6 @@ class Graph(Layer):
             maxs = np.max(self.data.node_attrs.position, axis=0)
             mins = np.min(self.data.node_attrs.position, axis=0)
             extrema = np.vstack([mins, maxs])
-        print("Extrema: ", extrema)
         return extrema.astype(float)
 
     @property
@@ -179,18 +138,42 @@ class Graph(Layer):
         return self._get_base_state()
 
     def _set_view_slice(self):
+        # start_time = time.time()
         """Sets the view given the indices to slice with."""
-        print("Slice input", self._slice_input)
         request = _GraphSliceRequest(
             slice_input=self._slice_input,
             data=self.data,
             world_to_data=self._data_to_world.inverse,
             projection_mode=self.projection_mode,
         )
-        print(request)
         response = request()
         self.viewed_nodes = response.indices
         self.viewed_edges = response.edges_indices
+        end_time = time.time()
+        # print(f"Setting view slice took {end_time - start_time} seconds")
+
+
+
+    def _get_node(self, position) -> Optional[int]:
+        """Index of the point at a given 2D position in data coordinates.
+
+        Parameters
+        ----------
+        position : tuple
+            Position in data coordinates.
+
+        Returns
+        -------
+        value : int or None
+            Index of point that is at the current coordinate if any.
+        """
+        nodes = self.data._rtree.nearest(np.array(position), k=1)
+        if len(nodes) > 0:
+            node = nodes[0]
+            # print("Nearest node to point", position, "has position", self.data.node_attrs[node].position)
+            return node
+        else:
+            return None
 
     def _get_value(self, position) -> Optional[int]:
         """Index of the point at a given 2D position in data coordinates.
@@ -205,14 +188,7 @@ class Graph(Layer):
         value : int or None
             Index of point that is at the current coordinate if any.
         """
-        # TODO: Query closest point to given point
-        low = np.array(position)
-        high = np.array(position)
-        for dim in self._slice_input.displayed:
-            low[dim] -= self.size
-            high[dim] += self.size
-        nodes = self.data.query_in_roi(np.array([low, high]))
-        return nodes[0]
+        return self._get_node(position)
 
     def _update_thumbnail(self) -> None:
         """Update thumbnail with current points and colors."""
@@ -221,3 +197,35 @@ class Graph(Layer):
         colormapped[..., 3] = 1
         colormapped[..., 3] *= self.opacity
         self.thumbnail = colormapped
+
+    @property
+    def _view_face_color(self) -> np.ndarray:
+        """Get the face colors of the points in view
+
+        Returns
+        -------
+        view_face_color : (N x 4) np.ndarray
+            RGBA color array for the face colors of the N points in view.
+            If there are no points in view, returns array of length 0.
+        """
+        if self.viewed_nodes.size == 0:
+            return np.array([[0.0, 0.0, 0.0, 1.0]], dtype=np.float32)
+        property = self._current_face_color_property
+        values = getattr(self.data.node_attrs[self.viewed_nodes], property)
+        values = values.astype(np.float32) / np.max(values)
+        color = self.colormap.map(values)
+        return color
+
+    def _set_highlight(self, force: bool = False) -> None:
+        """Render highlights of shapes including boundaries, vertices,
+        interaction boxes, and the drag selection box when appropriate.
+        Highlighting only occurs in Mode.SELECT.
+
+        Parameters
+        ----------
+        force : bool
+            Bool that forces a redraw to occur when `True`
+        """
+        self.highlighted_nodes = np.array(list(self.selected_data.intersection(set(self.viewed_nodes))))
+
+        self.events.highlight()

@@ -1,21 +1,20 @@
-from collections.abc import Sequence
+import random
+import time
 from dataclasses import dataclass, field
-from typing import Any, Tuple
+from typing import Tuple
 
 import numpy as np
 import spatial_graph as sg
 from numpy.typing import ArrayLike
-import random
 
 from napari.layers.base._slice import _next_request_id
 from napari.layers.points._points_constants import PointsProjectionMode
-from napari.layers.points._slice import _PointSliceResponse
-from napari.layers.utils._slice_input import _SliceInput, _ThickNDSlice
+from napari.layers.utils._slice_input import _SliceInput
 from napari.utils.transforms import Affine
 
 
 @dataclass(frozen=True)
-class _GraphSliceResponse():
+class _GraphSliceResponse:
     """Contains all the output data of slicing an graph layer.
     Attributes
     ----------
@@ -58,6 +57,7 @@ class _GraphSliceRequest:
     id: int = field(default_factory=_next_request_id)
 
     def __call__(self) -> _GraphSliceResponse:
+        start_time = time.time()
         # Return early if no data
         if self.data.num_nodes == 0:
             return _GraphSliceResponse(
@@ -68,18 +68,17 @@ class _GraphSliceRequest:
                 request_id=self.id,
             )
 
-        not_disp = list(self.slice_input.not_displayed)
-        if not not_disp:
-            node_indices = self.data.nodes
-            edges = self.data.edges
-            return _GraphSliceResponse(
-                indices=node_indices,
-                edges_indices=edges,
-                slice_input=self.slice_input,
-                request_id=self.id,
-            )
+        # not_disp = list(self.slice_input.not_displayed)
+        # if not not_disp:
+        #     node_indices = np.array(self.data.nodes())
+        #     edges = np.array(self.data.edges())
+        #     return _GraphSliceResponse(
+        #         indices=node_indices,
+        #         edges_indices=edges,
+        #         slice_input=self.slice_input,
+        #         request_id=self.id,
+        #     )
         data_slice = self.slice_input.data_slice(self.world_to_data)
-        print("Data slice", data_slice)
         point, m_left, m_right = data_slice.as_array()
 
         if self.projection_mode == 'none':
@@ -97,7 +96,7 @@ class _GraphSliceRequest:
         node_indices, edges_indices = self._get_slice_data(
             low, high
         )
-
+        end_time = time.time()
         return _GraphSliceResponse(
             indices=node_indices,
             edges_indices=edges_indices,
@@ -112,7 +111,6 @@ class _GraphSliceRequest:
     ) -> Tuple[np.ndarray, ArrayLike]:
         """
         Slices data according to displayed indices
-        while ignoring not initialized nodes from graph.
         Args:
             low: the lower bound of the slice in all dimensions
             high: the upper bound of the slice in all dimensions
@@ -120,12 +118,12 @@ class _GraphSliceRequest:
         Returns: tuple(node_ids, edge_ids,)
         """
         # TODO: unbounded roi in certain dimensions
-        low = np.nan_to_num(low, nan=-100)
-        high = np.nan_to_num(high, nan=100)
+        low = np.nan_to_num(low, nan=-1000000)
+        high = np.nan_to_num(high, nan=10000000)
         roi = np.array([low, high])
-        print("Roi", roi)
+        print("slice", roi)
         nodes, edges = self.data.query_in_roi(roi, edge_inclusion="incident")
-        edges = np.array([[random.choice(nodes), random.choice(nodes)] for _ in range(100)]).copy()
-        print("Nodes", nodes)
-        print("Edges! ", edges)
+        print("number of nodes after slicing", len(nodes))
+        print("number of edges after slicing", len(edges))
+        # edges = np.array([[random.choice(nodes), random.choice(nodes)] for _ in range(50)])
         return nodes, edges

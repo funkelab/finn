@@ -8,10 +8,10 @@ to the super constructor.
 import inspect as _inspect
 
 from napari.layers.base import Layer
+from napari.layers.graph import Graph
 from napari.layers.image import Image
 from napari.layers.labels import Labels
 from napari.layers.points import Points
-from napari.layers.graph import Graph
 from napari.layers.shapes import Shapes
 from napari.layers.surface import Surface
 from napari.layers.tracks import Tracks
