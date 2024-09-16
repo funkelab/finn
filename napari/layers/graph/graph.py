@@ -167,7 +167,7 @@ class Graph(Layer):
         value : int or None
             Index of point that is at the current coordinate if any.
         """
-        nodes = self.data._rtree.nearest(np.array(position), k=1)
+        nodes = self.data.query_nearest_nodes(np.array(position), k=1)
         if len(nodes) > 0:
             node = nodes[0]
             # print("Nearest node to point", position, "has position", self.data.node_attrs[node].position)
