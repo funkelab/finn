@@ -1,6 +1,7 @@
 
 from typing import TypeVar
 _T = TypeVar('_T')
+import numpy as np
 
 
 def _toggle_selected(selection: set[_T], value: _T) -> set[_T]:
@@ -53,18 +54,54 @@ def select(layer, event):
     value = layer.get_value(
         position=event.position,
     )
+    print(f"{value=}")
     # if modifying selection add / remove any from existing selection
     if modify_selection:
         if value is not None:
-            layer.selected_data = _toggle_selected(layer.selected_data, value)
+            if isinstance(value, int | np.uint):
+                layer.selected_nodes = _toggle_selected(layer.selected_nodes, value)
+            else:
+                value = tuple(value)
+                layer.selected_edges = _toggle_selected(layer.selected_edges, value)
     else:
         if value is not None:
             # If the current index is not in the current list make it the only
             # index selected, otherwise don't change the selection so that
             # the current selection can be dragged together.
-            if value not in layer.selected_data:
-                layer.selected_data = {value}
+
+            if isinstance(value, int | np.uint):
+                print(f"Setting selected nodes to {value}")
+                if value not in layer.selected_nodes:
+                    layer.selected_nodes = {value}
+            else:
+                value = tuple(value)
+                if value not in layer.selected_edges:
+                    print(f"Setting selected edges to {value}")
+                    layer.selected_edges = {value}
         else:
-            layer.selected_data = set()
+            layer.selected_nodes = set()
+            layer.selected_edges = set()
     # reset the selection box data and highlights
     layer._set_highlight()
+
+DRAG_DIST_THRESHOLD = 5
+
+def add_node(layer, event):
+    """Add a new point at the clicked position."""
+    start_pos = event.pos
+    dist = 0
+    yield
+
+    while event.type == 'mouse_move':
+        dist = np.linalg.norm(start_pos - event.pos)
+        if dist < DRAG_DIST_THRESHOLD:
+            # prevent vispy from moving the canvas if we're below threshold
+            event.handled = True
+        yield
+
+    # in some weird cases you might have press and release without move,
+    # so we just make 100% sure dist is correct
+    dist = np.linalg.norm(start_pos - event.pos)
+    if dist < DRAG_DIST_THRESHOLD:
+        coordinates = layer.world_to_data(event.position)
+        layer.add_node(coordinates)

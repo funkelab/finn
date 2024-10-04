@@ -22,14 +22,15 @@ class GraphVisual(ClippingPlanesMixin, Compound):
         # each segment, rather than just a list of points. This mode means you
         # don't need segments to be sorted to display a line.
         self.add_subvisual(LineVisual(connect='segments'))
+        self.add_subvisual(LineVisual(connect='segments'))
 
     @property
-    def points_markers(self) -> Markers:
+    def node_markers(self) -> Markers:
         """Points markers visual"""
         return self._subvisuals[0]
 
     @property
-    def selection_markers(self) -> Markers:
+    def node_selection_markers(self) -> Markers:
         """Highlight markers visual"""
         return self._subvisuals[1]
 
@@ -44,9 +45,14 @@ class GraphVisual(ClippingPlanesMixin, Compound):
         return self._subvisuals[3]
 
     @property
-    def edges(self) -> Text:
+    def edge_markers(self) -> Line:
         """Edges visual"""
         return self._subvisuals[4]
+
+    @property
+    def edge_selection_markers(self) -> Line:
+        """Edges visual"""
+        return self._subvisuals[5]
 
     @property
     def scaling(self) -> bool:
@@ -54,36 +60,36 @@ class GraphVisual(ClippingPlanesMixin, Compound):
         Scaling property for both the markers visuals. If set to true,
         the points rescale based on zoom (i.e: constant world-space size)
         """
-        return self.points_markers.scaling == 'visual'
+        return self.node_markers.scaling == 'visual'
 
     @scaling.setter
     def scaling(self, value: bool) -> None:
         scaling_txt = 'visual' if value else 'fixed'
-        self.points_markers.scaling = scaling_txt
-        self.selection_markers.scaling = scaling_txt
+        self.node_markers.scaling = scaling_txt
+        self.node_selection_markers.scaling = scaling_txt
 
     @property
     def antialias(self) -> float:
-        return self.points_markers.antialias
+        return self.node_markers.antialias
 
     @antialias.setter
     def antialias(self, value: float) -> None:
-        self.points_markers.antialias = value
-        self.selection_markers.antialias = value
+        self.node_markers.antialias = value
+        self.node_selection_markers.antialias = value
 
     @property
     def spherical(self) -> bool:
-        return self.points_markers.spherical
+        return self.node_markers.spherical
 
     @spherical.setter
     def spherical(self, value: bool) -> None:
-        self.points_markers.spherical = value
+        self.node_markers.spherical = value
 
     @property
     def canvas_size_limits(self) -> tuple[int, int]:
-        return self.points_markers.canvas_size_limits
+        return self.node_markers.canvas_size_limits
 
     @canvas_size_limits.setter
     def canvas_size_limits(self, value: tuple[int, int]) -> None:
-        self.points_markers.canvas_size_limits = value
-        self.selection_markers.canvas_size_limits = value
+        self.node_markers.canvas_size_limits = value
+        self.node_selection_markers.canvas_size_limits = value

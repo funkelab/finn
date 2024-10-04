@@ -36,7 +36,7 @@ class VispyGraphLayer(VispyBaseLayer):
         border_width = np.zeros(1)
         symbol = ['o']
 
-        set_data = self.node.points_markers.set_data
+        set_data = self.node.node_markers.set_data
 
         border_kw = {
             'edge_width': border_width,
@@ -55,27 +55,30 @@ class VispyGraphLayer(VispyBaseLayer):
         self._set_graph_edges_data()
         self.reset()
 
-    def _set_graph_edges_data(self) -> None:
-        """Sets the LineVisual with the graph edges data"""
-        subvisual = self.node.edges
-        edges = self.layer.viewed_edges
+
+    def _get_edge_endpoints(self, edges) -> np.ndarray:
+        print(edges)
         start_nodes = np.array(edges[:,0])
         end_nodes = np.array(edges[:, 1])
+
+        start_node_locations = self.layer.data.node_attrs[start_nodes].position[:, ::-1]
+        end_node_locations = self.layer.data.node_attrs[end_nodes].position[:,::-1]
+        print(end_node_locations)
+        return np.stack((start_node_locations, end_node_locations), axis=1)
+
+    def _set_graph_edges_data(self) -> None:
+        """Sets the LineVisual with the graph edges data"""
+        subvisual = self.node.edge_markers
+        edges = self.layer.viewed_edges
 
         if len(edges) == 0:
             subvisual.visible = False
             return
 
         subvisual.visible = True
-        start_node_locations = self.layer.data.node_attrs[start_nodes].position[:, ::-1]
-        end_node_locations = self.layer.data.node_attrs[end_nodes].position[:,::-1]
-        edges = np.stack((start_node_locations, end_node_locations), axis=1)  
-        print(edges.shape)
+        edges = self._get_edge_endpoints(edges)
         
         flat_edges = edges.reshape((-1, edges.shape[-1]))# (N x 2, D)
-        print(flat_edges.shape)
-        print(flat_edges[0:2])
-        # flat_edges = flat_edges[:, ::-1]
 
         # edge_color = self.layer._view_edge_color
 
@@ -87,33 +90,60 @@ class VispyGraphLayer(VispyBaseLayer):
             width=1,
         )
 
-    def _on_highlight_change(self):
+    def _highlight_nodes(self):
         if len(self.layer.highlighted_nodes) > 0:
             # Color the hovered or selected points
             locations = self.layer.data.node_attrs[self.layer.highlighted_nodes].position
             size = self.layer.size
+            symbol = ['o']
+            border_width = np.array([1])
+
+            scale = self.layer.scale[-1]
+            highlight_thickness = 5
+            scaled_highlight = highlight_thickness * self.layer.scale_factor
+            scaled_size = (size + border_width) * scale
+            highlight_color = np.array([[1.0, 0.0, 1.0, 1.0]], dtype=np.float32)
+
+            self.node.node_selection_markers.set_data(
+                locations[:, ::-1],
+                size=scaled_size,
+                symbol=symbol,
+                edge_width=scaled_highlight * 10,
+                edge_color=highlight_color,
+                face_color=transform_color('transparent'),
+            )
+
+            self.node.node_selection_markers.visible = True
         else:
-            locations = np.zeros((1, self.layer._slice_input.ndisplay))
-            size = 0
-        symbol = ['o']
-        border_width = np.array([1])
+            self.node.node_selection_markers.visible = False
+        
 
-        scale = self.layer.scale[-1]
-        highlight_thickness = 5
-        scaled_highlight = highlight_thickness * self.layer.scale_factor
-        scaled_size = (size + border_width) * scale
-        highlight_color = np.array([[1.0, 0.0, 1.0, 1.0]], dtype=np.float32)
+    def _higlight_edges(self):
+        print(self.layer.highlighted_edges)
+        print(self.layer.highlighted_edges.size)
+        if self.layer.highlighted_edges.size > 0:
+            print(self.layer.highlighted_edges.ndim)
+            # Color the hovered or selected points
+            print(self.layer.highlighted_edges.shape)
+            edges = self._get_edge_endpoints(self.layer.highlighted_edges)
+            flat_edges = edges.reshape((-1, edges.shape[-1]))# (N x 2, D)
 
-        self.node.selection_markers.set_data(
-            locations[:, ::-1],
-            size=size + highlight_thickness,
-            symbol=symbol,
-            edge_width=scaled_highlight * 2,
-            edge_color=highlight_color,
-            face_color=transform_color('transparent'),
-        )
+            highlight_color = np.array([[1.0, 0.0, 1.0, 1.0]], dtype=np.float32)
+            print(f"Setting data in edge highlight ({edges})")
+            self.node.edge_selection_markers.set_data(
+                flat_edges,
+                color=highlight_color,
+                width=2,
+            )
+            self.node.edge_selection_markers.visible = True
+        else:
+            self.node.edge_selection_markers.visible = False
 
+    def _on_highlight_change(self):
+        self._highlight_nodes()
+        self._higlight_edges()
         self.node.update()
+        
     
     def close(self):
         """Vispy visual is closing."""

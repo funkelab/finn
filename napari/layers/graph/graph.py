@@ -4,12 +4,14 @@ from typing import (
     Callable,
     ClassVar,
     Optional,
+    Union,
 )
 
 import numpy as np
 import numpy.typing as npt
 
 from napari.layers.base import Layer, no_op
+from napari.layers.base._base_constants import ActionType
 from napari.layers.graph._graph_constants import Mode
 from napari.layers.points._points_constants import PointsProjectionMode
 from napari.layers.graph._graph_actions import select
@@ -50,11 +52,11 @@ class Graph(Layer):
 
     def __init__(
         self,
-        data,
+        graph,
         name,
 
     ) -> None:
-        self._data = data
+        self._data = graph
 
         super().__init__(
             data=self.data,
@@ -69,17 +71,38 @@ class Graph(Layer):
         self._mode = Mode.PAN_ZOOM
 
         self.size = 5
+        # an upper bound on the node ids, used for getting new ids for new nodes
+        self.node_id_upper_bound = np.max(self._data.nodes)
+
         self.node_properties = list(self.data.node_attr_dtypes.keys())
-        self._current_face_color_property = self.node_properties[1]
-        self.colormap = AVAILABLE_COLORMAPS["viridis"]
+        # a dictionary from attributes to value for new nodes
+        self._new_node_attrs = {
+            key: np.ndarray([0], dtype=self.to_numpy_dtype(dtype)) for key, dtype in self.data.node_attr_dtypes.items()
+        } # TODO: expose in UI
+        self._current_face_color_property = self.node_properties[1]  # TODO: Expose in UI
+        self.colormap = AVAILABLE_COLORMAPS["viridis"]  # TODO: Expose in UI
+
+        # the nodes and edges currently in the view
         self.viewed_nodes = np.array([], dtype=self.data.node_dtype)
         self.viewed_edges = np.zeros(shape=(0, 2), dtype=self.data.node_dtype)
-        self.selected_data = set()  # currently just nodes
+
+        # the currently selected nodes and edges
+        self.selected_nodes = set()
+        self.selected_edges = set()  
+
+
         self.highlighted_nodes  = np.array([], dtype=self.data.node_dtype)
-        self._projection_mode = PointsProjectionMode.ALL
+        self.highlighted_edges = np.empty(shape=(2,0), dtype=self.data.node_dtype)
+#
+        self._projection_mode = PointsProjectionMode.ALL # TODO: Expose in UI
 
         # Trigger generation of view slice and thumbnail
         self.refresh()
+
+    def to_numpy_dtype(self, dtype: str):
+        if "[" in dtype:
+            dtype = dtype.split("[")[0]
+        return dtype
 
     @property
     def data(self):
@@ -92,7 +115,7 @@ class Graph(Layer):
 
     @property
     def num_nodes(self):
-        return self._data.num_nodes
+        return len(self._data)
 
     @property
     def _extent_data(self) -> np.ndarray:
@@ -153,9 +176,8 @@ class Graph(Layer):
         # print(f"Setting view slice took {end_time - start_time} seconds")
 
 
-
-    def _get_node(self, position) -> Optional[int]:
-        """Index of the point at a given 2D position in data coordinates.
+    def _get_node_2d(self, position) -> Optional[tuple[int, float]]:
+        """ID of the point closest to a given 2D position in data coordinates.
 
         Parameters
         ----------
@@ -167,16 +189,39 @@ class Graph(Layer):
         value : int or None
             Index of point that is at the current coordinate if any.
         """
-        nodes = self.data.query_nearest_nodes(np.array(position), k=1)
+        nodes, dists = self.data.query_nearest_nodes(np.array(position), k=1, return_distances=True)
         if len(nodes) > 0:
             node = nodes[0]
+            dist = dists[0]
             # print("Nearest node to point", position, "has position", self.data.node_attrs[node].position)
-            return node
+            return node, dist
+        else:
+            return None
+        
+    def _get_edge_2d(self, position) -> Optional[tuple[np.ndarray, int]]:
+        """ID of the endpoints of the edge closest to a given 2D position in data coordinates.
+
+        Parameters
+        ----------
+        position : tuple
+            Position in data coordinates.
+
+        Returns
+        -------
+        value : tuple[int, int] or None
+            Index of point that is at the current coordinate if any.
+        """
+        edges, dists = self.data.query_nearest_edges(np.array(position), k=1, return_distances=True)
+        if len(edges) > 0:
+            edge = edges[0]
+            dist = dists[0]
+            # print("Nearest node to point", position, "has position", self.data.node_attrs[node].position)
+            return edge, dist
         else:
             return None
 
-    def _get_value(self, position) -> Optional[int]:
-        """Index of the point at a given 2D position in data coordinates.
+    def _get_value(self, position) -> Optional[Union[int, np.ndarray]]:
+        """ID of the point or edge closest to a given 2D position in data coordinates.
 
         Parameters
         ----------
@@ -185,10 +230,50 @@ class Graph(Layer):
 
         Returns
         -------
-        value : int or None
-            Index of point that is at the current coordinate if any.
+        value : int or np.ndarray or None
+            ID of point or edge closeest to the current coordinate if any.
         """
-        return self._get_node(position)
+        node_info = self._get_node_2d(position)
+        edge_info = self._get_edge_2d(position)
+        if node_info is None and edge_info is None:
+            return None
+        elif node_info is None:
+            return edge_info[0]
+        elif edge_info is None:
+            return node_info[0]
+        else:
+            node_id, node_dist = node_info
+            edge_id, edge_dist = edge_info
+            if node_dist <= edge_dist:
+                return node_id
+            else:
+                return edge_id
+
+    
+    def _get_value_3d(
+        self,
+        start_point: Optional[np.ndarray],
+        end_point: Optional[np.ndarray],
+        dims_displayed: list[int],
+    ) ->  Optional[int]:
+        """Get the layer data value along a ray
+
+        Parameters
+        ----------
+        start_point : np.ndarray
+            The start position of the ray used to interrogate the data.
+        end_point : np.ndarray
+            The end position of the ray used to interrogate the data.
+        dims_displayed : List[int]
+            The indices of the dimensions currently displayed in the Viewer.
+
+        Returns
+        -------
+        value
+            The data value along the supplied ray.
+        """
+        pass
+        
 
     def _update_thumbnail(self) -> None:
         """Update thumbnail with current points and colors."""
@@ -226,6 +311,55 @@ class Graph(Layer):
         force : bool
             Bool that forces a redraw to occur when `True`
         """
-        self.highlighted_nodes = np.array(list(self.selected_data.intersection(set(self.viewed_nodes))))
-
+        highlighted_nodes = list(self.selected_nodes.intersection(set(self.viewed_nodes)))
+        viewed_edge_set = set(tuple(e) for e in self.viewed_edges)
+        print(f"{viewed_edge_set=}")
+        print(f"{self.selected_edges=}")
+        highlighted_edges = list(self.selected_edges.intersection(viewed_edge_set))
+        print(f"{highlighted_edges=}")
+        if self._value is not None:
+            if isinstance(self._value, int | np.uint):
+                highlighted_nodes.append(self._value)
+            else:
+                highlighted_edges.append(self._value)
+        
+        print(f"after append {highlighted_edges=}")
+        self.highlighted_nodes = highlighted_nodes
+        self.higlighted_edges = highlighted_edges
         self.events.highlight()
+
+    def get_new_node_ids(self, k=1):
+        node_ids = [self.node_id_upper_bound + i for i in range(1, k + 1)]
+        self.node_id_upper_bound += k
+        return node_ids
+    
+    def get_new_node_attrs(self, location) -> dict:
+        attrs = {}
+        for key, dtype in self._data.node_attr_dtypes.items():
+            if key == self._data.position_attr:
+                value = location
+            else:
+                value = self._new_node_attrs[key]
+            attrs[key] = np.array([value], dtype=dtype)
+        return attrs
+
+    def add_node(self, location: np.ndarray):
+        """Adds a node at the given coordinates.
+
+        Parameters
+        ----------
+        location : array
+            Location of node to add to the layer data.
+        """
+        self.events.data(
+            value=self.data,
+            action=ActionType.ADDING,
+        )
+        nodes = self.get_new_node_ids(k=1)
+        attrs = self.get_new_node_attrs(location)
+        self._data.add_nodes(nodes, **attrs)
+        self.events.data(
+            value=self.data,
+            action=ActionType.ADDED,
+            data_indices=nodes,
+        )
