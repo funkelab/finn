@@ -4,11 +4,11 @@ from magicgui import magicgui
 from vispy.scene.visuals import Ellipse
 
 import napari
-from napari._vispy.overlays.base import ViewerOverlayMixin, VispyCanvasOverlay
-from napari._vispy.utils.visual import overlay_to_visual
-from napari.components._viewer_constants import CanvasPosition
-from napari.components.overlays import CanvasOverlay
-from napari.utils.color import ColorValue
+from finn._vispy.overlays.base import ViewerOverlayMixin, VispyCanvasOverlay
+from finn._vispy.utils.visual import overlay_to_visual
+from finn.components._viewer_constants import CanvasPosition
+from finn.components.overlays import CanvasOverlay
+from finn.utils.color import ColorValue
 
 
 # the overlay model should inherit from either CanvasOverlay or SceneOverlay
@@ -71,7 +71,7 @@ class VispyDotOverlay(ViewerOverlayMixin, VispyCanvasOverlay):
 # this will ideally be exposed at some point
 overlay_to_visual[DotOverlay] = VispyDotOverlay
 
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 # we also need to add at least a layer to see any overlay,
 # since the canvas is otherwise covered by the welcome widget
 viewer.add_shapes()
@@ -92,7 +92,7 @@ with warnings.catch_warnings():
     color={'choices': ['red', 'blue', 'green', 'magenta']},
     size={'widget_type': 'Slider', 'min': 1, 'max': 100}
 )
-def control_dot(viewer: napari.Viewer, color='red', size=20, position: CanvasPosition = 'top_left'):
+def control_dot(viewer: finn.Viewer, color='red', size=20, position: CanvasPosition = 'top_left'):
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
         dot = viewer._overlays['dot']
@@ -105,4 +105,4 @@ control_dot()
 
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

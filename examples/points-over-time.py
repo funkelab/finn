@@ -16,7 +16,7 @@ image4d = da.random.random(
 pts_coordinates = np.random.random((50000, 3)) * image4d.shape[1:]
 pts_values = da.random.random((50000, 4000), chunks=(50000, 1))
 
-viewer = napari.Viewer(ndisplay=3)
+viewer = finn.Viewer(ndisplay=3)
 image_layer = viewer.add_image(
         image4d, opacity=0.5
         )
@@ -41,4 +41,4 @@ viewer.dims.events.current_step.connect(
 
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

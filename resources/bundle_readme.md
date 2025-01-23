@@ -54,4 +54,4 @@ reinstalling anything. Again, consider this an advanced tool only meant for expe
 
 ## More information
 
-Check our online documentation at https://napari.org/
+Check our online documentation at https://finn.org/

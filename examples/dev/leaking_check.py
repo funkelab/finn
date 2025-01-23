@@ -10,7 +10,7 @@ import qtpy
 import napari
 
 process = psutil.Process(os.getpid())
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 
 print('mem', process.memory_info().rss)
 
@@ -21,7 +21,7 @@ for _ in range(2):
 
 print('mem', process.memory_info().rss)
 
-# napari.run()
+# finn.run()
 
 print('controls', viewer.window.qt_viewer.controls.widgets)
 li = weakref.ref(viewer.layers[0])

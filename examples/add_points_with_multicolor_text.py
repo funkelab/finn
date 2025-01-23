@@ -13,7 +13,7 @@ import numpy as np
 import napari
 
 # add the image with three points
-viewer = napari.view_image(np.zeros((400, 400)))
+viewer = finn.view_image(np.zeros((400, 400)))
 points = np.array([[100, 100], [200, 300], [333, 111]])
 
 # create features for each point
@@ -52,4 +52,4 @@ points_layer = viewer.add_points(
 points_layer.border_color_mode = 'colormap'
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

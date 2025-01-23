@@ -19,7 +19,7 @@ from skimage.filters import (
 from skimage.measure import label
 
 import napari
-from napari.utils import progress
+from finn.utils import progress
 
 # we will try each of these thresholds on our image
 all_thresholds = [
@@ -30,7 +30,7 @@ all_thresholds = [
     threshold_yen,
 ]
 
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 
 # load cells data and take just nuclei
 membrane, cell_nuclei = viewer.open_sample('napari', 'cells3d')
@@ -164,4 +164,4 @@ viewer.window.add_dock_widget(action_widget)
 viewer.window._status_bar._toggle_activity_dock(True)
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

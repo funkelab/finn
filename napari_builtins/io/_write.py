@@ -6,11 +6,11 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 
 import numpy as np
 
-from napari.utils.io import imsave
-from napari.utils.misc import abspath_or_url
+from finn.utils.io import imsave
+from finn.utils.misc import abspath_or_url
 
 if TYPE_CHECKING:
-    from napari.types import FullLayerData
+    from finn.types import FullLayerData
 
 
 def write_csv(
@@ -280,7 +280,7 @@ def write_layer_data_with_plugins(
     ----------
     path : str
         path to file/directory
-    layer_data : list of napari.types.LayerData
+    layer_data : list of finn.types.LayerData
         List of layer_data, where layer_data is ``(data, meta, layer_type)``.
 
     Returns

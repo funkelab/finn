@@ -25,7 +25,7 @@ multiscale = [
 print('multiscale level shapes: ', [p.shape for p in multiscale])
 
 # add image multiscale
-viewer = napari.view_image(multiscale, multiscale=True)
+viewer = finn.view_image(multiscale, multiscale=True)
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

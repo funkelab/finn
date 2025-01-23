@@ -15,7 +15,7 @@ import napari
 histo = data.astronaut() / 255
 rch, gch, bch = np.transpose(histo, (2, 0, 1))
 
-v = napari.Viewer()
+v = finn.Viewer()
 
 rlayer = v.add_image(
     rch, name='red channel', colormap='red', blending='additive'
@@ -28,4 +28,4 @@ blayer = v.add_image(
 )
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

@@ -4,10 +4,10 @@
     "version": 1,
 
     // The name of the project being benchmarked
-    "project": "napari",
+    "project": "finn",
 
     // The project's homepage
-    "project_url": "http://napari.org/",
+    "project_url": "http://finn.org/",
 
     // The URL or local path of the source code repository for the
     // project being benchmarked
@@ -45,9 +45,9 @@
     // should be written to.
     "html_dir": ".asv/html",
 
-    // The directory (relative to the current directory) where the benchamrks
+    // The directory (relative to the current directory) where the benchmarks
     // are stored
-    "benchmark_dir": "napari/benchmarks",
+    "benchmark_dir": "finn/benchmarks",
 
     // The number of characters to retain in the commit hashes.
     "hash_length": 8,

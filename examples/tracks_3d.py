@@ -71,9 +71,9 @@ def tracks_3d(num_tracks=10):
 tracks, features, graph = tracks_3d(num_tracks=100)
 vertices = tracks[:, 1:]
 
-viewer = napari.Viewer(ndisplay=3)
+viewer = finn.Viewer(ndisplay=3)
 viewer.add_points(vertices, size=1, name='points', opacity=0.3)
 viewer.add_tracks(tracks, features=features, name='tracks')
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

@@ -86,7 +86,6 @@ jobs:
       qt_backend: ${{ matrix.backend }}
       min_req: ${{ matrix.MIN_REQ }}
       coverage: cov
-      toxenv: ${{ matrix.toxenv }}
       tox_extras: ${{ matrix.tox_extras }}
 
   test_pip_install:
@@ -126,7 +125,7 @@ jobs:
           token: ${{ secrets.GHA_TOKEN_BOT_REPO_WORKFLOW }}
       - name: Synchronize bot repository
         run: |
-          git remote add napari-bot https://github.com/napari-bot/napari.git
+          git remote add napari-bot https://github.com/napari-bot/finn.git
           git fetch napari-bot
           git push --force --set-upstream napari-bot main
       - name: Report Failures

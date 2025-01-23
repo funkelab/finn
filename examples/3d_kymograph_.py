@@ -151,7 +151,7 @@ for s in samples:
     print(f"Description: {s['description']}")
     s['vol'] = np.squeeze(IDR_fetch_image(s['IDRid']))
 
-v = napari.Viewer(ndisplay=3)
+v = finn.Viewer(ndisplay=3)
 scale = (5, 1, 1)  # "stretch" time domain
 for s in samples:
     v.add_image(
@@ -166,4 +166,4 @@ v.camera.center = (440, 880, 1490)
 v.camera.angles = (-20, 23, -50)
 v.camera.zoom = 0.17
 
-napari.run()
+finn.run()

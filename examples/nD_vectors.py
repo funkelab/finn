@@ -24,7 +24,7 @@ blobs = np.stack(
     ],
     axis=0,
 )
-viewer = napari.view_image(blobs.astype(float))
+viewer = finn.view_image(blobs.astype(float))
 
 # sample vector coord-like data
 n = 200
@@ -54,4 +54,4 @@ layer = viewer.add_vectors(
 viewer.dims.ndisplay = 3
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

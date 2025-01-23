@@ -5,7 +5,7 @@ from pstats import SortKey
 
 import numpy as np
 
-from napari.layers import Points
+from finn.layers import Points
 
 """
 This script was useful for testing how the performance of

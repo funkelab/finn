@@ -18,7 +18,7 @@ parser.add_argument(
     help='The name of the sub-directory that contains the perfmon configuration file (e.g. slicing).',
 )
 parser.add_argument(
-    'example_script', help='The example script that should run napari.'
+    'example_script', help='The example script that should run finn.'
 )
 parser.add_argument(
     '--output',

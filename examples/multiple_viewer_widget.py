@@ -30,15 +30,15 @@ from qtpy.QtWidgets import (
 from superqt.utils import qthrottled
 
 import napari
-from napari.components.layerlist import Extent
-from napari.components.viewer_model import ViewerModel
-from napari.layers import Image, Labels, Layer, Vectors
-from napari.qt import QtViewer
-from napari.utils.action_manager import action_manager
-from napari.utils.events.event import WarningEmitter
-from napari.utils.notifications import show_info
+from finn.components.layerlist import Extent
+from finn.components.viewer_model import ViewerModel
+from finn.layers import Image, Labels, Layer, Vectors
+from finn.qt import QtViewer
+from finn.utils.action_manager import action_manager
+from finn.utils.events.event import WarningEmitter
+from finn.utils.notifications import show_info
 
-NAPARI_GE_4_16 = parse_version(napari.__version__) > parse_version('0.4.16')
+NAPARI_GE_4_16 = parse_version(finn.__version__) > parse_version('0.4.16')
 
 
 def copy_layer_le_4_16(layer: Layer, name: str = ''):
@@ -83,7 +83,7 @@ def get_property_names(layer: Layer):
 
 
 def center_cross_on_mouse(
-    viewer_model: napari.components.viewer_model.ViewerModel,
+    viewer_model: finn.components.viewer_model.ViewerModel,
 ):
     """move the cross to the mouse position"""
 
@@ -165,7 +165,7 @@ class CrossWidget(QCheckBox):
     the cross update is throttled
     """
 
-    def __init__(self, viewer: napari.Viewer) -> None:
+    def __init__(self, viewer: finn.Viewer) -> None:
         super().__init__('Add cross layer')
         self.viewer = viewer
         self.setChecked(False)
@@ -261,7 +261,7 @@ class ExampleWidget(QWidget):
 class MultipleViewerWidget(QSplitter):
     """The main widget of the example."""
 
-    def __init__(self, viewer: napari.Viewer) -> None:
+    def __init__(self, viewer: finn.Viewer) -> None:
         super().__init__()
         self.viewer = viewer
         self.viewer_model1 = ViewerModel(title='model1')
@@ -359,12 +359,20 @@ class MultipleViewerWidget(QSplitter):
 
         if isinstance(event.value, Labels):
             event.value.events.set_data.connect(self._set_data_refresh)
+            event.value.events.labels_update.connect(self._set_data_refresh)
             self.viewer_model1.layers[
                 event.value.name
             ].events.set_data.connect(self._set_data_refresh)
             self.viewer_model2.layers[
                 event.value.name
             ].events.set_data.connect(self._set_data_refresh)
+            event.value.events.labels_update.connect(self._set_data_refresh)
+            self.viewer_model1.layers[
+                event.value.name
+            ].events.labels_update.connect(self._set_data_refresh)
+            self.viewer_model2.layers[
+                event.value.name
+            ].events.labels_update.connect(self._set_data_refresh)
         if event.value.name != '.cross':
             self.viewer_model1.layers[event.value.name].events.data.connect(
                 self._sync_data
@@ -453,7 +461,7 @@ if __name__ == '__main__':
     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_ShareOpenGLContexts)
     # above two lines are needed to allow to undock the widget with
     # additional viewers
-    view = napari.Viewer()
+    view = finn.Viewer()
     dock_widget = MultipleViewerWidget(view)
     cross = CrossWidget(view)
 
@@ -462,4 +470,4 @@ if __name__ == '__main__':
 
     view.open_sample('napari', 'cells3d')
 
-    napari.run()
+    finn.run()

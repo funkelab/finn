@@ -23,7 +23,7 @@ blobs = np.stack(
     ],
     axis=0,
 )
-viewer = napari.view_image(blobs.astype(float))
+viewer = finn.view_image(blobs.astype(float))
 
 # add the points
 points = np.array(
@@ -40,4 +40,4 @@ viewer.add_points(
 )
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

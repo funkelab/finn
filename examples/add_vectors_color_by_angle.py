@@ -14,7 +14,7 @@ from skimage import data
 import napari
 
 # create the viewer and window
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 
 layer = viewer.add_image(data.camera(), name='photographer')
 
@@ -58,4 +58,4 @@ layer = viewer.add_vectors(
 layer.edge_color_mode = 'colormap'
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

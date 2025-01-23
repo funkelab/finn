@@ -24,12 +24,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: docs  # place in a named directory
-          repository: napari/docs
+          repository: finn/docs
 
       - name: Clone main repo
         uses: actions/checkout@v4
         with:
-          path: napari  # place in a named directory
+          path: finn  # place in a named directory
           # ensure version metadata is proper
           fetch-depth: 0
 
@@ -37,7 +37,7 @@ jobs:
         with:
           python-version: "3.10"
           cache-dependency-path: |
-            napari/pyproject.toml
+            finn/pyproject.toml
             docs/requirements.txt
 
       - uses: tlambert03/setup-qt-libs@v1
@@ -45,22 +45,22 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install "napari/[all]"
+          python -m pip install "finn/[all]"
           python -m pip install -r docs/requirements.txt
         env:
-          PIP_CONSTRAINT: ${{ github.workspace }}/napari/resources/constraints/constraints_py3.10_docs.txt
+          PIP_CONSTRAINT: ${{ github.workspace }}/finn/resources/constraints/constraints_py3.10_docs.txt
 
       - name: Testing
         run: |
-          python -c 'import napari; print(napari.__version__)'
-          python -c 'import napari.layers; print(napari.layers.__doc__)'
+          python -c 'import finn; print(finn.__version__)'
+          python -c 'import finn.layers; print(finn.layers.__doc__)'
 
       - name: Build Docs
         uses: aganders3/headless-gui@v2
         env:
           GOOGLE_CALENDAR_ID: ${{ secrets.GOOGLE_CALENDAR_ID }}
           GOOGLE_CALENDAR_API_KEY: ${{ secrets.GOOGLE_CALENDAR_API_KEY }}
-          PIP_CONSTRAINT: ${{ github.workspace }}/napari/resources/constraints/constraints_py3.10_docs.txt
+          PIP_CONSTRAINT: ${{ github.workspace }}/finn/resources/constraints/constraints_py3.10_docs.txt
         with:
           run:  make -C docs docs
           # skipping setup stops the action from running the default (tiling) window manager

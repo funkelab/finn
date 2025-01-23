@@ -30,7 +30,7 @@ salivary_gland_mito_path = pooch.retrieve(
 salivary_gland_em = imread(salivary_gland_em_path)
 salivary_gland_mito = imread(salivary_gland_mito_path)
 
-viewer = napari.view_image(salivary_gland_em)
+viewer = finn.view_image(salivary_gland_em)
 viewer.add_labels(salivary_gland_mito)
 
-napari.run()
+finn.run()

@@ -28,7 +28,7 @@ def create_label_menu(shapes_layer, label_feature, labels):
 
     Parameters
     ----------
-    shapes_layer : napari.layers.Shapes
+    shapes_layer : finn.layers.Shapes
         a napari shapes layer
     label_feature : str
         the name of the shapes feature to use the displayed text
@@ -88,7 +88,7 @@ for slice_idx in range(n_slices):
 
 
 # create a viewer with a fake t+2D image
-viewer = napari.view_image(image)
+viewer = finn.view_image(image)
 
 # create an empty shapes layer initialized with
 # text set to display the box label
@@ -117,4 +117,4 @@ viewer.window.add_dock_widget(label_widget, area='right', name='label_widget')
 shapes.mode = 'add_rectangle'
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

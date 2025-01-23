@@ -13,7 +13,7 @@ from skimage import data
 import napari
 
 # create the viewer with an image
-viewer = napari.view_image(data.moon())
+viewer = finn.view_image(data.moon())
 
 class Grabber(QWidget):
     def __init__(self) -> None:
@@ -43,4 +43,4 @@ widget = create_grabber_widget()
 viewer.window.add_dock_widget(widget)
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

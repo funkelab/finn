@@ -14,7 +14,7 @@ pts = np.random.rand(100, 3) * 100
 colors = np.random.rand(100, 3)
 sizes = np.random.rand(100) * 20 + 10
 
-viewer = napari.Viewer(ndisplay=3)
+viewer = finn.Viewer(ndisplay=3)
 pts_layer = viewer.add_points(
     pts,
     face_color=colors,
@@ -30,4 +30,4 @@ pts_layer.antialiasing = 0
 viewer.reset_view()
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

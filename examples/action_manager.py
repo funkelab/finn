@@ -10,18 +10,18 @@ import numpy as np
 from skimage import data
 
 import napari
-from napari._qt.widgets.qt_viewer_buttons import QtViewerPushButton
-from napari.components import ViewerModel
-from napari.utils.action_manager import action_manager
+from finn._qt.widgets.qt_viewer_buttons import QtViewerPushButton
+from finn.components import ViewerModel
+from finn.utils.action_manager import action_manager
 
 
-def rotate45(viewer: napari.Viewer):
+def rotate45(viewer: finn.Viewer):
     """
     Rotate layer 0 of the viewer by 45º
 
     Parameters
     ----------
-    viewer : napari.Viewer
+    viewer : finn.Viewer
         active (unique) instance of the napari viewer
 
     Notes
@@ -38,7 +38,7 @@ def rotate45(viewer: napari.Viewer):
 
 
 # create the viewer with an image
-viewer = napari.view_image(data.astronaut(), rgb=True)
+viewer = finn.view_image(data.astronaut(), rgb=True)
 
 layer_buttons = viewer.window.qt_viewer.layerButtons
 
@@ -56,7 +56,7 @@ def register_action():
     # we give an action name to the action for configuration purposes as we need
     # it to be storable in json.
 
-    # By convention (may be enforce later), we do give an action name which is iprefixed
+    # By convention (may be enforced later), we do give an action name which is prefixed
     # by the name of the package it is defined in, here napari,
     action_manager.register_action(
         name='napari:rotate45',
@@ -113,4 +113,4 @@ for action, key in settings.items():
    action_manager.bind_shortcut(action, key)
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

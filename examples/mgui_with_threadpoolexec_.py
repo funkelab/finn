@@ -16,7 +16,7 @@ from skimage import data
 from skimage.feature import blob_log
 
 import napari
-from napari.types import ImageData, LayerDataTuple
+from finn.types import ImageData, LayerDataTuple
 
 pool = ThreadPoolExecutor()
 
@@ -58,9 +58,9 @@ def make_widget(
     return pool.submit(_make_blob)
 
 
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 viewer.window.add_dock_widget(make_widget(), area='right')
 viewer.add_image(data.hubble_deep_field().mean(-1))
 
-napari.run()
+finn.run()
 pool.shutdown(wait=True)

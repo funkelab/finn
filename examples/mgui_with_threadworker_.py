@@ -14,8 +14,8 @@ from skimage import data
 from skimage.feature import blob_log
 
 import napari
-from napari.qt.threading import FunctionWorker, thread_worker
-from napari.types import ImageData, LayerDataTuple
+from finn.qt.threading import FunctionWorker, thread_worker
+from finn.types import ImageData, LayerDataTuple
 
 
 @magic_factory(pbar={'visible': False, 'max': 0, 'label': 'working...'})
@@ -50,8 +50,8 @@ def make_widget(
     return detect_blobs()
 
 
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 viewer.window.add_dock_widget(make_widget(), area='right')
 viewer.add_image(data.hubble_deep_field().mean(-1))
 
-napari.run()
+finn.run()

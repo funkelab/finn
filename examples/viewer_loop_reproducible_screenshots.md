@@ -26,10 +26,10 @@ Reproducibility is achieved by defining exact frame width and frame height.
 The first cell takes care of the imports and data initializing, in this case a blob, a ball and an octahedron.  
 
 ```{code-cell} ipython3
-from napari.settings import get_settings
+from finn.settings import get_settings
 import time
 import napari
-from napari._qt.qthreading import thread_worker
+from finn._qt.qthreading import thread_worker
 from skimage import data
 from skimage.morphology import ball, octahedron
 import matplotlib.pyplot as plt
@@ -59,7 +59,7 @@ Every plot will have these exact settings, while only one napari viewer instance
 After setting these parameters, one should not make changes with the mouse in the napari viewer anymore, as this would rule out the reproducibility.
 
 ```{code-cell} ipython3
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 viewer.window.resize(900, 600)
 
 viewer.theme = "light"
@@ -79,7 +79,7 @@ viewer.camera.zoom = 1.3
 ```
 
 Next, the loop run is defined.  
-The `loop_run` function reads new `image_data` and the corresponding `image_name` and yields them to napari.     
+The `loop_run` function reads new `image_data` and the corresponding `image_name` and yields them to finn.     
 The `update_layer` function gives instructions how to process the yielded data in the napari viewer.
 
 ```{code-cell} ipython3

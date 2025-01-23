@@ -16,11 +16,11 @@ import numpy as np
 from dask import delayed
 from imageio import formats
 
-from napari.utils.misc import abspath_or_url
-from napari.utils.translations import trans
+from finn.utils.misc import abspath_or_url
+from finn.utils.translations import trans
 
 if TYPE_CHECKING:
-    from napari.types import FullLayerData, LayerData, ReaderFunction
+    from finn.types import FullLayerData, LayerData, ReaderFunction
 
 
 IMAGEIO_EXTENSIONS = {x for f in formats for x in f.extensions}
@@ -133,6 +133,18 @@ def read_zarr_dataset(path: str):
         ]
         assert image, 'No arrays found in zarr group'
         shape = image[0].shape
+    elif (path / 'zarr.json').exists():
+        # zarr v3
+        import zarr
+
+        data = zarr.open(store=path)
+        if isinstance(data, zarr.Array):
+            image = da.from_zarr(data)
+            shape = image.shape
+        else:
+            image = [data[k] for k in sorted(data)]
+            assert image, 'No arrays found in zarr group'
+            shape = image[0].shape
     else:  # pragma: no cover
         raise ValueError(
             trans._(

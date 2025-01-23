@@ -14,7 +14,7 @@ from vispy.geometry import create_sphere
 
 import napari
 
-viewer = napari.Viewer(ndisplay=3)
+viewer = finn.Viewer(ndisplay=3)
 
 # VOLUME and LABELS
 blobs = data.binary_blobs(
@@ -75,9 +75,7 @@ vectors_layer = viewer.add_vectors(
 
 
 def point_in_bounding_box(point, bounding_box):
-    if np.all(point > bounding_box[0]) and np.all(point < bounding_box[1]):
-        return True
-    return False
+    return bool(np.all(point > bounding_box[0]) and np.all(point < bounding_box[1]))
 
 
 @viewer.mouse_drag_callbacks.append
@@ -156,7 +154,7 @@ def shift_plane_along_normal(viewer, event):
         drag_vector_canv = end_position_canv - start_position_canv
 
         # Project the drag vector onto the plane normal vector
-        # (in canvas coorinates)
+        # (in canvas coordinates)
         drag_projection_on_plane_normal = np.dot(
             drag_vector_canv, plane_normal_canv_normalised
         )
@@ -196,4 +194,4 @@ viewer.text_overlay.update({
 })
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

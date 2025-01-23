@@ -5,8 +5,8 @@ import numpy as np
 import pytest
 from npe2 import DynamicPlugin, PluginManager, PluginManifest
 
-import napari_builtins
-from napari import layers
+import finn_builtins
+from finn import layers
 
 
 @pytest.fixture(autouse=True)
@@ -54,6 +54,6 @@ def some_layer(request):
     return request.param
 
 
-@pytest.fixture()
+@pytest.fixture
 def layers_list():
     return LAYERS

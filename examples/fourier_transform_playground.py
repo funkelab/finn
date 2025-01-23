@@ -17,7 +17,7 @@ from magicgui import magic_factory
 from scipy.fft import fft2, fftshift
 
 import napari
-from napari.qt.threading import thread_worker
+from finn.qt.threading import thread_worker
 
 IMAGE_SIZE = 100
 FPS = 20
@@ -36,7 +36,7 @@ def wave_2d(frequency, angle, phase_shift):
 
 
 # set up viewer with grid-mode enabled
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 viewer.grid.enabled = True
 
 
@@ -102,7 +102,7 @@ def update_viewer():
     new_params = None
     while True:
         sleep(1 / FPS)
-        # see https://napari.org/stable/guides/threading.html#full-two-way-communication
+        # see https://finn.org/stable/guides/threading.html#full-two-way-communication
         # this receives new_params from thread.send() and yields {} for the `yielded` callback
         new_params = yield wave_args
         if new_params is not None:
@@ -146,6 +146,6 @@ wdg = moving_wave()
 viewer.window.add_dock_widget(wdg, area='bottom')
 wdg()
 
-napari.run()
+finn.run()
 
 thread.quit()

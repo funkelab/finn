@@ -11,9 +11,9 @@ import numpy as np
 from skimage import data
 
 import napari
-from napari.utils.translations import trans
+from finn.utils.translations import trans
 
-viewer = napari.Viewer(ndisplay=3)
+viewer = finn.Viewer(ndisplay=3)
 
 # add a 3D image
 blobs = data.binary_blobs(
@@ -53,4 +53,4 @@ press and hold 'o' then click and drag to make the plane normal follow the camer
 )
 viewer.text_overlay.visible = True
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

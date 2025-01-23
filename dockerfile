@@ -40,7 +40,7 @@ RUN apt-get update && \
 # install napari from repo
 # see https://github.com/pypa/pip/issues/6548#issuecomment-498615461 for syntax
 RUN pip install --upgrade pip && \
-    pip install "napari[all] @ git+https://github.com/napari/napari.git@${NAPARI_COMMIT}"
+    pip install "napari[all] @ git+https://github.com/napari/finn.git@${NAPARI_COMMIT}"
 
 # copy examples
 COPY examples /tmp/examples
@@ -51,7 +51,7 @@ ENTRYPOINT ["python3", "-m", "napari"]
 # Extend napari with a preconfigured Xpra server target #
 #########################################################
 
-FROM napari AS napari-xpra
+from finn AS napari-xpra
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -59,7 +59,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y wget gnupg2 apt-transport-https \
     software-properties-common ca-certificates && \
     wget -O "/usr/share/keyrings/xpra.asc" https://xpra.org/xpra.asc && \
-    wget -O "/etc/apt/sources.list.d/xpra.sources" https://xpra.org/repos/jammy/xpra.sources
+    wget -O "/etc/apt/sources.list.d/xpra.sources" https://raw.githubusercontent.com/Xpra-org/xpra/master/packaging/repos/jammy/xpra.sources
 
 
 RUN apt-get update && \

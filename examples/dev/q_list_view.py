@@ -1,21 +1,21 @@
 """Example of using low-level `QtListView` with SelectableEventedList
 
-:class:`napari.utils.events.SelectableEventedList` is a mutable sequence that
+:class:`finn.utils.events.SelectableEventedList` is a mutable sequence that
 emits events when modified.  It also has a selection model (tracking which
 items are selected).
 
-:class:`napari._qt.containers.QtListView` adapts the `EventedList` to the
+:class:`finn._qt.containers.QtListView` adapts the `EventedList` to the
 QAbstractItemModel/QAbstractItemView interface used by the QtFramework.  This
 allows you to create an interactive GUI view onto a python model that stays
 up to date, and can modify the python object... while maintining the python
 object as the single "source of truth".
 """
 import napari
-from napari._qt.containers import QtListView
-from napari.qt import get_app
-from napari.utils.events import SelectableEventedList
+from finn._qt.containers import QtListView
+from finn.qt import get_qapp
+from finn.utils.events import SelectableEventedList
 
-get_app()
+get_qapp()
 
 
 class MyObject:
@@ -48,4 +48,4 @@ root.selection.events._current.connect(
 )
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

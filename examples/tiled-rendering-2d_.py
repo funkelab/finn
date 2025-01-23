@@ -24,9 +24,9 @@ import os
 # important: if this is not set, the entire ~4GB array will be created!
 os.environ.setdefault('NAPARI_OCTREE', '1')
 
-import dask.array as da  # noqa: E402
+import dask.array as da
 
-import napari  # noqa: E402
+import napari
 
 ndim = 2
 data = da.random.randint(
@@ -35,7 +35,7 @@ data = da.random.randint(
         dtype='uint8'
         )
 
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 viewer.add_image(data, contrast_limits=[0, 255])
 # To turn off grid lines
 #viewer.layers[0].display.show_grid = False
@@ -45,4 +45,4 @@ viewer.camera.zoom = 0.75
 
 # run the example — try to pan around!
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

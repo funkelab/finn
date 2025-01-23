@@ -39,7 +39,7 @@ magenta = [1, 0, 1, 1]
 point_colors = np.linspace(green, magenta, n_points, endpoint=True)
 
 # create viewer and add layers for each piece of data
-viewer = napari.Viewer(ndisplay=3)
+viewer = finn.Viewer(ndisplay=3)
 bounding_box_layer = viewer.add_points(
     bounding_box, face_color='cornflowerblue', name='bounding box'
 )
@@ -64,4 +64,4 @@ def on_click(layer, event):
 
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

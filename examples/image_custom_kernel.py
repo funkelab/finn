@@ -22,7 +22,7 @@ from skimage import data
 
 import napari
 
-viewer = napari.view_image(data.astronaut(), rgb=True, interpolation='custom')
+viewer = finn.view_image(data.astronaut(), rgb=True, interpolation='custom')
 
 
 def gaussian_kernel(size, sigma):
@@ -53,7 +53,7 @@ def ridge_detection_kernel():
     sigma={'widget_type': 'FloatSlider', 'min': 0.1, 'max': 5, 'step': 0.1},
     kernel_type={'choices': ['none', 'gaussian', 'sharpen', 'ridge_detection']},
 )
-def gpu_kernel(image: napari.layers.Image, kernel_type: str = 'gaussian', kernel_size: int = 5, sigma: float = 1):
+def gpu_kernel(image: finn.layers.Image, kernel_type: str = 'gaussian', kernel_size: int = 5, sigma: float = 1):
     if kernel_type == 'none':
         image.interpolation2d = 'linear'
     else:
@@ -79,4 +79,4 @@ gpu_kernel()
 
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

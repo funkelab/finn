@@ -17,7 +17,7 @@ vert, faces, _, _ = read_mesh(load_data_file('orig/triceratops.obj.gz'))
 vert *= -100
 faces = faces[:, ::-1]
 
-viewer = napari.Viewer(ndisplay=3)
+viewer = finn.Viewer(ndisplay=3)
 surface = viewer.add_surface(data=(vert, faces))
 
 # enable normals and wireframe
@@ -26,4 +26,4 @@ surface.normals.vertex.visible = True
 surface.wireframe.visible = True
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

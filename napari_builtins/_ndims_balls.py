@@ -1,6 +1,6 @@
 import numpy as np
 
-from napari.benchmarks.utils import labeled_particles
+from finn.benchmarks.utils import labeled_particles
 
 
 def labeled_particles2d():

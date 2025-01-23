@@ -16,7 +16,7 @@ from qtpy.QtWidgets import (
 )
 
 import napari
-from napari.qt.threading import thread_worker
+from finn.qt.threading import thread_worker
 
 
 @thread_worker
@@ -118,8 +118,8 @@ def create_connected_widget():
 
 if __name__ == '__main__':
 
-    viewer = napari.view_image(np.random.rand(512, 512))
+    viewer = finn.view_image(np.random.rand(512, 512))
     w = create_connected_widget()
     viewer.window.add_dock_widget(w)
 
-    napari.run()
+    finn.run()

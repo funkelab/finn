@@ -29,7 +29,7 @@ blobs = da.stack(
     ],
     axis=0,
 )
-viewer = napari.view_image(blobs.astype(float))
+viewer = finn.view_image(blobs.astype(float))
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

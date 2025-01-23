@@ -15,7 +15,7 @@ from skimage import data
 import napari
 
 # add the image
-viewer = napari.view_image(data.camera(), name='photographer')
+viewer = finn.view_image(data.camera(), name='photographer')
 
 # create a list of polygons
 polygons = [
@@ -101,4 +101,4 @@ layer.add(
 # viewer.layers.save('viewer.svg', plugin='svg')
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

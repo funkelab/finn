@@ -20,8 +20,8 @@ import napari
 # any code
 text = 'some text'
 
-# initalize viewer
-viewer = napari.Viewer()
+# initialize viewer
+viewer = finn.Viewer()
 
 # embed ipython and run the magic command to use the qt event loop
 sh = InteractiveShellEmbed()

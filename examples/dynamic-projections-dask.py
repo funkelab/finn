@@ -3,7 +3,7 @@ Dynamic projections dask
 ========================
 
 Using dask array operations, one can dynamically take arbitrary slices
-and computations of a source dask array and display the results in napari.
+and computations of a source dask array and display the results in finn.
 When the computation takes one or more parameters, one can tie a UI to
 them using magicgui.
 
@@ -30,10 +30,10 @@ blobs_dask_windows = np.squeeze(
     axis=(1, 2),
 )
 blobs_sum = np.sum(blobs_dask_windows, axis=1)
-viewer = napari.view_image(blobs_sum)
+viewer = finn.view_image(blobs_sum)
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()
 
 ##############################################################################
 # Part 2: using magicgui to vary the slice thickness.
@@ -42,8 +42,8 @@ from magicgui import magicgui  # noqa: E402
 
 
 def sliding_window_mean(
-    arr: napari.types.ImageData, size: int = 1
-) -> napari.types.LayerDataTuple:
+    arr: finn.types.ImageData, size: int = 1
+) -> finn.types.LayerDataTuple:
     window_shape = (size,) + (arr.shape[1:])
     arr_windows = sliding_window_view(arr, window_shape=window_shape)
     # as before, use squeeze to remove singleton axes
@@ -63,9 +63,9 @@ def sliding_window_mean(
     )
 
 
-viewer = napari.view_image(blobs_dask, colormap='green')
+viewer = finn.view_image(blobs_dask, colormap='green')
 viewer.window.add_dock_widget(magicgui(sliding_window_mean, auto_call=True))
 viewer.dims.current_step = (32, 0, 0)
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

@@ -72,7 +72,7 @@ with np.load(test_filename) as data:
     shapes = data['shapes']
 
 # Test shapes in viewer
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 viewer.show()
 
 shapes_layer = viewer.add_shapes(
@@ -81,4 +81,4 @@ shapes_layer = viewer.add_shapes(
     name='sliced',
 )
 
-napari.run()
+finn.run()
