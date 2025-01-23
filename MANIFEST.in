@@ -1,20 +1,20 @@
 include LICENSE
 include *.cff
-graft napari/_vendor
-recursive-include napari *.pyi
-recursive-include napari _tests/*.py
+graft finn/_vendor
+recursive-include finn *.pyi
+recursive-include finn _tests/*.py
 recursive-include napari_builtins _tests/*.py
-recursive-include napari *.pyi
-recursive-include napari *.png *.svg *.qss *.gif *.ico *.icns
-recursive-include napari *.yaml
-recursive-include napari *.py_tmpl
+recursive-include finn *.pyi
+recursive-include finn *.png *.svg *.qss *.gif *.ico *.icns
+recursive-include finn *.yaml
+recursive-include finn *.py_tmpl
 
 # explicit excludes to keep check-manifest happy and remind us that
 # these things are not being included unless we ask
 recursive-exclude tools *
-recursive-exclude napari *.pyc
-exclude napari/benchmarks/*
-include napari/benchmarks/utils.py
+recursive-exclude finn *.pyc
+exclude finn/benchmarks/*
+include finn/benchmarks/utils.py
 recursive-exclude resources *
 recursive-exclude binder *
 recursive-exclude examples *

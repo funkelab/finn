@@ -27,7 +27,7 @@ normal_vector = np.cross(
 )
 normal_vector /= np.linalg.norm(normal_vector)
 
-viewer = napari.Viewer(ndisplay=3)
+viewer = finn.Viewer(ndisplay=3)
 
 shapes_layer = viewer.add_shapes(
     data=shapes_data,
@@ -70,4 +70,4 @@ def move_rectangle_along_normal(layer, event):
 
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

@@ -15,7 +15,7 @@ from skimage.color import rgb2gray
 import napari
 
 # add the image
-viewer = napari.view_image(rgb2gray(data.astronaut()))
+viewer = finn.view_image(rgb2gray(data.astronaut()))
 # add the points
 points = np.array([[100, 100], [200, 200], [333, 111]])
 
@@ -64,4 +64,4 @@ def toggle_point_annotation(viewer):
 
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

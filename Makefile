@@ -1,7 +1,7 @@
 .PHONY: typestubs pre watch dist settings-schema
 
 typestubs:
-	python -m napari.utils.stubgen
+	python -m finn.utils.stubgen
 
 # note: much faster to run mypy as daemon,
 # dmypy run -- ...
@@ -18,7 +18,7 @@ dist: typestubs check-manifest
 	python -m build
 
 settings-schema:
-	python -m napari.settings._napari_settings
+	python -m finn.settings._napari_settings
 
 pre:
 	pre-commit run -a

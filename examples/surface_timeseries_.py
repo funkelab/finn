@@ -49,7 +49,7 @@ timeseries = surface.load_surf_data(nki_dataset['func_left'][0])
 timeseries = timeseries.transpose((1, 0))
 
 # create an empty viewer
-viewer = napari.Viewer(ndisplay=3)
+viewer = finn.Viewer(ndisplay=3)
 
 # add the mri
 viewer.add_surface((brain_vertices, brain_faces, brain_vertex_depth), name='base')
@@ -58,4 +58,4 @@ viewer.add_surface((brain_vertices, brain_faces, timeseries),
                     contrast_limits=[-1.5, 3.5], name='timeseries')
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

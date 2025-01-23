@@ -17,7 +17,7 @@ import napari
 astro = data.astronaut()
 
 # initialise viewer with astro image
-viewer = napari.view_image(rgb2gray(astro), name='astronaut', rgb=False)
+viewer = finn.view_image(rgb2gray(astro), name='astronaut', rgb=False)
 
 # add the labels
 # we add 1 because SLIC returns labels from 0, which we consider background
@@ -29,4 +29,4 @@ label_layer.mode = 'PICK'
 print(f'The color of label 5 is {label_layer.get_color(5)}')
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

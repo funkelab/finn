@@ -15,7 +15,7 @@ blobs = data.binary_blobs(
     length=128, blob_size_fraction=0.05, n_dim=2, volume_fraction=0.25
 ).astype(float)
 
-viewer = napari.view_image(blobs, name='blobs')
+viewer = finn.view_image(blobs, name='blobs')
 
 
 @viewer.bind_key('a')
@@ -41,7 +41,7 @@ def set_layer_data(viewer):
     viewer.layers[0].data = blobs
 
 
-@napari.Viewer.bind_key('w')
+@finn.Viewer.bind_key('w')
 def hello(viewer):
     # on press
     viewer.status = 'hello world!'
@@ -56,4 +56,4 @@ def hello(viewer):
 viewer.title = 'quality control images'
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

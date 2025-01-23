@@ -12,9 +12,9 @@ from time import sleep
 from qtpy.QtWidgets import QPushButton, QVBoxLayout, QWidget
 
 import napari
-from napari.qt import thread_worker
+from finn.qt import thread_worker
 
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 
 
 def handle_yields(yielded_val):
@@ -95,4 +95,4 @@ viewer.window.add_dock_widget(pbar_widget, allowed_areas=['right'])
 viewer.window._status_bar._toggle_activity_dock(True)
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

@@ -16,7 +16,7 @@ def update_fps(fps):
     viewer.text_overlay.text = f'{fps:1.1f} FPS'
 
 
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 viewer.add_image(np.random.random((5, 5, 5)), colormap='red', opacity=0.8)
 viewer.text_overlay.visible = True
 # note: this is using a private attribute, so it might break
@@ -24,4 +24,4 @@ viewer.text_overlay.visible = True
 viewer.window._qt_viewer.canvas._scene_canvas.measure_fps(callback=update_fps)
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

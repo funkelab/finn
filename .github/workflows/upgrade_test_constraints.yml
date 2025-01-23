@@ -141,7 +141,7 @@ jobs:
         run: |
           cd napari_repo
           git remote -v
-          git remote add napari-bot https://github.com/napari-bot/napari.git
+          git remote add napari-bot https://github.com/napari-bot/finn.git
           git remote -v
 
       # START PYTHON DEPENDENCIES

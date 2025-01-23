@@ -2,7 +2,7 @@
 magicgui Image Arithmetic
 =========================
 
-Basic example of using magicgui to create an Image Arithmetic GUI in napari.
+Basic example of using magicgui to create an Image Arithmetic GUI in finn.
 
 .. tags:: gui
 """
@@ -30,15 +30,15 @@ class Operation(enum.Enum):
 # https://peps.python.org/pep-0484/#forward-references
 # In this example, because we have already imported napari anyway, it doesn't
 # really matter. But this syntax would let you specify that a parameter is a
-# napari object type without actually importing or depending on napari.
-# Note: here we use `napari.types.ImageData` as our parameter annotations,
+# napari object type without actually importing or depending on finn.
+# Note: here we use `finn.types.ImageData` as our parameter annotations,
 # which means our function will be passed layer.data instead of
 # the full layer instance
 def image_arithmetic(
-    layerA: 'napari.types.ImageData',
+    layerA: 'finn.types.ImageData',
     operation: Operation,
-    layerB: 'napari.types.ImageData',
-) -> 'napari.types.ImageData':
+    layerB: 'finn.types.ImageData',
+) -> 'finn.types.ImageData':
     """Adds, subtracts, multiplies, or divides two same-shaped image layers."""
     if layerA is not None and layerB is not None:
         return operation.value(layerA, layerB)
@@ -46,7 +46,7 @@ def image_arithmetic(
 
 
 # create a new viewer with a couple image layers
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 viewer.add_image(np.random.rand(20, 20), name='Layer 1')
 viewer.add_image(np.random.rand(20, 20), name='Layer 2')
 
@@ -54,4 +54,4 @@ viewer.add_image(np.random.rand(20, 20), name='Layer 2')
 viewer.window.add_function_widget(image_arithmetic)
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

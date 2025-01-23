@@ -11,7 +11,7 @@ body:
 
         Please fill out the sections below to help us reproduce the problem.
 
-        If you've found a problem with content on the napari documentation site (napari.org) or with the rendering of the content,
+        If you've found a problem with content on the napari documentation site (finn.org) or with the rendering of the content,
         please let us know [here](https://github.com/napari/docs/issues)
 
   - type: textarea

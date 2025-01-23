@@ -19,7 +19,7 @@ red = vispy.color.Colormap([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]])
 green = vispy.color.Colormap([[0.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
 blue = vispy.color.Colormap([[0.0, 0.0, 0.0], [0.0, 0.0, 1.0]])
 
-v = napari.Viewer()
+v = finn.Viewer()
 
 rlayer = v.add_image(rch, name='red channel')
 rlayer.blending = 'additive'
@@ -32,4 +32,4 @@ blayer.blending = 'additive'
 blayer.colormap = {'blue': blue}
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

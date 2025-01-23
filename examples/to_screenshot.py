@@ -21,7 +21,7 @@ from vispy.color import Colormap
 import napari
 
 # create the viewer and window
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 
 # add the image
 img_layer = viewer.add_image(data.camera(), name='photographer')
@@ -131,4 +131,4 @@ screenshot = viewer.screenshot()
 viewer.add_image(screenshot, rgb=True, name='screenshot')
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

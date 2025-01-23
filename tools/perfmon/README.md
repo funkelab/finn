@@ -1,6 +1,6 @@
 # Utilties for napari performance monitoring
 
-This directory contains configs and tools associated with [performance monitoring as described on napari.org](https://napari.org/stable/howtos/perfmon.html?highlight=perfmon).
+This directory contains configs and tools associated with [performance monitoring as described on finn.org](https://finn.org/stable/howtos/perfmon.html?highlight=perfmon).
 
 Storing these in the repo makes it easier to reproduce monitoring experiments and results by standardizing configurations and tooling.
 
@@ -16,7 +16,7 @@ python tools/perfmon/run.py CONFIG EXAMPLE_SCRIPT
 ```
 
 To take a specific example, let's say that we want to monitor `Layer.refresh`
-while interacting with a multi-scale image in napari.
+while interacting with a multi-scale image in finn.
 
 First, we would call the run command with the slicing config and one of the
 built-in example scripts:

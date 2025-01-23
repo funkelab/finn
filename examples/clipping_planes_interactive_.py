@@ -14,7 +14,7 @@ from vispy.geometry import create_sphere
 
 import napari
 
-viewer = napari.Viewer(ndisplay=3)
+viewer = finn.Viewer(ndisplay=3)
 
 # VOLUME and LABELS
 blobs = data.binary_blobs(
@@ -194,4 +194,4 @@ viewer.text_overlay.update({
 })
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

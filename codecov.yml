@@ -1,7 +1,7 @@
 ignore:
-  - napari/_version.py
-  - napari/resources
-  - napari/benchmarks
+  - finn/_version.py
+  - finn/resources
+  - finn/benchmarks
 coverage:
   status:
     project:
@@ -12,15 +12,15 @@ coverage:
         threshold: 1%
       qt:
         target: auto
-        paths: ['napari/_qt/.*', '!.*/_tests/.*']
+        paths: ['finn/_qt/.*', '!.*/_tests/.*']
         threshold: 1%
       layers:
         target: auto
-        paths: [ 'napari/layers/.*', '!.*/_tests/.*' ]
+        paths: [ 'finn/layers/.*', '!.*/_tests/.*' ]
         threshold: 1%
       utils:
         target: auto
-        paths: [ 'napari/utils/.*', '!.*/_tests/.*' ]
+        paths: [ 'finn/utils/.*', '!.*/_tests/.*' ]
         threshold: 2%
       tests:
         target: auto

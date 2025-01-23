@@ -20,8 +20,8 @@ from qtpy.QtWidgets import (
 )
 
 import napari
-from napari.qt import get_stylesheet
-from napari.settings import get_settings
+from finn.qt import get_stylesheet
+from finn.settings import get_settings
 
 
 # The magicgui widget shown by selecting the 'Show widget' button of MyWidget
@@ -77,8 +77,8 @@ class MyWidget(QWidget):
 
 
 
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 
 widget = MyWidget()
 viewer.window.add_dock_widget(widget, area='right')
-napari.run()
+finn.run()

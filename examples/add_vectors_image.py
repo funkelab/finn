@@ -16,7 +16,7 @@ import numpy as np
 import napari
 
 # create the viewer and window
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 
 n = 20
 m = 40
@@ -41,4 +41,4 @@ vect = viewer.add_vectors(pos, edge_width=0.2, length=2.5)
 print(image.shape, pos.shape)
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

@@ -17,7 +17,7 @@ from skimage import data
 import napari
 
 # create the viewer and window
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 
 # add the image
 img_layer = viewer.add_image(data.camera(), name='photographer')
@@ -110,4 +110,4 @@ viewer.add_image(scaled_export_figure, rgb=True, name='scaled_exported_figure')
 viewer.reset_view()
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

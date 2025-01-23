@@ -6,7 +6,7 @@
         {
             "name": "napari (__PKG_VERSION__)",
             "description": "a fast n-dimensional image viewer in Python",
-            "icon": "{{ MENU_DIR }}/napari.{{ ICON_EXT }}",
+            "icon": "{{ MENU_DIR }}/finn.{{ ICON_EXT }}",
             "precommand": "unset PYTHONHOME && unset PYTHONPATH",
             "command": [
                 "{{ PYTHON }}",
@@ -19,7 +19,7 @@
                 "win": {
                     "precommand": "set \"PYTHONHOME=\" & set \"PYTHONPATH=\"",
                     "desktop": true,
-                    "app_user_model_id": "napari.napari.viewer.__PKG_VERSION__"
+                    "app_user_model_id": "finn.finn.viewer.__PKG_VERSION__"
                 },
                 "linux": {
                     "Categories": [

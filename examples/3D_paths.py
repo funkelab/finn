@@ -19,7 +19,7 @@ blobs = data.binary_blobs(
             length=128, blob_size_fraction=0.05, n_dim=3, volume_fraction=0.05
         )
 
-viewer = napari.Viewer(ndisplay=3)
+viewer = finn.Viewer(ndisplay=3)
 viewer.add_image(blobs.astype(float))
 
 # sample vector coord-like data
@@ -34,4 +34,4 @@ layer = viewer.add_shapes(
 )
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

@@ -17,7 +17,7 @@ import napari
 blobs = data.binary_blobs(
     length=100, blob_size_fraction=0.05, n_dim=3, volume_fraction=0.05
 )
-viewer = napari.view_image(blobs.astype(float))
+viewer = finn.view_image(blobs.astype(float))
 
 # create the points
 points = []
@@ -55,4 +55,4 @@ points_layer.face_color_cycle = ['white', 'black']
 points_layer.border_color_cycle = ['c', 'm', 'y', 'k']
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

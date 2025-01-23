@@ -15,7 +15,7 @@ from skimage.morphology import binary_dilation, binary_erosion
 import napari
 
 np.random.seed(1)
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 blobs = data.binary_blobs(length=128, volume_fraction=0.1, n_dim=2)
 labeled = ndi.label(blobs)[0]
 labels_layer = viewer.add_labels(labeled, name='blob ID')
@@ -79,4 +79,4 @@ def on_second_click_of_double_click(layer, event):
 
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

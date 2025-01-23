@@ -36,7 +36,7 @@ data = [
 shapes_data = np.array(data)
 
 # add an empty 4d points layer
-viewer = napari.view_points(ndim=4, size=3)
+viewer = finn.view_points(ndim=4, size=3)
 points_layer = viewer.layers[0]
 
 # add the shapes layer to the viewer
@@ -72,4 +72,4 @@ viewer.camera.angles = (70, 30, 150)
 viewer.camera.zoom = 2.5
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

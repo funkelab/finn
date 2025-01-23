@@ -18,7 +18,7 @@ blobs = data.binary_blobs(
         )[::2].astype(float)
 labeled = ndi.label(blobs)[0]
 
-viewer = napari.Viewer(ndisplay=3)
+viewer = finn.Viewer(ndisplay=3)
 viewer.add_image(blobs, name='blobs', scale=(2, 1, 1))
 viewer.add_labels(labeled, name='blob ID', scale=(2, 1, 1))
 pts = viewer.add_points()
@@ -27,4 +27,4 @@ viewer.camera.angles = (0, -65, 85)
 pts.mode = 'add'
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

@@ -10,10 +10,10 @@ Displays an image and sets the theme to new custom theme.
 from skimage import data
 
 import napari
-from napari.utils.theme import available_themes, get_theme, register_theme
+from finn.utils.theme import available_themes, get_theme, register_theme
 
 # create the viewer with an image
-viewer = napari.view_image(data.astronaut(), rgb=True, name='astronaut')
+viewer = finn.view_image(data.astronaut(), rgb=True, name='astronaut')
 
 # List themes
 print('Originally themes', available_themes())
@@ -38,4 +38,4 @@ print('New themes', available_themes())
 viewer.theme = 'blue'
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

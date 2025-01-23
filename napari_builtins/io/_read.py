@@ -16,11 +16,11 @@ import numpy as np
 from dask import delayed
 from imageio import formats
 
-from napari.utils.misc import abspath_or_url
-from napari.utils.translations import trans
+from finn.utils.misc import abspath_or_url
+from finn.utils.translations import trans
 
 if TYPE_CHECKING:
-    from napari.types import FullLayerData, LayerData, ReaderFunction
+    from finn.types import FullLayerData, LayerData, ReaderFunction
 
 
 IMAGEIO_EXTENSIONS = {x for f in formats for x in f.extensions}

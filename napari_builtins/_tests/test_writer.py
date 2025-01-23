@@ -5,10 +5,10 @@ import npe2
 import numpy as np
 import pytest
 
-from napari_builtins.io import napari_get_reader
+from napari_builtins.io import finn_get_reader
 
 if TYPE_CHECKING:
-    from napari import layers
+    from finn import layers
 
 _EXTENSION_MAP = {
     'image': '.tif',

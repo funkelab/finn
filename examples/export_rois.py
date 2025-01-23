@@ -23,7 +23,7 @@ import napari
 # One of the polygon shapes exists outside the image extent, which is
 # useful in displaying how figure export handles the extent of all layers.
 
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 
 # add a 2D image layer
 img_layer = viewer.add_image(data.lily(), name='lily', channel_axis=2)
@@ -84,4 +84,4 @@ viewer.grid.shape = (3, 3)
 
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

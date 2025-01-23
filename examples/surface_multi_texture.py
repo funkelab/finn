@@ -113,13 +113,13 @@ fig.show()
 # Next create two separate layers with the same mesh - once with each texture.
 # In this example the texture coordinates happen to be the same for each
 # texture, but this is not a strict requirement.
-photo_texture_layer = napari.layers.Surface(
+photo_texture_layer = finn.layers.Surface(
     (vertices, faces),
     texture=photo_texture,
     texcoords=texcoords,
     name='Texture_0',
 )
-generated_texture_layer = napari.layers.Surface(
+generated_texture_layer = finn.layers.Surface(
     (vertices, faces),
     texture=generated_texture,
     texcoords=texcoords,
@@ -131,7 +131,7 @@ generated_texture_layer = napari.layers.Surface(
 # --------------------------
 # Finally, create the viewer and add the Surface layers.
 # sphinx_gallery_thumbnail_number = 2
-viewer = napari.Viewer(ndisplay=3)
+viewer = finn.Viewer(ndisplay=3)
 
 viewer.add_layer(photo_texture_layer)
 viewer.add_layer(generated_texture_layer)
@@ -140,4 +140,4 @@ viewer.camera.angles = (90.0, 0.0, -75.0)
 viewer.camera.zoom = 75
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

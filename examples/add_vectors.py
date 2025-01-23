@@ -17,7 +17,7 @@ from skimage import data
 import napari
 
 # create the viewer and window
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 
 layer = viewer.add_image(data.camera(), name='photographer')
 
@@ -39,4 +39,4 @@ pos[:, 1, 1] = 2 * radius_space * np.sin(phi_space)
 layer = viewer.add_vectors(pos, edge_width=3)
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

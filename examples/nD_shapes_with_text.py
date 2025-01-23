@@ -12,7 +12,7 @@ blobs = data.binary_blobs(
     length=100, blob_size_fraction=0.05, n_dim=3, volume_fraction=0.03
 ).astype(float)
 
-viewer = napari.view_image(blobs.astype(float), ndisplay=3)
+viewer = finn.view_image(blobs.astype(float), ndisplay=3)
 
 n = 50
 shape = [[[n, 40, 40], [n, 40, 60], [n + 20, 60, 60], [n + 20, 60, 40]]]
@@ -29,4 +29,4 @@ shapes_layer = viewer.add_shapes(
 )
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

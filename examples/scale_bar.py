@@ -12,7 +12,7 @@ import napari
 
 cells = data.cells3d()
 
-viewer = napari.Viewer(ndisplay=3)
+viewer = finn.Viewer(ndisplay=3)
 
 viewer.add_image(
     cells,
@@ -39,4 +39,4 @@ viewer.scale_bar.box_color = (0, 1, 1, 0.2)  # cyan with alpha=0.2
 viewer.scale_bar.position = 'bottom_left'  # default is 'bottom_right'
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

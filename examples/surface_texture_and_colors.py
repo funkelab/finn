@@ -30,7 +30,7 @@ n = len(vertices)
 texture_path = load_data_file('spot/spot.png')
 texture = imread(texture_path)
 
-flat_spot = napari.layers.Surface(
+flat_spot = finn.layers.Surface(
     (vertices, faces),
     translate=(1, 0, 0),
     texture=texture,
@@ -40,7 +40,7 @@ flat_spot = napari.layers.Surface(
 )
 
 np.random.seed(0)
-plasma_spot = napari.layers.Surface(
+plasma_spot = finn.layers.Surface(
     (vertices, faces, np.random.random((3, 3, n))),
     texture=texture,
     texcoords=texcoords,
@@ -49,7 +49,7 @@ plasma_spot = napari.layers.Surface(
     name='vertex_values and texture',
 )
 
-rainbow_spot = napari.layers.Surface(
+rainbow_spot = finn.layers.Surface(
     (vertices, faces),
     translate=(-1, 0, 0),
     texture=texture,
@@ -62,7 +62,7 @@ rainbow_spot = napari.layers.Surface(
 )
 
 # create the viewer and window
-viewer = napari.Viewer(ndisplay=3)
+viewer = finn.Viewer(ndisplay=3)
 viewer.add_layer(flat_spot)
 viewer.add_layer(plasma_spot)
 viewer.add_layer(rainbow_spot)
@@ -73,4 +73,4 @@ viewer.camera.zoom = 150
 
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

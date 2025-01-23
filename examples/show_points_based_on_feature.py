@@ -15,7 +15,7 @@ points = np.random.rand(100, 3) * 100
 colors = np.random.rand(100, 3)
 confidence = np.random.rand(100)
 
-viewer = napari.Viewer(ndisplay=3)
+viewer = finn.Viewer(ndisplay=3)
 points = viewer.add_points(
         points, face_color=colors, features={'confidence': confidence}
         )
@@ -27,11 +27,11 @@ points = viewer.add_points(
     auto_call=True,
     threshold={'widget_type': 'FloatSlider', 'min': 0, 'max': 1}
 )
-def confidence_slider(layer: napari.layers.Points, threshold=0.5):
+def confidence_slider(layer: finn.layers.Points, threshold=0.5):
     layer.shown = layer.features['confidence'] > threshold
 
 
 viewer.window.add_dock_widget(confidence_slider)
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

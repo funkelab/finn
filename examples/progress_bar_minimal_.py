@@ -15,7 +15,7 @@ import numpy as np
 from qtpy.QtWidgets import QPushButton, QVBoxLayout, QWidget
 
 import napari
-from napari.utils import cancelable_progress, progress
+from finn.utils import cancelable_progress, progress
 
 
 def process(im_slice):
@@ -95,7 +95,7 @@ def cancelable_iterable():
     for _ in cancelable_progress(range(100), cancel_callback=cancel_callback):
         np.random.rand(128, 128, 128).mean(0)
 
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 button_layout = QVBoxLayout()
 
 iterable_btn = QPushButton('Iterable')
@@ -127,4 +127,4 @@ viewer.window.add_dock_widget(pbar_widget)
 viewer.window._status_bar._toggle_activity_dock(True)
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

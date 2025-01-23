@@ -16,7 +16,7 @@ import napari
 
 cells3d = data.cells3d()
 
-viewer = napari.view_image(
+viewer = finn.view_image(
     cells3d, channel_axis=1, name=['membranes', 'nuclei']
 )
 membrane, nuclei = cells3d.transpose((1, 0, 2, 3)) / np.max(cells3d)
@@ -43,4 +43,4 @@ labels_layer = viewer.add_labels(segmented)
 viewer.dims.ndisplay = 3
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

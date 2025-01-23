@@ -3,11 +3,11 @@
 napari may be [installed][napari_installers] through a variety of methods. Particularly, the
 bundled installers may include third party software packages or tools licensed under different
 terms. These licenses may be accessed from within the resulting napari installation or
-https://napari.org.
+https://finn.org.
 
 <!-- Links -->
 
-[napari_installers]: https://napari.org/stable/#installation
+[napari_installers]: https://finn.org/stable/#installation
 
 <!-- List of EULAs starts here -->
 <!--

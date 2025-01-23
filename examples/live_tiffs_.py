@@ -19,9 +19,9 @@ from skimage.io.collection import alphanumeric_key
 from tifffile import imread
 
 import napari
-from napari.qt import thread_worker
+from finn.qt import thread_worker
 
-viewer = napari.Viewer(ndisplay=3)
+viewer = finn.Viewer(ndisplay=3)
 # pass a directory to monitor or it will monitor current directory.
 path = sys.argv[1] if len(sys.argv) > 1 else '.'
 path = os.path.abspath(path)
@@ -120,4 +120,4 @@ def watch_path(path):
 
 worker = watch_path(path)
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

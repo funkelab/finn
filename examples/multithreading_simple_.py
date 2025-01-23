@@ -9,7 +9,7 @@ import time
 
 from qtpy.QtWidgets import QApplication, QHBoxLayout, QLabel, QWidget
 
-from napari.qt import thread_worker
+from finn.qt import thread_worker
 
 
 @thread_worker

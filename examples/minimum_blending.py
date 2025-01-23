@@ -19,7 +19,7 @@ from skimage import data
 import napari
 
 # create a viewer
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 
 # Add the cells3d example image, using the two inverted colormaps
 # and minimum blending mode. Note that the bottom-most layer
@@ -33,4 +33,4 @@ viewer.add_image(data.cells3d(),
                             )
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

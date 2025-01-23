@@ -3,9 +3,9 @@
 *Created: 2024-11-11; Updated:*
 
 See the napari website for more detailed contributor information:
-- [deployment](https://napari.org/stable/developers/contributing/documentation/docs_deployment.html)
-- [contributing guide](https://napari.org/stable/developers/contributing/index.html)
-- [core developer guide](https://napari.org/stable/developers/coredev/core_dev_guide.html)
+- [deployment](https://finn.org/stable/developers/contributing/documentation/docs_deployment.html)
+- [contributing guide](https://finn.org/stable/developers/contributing/index.html)
+- [core developer guide](https://finn.org/stable/developers/coredev/core_dev_guide.html)
 
 ## Workflows and actions
 

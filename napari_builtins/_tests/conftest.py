@@ -5,8 +5,8 @@ import numpy as np
 import pytest
 from npe2 import DynamicPlugin, PluginManager, PluginManifest
 
-import napari_builtins
-from napari import layers
+import finn_builtins
+from finn import layers
 
 
 @pytest.fixture(autouse=True)

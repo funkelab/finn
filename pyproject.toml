@@ -6,10 +6,10 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "napari"
-description = "n-dimensional array viewer in Python"
+name = "finn"
+description = "n-dimensional array viewer for cell tracking data in Python"
 authors = [
-    { name = "napari team", email = "napari-steering-council@googlegroups.com" },
+    { name = "Caroline Malin-Mayor", email = "malinmayorc@janelia.hhmi.org" },
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -84,11 +84,9 @@ file = "README.md"
 content-type = "text/markdown"
 
 [project.urls]
-Homepage = "https://napari.org"
-Download = "https://github.com/napari/napari"
-"Bug Tracker" = "https://github.com/napari/napari/issues"
-Documentation = "https://napari.org"
-"Source Code" = "https://github.com/napari/napari"
+Download = "https://github.com/funkelab/finn"
+"Bug Tracker" = "https://github.com/funkelab/finn/issues"
+"Source Code" = "https://github.com/funkelab/finn"
 
 [project.optional-dependencies]
 pyside2 = [
@@ -102,19 +100,19 @@ pyqt6 = [
     "PyQt6 != 6.6.1 ; platform_system == 'Darwin'"
 ]
 pyside = [
-    "napari[pyside2]"
+    "finn[pyside2]"
 ]
 pyqt5 = [
     "PyQt5>=5.13.2,!=5.15.0",
 ]
 pyqt = [
-    "napari[pyqt5]"
+    "finn[pyqt5]"
 ]
 qt = [
-    "napari[pyqt]"
+    "finn[pyqt]"
 ]
 all = [
-    "napari[pyqt,optional]"
+    "finn[pyqt,optional]"
 ]
 optional-base = [
     "zarr>=2.12.0", # needed by `builtins` (dask.array.from_zarr) to open zarr
@@ -122,9 +120,11 @@ optional-base = [
 ]
 optional-numba = [
     "numba>=0.57.1",
+    "finn[pyqt,optional]",
+    "napari-plugin-manager >=0.1.0a1, <0.2.0",
 ]
 optional = [
-    "napari[optional-base,optional-numba]",
+    "finn[optional-base,optional-numba]",
     "triangle",
     "PartSegCore-compiled-backend>=0.15.8",
 ]
@@ -148,7 +148,7 @@ testing = [
     "IPython>=7.25.0",
     "qtconsole>=4.5.1",
     "rich>=12.0.0",
-    "napari[optional-base]",
+    "finn[optional-base]",
 ]
 testing_extra = [
     "torch>=1.7",
@@ -165,7 +165,7 @@ dev = [
     "pre-commit>=2.9.0",
     "pydantic",
     "python-dotenv",
-    "napari[testing]",
+    "finn[testing]",
 ]
 build = [
     "ruff",
@@ -173,13 +173,10 @@ build = [
 ]
 
 [project.entry-points.pytest11]
-napari = "napari.utils._testsupport"
+finn = "finn.utils._testsupport"
 
-[project.entry-points."napari.manifest"]
+[project.entry-points."finn.manifest"]
 napari_builtins = "napari_builtins:builtins.yaml"
-
-[project.scripts]
-napari = "napari.__main__:main"
 
 [tool.setuptools]
 zip-safe = false
@@ -201,7 +198,7 @@ napari_builtins = [
 
 
 [tool.setuptools_scm]
-write_to = "napari/_version.py"
+write_to = "finn/_version.py"
 
 [tool.check-manifest]
 ignore = [
@@ -210,15 +207,15 @@ ignore = [
   "asv.conf.json",
   "codecov.yml",
   "Makefile",
-  "napari/_version.py",  # added during build by setuptools_scm
+  "finn/_version.py",  # added during build by setuptools_scm
   "tools/minreq.py",
   "tox.ini",
-  "napari/_qt/qt_resources/_qt_resources_*.py",
+  "finn/_qt/qt_resources/_qt_resources_*.py",
   "*.pyi",  # added by make typestubs
   "binder/*",
   ".env_sample",
   ".devcontainer/*",
-  "napari/resources/icons/_themes/*/*.svg"
+  "finn/resources/icons/_themes/*/*.svg"
 ]
 
 [tool.ruff]
@@ -299,14 +296,14 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"napari/_vispy/__init__.py" = ["E402"]
+"finn/_vispy/__init__.py" = ["E402"]
 "**/_tests/*.py" = ["B011", "INP001", "TRY301", "B018", "RUF012"]
-"napari/utils/_testsupport.py" = ["B011"]
+"finn/utils/_testsupport.py" = ["B011"]
 "tools/validate_strings.py" = ["F401"]
 "tools/**" = ["INP001", "T20"]
 "examples/**" = ["ICN001", "INP001", "T20"]
 "**/vendored/**" = ["TID"]
-"napari/benchmarks/**" = ["RUF012", "TID252"]
+"finn/benchmarks/**" = ["RUF012", "TID252"]
 
 [tool.ruff.lint.flake8-builtins]
 builtins-allowed-modules = ["io", "types", "threading"]
@@ -324,7 +321,7 @@ multiline-quotes = "double"
 ban-relative-imports = "all"
 
 [tool.ruff.lint.isort]
-known-first-party=['napari']
+known-first-party=['finn']
 combine-as-imports = true
 
 [tool.ruff.lint.flake8-import-conventions]
@@ -341,7 +338,7 @@ console_output_style = "count"
 minversion = "8"
 # log_cli_level = "INFO"
 xfail_strict = true
-testpaths = ["napari", "napari_builtins"]
+testpaths = ["finn", "napari_builtins"]
 
 
 # NOTE: only put things that will never change in here.
@@ -349,9 +346,9 @@ testpaths = ["napari", "napari_builtins"]
 # instead... assert the warning with `pytest.warns()` in the relevant test,
 # That way we can clean them up when no longer necessary
 filterwarnings = [
-  "error:::napari", # turn warnings from napari into errors
+  "error:::finn", # turn warnings from finn into errors
   "error:::test_.*", # turn warnings in our own tests into errors
-  "default:::napari.+vendored.+",  # just print warnings inside vendored modules
+  "default:::finn.+vendored.+",  # just print warnings inside vendored modules
   "ignore::DeprecationWarning:shibokensupport",
   "ignore::DeprecationWarning:ipykernel",
   "ignore::DeprecationWarning:tensorstore",
@@ -386,10 +383,10 @@ markers = [
 ]
 
 [tool.mypy]
-files = "napari"
+files = "finn"
 # This file triggers an internal mypy error, so exclude collection
 # TODO: fix this
-exclude = "napari/utils/events/_tests/test_evented_model\\.py"
+exclude = "finn/utils/events/_tests/test_evented_model\\.py"
 plugins =  "numpy.typing.mypy_plugin, pydantic.mypy"
 ignore_missing_imports = true
 hide_error_codes = false
@@ -433,286 +430,233 @@ ignore_errors = true
 # mypy napari | cut -f1 -d: | sort | uniq  | tr '/' '.'  | sed 's/\.py//' | awk '{ print "    \047" $0 "\047," }'
 [[tool.mypy.overrides]]
 module = [
-    'napari._qt.code_syntax_highlight',
-    'napari._qt.containers._base_item_model',
-    'napari._qt.containers._base_item_view',
-    'napari._qt.containers._layer_delegate',
-    'napari._qt.containers.qt_axis_model',
-    'napari._qt.containers.qt_layer_model',
-    'napari._qt.containers.qt_list_model',
-    'napari._qt.containers.qt_list_view',
-    'napari._qt.containers.qt_tree_model',
-    'napari._qt.containers.qt_tree_view',
-    'napari._qt.dialogs.confirm_close_dialog',
-    'napari._qt.dialogs.preferences_dialog',
-    'napari._qt.dialogs.qt_about',
-    'napari._qt.dialogs.qt_activity_dialog',
-    'napari._qt.dialogs.qt_modal',
-    'napari._qt.dialogs.qt_notification',
-    'napari._qt.dialogs.qt_package_installer',
-    'napari._qt.dialogs.qt_plugin_dialog',
-    'napari._qt.dialogs.qt_plugin_report',
-    'napari._qt.dialogs.qt_reader_dialog',
-    'napari._qt.dialogs.screenshot_dialog',
-    'napari._qt.experimental.qt_chunk_receiver',
-    'napari._qt.experimental.qt_poll',
-    'napari._qt.layer_controls.qt_colormap_combobox',
-    'napari._qt.layer_controls.qt_image_controls',
-    'napari._qt.layer_controls.qt_image_controls_base',
-    'napari._qt.layer_controls.qt_labels_controls',
-    'napari._qt.layer_controls.qt_layer_controls_base',
-    'napari._qt.layer_controls.qt_layer_controls_container',
-    'napari._qt.layer_controls.qt_points_controls',
-    'napari._qt.layer_controls.qt_shapes_controls',
-    'napari._qt.layer_controls.qt_surface_controls',
-    'napari._qt.layer_controls.qt_tracks_controls',
-    'napari._qt.layer_controls.qt_vectors_controls',
-    'napari._qt.menus._util',
-    'napari._qt.menus.file_menu',
-    'napari._qt.perf.qt_event_tracing',
-    'napari._qt.perf.qt_performance',
-    'napari._qt.qt_event_filters',
-    'napari._qt.qt_event_loop',
-    'napari._qt.qt_main_window',
-    'napari._qt.qt_resources._svg',
-    'napari._qt.qt_viewer',
-    'napari._qt.qthreading',
-    'napari._qt.utils',
-    'napari._qt.widgets._slider_compat',
-    'napari._qt.widgets.qt_color_swatch',
-    'napari._qt.widgets.qt_dict_table',
-    'napari._qt.widgets.qt_dims',
-    'napari._qt.widgets.qt_dims_slider',
-    'napari._qt.widgets.qt_dims_sorter',
-    'napari._qt.widgets.qt_extension2reader',
-    'napari._qt.widgets.qt_font_size',
-    'napari._qt.widgets.qt_highlight_preview',
-    'napari._qt.widgets.qt_keyboard_settings',
-    'napari._qt.widgets.qt_message_popup',
-    'napari._qt.widgets.qt_mode_buttons',
-    'napari._qt.widgets.qt_plugin_sorter',
-    'napari._qt.widgets.qt_progress_bar',
-    'napari._qt.widgets.qt_range_slider_popup',
-    'napari._qt.widgets.qt_scrollbar',
-    'napari._qt.widgets.qt_size_preview',
-    'napari._qt.widgets.qt_spinbox',
-    'napari._qt.widgets.qt_splash_screen',
-    'napari._qt.widgets.qt_theme_sample',
-    'napari._qt.widgets.qt_tooltip',
-    'napari._qt.widgets.qt_viewer_buttons',
-    'napari._qt.widgets.qt_viewer_dock_widget',
-    'napari._qt.widgets.qt_viewer_status_bar',
-    'napari._qt.widgets.qt_welcome',
-    'napari._vispy.canvas',
-    'napari._vispy.experimental.texture_atlas',
-    'napari._vispy.experimental.tile_set',
-    'napari._vispy.experimental.tiled_image_visual',
-    'napari._vispy.experimental.vispy_tiled_image_layer',
-    'napari._vispy.overlays.base',
-    'napari._vispy.utils.cursor',
-    'napari.components.layerlist',
-    'napari.layers._layer_actions',
-    'napari.layers._multiscale_data',
-    'napari.layers.intensity_mixin',
-    'napari.layers.points._points_key_bindings',
-    'napari.layers.points._points_utils',
-    'napari.layers.points.points',
-    'napari.layers.shapes._shapes_mouse_bindings',
-    'napari.layers.shapes.shapes',
-    'napari.layers.utils.color_encoding',
-    'napari.layers.utils.color_manager',
-    'napari.layers.utils.stack_utils',
-    'napari.layers.utils.string_encoding',
-    'napari.layers.utils.style_encoding',
-    'napari.layers.utils.text_manager',
-    'napari.utils._magicgui',
-    'napari.utils._testsupport',
-    'napari.utils._tracebacks',
-    'napari.utils.action_manager',
-    'napari.utils.events.containers._evented_dict',
-    'napari.utils.events.containers._evented_list',
-    'napari.utils.events.containers._nested_list',
-    'napari.utils.events.custom_types',
-    'napari.utils.events.debugging',
-    'napari.utils.events.event',
-    'napari.utils.events.evented_model',
-    'napari.utils.interactions',
-    'napari.utils.key_bindings',
-    'napari.utils.mouse_bindings',
-    'napari.utils.progress',
-    'napari.utils.shortcuts',
-    'napari.utils.stubgen',
-    'napari.utils.transforms.transforms',
-    'napari.utils.tree.group',
-    'napari.view_layers',
-    'napari._app_model.injection._processors',
+    'finn._qt.code_syntax_highlight',
+    'finn._qt.containers._base_item_model',
+    'finn._qt.containers._base_item_view',
+    'finn._qt.containers._layer_delegate',
+    'finn._qt.containers.qt_axis_model',
+    'finn._qt.containers.qt_layer_model',
+    'finn._qt.containers.qt_list_model',
+    'finn._qt.containers.qt_list_view',
+    'finn._qt.containers.qt_tree_model',
+    'finn._qt.containers.qt_tree_view',
+    'finn._qt.dialogs.confirm_close_dialog',
+    'finn._qt.dialogs.preferences_dialog',
+    'finn._qt.dialogs.qt_about',
+    'finn._qt.dialogs.qt_activity_dialog',
+    'finn._qt.dialogs.qt_modal',
+    'finn._qt.dialogs.qt_notification',
+    'finn._qt.dialogs.qt_package_installer',
+    'finn._qt.dialogs.qt_plugin_dialog',
+    'finn._qt.dialogs.qt_plugin_report',
+    'finn._qt.dialogs.qt_reader_dialog',
+    'finn._qt.dialogs.screenshot_dialog',
+    'finn._qt.experimental.qt_chunk_receiver',
+    'finn._qt.experimental.qt_poll',
+    'finn._qt.layer_controls.qt_colormap_combobox',
+    'finn._qt.layer_controls.qt_image_controls',
+    'finn._qt.layer_controls.qt_image_controls_base',
+    'finn._qt.layer_controls.qt_labels_controls',
+    'finn._qt.layer_controls.qt_layer_controls_base',
+    'finn._qt.layer_controls.qt_layer_controls_container',
+    'finn._qt.layer_controls.qt_points_controls',
+    'finn._qt.layer_controls.qt_shapes_controls',
+    'finn._qt.layer_controls.qt_surface_controls',
+    'finn._qt.layer_controls.qt_tracks_controls',
+    'finn._qt.layer_controls.qt_vectors_controls',
+    'finn._qt.menus._util',
+    'finn._qt.menus.debug_menu',
+    'finn._qt.menus.file_menu',
+    'finn._qt.perf.qt_event_tracing',
+    'finn._qt.perf.qt_performance',
+    'finn._qt.qt_event_filters',
+    'finn._qt.qt_event_loop',
+    'finn._qt.qt_main_window',
+    'finn._qt.qt_resources._svg',
+    'finn._qt.qt_viewer',
+    'finn._qt.qthreading',
+    'finn._qt.utils',
+    'finn._qt.widgets._slider_compat',
+    'finn._qt.widgets.qt_color_swatch',
+    'finn._qt.widgets.qt_dict_table',
+    'finn._qt.widgets.qt_dims',
+    'finn._qt.widgets.qt_dims_slider',
+    'finn._qt.widgets.qt_dims_sorter',
+    'finn._qt.widgets.qt_extension2reader',
+    'finn._qt.widgets.qt_font_size',
+    'finn._qt.widgets.qt_highlight_preview',
+    'finn._qt.widgets.qt_keyboard_settings',
+    'finn._qt.widgets.qt_message_popup',
+    'finn._qt.widgets.qt_mode_buttons',
+    'finn._qt.widgets.qt_plugin_sorter',
+    'finn._qt.widgets.qt_progress_bar',
+    'finn._qt.widgets.qt_range_slider_popup',
+    'finn._qt.widgets.qt_scrollbar',
+    'finn._qt.widgets.qt_size_preview',
+    'finn._qt.widgets.qt_spinbox',
+    'finn._qt.widgets.qt_splash_screen',
+    'finn._qt.widgets.qt_theme_sample',
+    'finn._qt.widgets.qt_tooltip',
+    'finn._qt.widgets.qt_viewer_buttons',
+    'finn._qt.widgets.qt_viewer_dock_widget',
+    'finn._qt.widgets.qt_viewer_status_bar',
+    'finn._qt.widgets.qt_welcome',
+    'finn._vispy.canvas',
+    'finn._vispy.experimental.texture_atlas',
+    'finn._vispy.experimental.tile_set',
+    'finn._vispy.experimental.tiled_image_visual',
+    'finn._vispy.experimental.vispy_tiled_image_layer',
+    'finn._vispy.overlays.base',
+    'finn._vispy.utils.cursor',
+    'finn.components.layerlist',
+    'finn.layers._layer_actions',
+    'finn.layers._multiscale_data',
+    'finn.layers.intensity_mixin',
+    'finn.layers.points._points_key_bindings',
+    'finn.layers.points._points_utils',
+    'finn.layers.points.points',
+    'finn.layers.shapes._shapes_mouse_bindings',
+    'finn.layers.shapes.shapes',
+    'finn.layers.utils.color_encoding',
+    'finn.layers.utils.color_manager',
+    'finn.layers.utils.stack_utils',
+    'finn.layers.utils.string_encoding',
+    'finn.layers.utils.style_encoding',
+    'finn.layers.utils.text_manager',
+    'finn.utils._magicgui',
+    'finn.utils._testsupport',
+    'finn.utils._tracebacks',
+    'finn.utils.action_manager',
+    'finn.utils.events.containers._evented_dict',
+    'finn.utils.events.containers._evented_list',
+    'finn.utils.events.containers._nested_list',
+    'finn.utils.events.custom_types',
+    'finn.utils.events.debugging',
+    'finn.utils.events.event',
+    'finn.utils.events.evented_model',
+    'finn.utils.interactions',
+    'finn.utils.key_bindings',
+    'finn.utils.mouse_bindings',
+    'finn.utils.progress',
+    'finn.utils.shortcuts',
+    'finn.utils.stubgen',
+    'finn.utils.transforms.transforms',
+    'finn.utils.tree.group',
+    'finn.view_layers',
+    'finn._app_model.injection._processors',
 ]
 ignore_errors = true
 
 [[tool.mypy.overrides]]
 module = [
-    "napari.settings",
-    "napari.settings._yaml",
-    "napari.plugins.exceptions",
-    "napari._app_model.actions._toggle_action",
-    "napari._vispy.filters.tracks",
-    "napari._vispy.utils.text",
-    "napari._vispy.utils.visual",
-    "napari._vispy.visuals.clipping_planes_mixin",
-    "napari._vispy.visuals.markers",
-    "napari._vispy.visuals.surface",
-    "napari.layers.shapes._shapes_models.path",
-    "napari.layers.shapes._shapes_models.polygon",
-    "napari.layers.shapes._shapes_models._polygon_base",
-    "napari.layers.shapes._shapes_models.ellipse",
-    "napari.layers.shapes._shapes_models.line",
-    "napari.layers.shapes._shapes_models.rectangle",
-    "napari.layers.shapes._shapes_models.shape",
-    "napari.resources._icons",
-    "napari.utils.color",
-    "napari.utils.events.containers._dict",
-    "napari.utils.events.event_utils",
-    "napari.utils.migrations",
-    "napari.utils.validators",
-    "napari.window"
+    "finn.settings",
+    "finn.settings._yaml",
+    "finn.plugins.exceptions",
+    "finn._app_model.actions._toggle_action",
+    "finn._vispy.filters.tracks",
+    "finn._vispy.utils.text",
+    "finn._vispy.utils.visual",
+    "finn._vispy.visuals.clipping_planes_mixin",
+    "finn._vispy.visuals.markers",
+    "finn._vispy.visuals.surface",
+    "finn.layers.shapes._shapes_models.path",
+    "finn.layers.shapes._shapes_models.polygon",
+    "finn.layers.shapes._shapes_models._polygon_base",
+    "finn.layers.shapes._shapes_models.ellipse",
+    "finn.layers.shapes._shapes_models.line",
+    "finn.layers.shapes._shapes_models.rectangle",
+    "finn.layers.shapes._shapes_models.shape",
+    "finn.resources._icons",
+    "finn.utils.color",
+    "finn.utils.events.containers._dict",
+    "finn.utils.events.event_utils",
+    "finn.utils.migrations",
+    "finn.utils.validators",
+    "finn.window"
 ]
 disallow_incomplete_defs = false
 disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]
 module = [
-    "napari._event_loop",
-    "napari._vispy.utils.quaternion",
-    "napari._vispy.visuals.bounding_box",
-    "napari._vispy.visuals.image",
-    "napari._vispy.visuals.interaction_box",
-    "napari._vispy.visuals.points",
-    "napari._vispy.visuals.scale_bar",
-    "napari.components._layer_slicer",
-    "napari.components._viewer_mouse_bindings",
-    "napari.components.overlays.base",
-    "napari.components.overlays.interaction_box",
-    "napari.utils.colormaps.categorical_colormap_utils",
+    "finn._event_loop",
+    "finn._vispy.utils.quaternion",
+    "finn._vispy.visuals.bounding_box",
+    "finn._vispy.visuals.image",
+    "finn._vispy.visuals.interaction_box",
+    "finn._vispy.visuals.points",
+    "finn._vispy.visuals.scale_bar",
+    "finn.components._layer_slicer",
+    "finn.components._viewer_mouse_bindings",
+    "finn.components.overlays.base",
+    "finn.components.overlays.interaction_box",
+    "finn.utils.colormaps.categorical_colormap_utils",
 ]
 disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]
 module = [
-    "napari.components.viewer_model",
-    "napari.settings._fields",
-    "napari.settings._migrations",
-    "napari.settings._base",
-    "napari.types",
-    "napari.plugins._npe2",
-    "napari.settings._napari_settings",
-    "napari.plugins._plugin_manager",
-    "napari.plugins.utils",
-    "napari._qt._qapp_model.qactions._file",
-    "napari._qt._qapp_model.qactions._help",
-    "napari._qt._qapp_model.qactions._view",
-    "napari._vispy.camera",
-    "napari._vispy.layers.image",
-    "napari._vispy.layers.scalar_field",
-    "napari._vispy.layers.tracks",
-    "napari._vispy.layers.vectors",
-    "napari._vispy.overlays.axes",
-    "napari._vispy.overlays.interaction_box",
-    "napari._vispy.overlays.labels_polygon",
-    "napari._vispy.overlays.scale_bar",
-    "napari._vispy.overlays.text",
-    "napari.layers.labels._labels_key_bindings",
-    "napari.layers.utils._slice_input",
-    "napari.utils._register",
-    "napari.utils.colormaps.categorical_colormap",
-    "napari.utils.colormaps.standardize_color",
-    "napari.utils.geometry",
-    "napari.utils.io",
-    "napari.utils.notebook_display",
-    "napari.utils.transforms.transform_utils",
-    "napari.utils.translations",
-    "napari.utils.tree.node",
-    "napari.viewer",
-    "napari.layers.shapes._shape_list",
-    "napari.layers.vectors.vectors",
+    "finn.components.viewer_model",
+    "finn.settings._fields",
+    "finn.settings._migrations",
+    "finn.settings._base",
+    "finn.types",
+    "finn.plugins._npe2",
+    "finn.settings._napari_settings",
+    "finn.plugins._plugin_manager",
+    "finn.plugins.utils",
+    "finn._qt._qapp_model.qactions._file",
+    "finn._qt._qapp_model.qactions._help",
+    "finn._qt._qapp_model.qactions._view",
+    "finn._vispy.camera",
+    "finn._vispy.layers.image",
+    "finn._vispy.layers.scalar_field",
+    "finn._vispy.layers.tracks",
+    "finn._vispy.layers.vectors",
+    "finn._vispy.overlays.axes",
+    "finn._vispy.overlays.interaction_box",
+    "finn._vispy.overlays.labels_polygon",
+    "finn._vispy.overlays.scale_bar",
+    "finn._vispy.overlays.text",
+    "finn.layers.labels._labels_key_bindings",
+    "finn.layers.utils._slice_input",
+    "finn.utils._register",
+    "finn.utils.colormaps.categorical_colormap",
+    "finn.utils.colormaps.standardize_color",
+    "finn.utils.geometry",
+    "finn.utils.io",
+    "finn.utils.notebook_display",
+    "finn.utils.transforms.transform_utils",
+    "finn.utils.translations",
+    "finn.utils.tree.node",
+    "finn.viewer",
+    "finn.layers.shapes._shape_list",
+    "finn.layers.vectors.vectors",
 ]
-disallow_incomplete_defs = false
-disallow_untyped_calls = false
-disallow_untyped_defs = false
-
-[[tool.mypy.overrides]]
-module = [
-    "napari.plugins",
-    "napari._vispy.layers.base",
-    "napari._vispy.visuals.axes",
-    "napari.layers.labels._labels_mouse_bindings",
-    "napari.layers.utils.color_manager_utils",
-    "napari.utils.colormaps.vendored._cm",
-    "napari.utils.colormaps.vendored.cm",
-    "napari.utils.status_messages",
-    "napari.layers.shapes._shapes_utils"
-]
-disallow_untyped_calls = false
-disallow_untyped_defs = false
-
-[[tool.mypy.overrides]]
-module = [
-    "napari._app_model._app",
-    "napari.utils.theme",
-]
-disallow_incomplete_defs = false
-disallow_untyped_calls = false
-disallow_untyped_defs = false
-warn_unused_ignores = false
-
-[[tool.mypy.overrides]]
-module = [
-    "napari._app_model.context._context",
-    "napari._qt.containers._factory"
-]
-disallow_incomplete_defs = false
-disallow_untyped_defs = false
-warn_unused_ignores = false
-
-[[tool.mypy.overrides]]
-module = [
-    "napari._qt.menus.plugins_menu",
-    "napari._vispy.layers.labels",
-    "napari._vispy.layers.points",
-    "napari._vispy.layers.shapes",
-    "napari._vispy.layers.surface",
-    "napari.components._viewer_key_bindings",
-    "napari.layers.labels.labels",
-    "napari.layers.surface.surface",
-    "napari.layers.tracks.tracks",
-    "napari.layers.utils.layer_utils",
-    "napari.utils._dtype",
-    "napari.utils.colormaps.colormap_utils",
-    "napari.utils.misc",
-]
-check_untyped_defs = false
 disallow_incomplete_defs = false
 disallow_untyped_calls = false
 disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]
 module = [
-    "napari.components.camera",
-    "napari.components.dims",
-    "napari.conftest",
-    "napari.layers.labels._labels_utils",
-    "napari.layers.points._points_mouse_bindings",
-    "napari.utils.colormaps.colormap",
-    "napari.utils.notifications",
+    "finn.plugins",
+    "finn._vispy.layers.base",
+    "finn._vispy.visuals.axes",
+    "finn.layers.labels._labels_mouse_bindings",
+    "finn.layers.utils.color_manager_utils",
+    "finn.utils.colormaps.vendored._cm",
+    "finn.utils.colormaps.vendored.cm",
+    "finn.utils.status_messages",
+    "finn.layers.shapes._shapes_utils"
 ]
-check_untyped_defs = false
-disallow_incomplete_defs = false
+disallow_untyped_calls = false
 disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]
 module = [
-    "napari.utils.events.containers._typed",
+    "finn._app_model._app",
+    "finn.utils.theme",
 ]
-check_untyped_defs = false
 disallow_incomplete_defs = false
 disallow_untyped_calls = false
 disallow_untyped_defs = false
@@ -720,10 +664,64 @@ warn_unused_ignores = false
 
 [[tool.mypy.overrides]]
 module = [
-    "napari.__main__",
-    "napari.utils.colormaps.vendored.colors",
-    "napari.layers.image.image",
-    "napari.layers._scalar_field.scalar_field",
+    "finn._app_model.context._context",
+    "finn._qt.containers._factory"
+]
+disallow_incomplete_defs = false
+disallow_untyped_defs = false
+warn_unused_ignores = false
+
+[[tool.mypy.overrides]]
+module = [
+    "finn._qt.menus.plugins_menu",
+    "finn._vispy.layers.labels",
+    "finn._vispy.layers.points",
+    "finn._vispy.layers.shapes",
+    "finn._vispy.layers.surface",
+    "finn.components._viewer_key_bindings",
+    "finn.layers.labels.labels",
+    "finn.layers.surface.surface",
+    "finn.layers.tracks.tracks",
+    "finn.layers.utils.layer_utils",
+    "finn.utils._dtype",
+    "finn.utils.colormaps.colormap_utils",
+    "finn.utils.misc",
+]
+check_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_calls = false
+disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = [
+    "finn.components.camera",
+    "finn.components.dims",
+    "finn.conftest",
+    "finn.layers.labels._labels_utils",
+    "finn.layers.points._points_mouse_bindings",
+    "finn.utils.colormaps.colormap",
+    "finn.utils.notifications",
+]
+check_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = [
+    "finn.utils.events.containers._typed",
+]
+check_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_calls = false
+disallow_untyped_defs = false
+warn_unused_ignores = false
+
+[[tool.mypy.overrides]]
+module = [
+    "finn.__main__",
+    "finn.utils.colormaps.vendored.colors",
+    "finn.layers.image.image",
+    "finn.layers._scalar_field.scalar_field",
 ]
 check_untyped_defs = false
 disallow_untyped_calls = false
@@ -731,17 +729,17 @@ disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]
 module = [
-    "napari._app_model.context._layerlist_context",
-    "napari.components.overlays.labels_polygon",
-    "napari.plugins.io",
-    "napari.utils.colormaps.vendored._cm_listed"
+    "finn._app_model.context._layerlist_context",
+    "finn.components.overlays.labels_polygon",
+    "finn.plugins.io",
+    "finn.utils.colormaps.vendored._cm_listed"
 ]
 disallow_untyped_calls = false
 
 [[tool.mypy.overrides]]
 module = [
-    "napari._qt.containers.qt_layer_list",
-    "napari.layers.base.base"
+    "finn._qt.containers.qt_layer_list",
+    "finn.layers.base.base"
 ]
 check_untyped_defs = false
 disallow_untyped_calls = false
@@ -750,16 +748,16 @@ warn_unused_ignores = false
 
 [[tool.mypy.overrides]]
 module = [
-    "napari._vispy.overlays.bounding_box",
-    "napari._vispy.overlays.brush_circle",
-    "napari.utils._test_utils",
+    "finn._vispy.overlays.bounding_box",
+    "finn._vispy.overlays.brush_circle",
+    "finn.utils._test_utils",
 ]
 check_untyped_defs = false
 disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]
 module = [
-    "napari._pydantic_compat",
+    "finn._pydantic_compat",
 ]
 ignore_errors = true
 
@@ -779,58 +777,52 @@ omit = [
     "*/_vendor/*",
     "*/_version.py",
     "*/benchmarks/*",
-    "napari/utils/indexing.py",
+    "finn/utils/indexing.py",
     "**/add_layer.py_tmpl"
 ]
 source = [
-    "napari",
+    "finn",
     "napari_builtins",
 ]
 
 [tool.coverage.paths]
 source = [
-    "napari/",
-    "D:\\a\\napari\\napari\\napari",
-    "/home/runner/work/napari/napari/napari",
-    "/Users/runner/work/napari/napari/napari",
+    "finn/",
 ]
 builtins = [
     "napari_builtins/",
-    "D:\\a\\napari\\napari\\napari_builtins",
-    "/home/runner/work/napari/napari/napari_builtins",
-    "/Users/runner/work/napari/napari/napari_builtins",
 ]
 
 [tool.importlinter]
-root_package = "napari"
+root_package = "finn"
 include_external_packages = true
 
 [[tool.importlinter.contracts]]
 name = "Forbid import PyQt and PySide"
 type = "forbidden"
-source_modules = "napari"
+source_modules = "finn"
 forbidden_modules = ["PyQt5", "PySide2", "PyQt6", "PySide6"]
 ignore_imports = [
-    "napari._qt -> PySide2",
-    "napari.plugins._npe2 -> napari._qt._qplugins",
+    "finn._qt -> PySide2",
+    "finn.plugins._npe2 -> finn._qt._qplugins",
 ]
 
 [[tool.importlinter.contracts]]
-name = "Block import from qt module in napari.layers"
+name = "Block import from qt module in finn.layers"
 type = "layers"
-layers = ["napari.qt","napari.layers"]
+layers = ["finn.qt","finn.layers"]
 ignore_imports = [
-    "napari.plugins._npe2 -> napari._qt._qplugins",
+    "finn.plugins._npe2 -> finn._qt._qplugins",
     # TODO: remove once npe1 deprecated
-    "napari._qt.qt_main_window -> napari._qt._qplugins",
+    "finn._qt.qt_main_window -> finn._qt._qplugins",
 ]
 
 [[tool.importlinter.contracts]]
-name = "Block import from qt module in napari.components"
+name = "Block import from qt module in finn.components"
 type = "layers"
-layers = ["napari.qt","napari.components"]
+layers = ["finn.qt","finn.components"]
 ignore_imports = [
-    "napari.plugins._npe2 -> napari._qt._qplugins",
+    "finn.plugins._npe2 -> finn._qt._qplugins",
     # TODO: remove once npe1 deprecated
-    "napari._qt.qt_main_window -> napari._qt._qplugins",
+    "finn._qt.qt_main_window -> finn._qt._qplugins",
 ]

@@ -14,7 +14,7 @@ import dask.array as da
 from magicgui import magicgui
 
 import napari
-from napari.types import ImageData
+from finn.types import ImageData
 
 
 def _slow_function(nz):
@@ -31,8 +31,8 @@ if __name__ == '__main__':
     def widget(client, nz: int = 1000) -> Future[ImageData]:
         return client.submit(_slow_function, nz)
 
-    viewer = napari.Viewer()
+    viewer = finn.Viewer()
     viewer.window.add_dock_widget(widget, area='right')
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

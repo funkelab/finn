@@ -40,7 +40,7 @@ RUN apt-get update && \
 # install napari from repo
 # see https://github.com/pypa/pip/issues/6548#issuecomment-498615461 for syntax
 RUN pip install --upgrade pip && \
-    pip install "napari[all] @ git+https://github.com/napari/napari.git@${NAPARI_COMMIT}"
+    pip install "napari[all] @ git+https://github.com/napari/finn.git@${NAPARI_COMMIT}"
 
 # copy examples
 COPY examples /tmp/examples
@@ -51,7 +51,7 @@ ENTRYPOINT ["python3", "-m", "napari"]
 # Extend napari with a preconfigured Xpra server target #
 #########################################################
 
-FROM napari AS napari-xpra
+from finn AS napari-xpra
 
 ARG DEBIAN_FRONTEND=noninteractive
 

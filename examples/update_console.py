@@ -14,7 +14,7 @@ from skimage import data
 import napari
 
 # create the viewer and window
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 
 # add the image
 photographer = data.camera()
@@ -77,4 +77,4 @@ shapes_layer = viewer.add_shapes(
 viewer.update_console(locals())
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

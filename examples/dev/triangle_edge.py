@@ -36,8 +36,8 @@ except ImportError:
 import numpy as np
 
 import napari
-from napari.layers import Shapes
-from napari.layers.shapes._shapes_utils import generate_2D_edge_meshes
+from finn.layers import Shapes
+from finn.layers.shapes._shapes_utils import generate_2D_edge_meshes
 
 
 def generate_regular_polygon(n, radius=1):
@@ -307,13 +307,13 @@ def get_helper_data_from_shapes(shapes_layer: Shapes) -> Helpers:
     return helpers
 
 
-def update_helper_layers(viewer: napari.Viewer, source_layer: Shapes):
+def update_helper_layers(viewer: finn.Viewer, source_layer: Shapes):
     updated_helpers = get_helper_data_from_shapes(source_layer)
     for name, data in asdict(updated_helpers).items():
         viewer.layers[name].data = data
 
 
-def add_helper_layers(viewer: napari.Viewer, source_layer):
+def add_helper_layers(viewer: finn.Viewer, source_layer):
     """Add helper layers to the viewer that track with the source shapes."""
     helpers = get_helper_data_from_shapes(source_layer)
     # sizes and colors are hardcoded based on vibes
@@ -377,7 +377,7 @@ paths = [
 shapes = polygons + paths
 shape_types=['polygon'] * len(polygons) + ['path'] * len(paths)
 
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 shapes_layer = viewer.add_shapes(shapes, shape_type=shape_types, name='shapes')
 
 add_helper_layers(viewer, source_layer=shapes_layer)
@@ -385,4 +385,4 @@ viewer.layers.selection = {shapes_layer}
 viewer.reset_view()
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

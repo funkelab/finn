@@ -23,7 +23,7 @@ def profile_lines(image, shape_layer):
 
 
 np.random.seed(1)
-viewer = napari.Viewer()
+viewer = finn.Viewer()
 blobs = data.binary_blobs(length=512, volume_fraction=0.1, n_dim=2)
 viewer.add_image(blobs, name='blobs')
 line1 = np.array([[11, 13], [111, 113]])
@@ -51,4 +51,4 @@ def profile_lines_drag(layer, event):
 
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

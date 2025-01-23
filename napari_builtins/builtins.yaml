@@ -1,134 +1,134 @@
 display_name: napari builtins
-name: napari
+name: finn
 
 contributions:
   commands:
-    - id: napari.get_reader
+    - id: finn.get_reader
       python_name: napari_builtins.io:napari_get_reader
       title: Builtin Reader
 
-    - id: napari.write_image
+    - id: finn.write_image
       python_name: napari_builtins.io:napari_write_image
       title: napari built-in image writer
-    - id: napari.write_labels
+    - id: finn.write_labels
       python_name: napari_builtins.io:napari_write_labels
       title: napari built-in label field writer
-    - id: napari.write_points
+    - id: finn.write_points
       python_name: napari_builtins.io:napari_write_points
       title: napari built-in points writer
-    - id: napari.write_shapes
+    - id: finn.write_shapes
       python_name: napari_builtins.io:napari_write_shapes
       title: napari built-in shapes writer
-    - id: napari.write_directory
+    - id: finn.write_directory
       python_name: napari_builtins.io:write_layer_data_with_plugins
       title: napari built-in save to folder
 
     # samples
-    - id: napari.data.astronaut
+    - id: finn.data.astronaut
       title: Generate astronaut sample
       python_name: napari_builtins._skimage_data:astronaut
-    - id: napari.data.binary_blobs
+    - id: finn.data.binary_blobs
       title: Generate binary_blobs sample
       python_name: napari_builtins._skimage_data:binary_blobs
-    - id: napari.data.binary_blobs_3D
+    - id: finn.data.binary_blobs_3D
       title: Generate binary_blobs_3D sample
       python_name: napari_builtins._skimage_data:binary_blobs_3D
-    - id: napari.data.brain
+    - id: finn.data.brain
       title: Generate brain sample
       python_name: napari_builtins._skimage_data:brain
-    - id: napari.data.brick
+    - id: finn.data.brick
       title: Generate brick sample
       python_name: napari_builtins._skimage_data:brick
-    - id: napari.data.camera
+    - id: finn.data.camera
       title: Generate camera sample
       python_name: napari_builtins._skimage_data:camera
-    - id: napari.data.cat
+    - id: finn.data.cat
       title: Generate cat sample
       python_name: napari_builtins._skimage_data:cat
-    - id: napari.data.cell
+    - id: finn.data.cell
       title: Generate cell sample
       python_name: napari_builtins._skimage_data:cell
-    - id: napari.data.cells3d
+    - id: finn.data.cells3d
       title: Generate cells3d sample
       python_name: napari_builtins._skimage_data:cells3d
-    - id: napari.data.checkerboard
+    - id: finn.data.checkerboard
       title: Generate checkerboard sample
       python_name: napari_builtins._skimage_data:checkerboard
-    - id: napari.data.clock
+    - id: finn.data.clock
       title: Generate clock sample
       python_name: napari_builtins._skimage_data:clock
-    - id: napari.data.coffee
+    - id: finn.data.coffee
       title: Generate coffee sample
       python_name: napari_builtins._skimage_data:coffee
-    - id: napari.data.coins
+    - id: finn.data.coins
       title: Generate coins sample
       python_name: napari_builtins._skimage_data:coins
-    - id: napari.data.colorwheel
+    - id: finn.data.colorwheel
       title: Generate colorwheel sample
       python_name: napari_builtins._skimage_data:colorwheel
-    - id: napari.data.eagle
+    - id: finn.data.eagle
       title: Generate eagle sample
       python_name: napari_builtins._skimage_data:eagle
-    - id: napari.data.grass
+    - id: finn.data.grass
       title: Generate grass sample
       python_name: napari_builtins._skimage_data:grass
-    - id: napari.data.gravel
+    - id: finn.data.gravel
       title: Generate gravel sample
       python_name: napari_builtins._skimage_data:gravel
-    - id: napari.data.horse
+    - id: finn.data.horse
       title: Generate horse sample
       python_name: napari_builtins._skimage_data:horse
-    - id: napari.data.hubble_deep_field
+    - id: finn.data.hubble_deep_field
       title: Generate hubble_deep_field sample
       python_name: napari_builtins._skimage_data:hubble_deep_field
-    - id: napari.data.human_mitosis
+    - id: finn.data.human_mitosis
       title: Generate human_mitosis sample
       python_name: napari_builtins._skimage_data:human_mitosis
-    - id: napari.data.immunohistochemistry
+    - id: finn.data.immunohistochemistry
       title: Generate immunohistochemistry sample
       python_name: napari_builtins._skimage_data:immunohistochemistry
-    - id: napari.data.kidney
+    - id: finn.data.kidney
       title: Generate kidney sample
       python_name: napari_builtins._skimage_data:kidney
-    - id: napari.data.lfw_subset
+    - id: finn.data.lfw_subset
       title: Generate lfw_subset sample
       python_name: napari_builtins._skimage_data:lfw_subset
-    - id: napari.data.lily
+    - id: finn.data.lily
       title: Generate lily sample
       python_name: napari_builtins._skimage_data:lily
-    - id: napari.data.microaneurysms
+    - id: finn.data.microaneurysms
       title: Generate microaneurysms sample
       python_name: napari_builtins._skimage_data:microaneurysms
-    - id: napari.data.moon
+    - id: finn.data.moon
       title: Generate moon sample
       python_name: napari_builtins._skimage_data:moon
-    - id: napari.data.page
+    - id: finn.data.page
       title: Generate page sample
       python_name: napari_builtins._skimage_data:page
-    - id: napari.data.retina
+    - id: finn.data.retina
       title: Generate retina sample
       python_name: napari_builtins._skimage_data:retina
-    - id: napari.data.rocket
+    - id: finn.data.rocket
       title: Generate rocket sample
       python_name: napari_builtins._skimage_data:rocket
-    - id: napari.data.shepp_logan_phantom
+    - id: finn.data.shepp_logan_phantom
       title: Generate shepp_logan_phantom sample
       python_name: napari_builtins._skimage_data:shepp_logan_phantom
-    - id: napari.data.skin
+    - id: finn.data.skin
       title: Generate skin sample
       python_name: napari_builtins._skimage_data:skin
-    - id: napari.data.text
+    - id: finn.data.text
       title: Generate text sample
       python_name: napari_builtins._skimage_data:text
-    - id: napari.data.balls_2d
+    - id: finn.data.balls_2d
       title: Generate 2d_balls sample
       python_name: napari_builtins._ndims_balls:labeled_particles2d
-    - id: napari.data.balls_3d
+    - id: finn.data.balls_3d
       title: Generate 3d_balls sample
       python_name: napari_builtins._ndims_balls:labeled_particles3d
 
   readers:
-    - command: napari.get_reader
+    - command: finn.get_reader
       accepts_directories: true
       filename_patterns:
         [
@@ -158,7 +158,7 @@ contributions:
         ]
 
   writers:
-    - command: napari.write_image
+    - command: finn.write_image
       display_name: lossless
       layer_types: ["image"]
       filename_extensions:
@@ -168,7 +168,7 @@ contributions:
           ".ppm", ".ps", ".rgb", ".rgba", ".sgi", ".stk", ".tga",
         ]
 
-    - command: napari.write_image
+    - command: finn.write_image
       display_name: lossy
       layer_types: ["image"]
       filename_extensions:
@@ -177,7 +177,7 @@ contributions:
           ".jpf", ".jpx", ".mpo",
         ]
 
-    - command: napari.write_labels
+    - command: finn.write_labels
       display_name: labels
       layer_types: ["labels"]
       filename_extensions:
@@ -186,120 +186,120 @@ contributions:
           ".pgm", ".ppm", ".stk",
         ]
 
-    - command: napari.write_points
+    - command: finn.write_points
       display_name: points
       layer_types: ["points"]
       filename_extensions: [".csv"]
 
-    - command: napari.write_shapes
+    - command: finn.write_shapes
       display_name: shapes
       layer_types: ["shapes"]
       filename_extensions: [".csv"]
 
-    - command: napari.write_directory
+    - command: finn.write_directory
       display_name: Save to Folder
       layer_types: ["image*", "labels*", "points*", "shapes*"]
 
   sample_data:
     - display_name: Astronaut (RGB)
       key: astronaut
-      command: napari.data.astronaut
+      command: finn.data.astronaut
     - display_name: Balls
       key: balls_2d
-      command: napari.data.balls_2d
+      command: finn.data.balls_2d
     - display_name: Balls (3D)
       key: balls_3d
-      command: napari.data.balls_3d
+      command: finn.data.balls_3d
     - display_name: Binary Blobs
       key: binary_blobs
-      command: napari.data.binary_blobs
+      command: finn.data.binary_blobs
     - display_name: Binary Blobs (3D)
       key: binary_blobs_3D
-      command: napari.data.binary_blobs_3D
+      command: finn.data.binary_blobs_3D
     - display_name: Brain (3D)
       key: brain
-      command: napari.data.brain
+      command: finn.data.brain
     - display_name: Brick
       key: brick
-      command: napari.data.brick
+      command: finn.data.brick
     - display_name: Camera
       key: camera
-      command: napari.data.camera
+      command: finn.data.camera
     - display_name: Cat (RGB)
       key: cat
-      command: napari.data.cat
+      command: finn.data.cat
     - display_name: Cell
       key: cell
-      command: napari.data.cell
+      command: finn.data.cell
     - display_name: Cells (3D+2Ch)
       key: cells3d
-      command: napari.data.cells3d
+      command: finn.data.cells3d
     - display_name: Checkerboard
       key: checkerboard
-      command: napari.data.checkerboard
+      command: finn.data.checkerboard
     - display_name: Clock
       key: clock
-      command: napari.data.clock
+      command: finn.data.clock
     - display_name: Coffee (RGB)
       key: coffee
-      command: napari.data.coffee
+      command: finn.data.coffee
     - display_name: Coins
       key: coins
-      command: napari.data.coins
+      command: finn.data.coins
     - display_name: Colorwheel (RGB)
       key: colorwheel
-      command: napari.data.colorwheel
+      command: finn.data.colorwheel
     - display_name: Eagle
       key: eagle
-      command: napari.data.eagle
+      command: finn.data.eagle
     - display_name: Grass
       key: grass
-      command: napari.data.grass
+      command: finn.data.grass
     - display_name: Gravel
       key: gravel
-      command: napari.data.gravel
+      command: finn.data.gravel
     - display_name: Horse
       key: horse
-      command: napari.data.horse
+      command: finn.data.horse
     - display_name: Hubble Deep Field (RGB)
       key: hubble_deep_field
-      command: napari.data.hubble_deep_field
+      command: finn.data.hubble_deep_field
     - display_name: Human Mitosis
       key: human_mitosis
-      command: napari.data.human_mitosis
+      command: finn.data.human_mitosis
     - display_name: Immunohistochemistry (RGB)
       key: immunohistochemistry
-      command: napari.data.immunohistochemistry
+      command: finn.data.immunohistochemistry
     - display_name: Kidney (3D+3Ch)
       key: kidney
-      command: napari.data.kidney
+      command: finn.data.kidney
     - display_name: Labeled Faces in the Wild
       key: lfw_subset
-      command: napari.data.lfw_subset
+      command: finn.data.lfw_subset
     - display_name: Lily (4Ch)
       key: lily
-      command: napari.data.lily
+      command: finn.data.lily
     - display_name: Microaneurysms
       key: microaneurysms
-      command: napari.data.microaneurysms
+      command: finn.data.microaneurysms
     - display_name: Moon
       key: moon
-      command: napari.data.moon
+      command: finn.data.moon
     - display_name: Page
       key: page
-      command: napari.data.page
+      command: finn.data.page
     - display_name: Retina (RGB)
       key: retina
-      command: napari.data.retina
+      command: finn.data.retina
     - display_name: Rocket (RGB)
       key: rocket
-      command: napari.data.rocket
+      command: finn.data.rocket
     - display_name: Shepp Logan Phantom
       key: shepp_logan_phantom
-      command: napari.data.shepp_logan_phantom
+      command: finn.data.shepp_logan_phantom
     - display_name: Skin (RGB)
       key: skin
-      command: napari.data.skin
+      command: finn.data.skin
     - display_name: Text
       key: text
-      command: napari.data.text
+      command: finn.data.text

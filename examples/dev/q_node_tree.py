@@ -1,23 +1,23 @@
 """Example of using low-level QtNodeTreeView with Node and Group
 
-:class:`napari.utils.tree.Node` is a class that may be used as a mixin that
+:class:`finn.utils.tree.Node` is a class that may be used as a mixin that
 allows an object to be a member of a "tree".
 
-:class:`napari.utils.tree.Group` is a (nestable) mutable sequence of Nodes, and
+:class:`finn.utils.tree.Group` is a (nestable) mutable sequence of Nodes, and
 is also itself a Node (this is the "composite" pattern):
 https://refactoring.guru/design-patterns/composite/python/example
 
 These two classes may be used to create tree-like data structures that behave
 like pure python lists of lists.
 
-This examples shows that :class:`napari._qt.containers.QtNodeTreeView`
+This examples shows that :class:`finn._qt.containers.QtNodeTreeView`
 is capable of providing a basic GUI for any tree structure based on
-`napari.utils.tree.Group`.
+`finn.utils.tree.Group`.
 """
 import napari
-from napari._qt.containers import QtNodeTreeView
-from napari.qt import get_qapp
-from napari.utils.tree import Group, Node
+from finn._qt.containers import QtNodeTreeView
+from finn.qt import get_qapp
+from finn.utils.tree import Group, Node
 
 get_qapp()
 
@@ -76,4 +76,4 @@ root.selection.events._current.connect(
 )
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()

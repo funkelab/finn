@@ -98,13 +98,13 @@ kwargs = {
 
 layer = time_me(
     'time to create layer',
-    lambda: napari.layers.Shapes(coords, **kwargs),
+    lambda: finn.layers.Shapes(coords, **kwargs),
 )
 
 if args.view:
     # add the image
-    viewer = napari.Viewer()
+    viewer = finn.Viewer()
     viewer.add_layer(layer)
 
 if __name__ == '__main__':
-    napari.run()
+    finn.run()
