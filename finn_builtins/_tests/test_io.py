@@ -12,14 +12,14 @@ import pytest
 import tifffile
 import zarr
 
-from napari_builtins.io._read import (
+from finn_builtins.io._read import (
     _guess_layer_type_from_column_names,
     _guess_zarr_path,
     csv_to_layer_data,
     magic_imread,
     read_csv,
 )
-from napari_builtins.io._write import write_csv
+from finn_builtins.io._write import write_csv
 
 
 class ImageSpec(NamedTuple):

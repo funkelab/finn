@@ -22,7 +22,7 @@ def mock_npe2_pm():
 def use_builtins(mock_npe2_pm: PluginManager):
     plugin = DynamicPlugin('napari', plugin_manager=mock_npe2_pm)
     mf = PluginManifest.from_file(
-        Path(napari_builtins.__file__).parent / 'builtins.yaml'
+        Path(finn_builtins.__file__).parent / 'builtins.yaml'
     )
     plugin.manifest = mf
     with plugin:

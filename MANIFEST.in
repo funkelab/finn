@@ -3,7 +3,7 @@ include *.cff
 graft finn/_vendor
 recursive-include finn *.pyi
 recursive-include finn _tests/*.py
-recursive-include napari_builtins _tests/*.py
+recursive-include finn_builtins _tests/*.py
 recursive-include finn *.pyi
 recursive-include finn *.png *.svg *.qss *.gif *.ico *.icns
 recursive-include finn *.yaml

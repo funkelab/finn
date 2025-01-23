@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 import tifffile
 
-from napari_builtins.io._write import write_csv
+from finn_builtins.io._write import write_csv
 
 
 @pytest.fixture

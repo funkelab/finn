@@ -55,7 +55,7 @@ from finn.utils.misc import in_ipython, in_jupyter
 from finn.utils.naming import CallerFrame
 from finn.utils.notifications import show_info
 from finn.utils.translations import trans
-from napari_builtins.io import imsave_extensions
+from finn_builtins.io import imsave_extensions
 
 from finn._vispy import VispyCanvas, create_vispy_layer  # isort:skip
 
