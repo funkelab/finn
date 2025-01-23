@@ -1,6 +1,6 @@
 import numpy as np
 
-from napari_builtins._ndims_balls import (
+from finn_builtins._ndims_balls import (
     labeled_particles2d,
     labeled_particles3d,
 )

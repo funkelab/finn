@@ -133,7 +133,7 @@ def __getattr__(name: str):
     }:
         warnings.warn(
             trans._(
-                '{name} was moved from finn.utils.io in v0.4.17. Import it from napari_builtins.io instead.',
+                '{name} was moved from finn.utils.io in v0.4.17. Import it from finn_builtins.io instead.',
                 deferred=True,
                 name=name,
             ),
@@ -142,6 +142,6 @@ def __getattr__(name: str):
         )
         import finn_builtins.io
 
-        return getattr(napari_builtins.io, name)
+        return getattr(finn_builtins.io, name)
 
     raise AttributeError(f'module {__name__} has no attribute {name}')

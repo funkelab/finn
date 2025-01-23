@@ -5,7 +5,7 @@ import npe2
 import numpy as np
 import pytest
 
-from napari_builtins.io import finn_get_reader
+from finn_builtins.io import finn_get_reader
 
 if TYPE_CHECKING:
     from finn import layers

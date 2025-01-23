@@ -75,7 +75,6 @@ def create_func(cls, name=None, doc=None):
         ],
         return_annotation=cls,
     )
-    breakpoint()
 
     src = template.format(
         name=name,
