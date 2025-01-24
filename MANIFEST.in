@@ -1,5 +1,4 @@
 include LICENSE
-include *.cff
 graft finn/_vendor
 recursive-include finn *.pyi
 recursive-include finn _tests/*.py
@@ -16,7 +15,5 @@ recursive-exclude finn *.pyc
 exclude finn/benchmarks/*
 include finn/benchmarks/utils.py
 recursive-exclude resources *
-recursive-exclude binder *
 recursive-exclude examples *
-exclude dockerfile
 exclude EULA.md
