@@ -6,7 +6,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "finn"
+name = "finn-viewer"
 description = "n-dimensional array viewer for cell tracking data in Python"
 authors = [
     { name = "Caroline Malin-Mayor", email = "malinmayorc@janelia.hhmi.org" },
