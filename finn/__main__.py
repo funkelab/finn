@@ -1,5 +1,5 @@
 """
-napari command line viewer.
+finn command line viewer.
 """
 
 import argparse
@@ -21,7 +21,7 @@ from finn.utils.translations import trans
 
 class InfoAction(argparse.Action):
     def __call__(self, *args, **kwargs):
-        # prevent unrelated INFO logs when doing "napari --info"
+        # prevent unrelated INFO logs when doing "finn --info"
         from npe2 import cli
 
         from finn.utils import sys_info
@@ -35,7 +35,7 @@ class InfoAction(argparse.Action):
 
 class PluginInfoAction(argparse.Action):
     def __call__(self, *args, **kwargs):
-        # prevent unrelated INFO logs when doing "napari --info"
+        # prevent unrelated INFO logs when doing "finn --info"
         logging.basicConfig(level=logging.WARNING)
         from npe2 import cli
 
@@ -49,7 +49,7 @@ class PluginInfoAction(argparse.Action):
 
 class CitationAction(argparse.Action):
     def __call__(self, *args, **kwargs):
-        # prevent unrelated INFO logs when doing "napari --citation"
+        # prevent unrelated INFO logs when doing "finn --citation"
         from finn.utils import citation_text
 
         logging.basicConfig(level=logging.WARNING)
@@ -138,7 +138,7 @@ def parse_sys_argv():
         default=[],
         metavar=('PLUGIN_NAME', 'WIDGET_NAME'),
         help=(
-            'open napari with dock widget from specified plugin name.'
+            'open finn with dock widget from specified plugin name.'
             '(If plugin provides multiple dock widgets, widget name must also '
             'be provided). Use __all__ to open all dock widgets of a '
             'specified plugin. Multiple widgets are opened in tabs.'
@@ -147,7 +147,7 @@ def parse_sys_argv():
     parser.add_argument(
         '--version',
         action='version',
-        version=f'napari version {__version__}',
+        version=f'finn version {__version__}',
     )
     parser.add_argument(
         '--info',
@@ -326,9 +326,9 @@ def _run() -> None:
 
         # viewer _must_  be kept around.
         # it will be referenced by the global window only
-        # once napari has finished starting
+        # once finn has finished starting
         # but in the meantime if the garbage collector runs;
-        # it will collect it and hang napari at start time.
+        # it will collect it and hang finn at start time.
         # in a way that is machine, os, time (and likely weather dependant).
         viewer = Viewer()
 
@@ -445,9 +445,9 @@ def _maybe_rerun_with_macos_fixes():
        This can be used to ensure we're using a framework
        build of Python on macOS, which fixes frozen menubar issues
        in some macOS versions.
-    3) Make sure the menu bar uses 'napari' as the display name.
+    3) Make sure the menu bar uses 'finn' as the display name.
        This requires relaunching the app from a symlink to the
-       desired python executable, conveniently named 'napari'.
+       desired python executable, conveniently named 'finn'.
     """
     from finn._qt import API_NAME
 
@@ -460,11 +460,11 @@ def _maybe_rerun_with_macos_fixes():
     ):
         return
 
-    if '_NAPARI_RERUN_WITH_FIXES' in os.environ:
+    if '_FINN_RERUN_WITH_FIXES' in os.environ:
         # This function already ran, do not recurse!
         # We also restore sys.executable to its initial value,
         # if we used a symlink
-        if exe := os.environ.pop('_NAPARI_SYMLINKED_EXECUTABLE', ''):
+        if exe := os.environ.pop('_FINN_SYMLINKED_EXECUTABLE', ''):
             sys.executable = exe
         return
 
@@ -519,37 +519,37 @@ def _maybe_rerun_with_macos_fixes():
             )
             warnings.warn(msg, stacklevel=2)
 
-    # 3) Make sure the app name in the menu bar is 'napari', not 'python'
+    # 3) Make sure the app name in the menu bar is 'finn', not 'python'
     tempdir = None
     _NEEDS_SYMLINK = (
-        # When napari is launched from the conda bundle shortcut
-        # it already has the right 'napari' name in the app title
+        # When finn is launched from the conda bundle shortcut
+        # it already has the right 'finn' name in the app title
         # and __CFBundleIdentifier is set to 'com.finn._(<version>)'
-        'napari' not in os.environ.get('__CFBUNDLEIDENTIFIER', '')
-        # with a sys.executable named napari,
+        'finn' not in os.environ.get('__CFBUNDLEIDENTIFIER', '')
+        # with a sys.executable named finn,
         # macOS should have picked the right name already
-        or os.path.basename(executable) != 'napari'
+        or os.path.basename(executable) != 'finn'
     )
     if _NEEDS_SYMLINK:
         tempdir = mkdtemp(prefix='symlink-to-fix-macos-menu-name-')
-        # By using a symlink with basename napari
-        # we make macOS take 'napari' as the program name
-        napari_link = os.path.join(tempdir, 'napari')
-        os.symlink(executable, napari_link)
+        # By using a symlink with basename finn
+        # we make macOS take 'finn' as the program name
+        finn_link = os.path.join(tempdir, 'finn')
+        os.symlink(executable, finn_link)
         # Pass original executable to the subprocess so it can restore it later
-        env['_NAPARI_SYMLINKED_EXECUTABLE'] = executable
-        executable = napari_link
+        env['_FINN_SYMLINKED_EXECUTABLE'] = executable
+        executable = finn_link
 
     # if at this point 'executable' is different from 'sys.executable', we
     # need to launch the subprocess to apply the fixes
     if sys.executable != executable:
-        env['_NAPARI_RERUN_WITH_FIXES'] = '1'
-        if Path(sys.argv[0]).name == 'napari':
+        env['_FINN_RERUN_WITH_FIXES'] = '1'
+        if Path(sys.argv[0]).name == 'finn':
             # launched through entry point, we do that again to avoid
             # issues with working directory getting into sys.path (#5007)
             cmd = [executable, sys.argv[0]]
         else:  # we assume it must have been launched via '-m' syntax
-            cmd = [executable, '-m', 'napari']
+            cmd = [executable, '-m', 'finn']
 
         # this fixes issues running from a venv/virtualenv based virtual
         # environment with certain python distributions (e.g. pyenv, asdf)
