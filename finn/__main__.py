@@ -17,6 +17,7 @@ from typing import Any
 
 from finn.errors import ReaderPluginError
 from finn.utils.translations import trans
+from finn.track_application_menus.main_app import MainApp
 
 
 class InfoAction(argparse.Action):
@@ -331,6 +332,10 @@ def _run() -> None:
         # it will collect it and hang finn at start time.
         # in a way that is machine, os, time (and likely weather dependant).
         viewer = Viewer()
+        
+        # add in track viewing widgets by default
+        main_tracks_widget = MainApp(viewer)
+        viewer.window.add_dock_widget(main_tracks_widget)
 
         # For backwards compatibility
         # If the --stack option is provided without additional arguments
@@ -576,10 +581,10 @@ def main():
     # Prevent https://github.com/napari/napari/issues/3415
     # This one fix is needed _after_ a potential relaunch,
     # that's why it's here and not in _maybe_rerun_with_macos_fixes()
-    if sys.platform == 'darwin':
-        import multiprocessing
+    # if sys.platform == 'darwin':
+    #     import multiprocessing
 
-        multiprocessing.set_start_method('fork')
+    #     multiprocessing.set_start_method('fork')
 
     _run()
 
