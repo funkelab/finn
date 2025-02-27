@@ -59,10 +59,12 @@ from _pytest.pathlib import bestrelpath
 from IPython.core.history import HistoryManager
 from packaging.version import parse as parse_version
 from pytest_pretty import CustomTerminalReporter
+import networkx as nx
 
 from finn.components import LayerList
 from finn.layers import Image, Labels, Points, Shapes, Vectors
 from finn.utils.misc import ROOT_DIR
+from finn.track_data_views.graph_attributes import NodeAttr, EdgeAttr
 
 if TYPE_CHECKING:
     from npe2._pytest_plugin import TestPluginManager
@@ -1066,3 +1068,117 @@ def pytest_configure(config):
         custom_reporter._session = standard_reporter._session
     config.pluginmanager.unregister(standard_reporter)
     config.pluginmanager.register(custom_reporter, 'terminalreporter')
+
+
+@pytest.fixture
+def graph_2d():
+    graph = nx.DiGraph()
+    nodes = [
+        (
+            1,
+            {
+                NodeAttr.POS.value: [50, 50],
+                NodeAttr.TIME.value: 0,
+                NodeAttr.AREA.value: 1245,
+                NodeAttr.TRACK_ID.value: 1,
+            },
+        ),
+        (
+            2,
+            {
+                NodeAttr.POS.value: [20, 80],
+                NodeAttr.TIME.value: 1,
+                NodeAttr.TRACK_ID.value: 2,
+                # NodeAttr.AREA.value: 305,
+            },
+        ),
+        (
+            3,
+            {
+                NodeAttr.POS.value: [60, 45],
+                NodeAttr.TIME.value: 1,
+                NodeAttr.AREA.value: 697,
+                NodeAttr.TRACK_ID.value: 3,
+            },
+        ),
+        (
+            4,
+            {
+                NodeAttr.POS.value: [1.5, 1.5],
+                NodeAttr.TIME.value: 2,
+                NodeAttr.AREA.value: 16,
+                NodeAttr.TRACK_ID.value: 3,
+            },
+        ),
+        (
+            5,
+            {
+                NodeAttr.POS.value: [1.5, 1.5],
+                NodeAttr.TIME.value: 4,
+                NodeAttr.AREA.value: 16,
+                NodeAttr.TRACK_ID.value: 3,
+            },
+        ),
+        # unconnected node
+        (
+            6,
+            {
+                NodeAttr.POS.value: [97.5, 97.5],
+                NodeAttr.TIME.value: 4,
+                NodeAttr.AREA.value: 16,
+                NodeAttr.TRACK_ID.value: 5,
+            },
+        ),
+    ]
+    edges = [
+        (1, 2, {EdgeAttr.IOU.value: 0.0}),
+        (1, 3, {EdgeAttr.IOU.value: 0.395}),
+        (
+            3,
+            4,
+            {EdgeAttr.IOU.value: 0.0},
+        ),
+        (
+            4,
+            5,
+            {EdgeAttr.IOU.value: 1.0},
+        ),
+    ]
+    graph.add_nodes_from(nodes)
+    graph.add_edges_from(edges)
+    return graph
+
+
+@pytest.fixture
+def graph_3d():
+    graph = nx.DiGraph()
+    nodes = [
+        (
+            1,
+            {
+                NodeAttr.POS.value: [50, 50, 50],
+                NodeAttr.TIME.value: 0,
+            },
+        ),
+        (
+            2,
+            {
+                NodeAttr.POS.value: [20, 50, 80],
+                NodeAttr.TIME.value: 1,
+            },
+        ),
+        (
+            3,
+            {
+                NodeAttr.POS.value: [60, 50, 45],
+                NodeAttr.TIME.value: 1,
+            },
+        ),
+    ]
+    edges = [
+        (1, 2),
+        (1, 3),
+    ]
+    graph.add_nodes_from(nodes)
+    graph.add_edges_from(edges)
+    return graph

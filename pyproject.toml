@@ -34,7 +34,7 @@ classifiers = [
     "Operating System :: Unix",
     "Operating System :: MacOS",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "appdirs>=1.4.4",
     "app-model>=0.3.0,<0.4.0",
@@ -71,6 +71,10 @@ dependencies = [
     "typing_extensions>=4.2.0",
     "vispy>=0.14.1,<0.15",
     "wrapt>=1.11.1",
+    "funtracks",
+    "pyqtgraph",
+    "fonticon-fontawesome6",
+    "zarr<3",
 ]
 dynamic = [
     "version",
@@ -103,19 +107,19 @@ pyqt6 = [
     "PyQt6 != 6.6.1 ; platform_system == 'Darwin'"
 ]
 pyside = [
-    "finn[pyside2]"
+    "finn-viewer[pyside2]"
 ]
 pyqt5 = [
     "PyQt5>=5.13.2,!=5.15.0",
 ]
 pyqt = [
-    "finn[pyqt5]"
+    "finn-viewer[pyqt5]"
 ]
 qt = [
-    "finn[pyqt]"
+    "finn-viewer[pyqt]"
 ]
 all = [
-    "finn[pyqt,optional]"
+    "finn-viewer[pyqt,optional]"
 ]
 optional-base = [
     "zarr>=2.12.0", # needed by `builtins` (dask.array.from_zarr) to open zarr
@@ -123,11 +127,11 @@ optional-base = [
 ]
 optional-numba = [
     "numba>=0.57.1",
-    "finn[pyqt,optional]",
+    "finn-viewer[pyqt,optional]",
     "napari-plugin-manager >=0.1.0a1, <0.2.0",
 ]
 optional = [
-    "finn[optional-base,optional-numba]",
+    "finn-viewer[optional-base,optional-numba]",
     "triangle",
     "PartSegCore-compiled-backend>=0.15.8",
 ]
@@ -151,7 +155,7 @@ testing = [
     "IPython>=7.25.0",
     "qtconsole>=4.5.1",
     "rich>=12.0.0",
-    "finn[optional-base]",
+    "finn-viewer[optional-base]",
 ]
 testing_extra = [
     "torch>=1.7",
@@ -222,7 +226,7 @@ ignore = [
 ]
 
 [tool.ruff]
-line-length = 79
+line-length = 90
 exclude = [
     ".bzr",
     ".direnv",
@@ -285,7 +289,8 @@ select = [
     "T20", # flake8-print
 ]
 ignore = [
-    "E501", "TC001", "TC002", "TC003",
+    # "E501", 
+    "TC001", "TC002", "TC003",
     "A003", # flake8-builtins - we have class attributes violating these rule
     "COM812", # flake8-commas - we don't like adding comma on single line of arguments
     "COM819", # conflicts with ruff-format
