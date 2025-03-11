@@ -34,7 +34,7 @@ if TYPE_CHECKING:
     from IPython import InteractiveShell
 
 NAPARI_ICON_PATH = os.path.join(
-    os.path.dirname(__file__), '..', 'resources', 'logo.png'
+    os.path.dirname(__file__), '..', 'resources', 'logo.svg'
 )
 NAPARI_APP_ID = f'finn.finn.viewer.{__version__}'
 

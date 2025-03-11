@@ -9,7 +9,7 @@ import finn
 from finn.layers._source import Source
 from finn.viewer import ViewerModel
 
-LOGO = str(Path(finn.__file__).parent / 'resources' / 'logo.png')
+LOGO = str(Path(finn.__file__).parent / 'resources' / 'logo.svg')
 
 
 def test_sample_hook(builtins, tmp_plugin: DynamicPlugin):

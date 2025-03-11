@@ -700,7 +700,7 @@
       "gui_qt",
       "icon",
       "ipy_interactive",
-      "logo.png",
+      "logo.svg",
       "napari",
       "finn.finn.viewer.{__version__}",
       "finn.org",
@@ -1115,7 +1115,7 @@
       "gpu",
       "grays",
       "left",
-      "logo.png",
+      "logo.svg",
       "primary",
       "resources"
     ],
