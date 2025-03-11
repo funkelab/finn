@@ -192,7 +192,7 @@ class ViewerModel(KeymapProvider, MousemapProvider, EventedModel):
     status: Union[str, dict] = 'Ready'
     tooltip: Tooltip = Field(default_factory=Tooltip, allow_mutation=False)
     theme: str = Field(default_factory=_current_theme)
-    title: str = 'napari'
+    title: str = 'Motile Tracker'
     # private track of overlays, only expose the old ones for backward compatibility
     _overlays: EventedDict[str, Overlay] = PrivateAttr(
         default_factory=EventedDict
@@ -209,7 +209,7 @@ class ViewerModel(KeymapProvider, MousemapProvider, EventedModel):
     _layer_slicer: _LayerSlicer = PrivateAttr(default_factory=_LayerSlicer)
 
     def __init__(
-        self, title='napari', ndisplay=2, order=(), axis_labels=()
+        self, title='Motile Tracker', ndisplay=2, order=(), axis_labels=()
     ) -> None:
         # max_depth=0 means don't look for parent contexts.
         from finn._app_model.context import create_context

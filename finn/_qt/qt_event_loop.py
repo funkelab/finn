@@ -47,11 +47,11 @@ def set_app_id(app_id):
 
 
 _defaults = {
-    'app_name': 'napari',
+    'app_name': 'Motile Tracker',
     'app_version': __version__,
     'icon': NAPARI_ICON_PATH,
-    'org_name': 'napari',
-    'org_domain': 'finn.org',
+    'org_name': 'motile',
+    'org_domain': 'motile.org',
     'app_id': NAPARI_APP_ID,
 }
 

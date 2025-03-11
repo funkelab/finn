@@ -260,7 +260,7 @@ def imshow(
     units=None,
     visible=True,
     viewer=None,
-    title='napari',
+    title='finn',
     ndisplay=2,
     order=(),
     show=True,
@@ -381,7 +381,7 @@ def imshow(
         Whether the layer visual is currently being displayed.
     viewer : Viewer object, optional, by default None.
     title : string, optional
-        The title of the viewer window. By default 'napari'.
+        The title of the viewer window. By default 'finn'.
     ndisplay : {2, 3}, optional
         Number of displayed dimensions. By default 2.
     order : tuple of int, optional

@@ -22,7 +22,7 @@ class Viewer(ViewerModel):
     Parameters
     ----------
     title : string, optional
-        The title of the viewer window. By default 'napari'.
+        The title of the viewer window. By default 'Motile Tracker'.
     ndisplay : {2, 3}, optional
         Number of displayed dimensions. By default 2.
     order : tuple of int, optional
@@ -41,7 +41,7 @@ class Viewer(ViewerModel):
     def __init__(
         self,
         *,
-        title='napari',
+        title='Motile Tracker',
         ndisplay=2,
         order=(),
         axis_labels=(),
