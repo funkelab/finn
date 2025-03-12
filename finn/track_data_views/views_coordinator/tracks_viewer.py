@@ -31,7 +31,6 @@ class TracksViewer:
     @classmethod
     def get_instance(cls, viewer=None):
         if not hasattr(cls, "_instance"):
-            print("Making new tracking view controller")
             if viewer is None:
                 raise ValueError("Make a viewer first please!")
             cls._instance = TracksViewer(viewer)
@@ -199,15 +198,6 @@ class TracksViewer:
         """Calls the tracks controller to delete currently selected nodes"""
 
         self.tracks_controller.delete_nodes(self.selected_nodes._list)
-
-    def set_split_node(self, event=None):
-        print("split this node")
-
-    def set_endpoint_node(self, event=None):
-        print("make this node an endpoint")
-
-    def set_linear_node(self, event=None):
-        print("make this node linear")
 
     def delete_edge(self, event=None):
         """Calls the tracks controller to delete an edge between the two currently selected nodes"""
