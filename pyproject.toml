@@ -20,10 +20,10 @@ classifiers = [
     "Programming Language :: C",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Visualization",
     "Topic :: Scientific/Engineering :: Information Analysis",
@@ -173,6 +173,7 @@ dev = [
     "pydantic",
     "python-dotenv",
     "finn[testing]",
+    "mypy"
 ]
 build = [
     "ruff",
@@ -216,7 +217,6 @@ ignore = [
   "Makefile",
   "finn/_version.py",  # added during build by setuptools_scm
   "tools/minreq.py",
-  "tox.ini",
   "finn/_qt/qt_resources/_qt_resources_*.py",
   "*.pyi",  # added by make typestubs
   "binder/*",
@@ -236,7 +236,6 @@ exclude = [
     ".pants.d",
     ".ruff_cache",
     ".svn",
-    ".tox",
     ".venv",
     "__pypackages__",
     "_build",
@@ -289,7 +288,7 @@ select = [
     "T20", # flake8-print
 ]
 ignore = [
-    # "E501", 
+    # "E501",
     "TC001", "TC002", "TC003",
     "A003", # flake8-builtins - we have class attributes violating these rule
     "COM812", # flake8-commas - we don't like adding comma on single line of arguments
