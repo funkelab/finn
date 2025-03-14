@@ -251,7 +251,7 @@ exclude = [
 fix = true
 
 [tool.ruff.format]
-quote-style = "single"
+quote-style = "double"
 
 [tool.ruff.lint]
 select = [
@@ -288,7 +288,6 @@ select = [
     "T20", # flake8-print
 ]
 ignore = [
-    # "E501",
     "TC001", "TC002", "TC003",
     "A003", # flake8-builtins - we have class attributes violating these rule
     "COM812", # flake8-commas - we don't like adding comma on single line of arguments
@@ -320,7 +319,7 @@ keep-runtime-typing = true
 
 [tool.ruff.lint.flake8-quotes]
 docstring-quotes = "double"
-inline-quotes = "single"
+inline-quotes = "double"
 multiline-quotes = "double"
 
 [tool.ruff.lint.flake8-tidy-imports]
