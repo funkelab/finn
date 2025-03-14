@@ -30,9 +30,7 @@ def test_add_plugin_dock_widget(qtbot):
 def test_add_layer_data_tuples_to_viewer_invalid_data():
     viewer = MagicMock()
     error_data = (np.zeros((10, 10)), np.zeros((10, 10)))
-    with pytest.raises(
-        TypeError, match='Not a valid list of layer data tuples!'
-    ):
+    with pytest.raises(TypeError, match='Not a valid list of layer data tuples!'):
         _add_layer_data_tuples_to_viewer(
             data=error_data,
             return_type=Union[ImageData, LabelsData],

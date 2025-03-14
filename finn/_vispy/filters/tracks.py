@@ -1,5 +1,3 @@
-from typing import Optional, Union
-
 import numpy as np
 from vispy.gloo import VertexBuffer
 from vispy.visuals.filters.base_filter import Filter
@@ -95,11 +93,9 @@ class TracksFilter(Filter):
         tail_length: float = 30,
         head_length: float = 0,
         use_fade: bool = True,
-        vertex_time: Optional[Union[list, np.ndarray]] = None,
+        vertex_time: list | np.ndarray | None = None,
     ) -> None:
-        super().__init__(
-            vcode=self.VERT_SHADER, vpos=3, fcode=self.FRAG_SHADER, fpos=9
-        )
+        super().__init__(vcode=self.VERT_SHADER, vpos=3, fcode=self.FRAG_SHADER, fpos=9)
 
         self.current_time = current_time
         self.tail_length = tail_length

@@ -25,16 +25,12 @@ def main():
     parser = argparse.ArgumentParser(
         description='Run selected napari benchmarks for debugging.'
     )
-    parser.add_argument(
-        'benchmark', type=split_identifier, help='Benchmark to run.'
-    )
+    parser.add_argument('benchmark', type=split_identifier, help='Benchmark to run.')
     args = parser.parse_args()
     module = importlib.import_module(
         f'.{args.benchmark.module}', package='finn.benchmarks'
     )
-    run_benchmark_from_module(
-        module, args.benchmark.klass, args.benchmark.method
-    )
+    run_benchmark_from_module(module, args.benchmark.klass, args.benchmark.method)
 
 
 if __name__ == '__main__':

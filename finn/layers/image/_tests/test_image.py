@@ -151,9 +151,7 @@ def test_rgb_image():
     layer = Image(data)
     assert np.array_equal(layer.data, data)
     assert layer.ndim == len(shape) - 1
-    np.testing.assert_array_equal(
-        layer.extent.data[1], [s - 1 for s in shape[:-1]]
-    )
+    np.testing.assert_array_equal(layer.extent.data[1], [s - 1 for s in shape[:-1]])
     assert layer.rgb is True
     assert layer._data_view.shape == shape[-3:]
 
@@ -166,9 +164,7 @@ def test_rgba_image():
     layer = Image(data)
     assert np.array_equal(layer.data, data)
     assert layer.ndim == len(shape) - 1
-    np.testing.assert_array_equal(
-        layer.extent.data[1], [s - 1 for s in shape[:-1]]
-    )
+    np.testing.assert_array_equal(layer.extent.data[1], [s - 1 for s in shape[:-1]])
     assert layer.rgb is True
     assert layer._data_view.shape == shape[-3:]
 
@@ -182,9 +178,7 @@ def test_negative_rgba_image():
     layer = Image(data)
     assert np.array_equal(layer.data, data)
     assert layer.ndim == len(shape) - 1
-    np.testing.assert_array_equal(
-        layer.extent.data[1], [s - 1 for s in shape[:-1]]
-    )
+    np.testing.assert_array_equal(layer.extent.data[1], [s - 1 for s in shape[:-1]])
     assert layer.rgb is True
     assert layer._data_view.shape == shape[-3:]
 
@@ -193,9 +187,7 @@ def test_negative_rgba_image():
     layer = Image(data)
     assert np.array_equal(layer.data, data)
     assert layer.ndim == len(shape) - 1
-    np.testing.assert_array_equal(
-        layer.extent.data[1], [s - 1 for s in shape[:-1]]
-    )
+    np.testing.assert_array_equal(layer.extent.data[1], [s - 1 for s in shape[:-1]])
     assert layer.rgb is True
     assert layer._data_view.shape == shape[-3:]
 
@@ -234,9 +226,7 @@ def test_changing_image():
     layer.data = data_b
     assert np.array_equal(layer.data, data_b)
     assert layer.ndim == len(shape_b)
-    np.testing.assert_array_equal(
-        layer.extent.data[1], [s - 1 for s in shape_b]
-    )
+    np.testing.assert_array_equal(layer.extent.data[1], [s - 1 for s in shape_b])
     assert layer.rgb is False
     assert layer._data_view.shape == shape_b[-2:]
 
@@ -254,9 +244,7 @@ def test_changing_image_dims():
     layer.data = data_b
     assert np.array_equal(layer.data, data_b)
     assert layer.ndim == len(shape_b)
-    np.testing.assert_array_equal(
-        layer.extent.data[1], [s - 1 for s in shape_b]
-    )
+    np.testing.assert_array_equal(layer.extent.data[1], [s - 1 for s in shape_b])
     assert layer.rgb is False
     assert layer._data_view.shape == shape_b[-2:]
 
@@ -587,9 +575,7 @@ def test_value():
         ((0, 2, 2, 2), [0, 1, 0, 0], [1, 2, 3], False, 'mip', 1),
     ],
 )
-def test_value_3d(
-    position, view_direction, dims_displayed, world, render_mode, result
-):
+def test_value_3d(position, view_direction, dims_displayed, world, render_mode, result):
     data = np.zeros((5, 5, 5, 5))
     data[:, 2, 2, 2] = 1
     layer = Image(data, rendering=render_mode)
@@ -621,9 +607,7 @@ def test_message_3d():
     data = np.random.random((10, 15, 15))
     layer = Image(data)
     layer._slice_dims(Dims(ndim=3, ndisplay=3))
-    msg = layer.get_status(
-        (0, 0, 0), view_direction=[1, 0, 0], dims_displayed=[0, 1, 2]
-    )
+    msg = layer.get_status((0, 0, 0), view_direction=[1, 0, 0], dims_displayed=[0, 1, 2])
     assert isinstance(msg, dict)
 
 
@@ -841,22 +825,15 @@ def test_instantiate_with_experimental_clipping_planes_dict():
     ]
     image = Image(np.ones((32, 32, 32)), experimental_clipping_planes=planes)
     for i in range(len(planes)):
-        assert (
-            image.experimental_clipping_planes[i].position
-            == planes[i]['position']
-        )
-        assert (
-            image.experimental_clipping_planes[i].normal == planes[i]['normal']
-        )
+        assert image.experimental_clipping_planes[i].position == planes[i]['position']
+        assert image.experimental_clipping_planes[i].normal == planes[i]['normal']
 
 
 def test_tensorstore_image():
     """Test an image coming from a tensorstore array."""
     ts = pytest.importorskip('tensorstore')
 
-    data = ts.array(
-        np.full(shape=(1024, 1024), fill_value=255, dtype=np.uint8)
-    )
+    data = ts.array(np.full(shape=(1024, 1024), fill_value=255, dtype=np.uint8))
     layer = Image(data)
     assert np.array_equal(layer.data, data)
 
@@ -927,9 +904,7 @@ def test_thick_slice():
     np.testing.assert_array_equal(layer._slice.image.raw, data[0])
 
     layer.projection_mode = 'mean'
-    np.testing.assert_array_equal(
-        layer._slice.image.raw, np.mean(data[:2], axis=0)
-    )
+    np.testing.assert_array_equal(layer._slice.image.raw, np.mean(data[:2], axis=0))
 
     layer._slice_dims(
         Dims(
@@ -939,9 +914,7 @@ def test_thick_slice():
             margin_right=(1, 0, 0),
         )
     )
-    np.testing.assert_array_equal(
-        layer._slice.image.raw, np.mean(data[:3], axis=0)
-    )
+    np.testing.assert_array_equal(layer._slice.image.raw, np.mean(data[:3], axis=0))
 
     layer._slice_dims(
         Dims(
@@ -952,9 +925,7 @@ def test_thick_slice():
             margin_right=(1.7, 0, 0),
         )
     )
-    np.testing.assert_array_equal(
-        layer._slice.image.raw, np.mean(data[2:5], axis=0)
-    )
+    np.testing.assert_array_equal(layer._slice.image.raw, np.mean(data[2:5], axis=0))
 
     layer._slice_dims(
         Dims(
@@ -965,14 +936,10 @@ def test_thick_slice():
             margin_right=(1.6, 0, 0),
         )
     )
-    np.testing.assert_array_equal(
-        layer._slice.image.raw, np.mean(data[2:4], axis=0)
-    )
+    np.testing.assert_array_equal(layer._slice.image.raw, np.mean(data[2:4], axis=0))
 
     layer.projection_mode = 'max'
-    np.testing.assert_array_equal(
-        layer._slice.image.raw, np.max(data[2:4], axis=0)
-    )
+    np.testing.assert_array_equal(layer._slice.image.raw, np.max(data[2:4], axis=0))
 
 
 def test_adjust_contrast_out_of_range():
@@ -980,9 +947,7 @@ def test_adjust_contrast_out_of_range():
     img_lay = Image(arr)
     npt.assert_array_equal(img_lay._slice.image.view, img_lay._slice.image.raw)
     img_lay.contrast_limits = (0, float(np.finfo(np.float32).max) * 2)
-    assert not np.array_equal(
-        img_lay._slice.image.view, img_lay._slice.image.raw
-    )
+    assert not np.array_equal(img_lay._slice.image.view, img_lay._slice.image.raw)
 
 
 def test_adjust_contrast_limits_range_set_data():
@@ -991,9 +956,7 @@ def test_adjust_contrast_limits_range_set_data():
     img_lay._keep_auto_contrast = True
     npt.assert_array_equal(img_lay._slice.image.view, img_lay._slice.image.raw)
     img_lay.data = arr * 1e39
-    assert not np.array_equal(
-        img_lay._slice.image.view, img_lay._slice.image.raw
-    )
+    assert not np.array_equal(img_lay._slice.image.view, img_lay._slice.image.raw)
 
 
 def test_thick_slice_multiscale():
@@ -1045,9 +1008,7 @@ def test_thick_slice_multiscale():
             margin_right=(3.4, 0, 0),
         )
     )
-    np.testing.assert_array_equal(
-        layer._slice.image.raw, np.mean(data[2:5], axis=0)
-    )
+    np.testing.assert_array_equal(layer._slice.image.raw, np.mean(data[2:5], axis=0))
 
 
 def test_contrast_outside_range():

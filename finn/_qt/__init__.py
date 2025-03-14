@@ -11,9 +11,7 @@ except Exception as e:
     if 'No Qt bindings could be found' in str(e):
         from inspect import cleandoc
 
-        installed_with_conda = list(
-            Path(sys.prefix, 'conda-meta').glob('napari-*.json')
-        )
+        installed_with_conda = list(Path(sys.prefix, 'conda-meta').glob('napari-*.json'))
 
         raise ImportError(
             trans._(
@@ -47,9 +45,7 @@ if API_NAME == 'PySide2':
     # for when both PyQt5 and Pyside2 are installed
     import PySide2
 
-    os.environ['QT_PLUGIN_PATH'] = str(
-        Path(PySide2.__file__).parent / 'Qt' / 'plugins'
-    )
+    os.environ['QT_PLUGIN_PATH'] = str(Path(PySide2.__file__).parent / 'Qt' / 'plugins')
 
 if API_NAME == 'PySide6' and sys.version_info[:2] < (3, 10):
     from packaging import version

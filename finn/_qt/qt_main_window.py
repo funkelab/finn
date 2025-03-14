@@ -128,9 +128,7 @@ class _QtMainWindow(QMainWindow):
     # `window` is passed through on construction, so it's available to a window
     # provider for dependency injection
     # See https://github.com/napari/napari/pull/4826
-    def __init__(
-        self, viewer: 'Viewer', window: 'Window', parent=None
-    ) -> None:
+    def __init__(self, viewer: 'Viewer', window: 'Window', parent=None) -> None:
         super().__init__(parent)
         self._ev = None
         self._window = window
@@ -160,9 +158,7 @@ class _QtMainWindow(QMainWindow):
         # collide shortcuts for close and close all windows
 
         act_dlg = QtActivityDialog(self._qt_viewer._welcome_widget)
-        self._qt_viewer._welcome_widget.resized.connect(
-            act_dlg.move_to_bottom_right
-        )
+        self._qt_viewer._welcome_widget.resized.connect(act_dlg.move_to_bottom_right)
         act_dlg.hide()
         self._activity_dialog = act_dlg
 
@@ -198,17 +194,11 @@ class _QtMainWindow(QMainWindow):
         init_qactions()
 
         with contextlib.suppress(IndexError):
-            viewer.cursor.events.position.disconnect(
-                viewer.update_status_from_cursor
-            )
+            viewer.cursor.events.position.disconnect(viewer.update_status_from_cursor)
 
         self.status_thread = StatusChecker(viewer, parent=self)
-        self.status_thread.status_and_tooltip_changed.connect(
-            self.set_status_and_tooltip
-        )
-        viewer.cursor.events.position.connect(
-            self.status_thread.trigger_status_update
-        )
+        self.status_thread.status_and_tooltip_changed.connect(self.set_status_and_tooltip)
+        viewer.cursor.events.position.connect(self.status_thread.trigger_status_update)
         settings.appearance.events.update_status_based_on_layer.connect(
             self._toggle_status_thread
         )
@@ -246,16 +236,12 @@ class _QtMainWindow(QMainWindow):
         self.status_thread.terminate()
         super().hideEvent(event)
 
-    def set_status_and_tooltip(
-        self, status_and_tooltip: Optional[tuple[Union[str, dict], str]]
-    ):
+    def set_status_and_tooltip(self, status_and_tooltip: tuple[str | dict, str] | None):
         if status_and_tooltip is None:
             return
         self._qt_viewer.viewer.status = status_and_tooltip[0]
         self._qt_viewer.viewer.tooltip.text = status_and_tooltip[1]
-        if (
-            active := self._qt_viewer.viewer.layers.selection.active
-        ) is not None:
+        if (active := self._qt_viewer.viewer.layers.selection.active) is not None:
             self._qt_viewer.viewer.help = active.help
 
     def statusBar(self) -> 'ViewerStatusBar':
@@ -271,10 +257,7 @@ class _QtMainWindow(QMainWindow):
         return window._qt_viewer.viewer if window else None
 
     def event(self, e: QEvent) -> bool:
-        if (
-            e.type() == QEvent.Type.ToolTip
-            and self._qt_viewer.viewer.tooltip.visible
-        ):
+        if e.type() == QEvent.Type.ToolTip and self._qt_viewer.viewer.tooltip.visible:
             # globalPos is for Qt5 e.globalPosition().toPoint() is for QT6
             # https://doc-snapshots.qt.io/qt6-dev/qmouseevent-obsolete.html#globalPos
             pnt = (
@@ -315,8 +298,7 @@ class _QtMainWindow(QMainWindow):
             win32gui.SetWindowLong(
                 handle,
                 win32con.GWL_STYLE,
-                win32gui.GetWindowLong(handle, win32con.GWL_STYLE)
-                | win32con.WS_BORDER,
+                win32gui.GetWindowLong(handle, win32con.GWL_STYLE) | win32con.WS_BORDER,
             )
 
     def eventFilter(self, source, event):
@@ -449,9 +431,7 @@ class _QtMainWindow(QMainWindow):
             settings.application.window_fullscreen = window_fullscreen
             settings.application.window_position = window_position
             settings.application.window_size = window_size
-            settings.application.window_statusbar = (
-                not self.statusBar().isHidden()
-            )
+            settings.application.window_statusbar = not self.statusBar().isHidden()
 
         if settings.application.save_window_state:
             settings.application.window_state = window_state
@@ -509,9 +489,7 @@ class _QtMainWindow(QMainWindow):
             # title bar on Mac the resizeEvent is called an varying amount
             # of times which makes it hard to track the original size before
             # maximization.
-            condition = (
-                self.isMaximized() if os.name == 'nt' else self.isFullScreen()
-            )
+            condition = self.isMaximized() if os.name == 'nt' else self.isFullScreen()
             if condition and self._old_size is not None:
                 if self._positions and len(self._positions) > 1:
                     self._window_pos = self._positions[-2]
@@ -700,18 +678,14 @@ class Window:
         self._update_theme()
         self._update_theme_font_size()
         get_settings().appearance.events.theme.connect(self._update_theme)
-        get_settings().appearance.events.font_size.connect(
-            self._update_theme_font_size
-        )
+        get_settings().appearance.events.font_size.connect(self._update_theme_font_size)
 
         self._add_viewer_dock_widget(self._qt_viewer.dockConsole, tabify=False)
         self._add_viewer_dock_widget(
             self._qt_viewer.dockLayerControls,
             tabify=False,
         )
-        self._add_viewer_dock_widget(
-            self._qt_viewer.dockLayerList, tabify=False
-        )
+        self._add_viewer_dock_widget(self._qt_viewer.dockLayerList, tabify=False)
         if perf.perf_config is not None:
             self._add_viewer_dock_widget(
                 self._qt_viewer.dockPerformance, menu=self.window_menu
@@ -772,9 +746,7 @@ class Window:
         # things down a little.
         if self._qt_viewer._console:
             theme.events.console.connect(self._qt_viewer.console._update_theme)
-            theme.events.syntax_style.connect(
-                self._qt_viewer.console._update_theme
-            )
+            theme.events.syntax_style.connect(self._qt_viewer.console._update_theme)
 
     def _disconnect_theme(self, theme):
         theme.events.background.disconnect(self._update_theme_no_event)
@@ -795,12 +767,8 @@ class Window:
         # disconnect console-specific attributes only if QtConsole
         # is present and they were previously connected
         if self._qt_viewer._console:
-            theme.events.console.disconnect(
-                self._qt_viewer.console._update_theme
-            )
-            theme.events.syntax_style.disconnect(
-                self._qt_viewer.console._update_theme
-            )
+            theme.events.console.disconnect(self._qt_viewer.console._update_theme)
+            theme.events.syntax_style.disconnect(self._qt_viewer.console._update_theme)
 
     def _add_theme(self, event):
         """Add new theme and connect events."""
@@ -911,9 +879,7 @@ class Window:
         # https://stackoverflow.com/questions/50537642/how-to-keep-the-shortcuts-of-a-hidden-widget-in-pyqt5
         self._main_menu_shortcut = QShortcut('Ctrl+M', self._qt_window)
         self._main_menu_shortcut.setEnabled(False)
-        self._main_menu_shortcut.activated.connect(
-            self._toggle_menubar_visible
-        )
+        self._main_menu_shortcut.activated.connect(self._toggle_menubar_visible)
         # file menu
         self.file_menu = build_qmodel_menu(
             MenuId.MENUBAR_FILE, title=trans._('&File'), parent=self._qt_window
@@ -1011,7 +977,7 @@ class Window:
     def add_plugin_dock_widget(
         self,
         plugin_name: str,
-        widget_name: Optional[str] = None,
+        widget_name: str | None = None,
         tabify: bool = False,
     ) -> tuple[QtViewerDockWidget, Any]:
         """Add plugin dock widget if not already added.
@@ -1098,12 +1064,12 @@ class Window:
         widget: Union[QWidget, 'Widget'],
         *,
         name: str = '',
-        area: Optional[str] = None,
-        allowed_areas: Optional[Sequence[str]] = None,
+        area: str | None = None,
+        allowed_areas: Sequence[str] | None = None,
         shortcut=_sentinel,
         add_vertical_stretch=True,
         tabify: bool = False,
-        menu: Optional[QMenu] = None,
+        menu: QMenu | None = None,
     ):
         """Convenience method to add a QDockWidget to the main window.
 
@@ -1157,9 +1123,7 @@ class Window:
 
         if area is None:
             settings = get_settings()
-            area = settings.application.plugin_widget_positions.get(
-                name, 'right'
-            )
+            area = settings.application.plugin_widget_positions.get(name, 'right')
 
         if shortcut is not _sentinel:
             warnings.warn(
@@ -1206,7 +1170,7 @@ class Window:
         self,
         dock_widget: QtViewerDockWidget,
         tabify: bool = False,
-        menu: Optional[QMenu] = None,
+        menu: QMenu | None = None,
     ):
         """Add a QtViewerDockWidget to the main window
 
@@ -1232,18 +1196,14 @@ class Window:
         # If another dock widget present in area then tabify
         if current_dws_in_area:
             if tabify:
-                self._qt_window.tabifyDockWidget(
-                    current_dws_in_area[-1], dock_widget
-                )
+                self._qt_window.tabifyDockWidget(current_dws_in_area[-1], dock_widget)
                 dock_widget.show()
                 dock_widget.raise_()
             elif dock_widget.area in ('right', 'left'):
                 _wdg = [*current_dws_in_area, dock_widget]
                 # add sizes to push lower widgets up
                 sizes = list(range(1, len(_wdg) * 4, 4))
-                self._qt_window.resizeDocks(
-                    _wdg, sizes, Qt.Orientation.Vertical
-                )
+                self._qt_window.resizeDocks(_wdg, sizes, Qt.Orientation.Vertical)
 
         if menu:
             action = dock_widget.toggleViewAction()
@@ -1498,9 +1458,7 @@ class Window:
         # _qt_window has been created.
         # See #721, #732, #735, #795, #1594
         app_name = QApplication.instance().applicationName()
-        if (
-            app_name == 'napari' or in_jupyter()
-        ) and self._qt_window.isActiveWindow():
+        if (app_name == 'napari' or in_jupyter()) and self._qt_window.isActiveWindow():
             self.activate()
 
     def activate(self):
@@ -1588,8 +1546,8 @@ class Window:
 
     def _screenshot(
         self,
-        size: Optional[tuple[int, int]] = None,
-        scale: Optional[float] = None,
+        size: tuple[int, int] | None = None,
+        scale: float | None = None,
         flash: bool = True,
         canvas_only: bool = False,
         fit_to_data_extent: bool = False,
@@ -1660,12 +1618,8 @@ class Window:
 
         # Part 2: compute canvas size and view based on parameters
         if fit_to_data_extent:
-            extent_world = self._qt_viewer.viewer.layers.extent.world[1][
-                -ndisplay:
-            ]
-            extent_step = min(
-                self._qt_viewer.viewer.layers.extent.step[-ndisplay:]
-            )
+            extent_world = self._qt_viewer.viewer.layers.extent.world[1][-ndisplay:]
+            extent_step = min(self._qt_viewer.viewer.layers.extent.step[-ndisplay:])
             size = extent_world / extent_step + 1
         if size is not None:
             size = np.asarray(size) / self._qt_window.devicePixelRatio()
@@ -1698,7 +1652,7 @@ class Window:
 
     def export_figure(
         self,
-        path: Optional[str] = None,
+        path: str | None = None,
         scale: float = 1,
         flash=True,
     ) -> np.ndarray:
@@ -1750,8 +1704,8 @@ class Window:
     def export_rois(
         self,
         rois: list[np.ndarray],
-        paths: Optional[Union[str, Path, list[Union[str, Path]]]] = None,
-        scale: Optional[float] = None,
+        paths: str | Path | list[str | Path] | None = None,
+        scale: float | None = None,
     ):
         """Export the given rectangular rois to specified file paths.
 
@@ -1785,11 +1739,7 @@ class Window:
             The list with roi screenshots.
 
         """
-        if (
-            paths is not None
-            and isinstance(paths, list)
-            and len(paths) != len(rois)
-        ):
+        if paths is not None and isinstance(paths, list) and len(paths) != len(rois):
             raise ValueError(
                 trans._(
                     'The number of file paths does not match the number of ROI shapes',
@@ -1803,9 +1753,7 @@ class Window:
             paths = [storage_dir / f'roi_{n}.png' for n in range(len(rois))]
 
         if self._qt_viewer.viewer.dims.ndisplay > 2:
-            raise NotImplementedError(
-                "'export_rois' is not implemented for 3D view."
-            )
+            raise NotImplementedError("'export_rois' is not implemented for 3D view.")
 
         screenshot_list = []
         camera = self._qt_viewer.viewer.camera
@@ -1834,9 +1782,7 @@ class Window:
 
         return screenshot_list
 
-    def screenshot(
-        self, path=None, size=None, scale=None, flash=True, canvas_only=False
-    ):
+    def screenshot(self, path=None, size=None, scale=None, flash=True, canvas_only=False):
         """Take currently displayed viewer and convert to an image array.
 
         Parameters
@@ -1932,9 +1878,7 @@ class Window:
         from finn.utils.history import get_save_history, update_save_history
 
         hist = get_save_history()
-        dial = ScreenshotDialog(
-            self.screenshot, self._qt_viewer, hist[0], hist
-        )
+        dial = ScreenshotDialog(self.screenshot, self._qt_viewer, hist[0], hist)
         if dial.exec_():
             update_save_history(dial.selectedFiles()[0])
 

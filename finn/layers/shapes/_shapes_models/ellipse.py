@@ -95,9 +95,7 @@ class Ellipse(Shape):
         self._face_triangles = triangles
         self._box = rectangle_to_box(self.data_displayed)
 
-        self.slice_key = self._bounding_box[:, self.dims_not_displayed].astype(
-            'int'
-        )
+        self.slice_key = self._bounding_box[:, self.dims_not_displayed].astype('int')
 
     def transform(self, transform):
         """Performs a linear transform on the shape
@@ -115,9 +113,7 @@ class Ellipse(Shape):
 
         points = self._face_vertices[1:-1]
 
-        centers, offsets, triangles = triangulate_edge(
-            points, closed=self._closed
-        )
+        centers, offsets, triangles = triangulate_edge(points, closed=self._closed)
         self._edge_vertices = centers
         self._edge_offsets = offsets
         self._edge_triangles = triangles

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import typing
 import warnings
-from typing import Any, Literal, Union, cast
+from typing import Any, Literal, cast
 
 import numpy as np
 from scipy import ndimage as ndi
@@ -426,12 +426,12 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         self.events.attenuation()
 
     @property
-    def data(self) -> Union[LayerDataProtocol, MultiScaleData]:
+    def data(self) -> LayerDataProtocol | MultiScaleData:
         """Data, possibly in multiscale wrapper. Obeys LayerDataProtocol."""
         return self._data
 
     @data.setter
-    def data(self, data: Union[LayerDataProtocol, MultiScaleData]) -> None:
+    def data(self, data: LayerDataProtocol | MultiScaleData) -> None:
         self._data_raw = data
         # note, we don't support changing multiscale in an Image instance
         self._data = MultiScaleData(data) if self.multiscale else data  # type: ignore
@@ -503,9 +503,7 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         return cast(InterpolationStr, str(self._interpolation2d))
 
     @interpolation2d.setter
-    def interpolation2d(
-        self, value: Union[InterpolationStr, Interpolation]
-    ) -> None:
+    def interpolation2d(self, value: InterpolationStr | Interpolation) -> None:
         if value == 'bilinear':
             raise ValueError(
                 trans._(
@@ -528,9 +526,7 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         return cast(InterpolationStr, str(self._interpolation3d))
 
     @interpolation3d.setter
-    def interpolation3d(
-        self, value: Union[InterpolationStr, Interpolation]
-    ) -> None:
+    def interpolation3d(self, value: InterpolationStr | Interpolation) -> None:
         if value == 'custom':
             raise NotImplementedError(
                 'custom interpolation is not implemented yet for 3D rendering'
@@ -581,9 +577,7 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         if dtype in [np.dtype(np.float16)]:
             image = image.astype(np.float32)
 
-        raw_zoom_factor = np.divide(
-            self._thumbnail_shape[:2], image.shape[:2]
-        ).min()
+        raw_zoom_factor = np.divide(self._thumbnail_shape[:2], image.shape[:2]).min()
         new_shape = np.clip(
             raw_zoom_factor * np.array(image.shape[:2]),
             1,  # smallest side should be 1 pixel wide
@@ -591,9 +585,7 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         )
         zoom_factor = tuple(new_shape / image.shape[:2])
         if self.rgb:
-            downsampled = ndi.zoom(
-                image, zoom_factor + (1,), prefilter=False, order=0
-            )
+            downsampled = ndi.zoom(image, zoom_factor + (1,), prefilter=False, order=0)
             if image.shape[2] == 4:  # image is RGBA
                 colormapped = np.copy(downsampled)
                 colormapped[..., 3] = downsampled[..., 3] * self.opacity
@@ -610,9 +602,7 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
                     alpha = np.full(downsampled.shape[:2] + (1,), self.opacity)
                 colormapped = np.concatenate([downsampled, alpha], axis=2)
         else:
-            downsampled = ndi.zoom(
-                image, zoom_factor, prefilter=False, order=0
-            )
+            downsampled = ndi.zoom(image, zoom_factor, prefilter=False, order=0)
             low, high = self.contrast_limits
             if np.issubdtype(downsampled.dtype, np.integer):
                 low = max(low, np.iinfo(downsampled.dtype).min)
@@ -647,9 +637,7 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
                     mode=mode,
                 )
             )
-        return calc_data_range(
-            cast(LayerDataProtocol, input_data), rgb=self.rgb
-        )
+        return calc_data_range(cast(LayerDataProtocol, input_data), rgb=self.rgb)
 
     def _raw_to_displayed(self, raw: np.ndarray) -> np.ndarray:
         """Determine displayed image from raw image.
@@ -671,9 +659,7 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
             Displayed array.
         """
         fixed_contrast_info = _coerce_contrast_limits(self.contrast_limits)
-        if np.allclose(
-            fixed_contrast_info.contrast_limits, self.contrast_limits
-        ):
+        if np.allclose(fixed_contrast_info.contrast_limits, self.contrast_limits):
             return raw
 
         return fixed_contrast_info.coerce_data(raw)
@@ -724,9 +710,9 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
             return np.nanmin(values)
         if self.rendering == ImageRendering.ATTENUATED_MIP:
             # normalize values so attenuation applies from 0 to 1
-            values_attenuated = (
-                values - self.contrast_limits[0]
-            ) / self.contrast_limits[1]
+            values_attenuated = (values - self.contrast_limits[0]) / self.contrast_limits[
+                1
+            ]
             # approx, step size is actually calculated with int(lenght(ray) * 2)
             step_size = 0.5
             sumval = (

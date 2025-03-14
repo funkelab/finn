@@ -3,12 +3,12 @@ from __future__ import annotations
 import math
 from typing import TYPE_CHECKING
 
-import finn
 import numpy as np
+from funtracks.data_model import NodeType, Tracks
+
+import finn
 from finn.track_data_views.graph_attributes import NodeAttr
 from finn.utils.notifications import show_info
-
-from funtracks.data_model import NodeType, Tracks
 
 if TYPE_CHECKING:
     from finn.track_data_views.views_coordinator.tracks_viewer import TracksViewer
@@ -21,7 +21,9 @@ class TrackPoints(finn.layers.Points):
 
     @property
     def _type_string(self) -> str:
-        return "points"  # to make sure that the layer is treated as points layer for saving
+        return (
+            'points'  # to make sure that the layer is treated as points layer for saving
+        )
 
     def __init__(
         self,
@@ -51,30 +53,30 @@ class TrackPoints(finn.layers.Points):
             face_color=colors,
             size=self.default_size,
             properties={
-                "node_id": self.nodes,
-                "track_id": track_ids,
+                'node_id': self.nodes,
+                'track_id': track_ids,
             },  # TODO: use features
             border_color=[1, 1, 1, 1],
-            blending="translucent_no_depth",
+            blending='translucent_no_depth',
         )
 
         # Key bindings (should be specified both on the viewer (in tracks_viewer)
         # and on the layer to overwrite finn defaults)
-        self.bind_key("q")(self.tracks_viewer.toggle_display_mode)
-        self.bind_key("a")(self.tracks_viewer.create_edge)
-        self.bind_key("d")(self.tracks_viewer.delete_node)
-        self.bind_key("Delete")(self.tracks_viewer.delete_node)
-        self.bind_key("b")(self.tracks_viewer.delete_edge)
+        self.bind_key('q')(self.tracks_viewer.toggle_display_mode)
+        self.bind_key('a')(self.tracks_viewer.create_edge)
+        self.bind_key('d')(self.tracks_viewer.delete_node)
+        self.bind_key('Delete')(self.tracks_viewer.delete_node)
+        self.bind_key('b')(self.tracks_viewer.delete_edge)
         # self.bind_key("s")(self.tracks_viewer.set_split_node)
         # self.bind_key("e")(self.tracks_viewer.set_endpoint_node)
         # self.bind_key("c")(self.tracks_viewer.set_linear_node)
-        self.bind_key("z")(self.tracks_viewer.undo)
-        self.bind_key("r")(self.tracks_viewer.redo)
+        self.bind_key('z')(self.tracks_viewer.undo)
+        self.bind_key('r')(self.tracks_viewer.redo)
 
         # Connect to click events to select nodes
         @self.mouse_drag_callbacks.append
         def click(layer, event):
-            if event.type == "mouse_press":
+            if event.type == 'mouse_press':
                 # is the value passed from the click event?
                 point_index = layer.get_value(
                     event.position,
@@ -84,7 +86,7 @@ class TrackPoints(finn.layers.Points):
                 )
                 if point_index is not None:
                     node_id = self.nodes[point_index]
-                    append = "Shift" in event.modifiers
+                    append = 'Shift' in event.modifiers
                     self.tracks_viewer.selected_nodes.add(node_id, append)
 
         # listen to updates of the data
@@ -126,7 +128,7 @@ class TrackPoints(finn.layers.Points):
         self.face_color = [
             self.tracks_viewer.colormap.map(track_id) for track_id in track_ids
         ]
-        self.properties = {"node_id": self.nodes, "track_id": track_ids}
+        self.properties = {'node_id': self.nodes, 'track_id': track_ids}
         self.size = self.default_size
         self.border_color = [1, 1, 1, 1]
 
@@ -152,7 +154,7 @@ class TrackPoints(finn.layers.Points):
     def _update_data(self, event):
         """Calls the tracks controller with to update the data in the Tracks object and dispatch the update"""
 
-        if event.action == "added":
+        if event.action == 'added':
             # we only want to allow this update if there is no seg layer
             if self.tracks_viewer.tracking_layers.seg_layer is None:
                 new_point = event.value[-1]
@@ -160,16 +162,16 @@ class TrackPoints(finn.layers.Points):
                 self.tracks_viewer.tracks_controller.add_nodes(attributes)
             else:
                 show_info(
-                    "Mixed point and segmentation nodes not allowed: add points by drawing on segmentation layer"
+                    'Mixed point and segmentation nodes not allowed: add points by drawing on segmentation layer'
                 )
                 self._refresh()
 
-        if event.action == "removed":
+        if event.action == 'removed':
             self.tracks_viewer.tracks_controller.delete_nodes(
                 self.tracks_viewer.selected_nodes._list
             )
 
-        if event.action == "changed":
+        if event.action == 'changed':
             # we only want to allow this update if there is no seg layer
             if self.tracks_viewer.tracking_layers.seg_layer is None:
                 positions = []
@@ -178,7 +180,7 @@ class TrackPoints(finn.layers.Points):
                     point = self.data[ind]
                     pos = point[1:]
                     positions.append(pos)
-                    node_id = self.properties["node_id"][ind]
+                    node_id = self.properties['node_id'][ind]
                     node_ids.append(node_id)
 
                 attributes = {NodeAttr.POS.value: positions}
@@ -213,12 +215,10 @@ class TrackPoints(finn.layers.Points):
             visible (list[int] | str): A list of track ids, or "all"
         """
         # filter out the non-selected tracks if in lineage mode
-        if visible == "all":
+        if visible == 'all':
             self.shown[:] = True
         else:
-            indices = np.where(np.isin(self.properties["track_id"], visible))[
-                0
-            ].tolist()
+            indices = np.where(np.isin(self.properties['track_id'], visible))[0].tolist()
             self.shown[:] = False
             self.shown[indices] = True
 

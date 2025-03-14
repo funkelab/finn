@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import sys
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Optional, cast
+from typing import TYPE_CHECKING, cast
 from warnings import warn
 
 from qtpy import PYQT5, PYSIDE2
@@ -33,9 +33,7 @@ from finn.utils.translations import trans
 if TYPE_CHECKING:
     from IPython import InteractiveShell
 
-NAPARI_ICON_PATH = os.path.join(
-    os.path.dirname(__file__), '..', 'resources', 'logo.svg'
-)
+NAPARI_ICON_PATH = os.path.join(os.path.dirname(__file__), '..', 'resources', 'logo.svg')
 NAPARI_APP_ID = f'finn.finn.viewer.{__version__}'
 
 
@@ -61,7 +59,7 @@ _app_ref = None
 _IPYTHON_WAS_HERE_FIRST = 'IPython' in sys.modules
 
 
-def _focus_changed(old: Optional[QWidget], new: Optional[QWidget]):
+def _focus_changed(old: QWidget | None, new: QWidget | None):
     if old is not None and new is not None:
         return  # ignore focus changes between two widgets
     if old is None and new is None:
@@ -106,13 +104,13 @@ def get_app(*args, **kwargs) -> QApplication:
 
 def get_qapp(
     *,
-    app_name: Optional[str] = None,
-    app_version: Optional[str] = None,
-    icon: Optional[str] = None,
-    org_name: Optional[str] = None,
-    org_domain: Optional[str] = None,
-    app_id: Optional[str] = None,
-    ipy_interactive: Optional[bool] = None,
+    app_name: str | None = None,
+    app_version: str | None = None,
+    icon: str | None = None,
+    org_name: str | None = None,
+    org_domain: str | None = None,
+    app_id: str | None = None,
+    ipy_interactive: bool | None = None,
 ) -> QApplication:
     """Get or create the Qt QApplication.
 
@@ -188,12 +186,8 @@ def get_qapp(
         # they are deprecated and activated by default. For more info see:
         # https://doc.qt.io/qtforpython-6/gettingstarted/porting_from2.html#class-function-deprecations
         if PYQT5 or PYSIDE2:
-            QApplication.setAttribute(
-                Qt.ApplicationAttribute.AA_EnableHighDpiScaling
-            )
-            QApplication.setAttribute(
-                Qt.ApplicationAttribute.AA_UseHighDpiPixmaps
-            )
+            QApplication.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling)
+            QApplication.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps)
 
         argv = sys.argv.copy()
         if sys.platform == 'darwin' and not argv[0].endswith('napari'):
@@ -256,9 +250,7 @@ def get_qapp(
         notification_manager.notification_ready.connect(
             NapariQtNotification.show_notification
         )
-        notification_manager.notification_ready.connect(
-            show_console_notification
-        )
+        notification_manager.notification_ready.connect(show_console_notification)
 
         app.focusChanged.connect(_focus_changed)
 
@@ -276,10 +268,7 @@ def quit_app():
         v.close()
     QApplication.closeAllWindows()
     # if we started the application then the app will be named 'napari'.
-    if (
-        QApplication.applicationName() == 'napari'
-        and not _ipython_has_eventloop()
-    ):
+    if QApplication.applicationName() == 'napari' and not _ipython_has_eventloop():
         QApplication.quit()
 
     # otherwise, something else created the QApp before us (such as
@@ -393,9 +382,7 @@ def _try_enable_ipython_gui(gui='qt'):
         shell.enable_gui(gui)
 
 
-def run(
-    *, force=False, gui_exceptions=False, max_loop_level=1, _func_name='run'
-):
+def run(*, force=False, gui_exceptions=False, max_loop_level=1, _func_name='run'):
     """Start the Qt Event Loop
 
     Parameters

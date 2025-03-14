@@ -3,7 +3,7 @@ from collections import OrderedDict, defaultdict
 from collections.abc import Iterable
 from functools import lru_cache
 from threading import Lock
-from typing import NamedTuple, Optional, Union
+from typing import NamedTuple, Union
 
 import numpy as np
 import skimage.color as colorconv
@@ -58,9 +58,7 @@ matplotlib_colormaps = _MATPLOTLIB_COLORMAP_NAMES = OrderedDict(
     gist_earth=trans._p('colormap', 'gist earth'),
     PiYG=trans._p('colormap', 'PiYG'),
 )
-_MATPLOTLIB_COLORMAP_NAMES_REVERSE = {
-    v: k for k, v in matplotlib_colormaps.items()
-}
+_MATPLOTLIB_COLORMAP_NAMES_REVERSE = {v: k for k, v in matplotlib_colormaps.items()}
 _VISPY_COLORMAPS_ORIGINAL = _VCO = get_colormaps()
 _VISPY_COLORMAPS_TRANSLATIONS = OrderedDict(
     autumn=(trans._p('colormap', 'autumn'), _VCO['autumn']),
@@ -103,9 +101,7 @@ _PRIMARY_COLORS = OrderedDict(
 )
 
 SIMPLE_COLORMAPS = {
-    name: Colormap(
-        name=name, display_name=display_name, colors=[[0.0, 0.0, 0.0], color]
-    )
+    name: Colormap(name=name, display_name=display_name, colors=[[0.0, 0.0, 0.0], color])
     for name, (display_name, color) in _PRIMARY_COLORS.items()
 }
 
@@ -292,9 +288,7 @@ def low_discrepancy_image(image, seed=0.5, margin=1 / 256) -> np.ndarray:
     image_float = np.float32(image)
     image_float = seed + image_float * phi_mod
     # We now map the floats to the range [0 + margin, 1 - margin]
-    image_out = margin + (1 - 2 * margin) * (
-        image_float - np.floor(image_float)
-    )
+    image_out = margin + (1 - 2 * margin) * (image_float - np.floor(image_float))
 
     # Clear zero (background) values, matching the shader behavior in _glsl_label_step
     image_out[image == 0] = 0.0
@@ -339,7 +333,7 @@ def color_dict_to_colormap(colors):
 
     control2index = {
         tuple(color): control_point
-        for color, control_point in zip(colormap.colors, colormap.controls)
+        for color, control_point in zip(colormap.colors, colormap.controls, strict=False)
     }
 
     control_small_delta = 0.5 / len(control_colors)
@@ -438,9 +432,7 @@ def _color_random(n, *, colorspace='lab', tolerance=0.0, seed=0.5):
     return rgb[:n]
 
 
-def label_colormap(
-    num_colors=256, seed=0.5, background_value=0
-) -> CyclicLabelColormap:
+def label_colormap(num_colors=256, seed=0.5, background_value=0) -> CyclicLabelColormap:
     """Produce a colormap suitable for use with a given label set.
 
     Parameters
@@ -467,9 +459,7 @@ def label_colormap(
     # Starting the control points slightly above 0 and below 1 is necessary
     # to ensure that the background pixel 0 is transparent
     midpoints = np.linspace(0.00001, 1 - 0.00001, num_colors + 1)
-    control_points = np.concatenate(
-        (np.array([0]), midpoints, np.array([1.0]))
-    )
+    control_points = np.concatenate((np.array([0]), midpoints, np.array([1.0])))
     # make sure to add an alpha channel to the colors
 
     colors = np.concatenate(
@@ -570,9 +560,7 @@ def shuffle_and_extend_colormap(
     rng.shuffle(indices)
     shuffled_colors = colormap.colors[indices]
 
-    primes = _primes(
-        np.iinfo(dtype).max if np.issubdtype(dtype, np.integer) else 2**24
-    )
+    primes = _primes(np.iinfo(dtype).max if np.issubdtype(dtype, np.integer) else 2**24)
     valid_primes = primes[primes > n_colors_prev]
     if len(valid_primes) < min_random_choices:
         valid_primes = primes[-min_random_choices:]
@@ -668,17 +656,13 @@ def vispy_or_mpl_colormap(name) -> Colormap:
                 )
             ) from e
         mpl_colors = mpl_cmap(np.linspace(0, 1, 256))
-        colormap = Colormap(
-            name=name, display_name=display_name, colors=mpl_colors
-        )
+        colormap = Colormap(name=name, display_name=display_name, colors=mpl_colors)
 
     return colormap
 
 
 # A dictionary mapping names to VisPy colormap objects
-ALL_COLORMAPS = {
-    k: vispy_or_mpl_colormap(k) for k in _MATPLOTLIB_COLORMAP_NAMES
-}
+ALL_COLORMAPS = {k: vispy_or_mpl_colormap(k) for k in _MATPLOTLIB_COLORMAP_NAMES}
 ALL_COLORMAPS.update(SIMPLE_COLORMAPS)
 ALL_COLORMAPS.update(BOP_COLORMAPS)
 ALL_COLORMAPS.update(INVERSE_COLORMAPS)
@@ -778,9 +762,7 @@ def ensure_colormap(colormap: ValidColormapArg) -> Colormap:
             # Is a colormap with this name already available?
             custom_cmap = AVAILABLE_COLORMAPS.get(colormap)
             if custom_cmap is None:
-                name = (
-                    colormap.lower() if colormap.startswith('#') else colormap
-                )
+                name = colormap.lower() if colormap.startswith('#') else colormap
                 custom_cmap = _colormap_from_colors(colormap, name)
 
                 if custom_cmap is None:
@@ -810,9 +792,7 @@ def ensure_colormap(colormap: ValidColormapArg) -> Colormap:
                     break
 
             if _name is None:
-                name, _display_name = _increment_unnamed_colormap(
-                    AVAILABLE_COLORMAPS
-                )
+                name, _display_name = _increment_unnamed_colormap(AVAILABLE_COLORMAPS)
             else:
                 name = _name
 
@@ -844,9 +824,7 @@ def ensure_colormap(colormap: ValidColormapArg) -> Colormap:
                         )
                     )
 
-                name, _display_name = _increment_unnamed_colormap(
-                    AVAILABLE_COLORMAPS
-                )
+                name, _display_name = _increment_unnamed_colormap(AVAILABLE_COLORMAPS)
                 colormap.update({'name': name, '_display_name': _display_name})
                 AVAILABLE_COLORMAPS[name] = colormap
 
@@ -858,8 +836,7 @@ def ensure_colormap(colormap: ValidColormapArg) -> Colormap:
                 name = cmap.name
                 AVAILABLE_COLORMAPS[name] = cmap
             elif not all(
-                (isinstance(i, (VispyColormap, Colormap)))
-                for i in colormap.values()
+                (isinstance(i, (VispyColormap, Colormap))) for i in colormap.values()
             ):
                 raise TypeError(
                     trans._(
@@ -899,9 +876,7 @@ def ensure_colormap(colormap: ValidColormapArg) -> Colormap:
         else:
             colormap = _colormap_from_colors(colormap)
             if colormap is not None:
-                name, _display_name = _increment_unnamed_colormap(
-                    AVAILABLE_COLORMAPS
-                )
+                name, _display_name = _increment_unnamed_colormap(AVAILABLE_COLORMAPS)
                 colormap.update({'name': name, '_display_name': _display_name})
                 AVAILABLE_COLORMAPS[name] = colormap
             else:
@@ -920,9 +895,9 @@ def ensure_colormap(colormap: ValidColormapArg) -> Colormap:
 
 def _colormap_from_colors(
     colors: ColorType,
-    name: Optional[str] = 'custom',
-    display_name: Optional[str] = None,
-) -> Optional[Colormap]:
+    name: str | None = 'custom',
+    display_name: str | None = None,
+) -> Colormap | None:
     try:
         color_array = transform_color(colors)
     except (ValueError, AttributeError, KeyError):
@@ -937,12 +912,8 @@ def make_default_color_array():
 
 
 def display_name_to_name(display_name):
-    display_name_map = {
-        v._display_name: k for k, v in AVAILABLE_COLORMAPS.items()
-    }
-    return display_name_map.get(
-        display_name, next(iter(AVAILABLE_COLORMAPS.keys()))
-    )
+    display_name_map = {v._display_name: k for k, v in AVAILABLE_COLORMAPS.items()}
+    return display_name_map.get(display_name, next(iter(AVAILABLE_COLORMAPS.keys())))
 
 
 class CoercedContrastLimits(NamedTuple):
@@ -978,8 +949,7 @@ def scale_down(contrast_limits: tuple[float, float]):
     """Scale down contrast limits to be in the float32 range."""
     scale: float = min(
         1.0,
-        (_MAX_VISPY_SUPPORTED_VALUE * 2)
-        / (contrast_limits[1] - contrast_limits[0]),
+        (_MAX_VISPY_SUPPORTED_VALUE * 2) / (contrast_limits[1] - contrast_limits[0]),
     )
     ctrl_lim = contrast_limits[0] * scale, contrast_limits[1] * scale
     left_shift = max(0.0, -_MAX_VISPY_SUPPORTED_VALUE - ctrl_lim[0])

@@ -1,5 +1,3 @@
-from typing import Union
-
 from finn.components._viewer_constants import CanvasPosition
 from finn.layers.base._base_constants import Blending
 from finn.utils.events import EventedModel
@@ -51,9 +49,7 @@ class CanvasOverlay(Overlay):
         The rendering order of the overlay: lower numbers get rendered first.
     """
 
-    position: Union[CanvasPosition, tuple[int, int]] = (
-        CanvasPosition.BOTTOM_RIGHT
-    )
+    position: CanvasPosition | tuple[int, int] = CanvasPosition.BOTTOM_RIGHT
     blending: Blending = Blending.TRANSLUCENT_NO_DEPTH
 
 

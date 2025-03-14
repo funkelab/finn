@@ -228,9 +228,7 @@ def test_qt_highlight_preview_widget_value(highlight_preview_widget):
     assert widget.value()['highlight_color'] == [0.0, 0.6, 1.0, 1.0]
 
     widget = highlight_preview_widget()
-    widget.setValue(
-        {'highlight_thickness': 5, 'highlight_color': [0.6, 0.6, 1.0, 1.0]}
-    )
+    widget.setValue({'highlight_thickness': 5, 'highlight_color': [0.6, 0.6, 1.0, 1.0]})
     assert widget._thickness_value == 5
     assert widget.value()['highlight_thickness'] == 5
     assert np.array_equal(
@@ -243,21 +241,15 @@ def test_qt_highlight_preview_widget_value(highlight_preview_widget):
     )
 
 
-def test_qt_highlight_preview_widget_value_invalid(
-    qtbot, highlight_preview_widget
-):
+def test_qt_highlight_preview_widget_value_invalid(qtbot, highlight_preview_widget):
     widget = highlight_preview_widget()
     widget.setMaximum(50)
-    widget.setValue(
-        {'highlight_thickness': 51, 'highlight_color': [0.0, 0.6, 1.0, 1.0]}
-    )
+    widget.setValue({'highlight_thickness': 51, 'highlight_color': [0.0, 0.6, 1.0, 1.0]})
     assert widget.value()['highlight_thickness'] == 50
     assert widget._lineedit.text() == '50'
 
     widget.setMinimum(5)
-    widget.setValue(
-        {'highlight_thickness': 1, 'highlight_color': [0.0, 0.6, 1.0, 1.0]}
-    )
+    widget.setValue({'highlight_thickness': 1, 'highlight_color': [0.0, 0.6, 1.0, 1.0]})
     assert widget.value()['highlight_thickness'] == 5
     assert widget._lineedit.text() == '5'
 

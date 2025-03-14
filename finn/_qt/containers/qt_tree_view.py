@@ -10,8 +10,6 @@ from finn._qt.containers.qt_tree_model import QtNodeTreeModel
 from finn.utils.tree import Group, Node
 
 if TYPE_CHECKING:
-    from typing import Optional
-
     from qtpy.QtCore import QModelIndex
     from qtpy.QtWidgets import QWidget  # type: ignore[attr-defined]
 
@@ -36,9 +34,7 @@ class QtNodeTreeView(_BaseEventedItemView[NodeType], QTreeView):
 
     _root: Group[Node]
 
-    def __init__(
-        self, root: Group[Node], parent: Optional[QWidget] = None
-    ) -> None:
+    def __init__(self, root: Group[Node], parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setHeaderHidden(True)
         self.setDragDropMode(QTreeView.InternalMove)

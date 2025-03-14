@@ -23,14 +23,8 @@ class ModifiedScrollBar(QScrollBar):
 
         # pos is for Qt5 e.position().toPoint() is for QT6
         # https://doc-snapshots.qt.io/qt6-dev/qmouseevent-obsolete.html#pos
-        point = (
-            event.position().toPoint()
-            if hasattr(event, 'position')
-            else event.pos()
-        )
-        control = self.style().hitTestComplexControl(
-            CC.CC_ScrollBar, opt, point, self
-        )
+        point = event.position().toPoint() if hasattr(event, 'position') else event.pos()
+        control = self.style().hitTestComplexControl(CC.CC_ScrollBar, opt, point, self)
         if control not in {SC.SC_ScrollBarAddPage, SC.SC_ScrollBarSubPage}:
             return
         # scroll here

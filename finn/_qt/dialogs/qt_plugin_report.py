@@ -1,7 +1,6 @@
 """Provides a QtPluginErrReporter that allows the user report plugin errors."""
 
 import contextlib
-from typing import Optional
 
 from napari_plugin_engine import standard_metadata
 from qtpy.QtCore import Qt
@@ -58,8 +57,8 @@ class QtPluginErrReporter(QDialog):
     def __init__(
         self,
         *,
-        parent: Optional[QWidget] = None,
-        initial_plugin: Optional[str] = None,
+        parent: QWidget | None = None,
+        initial_plugin: str | None = None,
     ) -> None:
         super().__init__(parent)
         from finn.plugins import plugin_manager
@@ -104,9 +103,7 @@ class QtPluginErrReporter(QDialog):
         self.clipboard_button = QPushButton()
         self.clipboard_button.hide()
         self.clipboard_button.setObjectName('QtCopyToClipboardButton')
-        self.clipboard_button.setToolTip(
-            trans._('Copy error log to clipboard')
-        )
+        self.clipboard_button.setToolTip(trans._('Copy error log to clipboard'))
         self.clipboard_button.clicked.connect(self.copyToClipboard)
 
         # plugin_meta contains a URL to the home page, (and/or other details)
@@ -162,9 +159,7 @@ class QtPluginErrReporter(QDialog):
 
         if not self.plugin_manager.get_errors(plugin):
             raise ValueError(
-                trans._(
-                    "No errors reported for plugin '{plugin}'", plugin=plugin
-                )
+                trans._("No errors reported for plugin '{plugin}'", plugin=plugin)
             )
 
         self.plugin_combo.setCurrentText(plugin)

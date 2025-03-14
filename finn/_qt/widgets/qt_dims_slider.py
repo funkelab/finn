@@ -1,5 +1,5 @@
 import threading
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 from weakref import ref
 
 import numpy as np
@@ -67,9 +67,7 @@ class QtDimSliderWidget(QWidget):
 
         self.curslice_label.editingFinished.connect(self._set_slice_from_label)
         self.totslice_label = QLabel(self)
-        self.totslice_label.setToolTip(
-            trans._('Total slices for axis {axis}', axis=axis)
-        )
+        self.totslice_label.setToolTip(trans._('Total slices for axis {axis}', axis=axis))
         self.curslice_label.setObjectName('slice_label')
         self.totslice_label.setObjectName('slice_label')
         sep = QFrame(self)
@@ -78,9 +76,7 @@ class QtDimSliderWidget(QWidget):
 
         settings = get_settings()
         self._fps = settings.application.playback_fps
-        connect_setattr_value(
-            settings.application.events.playback_fps, self, 'fps'
-        )
+        connect_setattr_value(settings.application.events.playback_fps, self, 'fps')
 
         self._minframe = None
         self._maxframe = None
@@ -179,9 +175,7 @@ class QtDimSliderWidget(QWidget):
             trans._('Right click on button for playback setting options.')
         )
         self.play_button.mode_combo.currentTextChanged.connect(
-            lambda x: self.__class__.loop_mode.fset(
-                self, LoopMode(x.replace(' ', '_'))
-            )
+            lambda x: self.__class__.loop_mode.fset(self, LoopMode(x.replace(' ', '_')))
         )
 
         def fps_listener(*args):
@@ -218,10 +212,7 @@ class QtDimSliderWidget(QWidget):
             self.qt_dims.last_used = 0
             self.hide()
         else:
-            if (
-                not displayed_sliders[self.axis]
-                and self.axis not in self.dims.displayed
-            ):
+            if not displayed_sliders[self.axis] and self.axis not in self.dims.displayed:
                 displayed_sliders[self.axis] = True
                 self.last_used = self.axis
                 self.show()
@@ -306,9 +297,7 @@ class QtDimSliderWidget(QWidget):
         """
         value = LoopMode(value)
         self._loop_mode = value
-        self.play_button.mode_combo.setCurrentText(
-            str(value).replace('_', ' ')
-        )
+        self.play_button.mode_combo.setCurrentText(str(value).replace('_', ' '))
         self.mode_changed.emit(str(value))
 
     @property
@@ -328,9 +317,7 @@ class QtDimSliderWidget(QWidget):
             Frame range as tuple/list with range (minimum_frame, maximum_frame)
         """
         if not isinstance(value, (tuple, list, type(None))):
-            raise TypeError(
-                trans._('frame_range value must be a list or tuple')
-            )
+            raise TypeError(trans._('frame_range value must be a list or tuple'))
 
         if value and len(value) != 2:
             raise ValueError(trans._('frame_range must have a length of 2'))
@@ -445,9 +432,7 @@ class QtPlayButton(QPushButton):
 
     play_requested = Signal(int)  # axis, fps
 
-    def __init__(
-        self, qt_dims, axis, reverse=False, fps=10, mode=LoopMode.LOOP
-    ) -> None:
+    def __init__(self, qt_dims, axis, reverse=False, fps=10, mode=LoopMode.LOOP) -> None:
         super().__init__()
         self.qt_dims_ref = ref(qt_dims)
         self.axis = axis
@@ -542,7 +527,7 @@ class AnimationThread(QThread):
 
     frame_requested = Signal(int, int)  # axis, point
 
-    def __init__(self, parent: Optional[QObject] = None) -> None:
+    def __init__(self, parent: QObject | None = None) -> None:
         # FIXME there are attributes defined outside of __init__.
         super().__init__(parent=parent)
         self._interval = 1
@@ -560,9 +545,7 @@ class AnimationThread(QThread):
         if prev_slider is not None:
             prev_slider.fps_changed.disconnect(self.set_fps)
             prev_slider.range_changed.disconnect(self.set_frame_range)
-            prev_slider.dims.events.current_step.disconnect(
-                self._on_axis_changed
-            )
+            prev_slider.dims.events.current_step.disconnect(self._on_axis_changed)
             self.finished.disconnect(prev_slider.play_button._handle_stop)
             self.started.disconnect(prev_slider.play_button._handle_start)
         slider.fps_changed.connect(self.set_fps)
@@ -570,9 +553,7 @@ class AnimationThread(QThread):
         slider.dims.events.current_step.connect(self._on_axis_changed)
         self.finished.connect(slider.play_button._handle_stop)
         self.started.connect(slider.play_button._handle_start)
-        self.current = max(
-            slider.dims.current_step[slider.axis], self.min_point
-        )
+        self.current = max(slider.dims.current_step[slider.axis], self.min_point)
         self.current = min(self.current, self.max_point)
 
     @property
@@ -634,9 +615,7 @@ class AnimationThread(QThread):
 
         if frame_range is not None:
             if frame_range[0] >= frame_range[1]:
-                raise ValueError(
-                    trans._('frame_range[0] must be <= frame_range[1]')
-                )
+                raise ValueError(trans._('frame_range[0] must be <= frame_range[1]'))
             if frame_range[0] < self.dimsrange[0]:
                 raise IndexError(trans._('frame_range[0] out of range'))
             if frame_range[1] * self.dimsrange[2] >= self.dimsrange[1]:
@@ -647,9 +626,7 @@ class AnimationThread(QThread):
             self.min_point, self.max_point = self.frame_range
         else:
             self.min_point = 0
-            self.max_point = int(
-                np.floor(self.dimsrange[1] - self.dimsrange[2])
-            )
+            self.max_point = int(np.floor(self.dimsrange[1] - self.dimsrange[2]))
         self.max_point += 1  # range is inclusive
 
     @Slot()
@@ -661,9 +638,7 @@ class AnimationThread(QThread):
         """
         self.current += self.step * self.dimsrange[2]
         if self.current < self.min_point:
-            if (
-                self.loop_mode == LoopMode.BACK_AND_FORTH
-            ):  # 'loop_back_and_forth'
+            if self.loop_mode == LoopMode.BACK_AND_FORTH:  # 'loop_back_and_forth'
                 self.step *= -1
                 self.current = self.min_point + self.step * self.dimsrange[2]
             elif self.loop_mode == LoopMode.LOOP:  # 'loop'
@@ -671,13 +646,9 @@ class AnimationThread(QThread):
             else:  # loop_mode == 'once'
                 return self.finish()
         elif self.current >= self.max_point:
-            if (
-                self.loop_mode == LoopMode.BACK_AND_FORTH
-            ):  # 'loop_back_and_forth'
+            if self.loop_mode == LoopMode.BACK_AND_FORTH:  # 'loop_back_and_forth'
                 self.step *= -1
-                self.current = (
-                    self.max_point + 2 * self.step * self.dimsrange[2]
-                )
+                self.current = self.max_point + 2 * self.step * self.dimsrange[2]
             elif self.loop_mode == LoopMode.LOOP:  # 'loop'
                 self.current = self.min_point + self.current - self.max_point
             else:  # loop_mode == 'once'

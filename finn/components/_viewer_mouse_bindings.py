@@ -36,6 +36,5 @@ def double_click_to_zoom(viewer, event):
         ) * (1 - 1 / zoom_factor)
     else:
         viewer.camera.center = np.asarray(viewer.camera.center)[-2:] + (
-            np.asarray(event.position)[-2:]
-            - np.asarray(viewer.camera.center)[-2:]
+            np.asarray(event.position)[-2:] - np.asarray(viewer.camera.center)[-2:]
         ) * (1 - 1 / zoom_factor)

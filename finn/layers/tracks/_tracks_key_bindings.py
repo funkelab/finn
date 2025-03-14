@@ -1,4 +1,4 @@
-from typing import Callable
+from collections.abc import Callable
 
 from finn.layers.base._base_constants import Mode
 from finn.layers.tracks.tracks import Tracks

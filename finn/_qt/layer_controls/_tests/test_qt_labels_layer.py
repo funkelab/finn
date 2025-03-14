@@ -150,17 +150,12 @@ def test_change_iso_gradient_mode(make_labels_controls):
     assert layer.iso_gradient_mode == IsoCategoricalGradientMode.FAST
 
     # Change the iso gradient mode via the control, check the layer
-    qtctrl.isoGradientComboBox.setCurrentEnum(
-        IsoCategoricalGradientMode.SMOOTH
-    )
+    qtctrl.isoGradientComboBox.setCurrentEnum(IsoCategoricalGradientMode.SMOOTH)
     assert layer.iso_gradient_mode == IsoCategoricalGradientMode.SMOOTH
 
     # Change the iso gradient mode via the layer, check the control
     layer.iso_gradient_mode = IsoCategoricalGradientMode.FAST
-    assert (
-        qtctrl.isoGradientComboBox.currentEnum()
-        == IsoCategoricalGradientMode.FAST
-    )
+    assert qtctrl.isoGradientComboBox.currentEnum() == IsoCategoricalGradientMode.FAST
 
 
 def test_iso_gradient_mode_hidden_for_2d(make_labels_controls):
@@ -180,10 +175,7 @@ def test_iso_gradient_mode_with_rendering(make_labels_controls):
     layer, qtctrl = make_labels_controls()
     qtctrl.ndisplay = 3
     assert layer.rendering == LabelsRendering.ISO_CATEGORICAL
-    assert (
-        qtctrl.isoGradientComboBox.currentText()
-        == IsoCategoricalGradientMode.FAST
-    )
+    assert qtctrl.isoGradientComboBox.currentText() == IsoCategoricalGradientMode.FAST
     assert qtctrl.isoGradientComboBox.isEnabled()
     layer.rendering = LabelsRendering.TRANSLUCENT
     assert not qtctrl.isoGradientComboBox.isEnabled()

@@ -59,9 +59,7 @@ def fail_obj_graph(Klass):  # pragma: no cover
         leaked_objects_count = len(Klass._instances)
 
         gc.collect()
-        file_path = Path(
-            f'{Klass.__name__}-leak-backref-graph-{COUNTER}.pdf'
-        ).absolute()
+        file_path = Path(f'{Klass.__name__}-leak-backref-graph-{COUNTER}.pdf').absolute()
         objgraph.show_backrefs(
             list(Klass._instances),
             max_depth=20,
@@ -290,9 +288,7 @@ def make_napari_viewer(
             w._update_theme = _empty
             return w
 
-        monkeypatch.setattr(
-            'finn._qt.qt_viewer.QtViewer._get_console', _dummy_widget
-        )
+        monkeypatch.setattr('finn._qt.qt_viewer.QtViewer._get_console', _dummy_widget)
 
     def actual_factory(
         *model_args,
@@ -326,9 +322,7 @@ def make_napari_viewer(
     # close viewers, but don't saving window settings while closing
     for viewer in viewers:
         if hasattr(viewer.window, '_qt_window'):
-            with patch.object(
-                viewer.window._qt_window, '_save_current_window_settings'
-            ):
+            with patch.object(viewer.window._qt_window, '_save_current_window_settings'):
                 viewer.close()
         else:
             viewer.close()
@@ -405,9 +399,7 @@ def make_napari_viewer_proxy(make_napari_viewer, monkeypatch):
     proxies = []
 
     def actual_factory(*model_args, ensure_main_thread=True, **model_kwargs):
-        monkeypatch.setenv(
-            'NAPARI_ENSURE_PLUGIN_MAIN_THREAD', str(ensure_main_thread)
-        )
+        monkeypatch.setenv('NAPARI_ENSURE_PLUGIN_MAIN_THREAD', str(ensure_main_thread))
         viewer = make_napari_viewer(*model_args, **model_kwargs)
         proxies.append(PublicOnlyProxy(viewer))
         return proxies[-1]

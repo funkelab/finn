@@ -67,7 +67,9 @@ def test_docstring(layer):
     else:
         try:
             assert len(method_params) == len(layer_params)
-            for method_param, layer_param in zip(method_params, layer_params):
+            for method_param, layer_param in zip(
+                method_params, layer_params, strict=False
+            ):
                 m_name, m_type, m_description = method_param
                 l_name, l_type, l_description = layer_param
 
@@ -77,21 +79,15 @@ def test_docstring(layer):
                 l_description = ' '.join(l_description)
 
                 assert m_name == l_name, 'different parameter names or order'
-                assert m_type == l_type, (
-                    f"type mismatch of parameter '{m_name}'"
-                )
+                assert m_type == l_type, f"type mismatch of parameter '{m_name}'"
                 assert m_description == l_description, (
                     f"description mismatch of parameter '{m_name}'"
                 )
         except AssertionError as e:
-            raise AssertionError(
-                f"docstrings don't match for class {name}"
-            ) from e
+            raise AssertionError(f"docstrings don't match for class {name}") from e
 
     # check returns section
-    (method_returns,) = method_doc[
-        'Returns'
-    ]  # only one thing should be returned
+    (method_returns,) = method_doc['Returns']  # only one thing should be returned
     description = ' '.join(method_returns[-1])  # join multi-line description
     method_returns = *method_returns[:-1], description
 
@@ -131,9 +127,7 @@ def test_signature(layer):
 @pytest.mark.parametrize(('layer_type', 'data', 'ndim'), layer_test_data)
 def test_view(qtbot, napari_plugin_manager, layer_type, data, ndim):
     np.random.seed(0)
-    viewer = getattr(napari, f'view_{layer_type.__name__.lower()}')(
-        data, show=False
-    )
+    viewer = getattr(napari, f'view_{layer_type.__name__.lower()}')(data, show=False)
     view = viewer.window._qt_viewer
     check_viewer_functioning(viewer, view, data, ndim)
     viewer.close()
@@ -147,9 +141,7 @@ def test_view_multichannel(qtbot, napari_plugin_manager):
     viewer = finn.view_image(data, channel_axis=-1, show=False)
     assert len(viewer.layers) == data.shape[-1]
     for i in range(data.shape[-1]):
-        np.testing.assert_array_equal(
-            viewer.layers[i].data, data.take(i, axis=-1)
-        )
+        np.testing.assert_array_equal(viewer.layers[i].data, data.take(i, axis=-1))
     viewer.close()
 
 

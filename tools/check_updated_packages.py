@@ -7,7 +7,6 @@ import re
 import subprocess  # nosec
 import sys
 from pathlib import Path
-from typing import Optional
 
 from tomllib import loads
 
@@ -88,10 +87,7 @@ def calc_changed_packages(
         'diff',
         base_branch,
         str(
-            src_dir
-            / 'resources'
-            / 'constraints'
-            / f'constraints_py{python_version}.txt'
+            src_dir / 'resources' / 'constraints' / f'constraints_py{python_version}.txt'
         ),
     ]
     logging.info('Git diff call: %s', ' '.join(command))
@@ -130,9 +126,7 @@ def get_ref_name() -> str:
     return out.stdout.decode().strip()
 
 
-def calc_only_direct_updates(
-    changed_packages: list[str], src_dir: Path
-) -> list[str]:
+def calc_only_direct_updates(changed_packages: list[str], src_dir: Path) -> list[str]:
     name_re = re.compile(r'[\w-]+')
 
     metadata = loads((src_dir / 'pyproject.toml').read_text())['project']
@@ -159,7 +153,7 @@ def get_changed_dependencies(
     base_branch: str,
     all_packages=False,
     python_version='3.10',
-    src_dir: Optional[Path] = None,
+    src_dir: Path | None = None,
 ):
     """
     Get the changed dependencies.
@@ -174,9 +168,7 @@ def get_changed_dependencies(
 
     if base_branch not in branches:
         if f'origin/{base_branch}' not in branches:
-            raise ValueError(
-                f'base branch {base_branch} not found in {branches!r}'
-            )
+            raise ValueError(f'base branch {base_branch} not found in {branches!r}')
         base_branch = f'origin/{base_branch}'
 
     changed_packages = calc_changed_packages(

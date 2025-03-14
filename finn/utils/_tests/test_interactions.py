@@ -31,9 +31,7 @@ def test_shortcut_qt():
     assert Shortcut('Control-A').qt == 'Ctrl+A'
 
 
-@pytest.mark.skipif(
-    sys.platform != 'darwin', reason='Parsing macos specific keys'
-)
+@pytest.mark.skipif(sys.platform != 'darwin', reason='Parsing macos specific keys')
 @pytest.mark.parametrize(
     ('expected', 'shortcut'),
     [

@@ -122,9 +122,7 @@ class FindTransStrings(ast.NodeVisitor):
                     args.append(item)
                     self._found.add(item)
                 # Kwargs
-                kwargs = [
-                    kw.arg for kw in node.keywords if kw.arg != 'deferred'
-                ]
+                kwargs = [kw.arg for kw in node.keywords if kw.arg != 'deferred']
 
         if method_name:
             self._check_vars(method_name, args, kwargs)
@@ -141,7 +139,7 @@ show_trans_strings = FindTransStrings()
 
 
 def _find_func_definitions(
-    node: ast.AST, defs: Optional[list[ast.FunctionDef]] = None
+    node: ast.AST, defs: list[ast.FunctionDef] | None = None
 ) -> list[ast.FunctionDef]:
     """Find all functions definition recrusively.
 
@@ -237,19 +235,13 @@ def find_docstrings(fpath: str) -> dict[str, str]:
     docstrings = []
     function_definitions = _find_func_definitions(module)
     docstrings.extend([ast.get_docstring(f) for f in function_definitions])
-    class_definitions = [
-        node for node in module.body if isinstance(node, ast.ClassDef)
-    ]
+    class_definitions = [node for node in module.body if isinstance(node, ast.ClassDef)]
     docstrings.extend([ast.get_docstring(f) for f in class_definitions])
     method_definitions = []
 
     for class_def in class_definitions:
         method_definitions.extend(
-            [
-                node
-                for node in class_def.body
-                if isinstance(node, ast.FunctionDef)
-            ]
+            [node for node in class_def.body if isinstance(node, ast.FunctionDef)]
         )
 
     docstrings.extend([ast.get_docstring(f) for f in method_definitions])
@@ -319,9 +311,7 @@ def compress_str(gen):
                 assert suffix[0] == suffix[-1]
                 assert suffix[0] in ('"', "'")
                 if 'b' in prefix:
-                    print(
-                        'not translating bytestring', tokstr, file=sys.stderr
-                    )
+                    print('not translating bytestring', tokstr, file=sys.stderr)
                     continue
                 # we remove the f as we do not want to evaluate the string
                 # if it contains variable. IT will crash as it evaluate in
@@ -356,9 +346,7 @@ def find_strings(fpath: str) -> dict[tuple[int, str], tuple[int, str]]:
     """
     strings = {}
     with open(fpath) as f:
-        for toktype, tokstr, lineno in compress_str(
-            tokenize.generate_tokens(f.readline)
-        ):
+        for toktype, tokstr, lineno in compress_str(tokenize.generate_tokens(f.readline)):
             if toktype == tokenize.STRING:
                 try:
                     string = eval(tokstr)
@@ -404,7 +392,7 @@ def find_trans_strings(
     return trans_strings, errors
 
 
-def import_module_by_path(fpath: str) -> Optional[ModuleType]:
+def import_module_by_path(fpath: str) -> ModuleType | None:
     """Import a module given py a path.
 
     Parameters
@@ -544,9 +532,7 @@ def test_missing_translations(checks):
             for value in sorted(unique_values):
                 print(f'        {value!r},')
         else:
-            print(
-                'List below can be copied directly to `tools/strings_list.py` file:\n'
-            )
+            print('List below can be copied directly to `tools/strings_list.py` file:\n')
             print(f'    {fpath!r}: [')
             for value in sorted(unique_values):
                 print(f'        {value!r},')
@@ -583,9 +569,7 @@ def test_translation_errors(checks):
         print(f'{fpath}\n{"*" * len(fpath)}')
         for string, variables in errors:
             print(f'String:\t\t{string!r}')
-            print(
-                f'Variables:\t{", ".join(repr(value) for value in variables)}'
-            )
+            print(f'Variables:\t{", ".join(repr(value) for value in variables)}')
             print('')
 
         print('')
@@ -694,9 +678,7 @@ if __name__ == '__main__':
             print()
 
             print()
-            print(
-                f'{RED}i{NORMAL} : ignore -  add to ignored localised strings'
-            )
+            print(f'{RED}i{NORMAL} : ignore -  add to ignored localised strings')
             print(f'{RED}c{NORMAL} : continue -  go to next')
             if autosugg:
                 print(f'{RED}a{NORMAL} : Apply Auto suggestion')
@@ -718,9 +700,7 @@ if __name__ == '__main__':
                 Path(file).write_text(new_content)
 
             if val == 'e' and edit_cmd:
-                subprocess.run(
-                    edit_cmd.format(filename=file, linenumber=line).split(' ')
-                )
+                subprocess.run(edit_cmd.format(filename=file, linenumber=line).split(' '))
             if val == 'c':
                 continue
             if val == 'i':

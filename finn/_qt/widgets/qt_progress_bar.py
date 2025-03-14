@@ -1,5 +1,3 @@
-from typing import Optional
-
 from qtpy import QtCore
 from qtpy.QtWidgets import (
     QApplication,
@@ -20,9 +18,7 @@ from finn.utils.translations import trans
 class QtLabeledProgressBar(QWidget):
     """QProgressBar with QLabels for description and ETA."""
 
-    def __init__(
-        self, parent: Optional[QWidget] = None, prog: progress = None
-    ) -> None:
+    def __init__(self, parent: QWidget | None = None, prog: progress = None) -> None:
         super().__init__(parent)
         self.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose)
 
@@ -105,7 +101,7 @@ class QtProgressBarGroup(QWidget):
     def __init__(
         self,
         qt_progress_bar: QtLabeledProgressBar,
-        parent: Optional[QWidget] = None,
+        parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
         self.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose)

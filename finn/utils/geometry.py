@@ -1,5 +1,3 @@
-from typing import Optional
-
 import numpy as np
 import numpy.typing as npt
 
@@ -55,21 +53,15 @@ def project_points_onto_plane(
     point_vector = points - plane_point
 
     # find the distance to the plane along the normal direction
-    signed_distance_to_plane = np.multiply(point_vector, plane_normal).sum(
-        axis=1
-    )
+    signed_distance_to_plane = np.multiply(point_vector, plane_normal).sum(axis=1)
 
     # project the point
-    projected_points = points - (
-        signed_distance_to_plane[:, np.newaxis] * plane_normal
-    )
+    projected_points = points - (signed_distance_to_plane[:, np.newaxis] * plane_normal)
 
     return projected_points, signed_distance_to_plane
 
 
-def rotation_matrix_from_vectors_2d(
-    vec_1: np.ndarray, vec_2: np.ndarray
-) -> np.ndarray:
+def rotation_matrix_from_vectors_2d(vec_1: np.ndarray, vec_2: np.ndarray) -> np.ndarray:
     """Calculate the 2D rotation matrix to rotate vec_1 onto vec_2
 
     Parameters
@@ -91,16 +83,12 @@ def rotation_matrix_from_vectors_2d(
     # calculate the rotation matrix
     diagonal_1 = (vec_1[0] * vec_2[0]) + (vec_1[1] * vec_2[1])
     diagonal_2 = (vec_1[0] * vec_2[1]) - (vec_2[0] * vec_1[0])
-    rotation_matrix = np.array(
-        [[diagonal_1, -1 * diagonal_2], [diagonal_2, diagonal_1]]
-    )
+    rotation_matrix = np.array([[diagonal_1, -1 * diagonal_2], [diagonal_2, diagonal_1]])
 
     return rotation_matrix
 
 
-def rotation_matrix_from_vectors_3d(
-    vec_1: np.ndarray, vec_2: np.ndarray
-) -> np.ndarray:
+def rotation_matrix_from_vectors_3d(vec_1: np.ndarray, vec_2: np.ndarray) -> np.ndarray:
     """Calculate the rotation matrix that aligns vec1 to vec2.
 
     Parameters
@@ -129,9 +117,7 @@ def rotation_matrix_from_vectors_3d(
                 [-cross_prod[1], cross_prod[0], 0],
             ]
         )
-        rotation_matrix = (
-            np.eye(3) + kmat + kmat.dot(kmat) * ((1 - dot_prod) / (s**2))
-        )
+        rotation_matrix = np.eye(3) + kmat + kmat.dot(kmat) * ((1 - dot_prod) / (s**2))
 
     else:
         if np.allclose(dot_prod, 1):
@@ -187,9 +173,7 @@ def point_in_bounding_box(point: np.ndarray, bounding_box: np.ndarray) -> bool:
         (2, n) array containing the min and max of the nD bounding box.
         As returned by `Layer._extent_data`.
     """
-    return bool(
-        np.all(point >= bounding_box[0]) and np.all(point <= bounding_box[1])
-    )
+    return bool(np.all(point >= bounding_box[0]) and np.all(point <= bounding_box[1]))
 
 
 def clamp_point_to_bounding_box(point: np.ndarray, bounding_box: np.ndarray):
@@ -467,14 +451,10 @@ def intersect_line_with_multiple_planes_3d(
 
     # project direction between line and plane onto the plane normal
     line_plane_direction = plane_position - line_position
-    line_plane_on_plane_normal = np.sum(
-        line_plane_direction * plane_normal, axis=1
-    )
+    line_plane_on_plane_normal = np.sum(line_plane_direction * plane_normal, axis=1)
 
     # project line direction onto the plane normal
-    line_direction_on_plane_normal = np.sum(
-        line_direction * plane_normal, axis=1
-    )
+    line_direction_on_plane_normal = np.sum(line_direction * plane_normal, axis=1)
 
     # find scale factor for line direction
     scale_factor = line_plane_on_plane_normal / line_direction_on_plane_normal
@@ -534,9 +514,7 @@ def intersect_line_with_triangles(
     return intersection_points
 
 
-def point_in_quadrilateral_2d(
-    point: np.ndarray, quadrilateral: np.ndarray
-) -> bool:
+def point_in_quadrilateral_2d(point: np.ndarray, quadrilateral: np.ndarray) -> bool:
     """Determines whether a point is inside a 2D quadrilateral.
 
     Parameters
@@ -554,9 +532,7 @@ def point_in_quadrilateral_2d(
     -------
 
     """
-    triangle_vertices = np.stack(
-        (quadrilateral[[0, 1, 2]], quadrilateral[[0, 2, 3]])
-    )
+    triangle_vertices = np.stack((quadrilateral[[0, 1, 2]], quadrilateral[[0, 2, 3]]))
     in_triangles = inside_triangles(triangle_vertices - point)
     return in_triangles.sum() >= 1
 
@@ -645,9 +621,7 @@ def line_in_triangles_3d(
     )
 
     # rotate the plane to make the triangles 2D
-    rotation_matrix = rotation_matrix_from_vectors_3d(
-        line_direction, np.array([0, 0, 1])
-    )
+    rotation_matrix = rotation_matrix_from_vectors_3d(line_direction, np.array([0, 0, 1]))
     rotated_vertices = vertices_plane @ rotation_matrix.T
 
     rotated_vertices_2d = rotated_vertices[:, :2]
@@ -691,13 +665,9 @@ def find_front_back_face(
     bbox_face_coords = bounding_box_to_face_vertices(bounding_box)
     for k, v in FACE_NORMALS.items():
         if np.dot(view_dir, v) < -0.001:
-            if line_in_quadrilateral_3d(
-                click_pos, view_dir, bbox_face_coords[k]
-            ):
+            if line_in_quadrilateral_3d(click_pos, view_dir, bbox_face_coords[k]):
                 front_face_normal = v
-        elif line_in_quadrilateral_3d(
-            click_pos, view_dir, bbox_face_coords[k]
-        ):
+        elif line_in_quadrilateral_3d(click_pos, view_dir, bbox_face_coords[k]):
             back_face_normal = v
         if front_face_normal is not None and back_face_normal is not None:
             # stop looping if both the front and back faces have been found
@@ -736,9 +706,7 @@ def intersect_line_with_axis_aligned_bounding_box_3d(
         (3,) array containing the coordinate for the intersection of the click on
         the specified face.
     """
-    front_face_coordinate = face_coordinate_from_bounding_box(
-        bounding_box, face_normal
-    )
+    front_face_coordinate = face_coordinate_from_bounding_box(bounding_box, face_normal)
     intersection_point = np.squeeze(
         intersect_line_with_axis_aligned_plane(
             front_face_coordinate,
@@ -773,12 +741,9 @@ def distance_between_point_and_line_3d(
         `line_position` and `line_direction`.
     """
     line_direction_normalized = line_direction / np.linalg.norm(line_direction)
-    projection_on_line_direction = np.dot(
-        (point - line_position), line_direction
-    )
+    projection_on_line_direction = np.dot((point - line_position), line_direction)
     closest_point_on_line = (
-        line_position
-        + line_direction_normalized * projection_on_line_direction
+        line_position + line_direction_normalized * projection_on_line_direction
     )
     distance = np.linalg.norm(point - closest_point_on_line)
     return distance
@@ -786,7 +751,7 @@ def distance_between_point_and_line_3d(
 
 def find_nearest_triangle_intersection(
     ray_position: np.ndarray, ray_direction: np.ndarray, triangles: np.ndarray
-) -> tuple[Optional[int], Optional[np.ndarray]]:
+) -> tuple[int | None, np.ndarray | None]:
     """Given an array of triangles, find the index and intersection location
     of a ray and the nearest triangle.
 

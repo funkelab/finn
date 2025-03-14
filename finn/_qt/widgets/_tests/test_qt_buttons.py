@@ -27,9 +27,7 @@ def test_push_button(qtbot):
     def set_test_prop():
         layer.test_prop = True
 
-    btn = QtModePushButton(
-        layer, 'test_button', slot=set_test_prop, tooltip='tooltip'
-    )
+    btn = QtModePushButton(layer, 'test_button', slot=set_test_prop, tooltip='tooltip')
     assert btn.property('mode') == 'test_button'
     assert btn.toolTip() == 'tooltip'
 

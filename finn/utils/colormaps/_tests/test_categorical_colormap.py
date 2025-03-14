@@ -36,13 +36,9 @@ def test_categorical_colormap_direct():
     new_fallback_colors = [[1, 0, 0, 1], [0, 1, 0, 1]]
     cmap.fallback_color = new_fallback_colors
     new_color_1 = cmap.map(['new_prop 1'])
-    np.testing.assert_almost_equal(
-        np.squeeze(new_color_1), new_fallback_colors[0]
-    )
+    np.testing.assert_almost_equal(np.squeeze(new_color_1), new_fallback_colors[0])
     new_color_2 = cmap.map(['new_prop 2'])
-    np.testing.assert_almost_equal(
-        np.squeeze(new_color_2), new_fallback_colors[1]
-    )
+    np.testing.assert_almost_equal(np.squeeze(new_color_2), new_fallback_colors[1])
 
 
 def test_categorical_colormap_cycle():
@@ -75,9 +71,7 @@ def test_categorical_colormap_cycle_as_dict():
 
     # the values used to create the color cycle can be accessed via fallback color
     np.testing.assert_almost_equal(cmap.fallback_color.values, color_values)
-    np.testing.assert_almost_equal(
-        next(cmap.fallback_color.cycle), color_values[0]
-    )
+    np.testing.assert_almost_equal(next(cmap.fallback_color.cycle), color_values[0])
 
 
 fallback_colors = np.array([[1, 0, 0, 1], [0, 1, 0, 1]])

@@ -1,7 +1,8 @@
 import sys
 import warnings
+from collections.abc import Callable
 from contextlib import contextmanager
-from typing import Any, Callable, ClassVar, Union
+from typing import Any, ClassVar, Union
 
 import numpy as np
 from app_model.types import KeyBinding
@@ -113,9 +114,7 @@ class EventedMetaclass(ModelMetaclass):
                 if (
                     hasattr(attr.fget, '__annotations__')
                     and 'return' in attr.fget.__annotations__
-                    and not isinstance(
-                        attr.fget.__annotations__['return'], str
-                    )
+                    and not isinstance(attr.fget.__annotations__['return'], str)
                 ):
                     cls.__eq_operators__[name] = pick_equality_operator(
                         attr.fget.__annotations__['return']
@@ -125,9 +124,7 @@ class EventedMetaclass(ModelMetaclass):
         return cls
 
 
-def _update_dependents_from_property_code(
-    cls, prop_name, prop, deps, visited=()
-):
+def _update_dependents_from_property_code(cls, prop_name, prop, deps, visited=()):
     """Recursively find all the dependents of a property by inspecting the code object.
 
     Update the given deps dictionary with the new findings.
@@ -140,9 +137,7 @@ def _update_dependents_from_property_code(
             visited = visited + (name,)
             # sub_prop is the new property, but we leave prop_name the same
             sub_prop = cls.__properties__[name]
-            _update_dependents_from_property_code(
-                cls, prop_name, sub_prop, deps, visited
-            )
+            _update_dependents_from_property_code(cls, prop_name, sub_prop, deps, visited)
 
 
 def _get_field_dependents(cls: 'EventedModel') -> dict[str, set[str]]:
@@ -195,8 +190,7 @@ def _get_field_dependents(cls: 'EventedModel') -> dict[str, set[str]]:
         for prop_name, fields in _deps.items():
             if prop_name not in cls.__properties__:
                 raise ValueError(
-                    'Fields with dependencies must be properties. '
-                    f'{prop_name!r} is not.'
+                    f'Fields with dependencies must be properties. {prop_name!r} is not.'
                 )
             for field in fields:
                 if field not in cls.__fields__:
@@ -262,9 +256,7 @@ class EventedModel(BaseModel, metaclass=EventedMetaclass):
             if field.field_info.allow_mutation
         ]
 
-        self._events.add(
-            **dict.fromkeys(field_events + list(self.__properties__))
-        )
+        self._events.add(**dict.fromkeys(field_events + list(self.__properties__)))
 
         # while seemingly redundant, this next line is very important to maintain
         # correct sources; see https://github.com/napari/napari/pull/4138
@@ -353,23 +345,18 @@ class EventedModel(BaseModel, metaclass=EventedMetaclass):
         # grab current value
         field_dep = self.__field_dependents__.get(name, set())
         has_callbacks = {
-            name: bool(getattr(self.events, name).callbacks)
-            for name in field_dep
+            name: bool(getattr(self.events, name).callbacks) for name in field_dep
         }
         emitter = getattr(self.events, name)
         # equality comparisons may be expensive, so just avoid them if
         # event has no callbacks connected
         if not (
-            emitter.callbacks
-            or self._events.callbacks
-            or any(has_callbacks.values())
+            emitter.callbacks or self._events.callbacks or any(has_callbacks.values())
         ):
             self._super_setattr_(name, value)
             return
 
-        dep_with_callbacks = [
-            dep for dep, has_cb in has_callbacks.items() if has_cb
-        ]
+        dep_with_callbacks = [dep for dep, has_cb in has_callbacks.items() if has_cb]
 
         if name not in self._changes_queue:
             self._changes_queue[name] = getattr(self, name, object())
@@ -416,9 +403,7 @@ class EventedModel(BaseModel, metaclass=EventedMetaclass):
             ):
                 setattr(self, name, value)
 
-    def update(
-        self, values: Union['EventedModel', dict], recurse: bool = True
-    ) -> None:
+    def update(self, values: Union['EventedModel', dict], recurse: bool = True) -> None:
         """Update a model in place.
 
         Parameters

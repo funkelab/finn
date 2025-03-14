@@ -35,9 +35,7 @@ def _only_when_enabled(callback):
 class VispyLabelsPolygonOverlay(LayerOverlayMixin, VispySceneOverlay):
     layer: Labels
 
-    def __init__(
-        self, *, layer: Labels, overlay: LabelsPolygonOverlay, parent=None
-    ):
+    def __init__(self, *, layer: Labels, overlay: LabelsPolygonOverlay, parent=None):
         points = [(0, 0), (1, 1)]
 
         self._nodes_kwargs = {
@@ -65,9 +63,7 @@ class VispyLabelsPolygonOverlay(LayerOverlayMixin, VispySceneOverlay):
 
         self.layer.mouse_move_callbacks.append(self._on_mouse_move)
         self.layer.mouse_drag_callbacks.append(self._on_mouse_press)
-        self.layer.mouse_double_click_callbacks.append(
-            self._on_mouse_double_click
-        )
+        self.layer.mouse_double_click_callbacks.append(self._on_mouse_double_click)
 
         self.overlay.events.points.connect(self._on_points_change)
         self.overlay.events.enabled.connect(self._on_enabled_change)
@@ -90,9 +86,7 @@ class VispyLabelsPolygonOverlay(LayerOverlayMixin, VispySceneOverlay):
         self.overlay.visible = True
 
     def _on_completion_radius_settings_change(self, event=None):
-        completion_radius_setting = (
-            get_settings().experimental.completion_radius
-        )
+        completion_radius_setting = get_settings().experimental.completion_radius
         # if setting is -1, then the completion_radius is disabled
         # so double click always works. If >0, use the radius
         if completion_radius_setting > 0:
@@ -106,9 +100,7 @@ class VispyLabelsPolygonOverlay(LayerOverlayMixin, VispySceneOverlay):
     def _on_points_change(self):
         num_points = len(self.overlay.points)
         if num_points:
-            points = np.array(self.overlay.points)[
-                :, self._dims_displayed[::-1]
-            ]
+            points = np.array(self.overlay.points)[:, self._dims_displayed[::-1]]
         else:
             points = np.empty((0, 2))
 
@@ -145,9 +137,7 @@ class VispyLabelsPolygonOverlay(LayerOverlayMixin, VispySceneOverlay):
         if layer._selected_label == layer.colormap.background_value:
             self._set_color((1, 0, 0, 0))
         else:
-            self._set_color(
-                layer._selected_color.tolist()[:3] + [layer.opacity]
-            )
+            self._set_color(layer._selected_color.tolist()[:3] + [layer.opacity])
 
     @_only_when_enabled
     def _on_mouse_move(self, layer, event):
@@ -171,9 +161,7 @@ class VispyLabelsPolygonOverlay(LayerOverlayMixin, VispySceneOverlay):
             if not self.overlay.points:
                 self._first_point_pos = np.array(event.pos)
 
-            prev_point = (
-                self.overlay.points[-2] if self._num_points > 1 else None
-            )
+            prev_point = self.overlay.points[-2] if self._num_points > 1 else None
             # Add a new point only if it differs from the previous one
             if prev_point is None or np.linalg.norm(pos - prev_point) > 0:
                 self.overlay.points = self.overlay.points[:-1] + [
