@@ -5,8 +5,13 @@ The [motile tracker](https://github.com/funkelab/motile_tracker) started as a [n
 Many thanks to the napari community for providing an excellent starting point and tons of great feedback and assistance!
 > napari contributors (2019). napari: a multi-dimensional image viewer for python. [doi:10.5281/zenodo.3555620](https://zenodo.org/record/3555620)
 
-## installation
+## Installation
 
-finn is not yet on pypi - you must install from the github url or source code
-
-``pip install git+https://github.com/funkelab/finn.git``
+finn is not yet on pypi - you must clone and install from source code
+```
+git clone git@github.com:funkelab/finn.git
+cd finn
+conda create -n finn python=3.10
+conda activate finn
+pip install '.[all]'
+```
