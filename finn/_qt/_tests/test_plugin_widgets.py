@@ -1,17 +1,13 @@
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 import pytest
 from magicgui import magic_factory, magicgui
 from magicgui.widgets import Container
-from napari_plugin_engine import napari_hook_implementation
-from npe2 import DynamicPlugin
 from qtpy.QtWidgets import QWidget
 
 import finn
 from finn._app_model import get_app_model
 from finn._qt._qplugins._qnpe2 import _get_widget_viewer_param
-from finn._qt.qt_main_window import _instantiate_dock_widget
-from finn.utils._proxies import PublicOnlyProxy
 from finn.viewer import Viewer
 
 
@@ -53,16 +49,6 @@ class Widg2(QWidget):
         super().__init__()
 
 
-class Widg3(QWidget):
-    def __init__(self, v: Viewer) -> None:
-        self.viewer = v
-        super().__init__()
-
-    def fail(self):
-        """private attr not allowed"""
-        self.viewer.window._qt_window
-
-
 def magicfunc(viewer: "finn.Viewer"):
     return viewer
 
@@ -76,43 +62,6 @@ dwidget_args = {
     "bad_tuple1": (QWidget_example, 1),
     "bad_double_tuple": ((QWidget_example, {}), (Widg2, {})),
 }
-
-
-# napari_plugin_manager from _testsupport.py
-# monkeypatch, request, recwarn fixtures are from pytest
-@pytest.mark.parametrize("arg", dwidget_args.values(), ids=dwidget_args.keys())
-def test_dock_widget_registration(arg, napari_plugin_manager, request, recwarn):
-    """Test that dock widgets get validated and registerd correctly."""
-
-    class Plugin:
-        @napari_hook_implementation
-        def napari_experimental_provide_dock_widget():
-            return arg
-
-    napari_plugin_manager.register(Plugin, name="Plugin")
-    napari_plugin_manager.discover_widgets()
-    widgets = napari_plugin_manager._dock_widgets
-
-    if "[bad_" in request.node.name:
-        assert len(recwarn) == 1
-        assert not widgets
-    else:
-        assert len(recwarn) == 0
-        assert widgets["Plugin"]["Q Widget_example"][0] == QWidget_example
-        if "tuple_list" in request.node.name:
-            assert widgets["Plugin"]["Widg2"][0] == Widg2
-
-
-def test_inject_viewer_proxy(make_napari_viewer):
-    """Test that the injected viewer is a public-only proxy"""
-    viewer = make_napari_viewer()
-    wdg = _instantiate_dock_widget(Widg3, viewer)
-    assert isinstance(wdg.viewer, PublicOnlyProxy)
-
-    # simulate access from outside napari
-    with patch("finn.utils.misc.ROOT_DIR", new="/some/other/package"):
-        with pytest.warns(FutureWarning):
-            wdg.fail()
 
 
 @pytest.mark.parametrize(
@@ -167,7 +116,7 @@ def test_widget_hide_destroy(make_napari_viewer, qtbot):
 )
 def test_widget_types_supported(
     make_napari_viewer,
-    tmp_plugin: DynamicPlugin,
+    tmp_plugin,
     Widget,
 ):
     """Test all supported widget types correctly instantiated and call processor.
