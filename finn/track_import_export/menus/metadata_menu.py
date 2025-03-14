@@ -20,8 +20,8 @@ class MetadataMenu(QWidget):
 
         # Name of the tracks
         name_layout = QVBoxLayout()
-        name_box = QGroupBox('Tracks Name')
-        self.name_widget = QLineEdit('External Tracks from CSV')
+        name_box = QGroupBox("Tracks Name")
+        self.name_widget = QLineEdit("External Tracks from CSV")
         name_layout.addWidget(self.name_widget)
         name_box.setLayout(name_layout)
         name_box.setMaximumHeight(100)
@@ -29,12 +29,12 @@ class MetadataMenu(QWidget):
 
         # Dimensions of the tracks
         dimensions_layout = QVBoxLayout()
-        dimension_box = QGroupBox('Data Dimensions')
+        dimension_box = QGroupBox("Data Dimensions")
         data_button_group = QButtonGroup()
         button_layout = QHBoxLayout()
-        self.radio_2D = QRadioButton('2D + time')
+        self.radio_2D = QRadioButton("2D + time")
         self.radio_2D.setChecked(True)
-        self.radio_3D = QRadioButton('3D + time')
+        self.radio_3D = QRadioButton("3D + time")
         data_button_group.addButton(self.radio_2D)
         data_button_group.addButton(self.radio_3D)
         button_layout.addWidget(self.radio_2D)
@@ -46,8 +46,8 @@ class MetadataMenu(QWidget):
 
         # Whether or not a segmentation file exists
         segmentation_layout = QVBoxLayout()
-        segmentation_box = QGroupBox('Segmentation Image')
-        self.segmentation_checkbox = QCheckBox('I have a segmentation image')
+        segmentation_box = QGroupBox("Segmentation Image")
+        self.segmentation_checkbox = QCheckBox("I have a segmentation image")
         segmentation_layout.addWidget(self.segmentation_checkbox)
         segmentation_box.setLayout(segmentation_layout)
         segmentation_box.setMaximumHeight(80)

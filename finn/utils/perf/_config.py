@@ -2,10 +2,9 @@
 
 import json
 import os
-from collections.abc import Callable
 from pathlib import Path
 from types import ModuleType
-from typing import Any
+from typing import Any, Callable, Optional, Union
 
 import wrapt
 
@@ -20,7 +19,9 @@ class PerfmonConfigError(Exception):
     """Error parsing or interpreting config file."""
 
 
-def _patch_perf_timer(parent: ModuleType | type, callable_name: str, label: str) -> None:
+def _patch_perf_timer(
+    parent: Union[ModuleType, type], callable_name: str, label: str
+) -> None:
     """Patches the callable to run it inside a perf_timer.
 
     Parameters
@@ -74,7 +75,7 @@ class PerfmonConfig:
     }
     """
 
-    def __init__(self, config_path: str | None) -> None:
+    def __init__(self, config_path: Optional[str]) -> None:
         # Should only patch once, but it can't be on module load, user
         # should patch once main() as started running during startup.
         self.patched = False
@@ -142,7 +143,7 @@ class PerfmonConfig:
             return False
 
     @property
-    def trace_file_on_start(self) -> str | None:
+    def trace_file_on_start(self) -> Optional[str]:
         """Return path of trace file to write or None."""
         if self.config_path is None:
             return None  # don't trace on start in legacy mode
@@ -156,7 +157,7 @@ class PerfmonConfig:
             return path or None
 
 
-def _create_perf_config() -> PerfmonConfig | None:
+def _create_perf_config() -> Optional[PerfmonConfig]:
     value = os.getenv('NAPARI_PERFMON')
 
     if value is None or value == '0':

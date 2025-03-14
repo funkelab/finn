@@ -6,7 +6,7 @@ import os
 from collections.abc import Mapping, Sequence
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Optional, cast
 from warnings import warn
 
 from finn._pydantic_compat import (
@@ -94,7 +94,7 @@ class EventedConfigFileSettings(EventedSettings, PydanticYamlMixin):
     EventedSettings.
     """
 
-    _config_path: Path | None = None
+    _config_path: Optional[Path] = None
     _save_on_change: bool = True
     # this dict stores the data that came specifically from the config file.
     # it's populated in `config_file_settings_source` and
@@ -131,8 +131,8 @@ class EventedConfigFileSettings(EventedSettings, PydanticYamlMixin):
     def dict(
         self,
         *,
-        include: AbstractSetIntStr | MappingIntStrAny = None,  # type: ignore
-        exclude: AbstractSetIntStr | MappingIntStrAny = None,  # type: ignore
+        include: Union[AbstractSetIntStr, MappingIntStrAny] = None,  # type: ignore
+        exclude: Union[AbstractSetIntStr, MappingIntStrAny] = None,  # type: ignore
         by_alias: bool = False,
         exclude_unset: bool = False,
         exclude_defaults: bool = False,
@@ -168,7 +168,7 @@ class EventedConfigFileSettings(EventedSettings, PydanticYamlMixin):
         _remove_empty_dicts(data)
         return data
 
-    def save(self, path: str | Path | None = None, **dict_kwargs):
+    def save(self, path: Union[str, Path, None] = None, **dict_kwargs):
         """Save current settings to path.
 
         By default, this will exclude settings values that match the default
@@ -296,7 +296,7 @@ def nested_env_settings(
         d = super_eset(settings)
 
         if settings.__config__.case_sensitive:
-            env_vars: Mapping[str, str | None] = os.environ
+            env_vars: Mapping[str, Optional[str]] = os.environ
         else:
             env_vars = {k.lower(): v for k, v in os.environ.items()}
 
@@ -321,7 +321,9 @@ def nested_env_settings(
                     else:
                         env_val = env_vars.get(f'{env_name}_{subf.name}')
 
-                    is_complex, all_json_fail = super_eset.field_is_complex(subf)
+                    is_complex, all_json_fail = super_eset.field_is_complex(
+                        subf
+                    )
                     if env_val is not None and is_complex:
                         try:
                             env_val = settings.__config__.json_loads(env_val)
@@ -335,7 +337,9 @@ def nested_env_settings(
                                 raise SettingsError(msg) from e
 
                         if isinstance(env_val, dict):
-                            explode = super_eset.explode_env_vars(field, env_vars)
+                            explode = super_eset.explode_env_vars(
+                                field, env_vars
+                            )
                             env_val = deep_update(env_val, explode)
 
                     # if we found an env var, store it and return it
@@ -465,7 +469,7 @@ def config_file_settings_source(
     return data
 
 
-def _remove_bad_keys(data: dict, keys: list[tuple[int | str, ...]]):
+def _remove_bad_keys(data: dict, keys: list[tuple[Union[int, str], ...]]):
     """Remove list of keys (as string tuples) from dict (in place).
 
     Parameters

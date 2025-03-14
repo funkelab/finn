@@ -143,7 +143,9 @@ def test_duplicate_layers(layer_type):
     assert layer_list[0].name == 'test'
     assert layer_list[1].name == 'test copy'
     assert layer_list[1].events.source is layer_list[1]
-    assert len(layer_list[1].events.data.callbacks) == 1  # `events` Event Emitter
+    assert (
+        len(layer_list[1].events.data.callbacks) == 1
+    )  # `events` Event Emitter
     assert layer_list[1].source.parent() is layer_list[0]
 
 
@@ -225,7 +227,9 @@ def test_show_selected_layers():
     assert layer_list[2].visible is True
 
 
-@pytest.mark.parametrize('mode', ['max', 'min', 'std', 'sum', 'mean', 'median'])
+@pytest.mark.parametrize(
+    'mode', ['max', 'min', 'std', 'sum', 'mean', 'median']
+)
 def test_projections(mode):
     ll = LayerList()
     ll.append(
@@ -303,12 +307,16 @@ def test_convert_layer(layer, type_):
         assert ll[1]._type_string == type_
         assert np.array_equal(ll[1].scale, original_scale)
     else:
-        assert layer.data is ll[0].data  # check array data not copied unnecessarily
+        assert (
+            layer.data is ll[0].data
+        )  # check array data not copied unnecessarily
 
 
 def test_convert_warns_with_projecton_mode():
     # inplace
-    ll = LayerList([Image(np.random.rand(10, 10).astype(int), projection_mode='mean')])
+    ll = LayerList(
+        [Image(np.random.rand(10, 10).astype(int), projection_mode='mean')]
+    )
     with pytest.warns(UserWarning, match='projection mode'):
         _convert(ll, 'labels')
     assert isinstance(ll['Image'], Labels)

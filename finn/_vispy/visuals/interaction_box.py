@@ -46,7 +46,9 @@ class InteractionBox(Compound):
         return self._subvisuals[1]
 
     def set_data(self, top_left, bot_right, handles=True, selected=None):
-        vertices = generate_interaction_box_vertices(top_left, bot_right, handles=handles)
+        vertices = generate_interaction_box_vertices(
+            top_left, bot_right, handles=handles
+        )
 
         edges = self._edges if handles else self._edges[:4]
 

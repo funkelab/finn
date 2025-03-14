@@ -46,7 +46,11 @@ def _get_durations_ms(output_name: str) -> list[float]:
     file_path = str(config_dir / f'traces-{output_name}.json')
     with open(file_path) as traces_file:
         traces = json.load(traces_file)
-    return [trace['dur'] / 1000 for trace in traces if trace['name'] == args.callable]
+    return [
+        trace['dur'] / 1000
+        for trace in traces
+        if trace['name'] == args.callable
+    ]
 
 
 baseline_durations_ms = _get_durations_ms(args.baseline)

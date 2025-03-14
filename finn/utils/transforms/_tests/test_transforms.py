@@ -97,7 +97,9 @@ def test_scale_translate_slice(Transform):
     transform_a = Transform(scale=[2, 3], translate=[8, -5])
     transform_b = Transform(scale=[2, 1, 3], translate=[8, 3, -5], name='st')
     npt.assert_allclose(transform_b.set_slice([0, 2]).scale, transform_a.scale)
-    npt.assert_allclose(transform_b.set_slice([0, 2]).translate, transform_a.translate)
+    npt.assert_allclose(
+        transform_b.set_slice([0, 2]).translate, transform_a.translate
+    )
     assert transform_b.set_slice([0, 2]).name == 'st'
 
 
@@ -106,7 +108,9 @@ def test_scale_translate_expand_dims(Transform):
     transform_a = Transform(scale=[2, 3], translate=[8, -5], name='st')
     transform_b = Transform(scale=[2, 1, 3], translate=[8, 0, -5])
     npt.assert_allclose(transform_a.expand_dims([1]).scale, transform_b.scale)
-    npt.assert_allclose(transform_a.expand_dims([1]).translate, transform_b.translate)
+    npt.assert_allclose(
+        transform_a.expand_dims([1]).translate, transform_b.translate
+    )
     assert transform_a.expand_dims([1]).name == 'st'
 
 
@@ -281,7 +285,9 @@ def test_affine_matrix_inverse(dimensionality):
     np.testing.assert_almost_equal(transform.affine_matrix, A)
 
     # Check inverse is create correctly
-    np.testing.assert_almost_equal(transform.inverse.affine_matrix, np.linalg.inv(A))
+    np.testing.assert_almost_equal(
+        transform.inverse.affine_matrix, np.linalg.inv(A)
+    )
 
 
 def test_repeat_shear_setting():
@@ -316,9 +322,13 @@ def test_composite_affine_equiv_to_affine(dimensionality):
     composite = CompositeAffine(
         translate=translate, scale=scale, rotate=rotate, shear=shear
     )
-    affine = Affine(translate=translate, scale=scale, rotate=rotate, shear=shear)
+    affine = Affine(
+        translate=translate, scale=scale, rotate=rotate, shear=shear
+    )
 
-    np.testing.assert_almost_equal(composite.affine_matrix, affine.affine_matrix)
+    np.testing.assert_almost_equal(
+        composite.affine_matrix, affine.affine_matrix
+    )
 
 
 def test_replace_slice_independence():
@@ -344,7 +354,9 @@ def test_replace_slice_independence():
 
 
 def test_replace_slice_num_dimensions():
-    with pytest.raises(ValueError, match='provided axes list and transform differ'):
+    with pytest.raises(
+        ValueError, match='provided axes list and transform differ'
+    ):
         Affine().replace_slice([0], Affine())
 
 

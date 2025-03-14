@@ -2,7 +2,7 @@ import csv
 import os
 import shutil
 from tempfile import TemporaryDirectory
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import numpy as np
 
@@ -15,8 +15,8 @@ if TYPE_CHECKING:
 
 def write_csv(
     filename: str,
-    data: list | np.ndarray,
-    column_names: list[str] | None = None,
+    data: Union[list, np.ndarray],
+    column_names: Optional[list[str]] = None,
 ):
     """Write a csv file.
 
@@ -95,7 +95,7 @@ def imsave_extensions() -> tuple[str, ...]:
     )
 
 
-def napari_write_image(path: str, data: Any, meta: dict) -> str | None:
+def napari_write_image(path: str, data: Any, meta: dict) -> Optional[str]:
     """Our internal fallback image writer at the end of the plugin chain.
 
     Parameters
@@ -127,7 +127,7 @@ def napari_write_image(path: str, data: Any, meta: dict) -> str | None:
     return None
 
 
-def napari_write_labels(path: str, data: Any, meta: dict) -> str | None:
+def napari_write_labels(path: str, data: Any, meta: dict) -> Optional[str]:
     """Our internal fallback labels writer at the end of the plugin chain.
 
     Parameters
@@ -151,7 +151,7 @@ def napari_write_labels(path: str, data: Any, meta: dict) -> str | None:
     return napari_write_image(path, np.asarray(data, dtype=dtype), meta)
 
 
-def napari_write_points(path: str, data: Any, meta: dict) -> str | None:
+def napari_write_points(path: str, data: Any, meta: dict) -> Optional[str]:
     """Our internal fallback points writer at the end of the plugin chain.
 
     Append ``.csv`` extension to the filename if it is not already there.
@@ -184,7 +184,9 @@ def napari_write_points(path: str, data: Any, meta: dict) -> str | None:
     column_names = [f'axis-{n!s}' for n in range(data.shape[1])]
     if properties:
         column_names += properties.keys()
-        prop_table = [np.expand_dims(col, axis=1) for col in properties.values()]
+        prop_table = [
+            np.expand_dims(col, axis=1) for col in properties.values()
+        ]
     else:
         prop_table = []
 
@@ -198,7 +200,7 @@ def napari_write_points(path: str, data: Any, meta: dict) -> str | None:
     return path
 
 
-def napari_write_shapes(path: str, data: Any, meta: dict) -> str | None:
+def napari_write_shapes(path: str, data: Any, meta: dict) -> Optional[str]:
     """Our internal fallback points writer at the end of the plugin chain.
 
     Append ``.csv`` extension to the filename if it is not already there.
@@ -247,14 +249,18 @@ def napari_write_shapes(path: str, data: Any, meta: dict) -> str | None:
         axis=1,
     )
     all_types = np.expand_dims(
-        np.concatenate([np.repeat(shape_type[i], s) for i, s in enumerate(len_shapes)]),
+        np.concatenate(
+            [np.repeat(shape_type[i], s) for i, s in enumerate(len_shapes)]
+        ),
         axis=1,
     )
     all_vert_idx = np.expand_dims(
         np.concatenate([np.arange(s) for s in len_shapes]), axis=1
     )
 
-    table = np.concatenate([all_idx, all_types, all_vert_idx, all_data], axis=1)
+    table = np.concatenate(
+        [all_idx, all_types, all_vert_idx, all_data], axis=1
+    )
 
     # write table to csv file
     write_csv(path, table, column_names)

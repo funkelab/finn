@@ -20,7 +20,9 @@ def screen_at(point):
 def test_singlescreen_window_settings(make_napari_viewer, monkeypatch):
     """Test whether valid screen position is returned even after disconnected secondary screen."""
 
-    monkeypatch.setattr('finn._qt.qt_main_window.QApplication.screenAt', screen_at)
+    monkeypatch.setattr(
+        'finn._qt.qt_main_window.QApplication.screenAt', screen_at
+    )
     settings = get_settings()
     viewer = make_napari_viewer()
     default_window_position = (

@@ -105,7 +105,9 @@ def test_stack_to_images_1_channel():
 
 def test_images_to_stack_with_scale():
     """Test that 3-Image list is combined to stack with scale and translate."""
-    images = [Image(np.random.randint(0, 255, (10, 128, 128))) for _ in range(3)]
+    images = [
+        Image(np.random.randint(0, 255, (10, 128, 128))) for _ in range(3)
+    ]
 
     stack = images_to_stack(
         images, 1, colormap='green', scale=(3, 1, 1, 1), translate=(1, 0, 2, 3)
@@ -244,7 +246,11 @@ def test_split_channels_missing_keywords():
     assert len(result_list) == 3
     for chan, layer in enumerate(result_list):
         assert layer[0].shape == (128, 128)
-        assert layer[1]['blending'] == 'translucent_no_depth' if chan == 0 else 'additive'
+        assert (
+            layer[1]['blending'] == 'translucent_no_depth'
+            if chan == 0
+            else 'additive'
+        )
 
 
 def test_split_channels_affine_nparray(kwargs):

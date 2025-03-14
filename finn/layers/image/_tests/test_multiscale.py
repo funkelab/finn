@@ -17,7 +17,9 @@ def test_random_multiscale():
     assert layer.data == data
     assert layer.multiscale is True
     assert layer.ndim == len(shapes[0])
-    np.testing.assert_array_equal(layer.extent.data[1], [s - 1 for s in shapes[0]])
+    np.testing.assert_array_equal(
+        layer.extent.data[1], [s - 1 for s in shapes[0]]
+    )
     assert layer.rgb is False
     assert layer._data_view.ndim == 2
 
@@ -31,7 +33,9 @@ def test_infer_multiscale():
     assert layer.data == data
     assert layer.multiscale is True
     assert layer.ndim == len(shapes[0])
-    np.testing.assert_array_equal(layer.extent.data[1], [s - 1 for s in shapes[0]])
+    np.testing.assert_array_equal(
+        layer.extent.data[1], [s - 1 for s in shapes[0]]
+    )
     assert layer.rgb is False
     assert layer._data_view.ndim == 2
 
@@ -45,7 +49,9 @@ def test_infer_tuple_multiscale():
     assert layer.data == data
     assert layer.multiscale is True
     assert layer.ndim == len(shapes[0])
-    np.testing.assert_array_equal(layer.extent.data[1], [s - 1 for s in shapes[0]])
+    np.testing.assert_array_equal(
+        layer.extent.data[1], [s - 1 for s in shapes[0]]
+    )
     assert layer.rgb is False
     assert layer._data_view.ndim == 2
 
@@ -93,7 +99,9 @@ def test_3D_multiscale():
     layer = Image(data, multiscale=True)
     assert layer.data == data
     assert layer.ndim == len(shapes[0])
-    np.testing.assert_array_equal(layer.extent.data[1], [s - 1 for s in shapes[0]])
+    np.testing.assert_array_equal(
+        layer.extent.data[1], [s - 1 for s in shapes[0]]
+    )
     assert layer.rgb is False
     assert layer._data_view.ndim == 2
 
@@ -106,7 +114,9 @@ def test_non_uniform_3D_multiscale():
     layer = Image(data, multiscale=True)
     assert layer.data == data
     assert layer.ndim == len(shapes[0])
-    np.testing.assert_array_equal(layer.extent.data[1], [s - 1 for s in shapes[0]])
+    np.testing.assert_array_equal(
+        layer.extent.data[1], [s - 1 for s in shapes[0]]
+    )
     assert layer.rgb is False
     assert layer._data_view.ndim == 2
 
@@ -119,7 +129,9 @@ def test_rgb_multiscale():
     layer = Image(data, multiscale=True)
     assert layer.data == data
     assert layer.ndim == len(shapes[0]) - 1
-    np.testing.assert_array_equal(layer.extent.data[1], [s - 1 for s in shapes[0][:-1]])
+    np.testing.assert_array_equal(
+        layer.extent.data[1], [s - 1 for s in shapes[0][:-1]]
+    )
     assert layer.rgb is True
     assert layer._data_view.ndim == 3
 
@@ -132,7 +144,9 @@ def test_3D_rgb_multiscale():
     layer = Image(data, multiscale=True)
     assert layer.data == data
     assert layer.ndim == len(shapes[0]) - 1
-    np.testing.assert_array_equal(layer.extent.data[1], [s - 1 for s in shapes[0][:-1]])
+    np.testing.assert_array_equal(
+        layer.extent.data[1], [s - 1 for s in shapes[0][:-1]]
+    )
     assert layer.rgb is True
     assert layer._data_view.ndim == 3
 
@@ -145,7 +159,9 @@ def test_non_rgb_image():
     layer = Image(data, multiscale=True, rgb=False)
     assert layer.data == data
     assert layer.ndim == len(shapes[0])
-    np.testing.assert_array_equal(layer.extent.data[1], [s - 1 for s in shapes[0]])
+    np.testing.assert_array_equal(
+        layer.extent.data[1], [s - 1 for s in shapes[0]]
+    )
     assert layer.rgb is False
 
 
@@ -353,12 +369,16 @@ def test_corner_value():
     target_position = (39, 19)
     target_level = 0
     layer.data_level = target_level
-    layer.corner_pixels[1] = np.array(shapes[target_level]) - 1  # update requested view
+    layer.corner_pixels[1] = (
+        np.array(shapes[target_level]) - 1
+    )  # update requested view
     layer.refresh()
 
     # Test position at corner of image
     value = layer.get_value(target_position)
-    np.testing.assert_allclose(value, (target_level, data[target_level][target_position]))
+    np.testing.assert_allclose(
+        value, (target_level, data[target_level][target_position])
+    )
 
     # Test position at outside image
     value = layer.get_value((40, 20))

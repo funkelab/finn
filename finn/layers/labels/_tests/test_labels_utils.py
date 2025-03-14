@@ -73,9 +73,14 @@ def test_first_nonzero_coordinate():
         first_nonzero_coordinate(data, np.full(3, 10), np.zeros(3)),
         [6, 6, 6],
     )
-    assert first_nonzero_coordinate(data, np.zeros(3), np.array([0, 1, 1])) is None
+    assert (
+        first_nonzero_coordinate(data, np.zeros(3), np.array([0, 1, 1]))
+        is None
+    )
     np.testing.assert_array_equal(
-        first_nonzero_coordinate(data, np.array([0, 6, 6]), np.array([10, 5, 5])),
+        first_nonzero_coordinate(
+            data, np.array([0, 6, 6]), np.array([10, 5, 5])
+        ),
         [4, 6, 6],
     )
 

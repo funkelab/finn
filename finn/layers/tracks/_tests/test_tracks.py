@@ -17,10 +17,14 @@ from finn.utils._test_utils import (
 
 data_array_2dt = np.zeros((1, 4))
 data_list_2dt = list(data_array_2dt)
-dataframe_2dt = pd.DataFrame(data=data_array_2dt, columns=['track_id', 't', 'y', 'x'])
+dataframe_2dt = pd.DataFrame(
+    data=data_array_2dt, columns=['track_id', 't', 'y', 'x']
+)
 
 
-@pytest.mark.parametrize('data', [data_array_2dt, data_list_2dt, dataframe_2dt])
+@pytest.mark.parametrize(
+    'data', [data_array_2dt, data_list_2dt, dataframe_2dt]
+)
 def test_tracks_layer_2dt_ndim(data):
     """Test instantiating Tracks layer, check 2D+t dimensionality."""
     layer = Tracks(data)
@@ -34,7 +38,9 @@ dataframe_3dt = pd.DataFrame(
 )
 
 
-@pytest.mark.parametrize('data', [data_array_3dt, data_list_3dt, dataframe_3dt])
+@pytest.mark.parametrize(
+    'data', [data_array_3dt, data_list_3dt, dataframe_3dt]
+)
 def test_tracks_layer_3dt_ndim(data):
     """Test instantiating Tracks layer, check 3D+t dimensionality."""
     layer = Tracks(data)
@@ -56,7 +62,9 @@ def test_track_layer_data():
     np.testing.assert_array_equal(layer.data, data)
 
 
-@pytest.mark.parametrize('timestamps', [np.arange(100, 200), np.arange(100, 300, 2)])
+@pytest.mark.parametrize(
+    'timestamps', [np.arange(100, 200), np.arange(100, 300, 2)]
+)
 def test_track_layer_data_nonzero_starting_time(timestamps):
     """Test data with sparse timestamps or not starting at zero."""
     data = np.zeros((100, 4))
@@ -109,7 +117,9 @@ def test_track_layer_colorby_nonexistent():
     non_existant_property = 'not_a_valid_key'
     assert non_existant_property not in properties_dict
     with pytest.raises(ValueError, match='not a valid property'):
-        Tracks(data, properties=properties_dict, color_by=non_existant_property)
+        Tracks(
+            data, properties=properties_dict, color_by=non_existant_property
+        )
 
 
 @pytest.mark.filterwarnings('ignore:.*track_id.*:UserWarning')
@@ -207,7 +217,7 @@ def test_fast_points_lookup() -> None:
 
     assert len(time_points) == len(points_lookup)
     total_length = 0
-    for s, e, t, r in zip(start, end, time_points, repeats, strict=False):
+    for s, e, t, r in zip(start, end, time_points, repeats):
         assert points_lookup[t].start == s
         assert points_lookup[t].stop == e
         assert points_lookup[t].stop - points_lookup[t].start == r

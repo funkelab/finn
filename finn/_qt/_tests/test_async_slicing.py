@@ -36,7 +36,9 @@ def _enable_async(_fresh_settings, make_napari_viewer):
 
 
 @pytest.mark.usefixtures('_enable_async')
-def test_async_slice_image_on_current_step_change(make_napari_viewer, qtbot, rng):
+def test_async_slice_image_on_current_step_change(
+    make_napari_viewer, qtbot, rng
+):
     viewer = make_napari_viewer()
     data = rng.random((3, 4, 5))
     image = Image(data)
@@ -256,7 +258,9 @@ def wait_until_vispy_image_data_equal(
 ) -> None:
     def assert_vispy_image_data_equal() -> None:
         node = vispy_layer.node
-        data = node._last_data if isinstance(node, VolumeVisual) else node._data
+        data = (
+            node._last_data if isinstance(node, VolumeVisual) else node._data
+        )
         # Vispy node data may have been post-processed (e.g. through a colormap),
         # so check that values are close rather than exactly equal.
         np.testing.assert_allclose(data, expected_data)
@@ -283,7 +287,9 @@ def wait_until_vispy_vectors_data_equal(
 ) -> None:
     def assert_vispy_vectors_data_equal() -> None:
         displayed = expected_data[..., -2:]
-        exp_vertices, exp_faces = generate_vector_meshes_2D(displayed, 1, 1, 'triangle')
+        exp_vertices, exp_faces = generate_vector_meshes_2D(
+            displayed, 1, 1, 'triangle'
+        )
         meshdata = vispy_layer.node._meshdata
         vertices = meshdata.get_vertices()
         faces = meshdata.get_faces()

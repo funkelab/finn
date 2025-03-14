@@ -29,5 +29,6 @@ class ShortcutsSettings(EventedModel):
                 v[name] = value
 
         return {
-            name: [coerce_keybinding(kb) for kb in value] for name, value in v.items()
+            name: [coerce_keybinding(kb) for kb in value]
+            for name, value in v.items()
         }

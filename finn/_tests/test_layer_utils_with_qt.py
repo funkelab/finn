@@ -32,5 +32,7 @@ def test_orient_plane_normal_around_cursor(make_napari_viewer, layer):
     orient_plane_normal_around_cursor(layer=layer, plane_normal=(1, 0, 1))
 
     # check that plane normal has been updated
-    assert np.allclose(layer.plane.normal, [1, 0, 1] / np.linalg.norm([1, 0, 1]))
+    assert np.allclose(
+        layer.plane.normal, [1, 0, 1] / np.linalg.norm([1, 0, 1])
+    )
     assert np.allclose(layer.plane.position, (14, 13, 13))

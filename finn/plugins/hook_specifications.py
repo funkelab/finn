@@ -38,7 +38,7 @@ For more general background on the plugin hook calling mechanism, see the
 from __future__ import annotations
 
 from types import FunctionType
-from typing import Any
+from typing import Any, Optional, Union
 
 from napari_plugin_engine import napari_hook_specification
 
@@ -56,7 +56,7 @@ from finn.types import (
 
 
 @napari_hook_specification(historic=True)
-def napari_provide_sample_data() -> dict[str, SampleData | SampleDict]:
+def napari_provide_sample_data() -> dict[str, Union[SampleData, SampleDict]]:
     """Provide sample data.
 
     Plugins may implement this hook to provide sample data for use in finn.
@@ -111,7 +111,7 @@ def napari_provide_sample_data() -> dict[str, SampleData | SampleDict]:
 
 
 @napari_hook_specification(firstresult=True)
-def napari_get_reader(path: str | list[str]) -> ReaderFunction | None:
+def napari_get_reader(path: Union[str, list[str]]) -> Optional[ReaderFunction]:
     """Return a function capable of loading ``path`` into napari, or ``None``.
 
     This is the primary "**reader plugin**" function.  It accepts a path or
@@ -167,7 +167,9 @@ def napari_get_reader(path: str | list[str]) -> ReaderFunction | None:
 
 
 @napari_hook_specification(firstresult=True)
-def napari_get_writer(path: str, layer_types: list[str]) -> WriterFunction | None:
+def napari_get_writer(
+    path: str, layer_types: list[str]
+) -> Optional[WriterFunction]:
     """Return function capable of writing napari layer data to ``path``.
 
     This function will be called whenever the user attempts to save multiple
@@ -218,7 +220,7 @@ def napari_get_writer(path: str, layer_types: list[str]) -> WriterFunction | Non
 
 
 @napari_hook_specification(firstresult=True)
-def napari_write_image(path: str, data: Any, meta: dict) -> str | None:
+def napari_write_image(path: str, data: Any, meta: dict) -> Optional[str]:
     """Write image data and metadata into a path.
 
     It is the responsibility of the implementation to check any extension on
@@ -246,7 +248,7 @@ def napari_write_image(path: str, data: Any, meta: dict) -> str | None:
 
 
 @napari_hook_specification(firstresult=True)
-def napari_write_labels(path: str, data: Any, meta: dict) -> str | None:
+def napari_write_labels(path: str, data: Any, meta: dict) -> Optional[str]:
     """Write labels data and metadata into a path.
 
     It is the responsibility of the implementation to check any extension on
@@ -275,7 +277,7 @@ def napari_write_labels(path: str, data: Any, meta: dict) -> str | None:
 
 
 @napari_hook_specification(firstresult=True)
-def napari_write_points(path: str, data: Any, meta: dict) -> str | None:
+def napari_write_points(path: str, data: Any, meta: dict) -> Optional[str]:
     """Write points data and metadata into a path.
 
     It is the responsibility of the implementation to check any extension on
@@ -301,7 +303,7 @@ def napari_write_points(path: str, data: Any, meta: dict) -> str | None:
 
 
 @napari_hook_specification(firstresult=True)
-def napari_write_shapes(path: str, data: Any, meta: dict) -> str | None:
+def napari_write_shapes(path: str, data: Any, meta: dict) -> Optional[str]:
     """Write shapes data and metadata into a path.
 
     It is the responsibility of the implementation to check any extension on
@@ -328,7 +330,7 @@ def napari_write_shapes(path: str, data: Any, meta: dict) -> str | None:
 
 
 @napari_hook_specification(firstresult=True)
-def napari_write_surface(path: str, data: Any, meta: dict) -> str | None:
+def napari_write_surface(path: str, data: Any, meta: dict) -> Optional[str]:
     """Write surface data and metadata into a path.
 
     It is the responsibility of the implementation to check any extension on
@@ -358,7 +360,7 @@ def napari_write_surface(path: str, data: Any, meta: dict) -> str | None:
 
 
 @napari_hook_specification(firstresult=True)
-def napari_write_vectors(path: str, data: Any, meta: dict) -> str | None:
+def napari_write_vectors(path: str, data: Any, meta: dict) -> Optional[str]:
     """Write vectors data and metadata into a path.
 
     It is the responsibility of the implementation to check any extension on
@@ -389,7 +391,9 @@ def napari_write_vectors(path: str, data: Any, meta: dict) -> str | None:
 
 
 @napari_hook_specification(historic=True)
-def napari_experimental_provide_function() -> FunctionType | list[FunctionType]:
+def napari_experimental_provide_function() -> Union[
+    FunctionType, list[FunctionType]
+]:
     """Provide function(s) that can be passed to magicgui.
 
     This hook specification is marked as experimental as the API or how the
@@ -423,7 +427,9 @@ def napari_experimental_provide_function() -> FunctionType | list[FunctionType]:
 
 
 @napari_hook_specification(historic=True)
-def napari_experimental_provide_dock_widget() -> AugmentedWidget | list[AugmentedWidget]:
+def napari_experimental_provide_dock_widget() -> Union[
+    AugmentedWidget, list[AugmentedWidget]
+]:
     """Provide functions that return widgets to be docked in the viewer.
 
     This hook specification is marked as experimental as the API or how the
@@ -495,7 +501,9 @@ def napari_experimental_provide_dock_widget() -> AugmentedWidget | list[Augmente
 
 
 @napari_hook_specification(historic=True)
-def napari_experimental_provide_theme() -> dict[str, dict[str, str | tuple | list]]:
+def napari_experimental_provide_theme() -> dict[
+    str, dict[str, Union[str, tuple, list]]
+]:
     """Provide GUI with a set of colors used through finn. This hook allows you to
     provide additional color schemes so you can accomplish your desired styling.
 

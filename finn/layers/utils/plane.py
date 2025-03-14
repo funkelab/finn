@@ -12,7 +12,7 @@ from finn.utils.translations import trans
 if sys.version_info < (3, 10):
     # Once 3.12+ there is a new syntax, type Foo = Bar[...], but
     # we are not there yet.
-    from typing import TypeAlias
+    from typing_extensions import TypeAlias
 else:
     from typing import TypeAlias
 
@@ -53,8 +53,7 @@ class Plane(EventedModel):
         self.position = cast(
             Point3D,
             tuple(
-                p + (distance * n)
-                for p, n in zip(self.position, self.normal, strict=False)
+                p + (distance * n) for p, n in zip(self.position, self.normal)
             ),
         )
 
@@ -98,7 +97,9 @@ class Plane(EventedModel):
 
         plane_normal = np.cross(ab, ac)
         plane_position = np.mean(abc, axis=0)
-        return cls(position=plane_position, normal=plane_normal, enabled=enabled)
+        return cls(
+            position=plane_position, normal=plane_normal, enabled=enabled
+        )
 
     def as_array(self) -> npt.NDArray:
         """Return a (2, 3) array representing the plane.
@@ -179,7 +180,9 @@ class ClippingPlaneList(SelectableEventedList):
         return np.stack(arrays)
 
     @classmethod
-    def from_array(cls, array: npt.NDArray, enabled: bool = True) -> 'ClippingPlaneList':
+    def from_array(
+        cls, array: npt.NDArray, enabled: bool = True
+    ) -> 'ClippingPlaneList':
         """Construct the PlaneList from an (N, 2, 3) array.
 
         [i, 0, :] : ith plane position
@@ -193,7 +196,10 @@ class ClippingPlaneList(SelectableEventedList):
                     shape=array.shape,
                 )
             )
-        planes = [ClippingPlane.from_array(sub_arr, enabled=enabled) for sub_arr in array]
+        planes = [
+            ClippingPlane.from_array(sub_arr, enabled=enabled)
+            for sub_arr in array
+        ]
         return cls(planes)
 
     @classmethod
@@ -225,7 +231,9 @@ class ClippingPlaneList(SelectableEventedList):
                 normal[axis] = -direction
 
                 planes.append(
-                    ClippingPlane(position=position, normal=normal, enabled=enabled)
+                    ClippingPlane(
+                        position=position, normal=normal, enabled=enabled
+                    )
                 )
         return cls(planes)
 

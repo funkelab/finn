@@ -85,4 +85,6 @@ class Rectangle(Shape):
         self._face_vertices = data_displayed
         self._face_triangles = np.array([[0, 1, 2], [0, 2, 3]])
         self._box = rectangle_to_box(data_displayed)
-        self.slice_key = self._bounding_box[:, self.dims_not_displayed].astype('int')
+        self.slice_key = self._bounding_box[:, self.dims_not_displayed].astype(
+            'int'
+        )

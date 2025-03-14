@@ -4,6 +4,7 @@ from collections.abc import Generator, Iterable, Iterator, MutableSet, Sequence
 from typing import (
     TYPE_CHECKING,
     Any,
+    Optional,
     TypeVar,
 )
 
@@ -62,8 +63,8 @@ class EventedSet(MutableSet[_T]):
 
     def _emit_change(
         self,
-        added: set[_T] | None = None,
-        removed: set[_T] | None = None,
+        added: Optional[set[_T]] = None,
+        removed: Optional[set[_T]] = None,
     ) -> None:
         # provides a hook for subclasses to update internal state before emit
         if added is None:

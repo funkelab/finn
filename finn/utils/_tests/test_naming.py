@@ -50,7 +50,9 @@ def eval_with_filename(source, filename=__file__):
     return eval(code, frame.f_globals, frame.f_locals)
 
 
-magic_name = functools.partial(magic_name, path_prefix=magic_name.__code__.co_filename)
+magic_name = functools.partial(
+    magic_name, path_prefix=magic_name.__code__.co_filename
+)
 
 
 def test_basic():

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import Union
 
 import numpy as np
 
@@ -37,7 +38,9 @@ class MultiScaleData(Sequence[LayerDataProtocol]):
     ) -> None:
         self._data: list[LayerDataProtocol] = list(data)
         if not self._data:
-            raise ValueError(trans._('Multiscale data must be a (non-empty) sequence'))
+            raise ValueError(
+                trans._('Multiscale data must be a (non-empty) sequence')
+            )
         for d in self._data:
             assert_protocol(d)
 
@@ -67,7 +70,7 @@ class MultiScaleData(Sequence[LayerDataProtocol]):
         return tuple(im.shape for im in self._data)
 
     def __getitem__(  # type: ignore [override]
-        self, key: int | tuple[slice, ...]
+        self, key: Union[int, tuple[slice, ...]]
     ) -> LayerDataProtocol:
         """Multiscale indexing."""
         return self._data[key]

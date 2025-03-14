@@ -58,7 +58,9 @@ def _convert(ll: LayerList, type_: str) -> None:
         if isinstance(lay, Shapes) and type_ == 'labels':
             data = lay.to_labels()
             idx += 1
-        elif not np.issubdtype(lay.data.dtype, np.integer) and type_ == 'labels':
+        elif (
+            not np.issubdtype(lay.data.dtype, np.integer) and type_ == 'labels'
+        ):
             data = lay.data.astype(int)
             idx += 1
         else:
@@ -103,7 +105,11 @@ def _convert_to_image(ll: LayerList) -> None:
 def _merge_stack(ll: LayerList, rgb: bool = False) -> None:
     # force selection to follow LayerList ordering
     imgs = cast(list[Image], [layer for layer in ll if layer in ll.selection])
-    merged = stack_utils.merge_rgb(imgs) if rgb else stack_utils.images_to_stack(imgs)
+    merged = (
+        stack_utils.merge_rgb(imgs)
+        if rgb
+        else stack_utils.images_to_stack(imgs)
+    )
     for layer in imgs:
         ll.remove(layer)
     ll.append(merged)
@@ -114,7 +120,7 @@ def _toggle_visibility(ll: LayerList) -> None:
     for layer in ll.selection:
         current_visibility_state.append(layer.visible)
 
-    for visibility, layer in zip(current_visibility_state, ll.selection, strict=False):
+    for visibility, layer in zip(current_visibility_state, ll.selection):
         if layer.visible == visibility:
             layer.visible = not visibility
 
@@ -150,7 +156,9 @@ def _unlink_selected_layers(ll: LayerList) -> None:
 
 
 def _select_linked_layers(ll: LayerList) -> None:
-    linked_layers_in_list = [x for x in get_linked_layers(*ll.selection) if x in ll]
+    linked_layers_in_list = [
+        x for x in get_linked_layers(*ll.selection) if x in ll
+    ]
     ll.selection.update(linked_layers_in_list)
 
 
@@ -187,7 +195,9 @@ def _project(ll: LayerList, axis: int = 0, mode: str = 'max') -> None:
         return
     if not isinstance(layer, Image):
         raise NotImplementedError(
-            trans._('Projections are only implemented for images', deferred=True)
+            trans._(
+                'Projections are only implemented for images', deferred=True
+            )
         )
 
     # this is not the desired behavior for coordinate-based layers

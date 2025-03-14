@@ -2,7 +2,9 @@ from app_model.types import KeyBinding, KeyCode, KeyMod
 
 _default_shortcuts = {
     # viewer
-    'napari:toggle_console_visibility': [KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyC],
+    'napari:toggle_console_visibility': [
+        KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyC
+    ],
     'napari:reset_scroll_progress': [KeyCode.Ctrl],
     'napari:toggle_ndisplay': [KeyMod.CtrlCmd | KeyCode.KeyY],
     'napari:toggle_theme': [KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyT],
@@ -22,8 +24,12 @@ _default_shortcuts = {
     'napari:toggle_grid': [KeyMod.CtrlCmd | KeyCode.KeyG],
     'napari:toggle_selected_visibility': [KeyCode.KeyV],
     'napari:toggle_unselected_visibility': [KeyMod.Shift | KeyCode.KeyV],
-    'napari:show_only_layer_above': [KeyMod.Shift | KeyMod.Alt | KeyCode.UpArrow],
-    'napari:show_only_layer_below': [KeyMod.Shift | KeyMod.Alt | KeyCode.DownArrow],
+    'napari:show_only_layer_above': [
+        KeyMod.Shift | KeyMod.Alt | KeyCode.UpArrow
+    ],
+    'napari:show_only_layer_below': [
+        KeyMod.Shift | KeyMod.Alt | KeyCode.DownArrow
+    ],
     'napari:hold_for_pan_zoom': [KeyCode.Space],
     # labels
     'napari:activate_labels_erase_mode': [KeyCode.Digit1, KeyCode.KeyE],

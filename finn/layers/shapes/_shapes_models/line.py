@@ -78,6 +78,6 @@ class Line(Shape):
         self._set_meshes(self.data_displayed, face=False, closed=False)
         self._box = create_box(self.data_displayed)
 
-        self.slice_key = np.round(self._bounding_box[:, self.dims_not_displayed]).astype(
-            'int'
-        )
+        self.slice_key = np.round(
+            self._bounding_box[:, self.dims_not_displayed]
+        ).astype('int')

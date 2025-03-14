@@ -15,7 +15,9 @@ from finn.layers.surface._surface_utils import (
         ([5, 3, 0], [0, 0, 1]),
     ],
 )
-def test_calculate_barycentric_coordinates(point, expected_barycentric_coordinates):
+def test_calculate_barycentric_coordinates(
+    point, expected_barycentric_coordinates
+):
     triangle_vertices = np.array(
         [
             [5, 0, 0],
@@ -23,6 +25,10 @@ def test_calculate_barycentric_coordinates(point, expected_barycentric_coordinat
             [5, 3, 0],
         ]
     )
-    barycentric_coordinates = calculate_barycentric_coordinates(point, triangle_vertices)
-    np.testing.assert_allclose(barycentric_coordinates, expected_barycentric_coordinates)
+    barycentric_coordinates = calculate_barycentric_coordinates(
+        point, triangle_vertices
+    )
+    np.testing.assert_allclose(
+        barycentric_coordinates, expected_barycentric_coordinates
+    )
     np.testing.assert_allclose(np.sum(barycentric_coordinates), 1)

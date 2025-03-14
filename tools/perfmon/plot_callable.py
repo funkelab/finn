@@ -38,7 +38,9 @@ traces_path = perfmon_dir / args.config / f'traces-{args.output}.json'
 with open(traces_path) as traces_file:
     traces = json.load(traces_file)
 
-durations_ms = [trace['dur'] / 1000 for trace in traces if trace['name'] == args.callable]
+durations_ms = [
+    trace['dur'] / 1000 for trace in traces if trace['name'] == args.callable
+]
 
 plt.violinplot(durations_ms, vert=False, showmeans=True, showmedians=True)
 

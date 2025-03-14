@@ -3,7 +3,9 @@ from napari_plugin_engine import PluginError, standard_metadata
 from finn.utils.translations import trans
 
 
-def format_exceptions(plugin_name: str, as_html: bool = False, color='Neutral'):
+def format_exceptions(
+    plugin_name: str, as_html: bool = False, color='Neutral'
+):
     """Return formatted tracebacks for all exceptions raised by plugin.
 
     Parameters

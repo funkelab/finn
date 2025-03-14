@@ -46,7 +46,9 @@ def test_extension2reader_defaults(
     widget = extension2reader_widget()
 
     assert widget._table.rowCount() == 1
-    assert widget._table.itemAt(0, 0).text() == 'No filename preferences found.'
+    assert (
+        widget._table.itemAt(0, 0).text() == 'No filename preferences found.'
+    )
 
 
 def test_extension2reader_with_settings(
@@ -57,7 +59,10 @@ def test_extension2reader_with_settings(
 
     assert widget._table.rowCount() == 1
     assert widget._table.item(0, 0).text() == '.test'
-    assert widget._table.cellWidget(0, 1).findChild(QLabel).text() == 'test-plugin'
+    assert (
+        widget._table.cellWidget(0, 1).findChild(QLabel).text()
+        == 'test-plugin'
+    )
 
 
 def test_extension2reader_removal(extension2reader_widget, qtbot):
@@ -84,7 +89,9 @@ def test_extension2reader_removal(extension2reader_widget, qtbot):
     assert 'No filename preferences found' in widget._table.item(0, 0).text()
 
 
-def test_all_readers_in_dropdown(extension2reader_widget, tmp_plugin, tif_reader):
+def test_all_readers_in_dropdown(
+    extension2reader_widget, tmp_plugin, tif_reader
+):
     @tmp_plugin.contribute.reader(filename_patterns=['*'])
     def _(path): ...
 
@@ -101,8 +108,12 @@ def test_all_readers_in_dropdown(extension2reader_widget, tmp_plugin, tif_reader
     assert all(i in all_dropdown_items for i in npe2_readers.values())
 
 
-def test_directory_readers_not_in_dropdown(extension2reader_widget, tmp_plugin):
-    @tmp_plugin.contribute.reader(filename_patterns=[], accepts_directories=True)
+def test_directory_readers_not_in_dropdown(
+    extension2reader_widget, tmp_plugin
+):
+    @tmp_plugin.contribute.reader(
+        filename_patterns=[], accepts_directories=True
+    )
     def f(path): ...
 
     widget = extension2reader_widget(
@@ -116,7 +127,9 @@ def test_directory_readers_not_in_dropdown(extension2reader_widget, tmp_plugin):
     assert tmp_plugin.display_name not in all_dropdown_items
 
 
-def test_filtering_readers(extension2reader_widget, builtins, tif_reader, npy_reader):
+def test_filtering_readers(
+    extension2reader_widget, builtins, tif_reader, npy_reader
+):
     widget = extension2reader_widget(
         npe1_readers={builtins.display_name: builtins.display_name}
     )
@@ -128,7 +141,10 @@ def test_filtering_readers(extension2reader_widget, builtins, tif_reader, npy_re
         widget._new_reader_dropdown.itemText(i)
         for i in range(widget._new_reader_dropdown.count())
     ]
-    assert sorted([npy_reader.display_name, builtins.display_name]) == all_dropdown_items
+    assert (
+        sorted([npy_reader.display_name, builtins.display_name])
+        == all_dropdown_items
+    )
 
 
 @pytest.mark.parametrize('pattern', ['.', '', '/'])
@@ -146,7 +162,9 @@ def test_filtering_readers_problematic_patterns(
 def test_filtering_readers_complex_pattern(
     extension2reader_widget, npy_reader, tif_reader
 ):
-    @tif_reader.contribute.reader(filename_patterns=['my-specific-folder/*.tif'])
+    @tif_reader.contribute.reader(
+        filename_patterns=['my-specific-folder/*.tif']
+    )
     def f(path): ...
 
     widget = extension2reader_widget(npe1_readers={})
@@ -161,7 +179,9 @@ def test_filtering_readers_complex_pattern(
     assert sorted([tif_reader.name]) == all_dropdown_items
 
 
-def test_adding_new_preference(extension2reader_widget, tif_reader, npy_reader):
+def test_adding_new_preference(
+    extension2reader_widget, tif_reader, npy_reader
+):
     widget = extension2reader_widget(npe1_readers={})
     widget._fn_pattern_edit.setText('*.tif')
     # will be filtered and tif-reader will be only item
@@ -172,10 +192,12 @@ def test_adding_new_preference(extension2reader_widget, tif_reader, npy_reader):
     settings = get_settings().plugins.extension2reader
     assert '*.tif' in settings
     assert settings['*.tif'] == tif_reader.name
-    assert widget._table.item(widget._table.rowCount() - 1, 0).text() == '*.tif'
-    plugin_label = widget._table.cellWidget(widget._table.rowCount() - 1, 1).findChild(
-        QLabel
+    assert (
+        widget._table.item(widget._table.rowCount() - 1, 0).text() == '*.tif'
     )
+    plugin_label = widget._table.cellWidget(
+        widget._table.rowCount() - 1, 1
+    ).findChild(QLabel)
     assert plugin_label.text() == tif_reader.display_name
 
 
@@ -212,5 +234,7 @@ def test_editing_preference(extension2reader_widget, tif_reader):
     assert '*.tif' in settings
     assert settings['*.tif'] == tiff2.name
     assert widget._table.rowCount() == original_row_count
-    plugin_label = widget._table.cellWidget(original_row_count - 1, 1).findChild(QLabel)
+    plugin_label = widget._table.cellWidget(
+        original_row_count - 1, 1
+    ).findChild(QLabel)
     assert plugin_label.text() == tiff2.name

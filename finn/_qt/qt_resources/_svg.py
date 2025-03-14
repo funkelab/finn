@@ -2,6 +2,8 @@
 A Class for generating QIcons from SVGs with arbitrary colors at runtime.
 """
 
+from typing import Optional, Union
+
 from qtpy.QtCore import QByteArray, QPoint, QRect, QRectF, Qt
 from qtpy.QtGui import QIcon, QIconEngine, QImage, QPainter, QPixmap
 from qtpy.QtSvg import QSvgRenderer
@@ -41,7 +43,7 @@ class QColoredSVGIcon(QIcon):
     def __init__(
         self,
         path_or_xml: str,
-        color: str | None = None,
+        color: Optional[str] = None,
         opacity: float = 1.0,
     ) -> None:
         from finn.resources import get_colorized_svg
@@ -52,9 +54,9 @@ class QColoredSVGIcon(QIcon):
 
     def colored(
         self,
-        color: str | None = None,
+        color: Optional[str] = None,
         opacity: float = 1.0,
-        theme: str | None = None,
+        theme: Optional[str] = None,
         theme_key: str = 'icon',
     ) -> 'QColoredSVGIcon':
         """Return a new colorized QIcon instance.
@@ -121,7 +123,7 @@ class SVGBufferIconEngine(QIconEngine):
     see: https://doc.qt.io/qt-5/qiconengine.html
     """
 
-    def __init__(self, xml: str | bytes) -> None:
+    def __init__(self, xml: Union[str, bytes]) -> None:
         if isinstance(xml, str):
             xml = xml.encode('utf-8')
         self.data = QByteArray(xml)

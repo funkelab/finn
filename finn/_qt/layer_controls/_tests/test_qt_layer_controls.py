@@ -1,7 +1,7 @@
 import os
 import random
 import sys
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 from unittest.mock import Mock
 
 import numpy as np
@@ -50,8 +50,8 @@ from finn.utils.events.event import Event
 class LayerTypeWithData(NamedTuple):
     type: type[Layer]
     data: np.ndarray
-    colormap: DirectLabelColormap | None
-    properties: dict | None
+    colormap: Optional[DirectLabelColormap]
+    properties: Optional[dict]
     expected_isinstance: type[QtLayerControlsContainer]
 
 
@@ -298,7 +298,8 @@ def test_create_layer_controls_spin(
                     'RuntimeWarning: overflow encountered',  # See https://github.com/napari/napari/issues/4864
                 ]
                 assert any(
-                    expected_error in captured.err for expected_error in expected_errors
+                    expected_error in captured.err
+                    for expected_error in expected_errors
                 ), f'value: {value}, range {value_range}\nerr: {captured.err}'
 
         assert qspinbox.value() in [qspinbox_max, qspinbox_max - 1]
@@ -338,13 +339,15 @@ def test_create_layer_controls_qslider(
                 # from (minimum, maximum) to (minimum, minimum)
                 # (minimum, minimum) and (maximum, maximum) values are excluded
                 # to prevent the sequence not being monotonically increasing
-                base_value_range = np.linspace(qslider.minimum(), qslider.maximum())
+                base_value_range = np.linspace(
+                    qslider.minimum(), qslider.maximum()
+                )
                 num_values = base_value_range.size
                 max_value = np.full(num_values, qslider.maximum())
                 min_value = np.full(num_values, qslider.minimum())
-                value_range_to_max = list(zip(base_value_range, max_value, strict=False))
+                value_range_to_max = list(zip(base_value_range, max_value))
                 value_range_to_min = list(
-                    zip(min_value, np.flip(base_value_range), strict=False)
+                    zip(min_value, np.flip(base_value_range))
                 )
                 value_range = value_range_to_max[:-1] + value_range_to_min[:-1]
             else:
@@ -357,15 +360,17 @@ def test_create_layer_controls_qslider(
                 # base list created with + 1 to include maximum value
                 # (minimum, minimum) and (maximum, maximum) values are excluded
                 # to prevent the sequence not being monotonically increasing
-                base_value_range = range(qslider.minimum(), qslider.maximum() + 1)
+                base_value_range = range(
+                    qslider.minimum(), qslider.maximum() + 1
+                )
                 num_values = len(base_value_range)
                 max_value = [qslider.maximum()] * num_values
                 min_value = [qslider.minimum()] * num_values
-                value_range_to_max = list(zip(base_value_range, max_value, strict=False))
+                value_range_to_max = list(zip(base_value_range, max_value))
                 base_value_range_copy = base_value_range.copy()
                 base_value_range_copy.reverse()
                 value_range_to_min = list(
-                    zip(min_value, base_value_range_copy, strict=False)
+                    zip(min_value, base_value_range_copy)
                 )
                 value_range = value_range_to_max[:-1] + value_range_to_min[:-1]
             else:
@@ -442,7 +447,9 @@ def test_create_layer_controls_qcolorswatchedit(
             assert not captured.err
 
     # check QPushButton and QRadioButton by clicking with mouse click
-    for button in ctrl.findChildren(QPushButton) + ctrl.findChildren(QRadioButton):
+    for button in ctrl.findChildren(QPushButton) + ctrl.findChildren(
+        QRadioButton
+    ):
         if button.isVisible():
             qtbot.mouseClick(button, Qt.LeftButton)
             # capture any output done to sys.stdout or sys.stderr.
@@ -614,7 +621,9 @@ def test_text_set_visible_updates_checkbox(qtbot, layer_type_with_data):
 
 
 @pytest.mark.parametrize('layer_type_with_data', [_POINTS, _SHAPES])
-def test_set_text_then_set_visible_updates_checkbox(qtbot, layer_type_with_data):
+def test_set_text_then_set_visible_updates_checkbox(
+    qtbot, layer_type_with_data
+):
     layer = layer_type_with_data.type(layer_type_with_data.data)
     ctrl = create_qt_layer_controls(layer)
     qtbot.addWidget(ctrl)
@@ -793,7 +802,9 @@ def editable_layer(request):
     return LayerType(data)
 
 
-def test_make_visible_when_editable_enables_edit_buttons(qtbot, editable_layer):
+def test_make_visible_when_editable_enables_edit_buttons(
+    qtbot, editable_layer
+):
     editable_layer.editable = True
     editable_layer.visible = False
     controls = make_layer_controls(qtbot, editable_layer)
@@ -804,7 +815,9 @@ def test_make_visible_when_editable_enables_edit_buttons(qtbot, editable_layer):
     assert_all_edit_buttons_enabled(controls)
 
 
-def test_make_not_visible_when_editable_disables_edit_buttons(qtbot, editable_layer):
+def test_make_not_visible_when_editable_disables_edit_buttons(
+    qtbot, editable_layer
+):
     editable_layer.editable = True
     editable_layer.visible = True
     controls = make_layer_controls(qtbot, editable_layer)
@@ -815,7 +828,9 @@ def test_make_not_visible_when_editable_disables_edit_buttons(qtbot, editable_la
     assert_no_edit_buttons_enabled(controls)
 
 
-def test_make_editable_when_visible_enables_edit_buttons(qtbot, editable_layer):
+def test_make_editable_when_visible_enables_edit_buttons(
+    qtbot, editable_layer
+):
     editable_layer.editable = False
     editable_layer.visible = True
     controls = make_layer_controls(qtbot, editable_layer)
@@ -826,7 +841,9 @@ def test_make_editable_when_visible_enables_edit_buttons(qtbot, editable_layer):
     assert_all_edit_buttons_enabled(controls)
 
 
-def test_make_not_editable_when_visible_disables_edit_buttons(qtbot, editable_layer):
+def test_make_not_editable_when_visible_disables_edit_buttons(
+    qtbot, editable_layer
+):
     editable_layer.editable = True
     editable_layer.visible = True
     controls = make_layer_controls(qtbot, editable_layer)

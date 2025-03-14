@@ -117,7 +117,9 @@ def test_auto_contrast_buttons(qtbot):
     assert layer.contrast_limits == [0, 63]
 
     # change slice
-    dims = Dims(ndim=3, range=((0, 4, 1), (0, 8, 1), (0, 8, 1)), point=(1, 8, 8))
+    dims = Dims(
+        ndim=3, range=((0, 4, 1), (0, 8, 1), (0, 8, 1)), point=(1, 8, 8)
+    )
     layer._slice_dims(dims)
     # hasn't changed yet
     assert layer.contrast_limits == [0, 63]

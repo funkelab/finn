@@ -24,7 +24,12 @@ cover this in test_evented_list.py)
 
 import contextlib
 import logging
-from collections.abc import Callable, Generator, Iterable, Sequence
+from collections.abc import Generator, Iterable, Sequence
+from typing import (
+    Callable,
+    Optional,
+    Union,
+)
 
 from finn.utils.events.containers._typed import (
     _L,
@@ -84,8 +89,8 @@ class EventedList(TypedMutableSequence[_T]):
         self,
         data: Iterable[_T] = (),
         *,
-        basetype: type[_T] | Sequence[type[_T]] = (),
-        lookup: dict[type[_L], Callable[[_T], _T | _L]] | None = None,
+        basetype: Union[type[_T], Sequence[type[_T]]] = (),
+        lookup: Optional[dict[type[_L], Callable[[_T], Union[_T, _L]]]] = None,
     ) -> None:
         if lookup is None:
             lookup = {}
@@ -105,7 +110,9 @@ class EventedList(TypedMutableSequence[_T]):
             self.events.add(**_events)
         else:
             # otherwise create a new one
-            self.events = EmitterGroup(source=self, auto_connect=False, **_events)
+            self.events = EmitterGroup(
+                source=self, auto_connect=False, **_events
+            )
         super().__init__(data, basetype=basetype, lookup=lookup)
 
     # WAIT!! ... Read the module docstring before reimplement these methods
@@ -125,7 +132,9 @@ class EventedList(TypedMutableSequence[_T]):
                         deferred=True,
                     )
                 )
-            value = list(value)  # make sure we don't empty generators and reuse them
+            value = list(
+                value
+            )  # make sure we don't empty generators and reuse them
             if value == old:
                 return
             [self._type_check(v) for v in value]  # before we mutate the list
@@ -140,7 +149,7 @@ class EventedList(TypedMutableSequence[_T]):
                             slice_size=len(indices),
                         )
                     )
-                for i, v in zip(indices, value, strict=False):
+                for i, v in zip(indices, value):
                     self.__setitem__(i, v)
             else:
                 del self[key]
@@ -153,7 +162,9 @@ class EventedList(TypedMutableSequence[_T]):
             super().__setitem__(key, value)
             self.events.changed(index=key, old_value=old, value=value)
 
-    def _delitem_indices(self, key: Index) -> Iterable[tuple['EventedList[_T]', int]]:
+    def _delitem_indices(
+        self, key: Index
+    ) -> Iterable[tuple['EventedList[_T]', int]]:
         # returning List[(self, int)] allows subclasses to pass nested members
         if isinstance(key, int):
             return [(self, key if key >= 0 else key + len(self))]
@@ -234,7 +245,9 @@ class EventedList(TypedMutableSequence[_T]):
         self.events.reordered(value=self)
         return True
 
-    def move_multiple(self, sources: Iterable[Index], dest_index: int = 0) -> int:
+    def move_multiple(
+        self, sources: Iterable[Index], dest_index: int = 0
+    ) -> int:
         """Move a batch of `sources` indices, to a single destination.
 
         Note, if `dest_index` is higher than any of the `sources`, then

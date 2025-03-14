@@ -56,7 +56,9 @@ class VispyShapesLayer(VispyBaseLayer):
         ):
             vertices = np.pad(vertices, ((0, 0), (0, 1)), mode='constant')
 
-        self.node.shape_faces.set_data(vertices=vertices, faces=faces, face_colors=colors)
+        self.node.shape_faces.set_data(
+            vertices=vertices, faces=faces, face_colors=colors
+        )
 
         # Call to update order of translation values with new dims:
         self._on_matrix_change()
@@ -65,8 +67,12 @@ class VispyShapesLayer(VispyBaseLayer):
 
     def _on_highlight_change(self):
         settings = get_settings()
-        self.layer._highlight_width = settings.appearance.highlight.highlight_thickness
-        self.layer._highlight_color = settings.appearance.highlight.highlight_color
+        self.layer._highlight_width = (
+            settings.appearance.highlight.highlight_thickness
+        )
+        self.layer._highlight_color = (
+            settings.appearance.highlight.highlight_color
+        )
 
         # Compute the vertices and faces of any shape outlines
         vertices, faces = self.layer._outline_shapes()
@@ -111,7 +117,9 @@ class VispyShapesLayer(VispyBaseLayer):
             pos = np.zeros((1, self.layer._slice_input.ndisplay))
             width = 0
 
-        self.node.highlight_lines.set_data(pos=pos, color=edge_color, width=width)
+        self.node.highlight_lines.set_data(
+            pos=pos, color=edge_color, width=width
+        )
 
     def _update_text(self, *, update_node=True):
         """Function to update the text node properties

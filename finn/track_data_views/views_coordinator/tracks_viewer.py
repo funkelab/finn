@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from typing import Optional
 
+import finn
 import numpy as np
-from funtracks.data_model import NodeType, SolutionTracks
-from funtracks.data_model.tracks_controller import TracksController
+from finn.track_data_views.graph_attributes import NodeAttr
 from psygnal import Signal
 
-import finn
-from finn.track_data_views.graph_attributes import NodeAttr
+from funtracks.data_model import NodeType, SolutionTracks
+from funtracks.data_model.tracks_controller import TracksController
 from finn.track_data_views.views.layers.tracks_layer_group import TracksLayerGroup
 from finn.track_data_views.views.tree_view.tree_widget_utils import (
     extract_lineage_tree,
@@ -30,9 +30,9 @@ class TracksViewer:
 
     @classmethod
     def get_instance(cls, viewer=None):
-        if not hasattr(cls, '_instance'):
+        if not hasattr(cls, "_instance"):
             if viewer is None:
-                raise ValueError('Make a viewer first please!')
+                raise ValueError("Make a viewer first please!")
             cls._instance = TracksViewer(viewer)
         return cls._instance
 
@@ -48,14 +48,14 @@ class TracksViewer:
         )
 
         self.symbolmap: dict[NodeType, str] = {
-            NodeType.END: 'x',
-            NodeType.CONTINUE: 'disc',
-            NodeType.SPLIT: 'triangle_up',
+            NodeType.END: "x",
+            NodeType.CONTINUE: "disc",
+            NodeType.SPLIT: "triangle_up",
         }
-        self.mode = 'all'
+        self.mode = "all"
         self.tracks = None
         self.visible = None
-        self.tracking_layers = TracksLayerGroup(self.viewer, self.tracks, '', self)
+        self.tracking_layers = TracksLayerGroup(self.viewer, self.tracks, "", self)
         self.selected_nodes = NodeSelectionList()
         self.selected_nodes.list_updated.connect(self.update_selection)
 
@@ -66,16 +66,16 @@ class TracksViewer:
 
     def set_keybinds(self):
         # TODO: separate and document keybinds (and maybe allow user to choose)
-        self.viewer.bind_key('q')(self.toggle_display_mode)
-        self.viewer.bind_key('a')(self.create_edge)
-        self.viewer.bind_key('d')(self.delete_node)
-        self.viewer.bind_key('Delete')(self.delete_node)
-        self.viewer.bind_key('b')(self.delete_edge)
+        self.viewer.bind_key("q")(self.toggle_display_mode)
+        self.viewer.bind_key("a")(self.create_edge)
+        self.viewer.bind_key("d")(self.delete_node)
+        self.viewer.bind_key("Delete")(self.delete_node)
+        self.viewer.bind_key("b")(self.delete_edge)
         # self.viewer.bind_key("s")(self.set_split_node)
         # self.viewer.bind_key("e")(self.set_endpoint_node)
         # self.viewer.bind_key("c")(self.set_linear_node)
-        self.viewer.bind_key('z')(self.undo)
-        self.viewer.bind_key('r')(self.redo)
+        self.viewer.bind_key("z")(self.undo)
+        self.viewer.bind_key("r")(self.redo)
 
     def _refresh(self, node: str | None = None, refresh_view: bool = False) -> None:
         """Call refresh function on finn layers and the submit signal that tracks are updated
@@ -122,7 +122,7 @@ class TracksViewer:
             if isinstance(layer, (finn.layers.Labels | finn.layers.Points)):
                 layer.visible = False
 
-        self.set_display_mode('all')
+        self.set_display_mode("all")
         self.tracking_layers.set_tracks(tracks, name)
         self.selected_nodes.reset()
         self.tracks_updated.emit(True)
@@ -130,21 +130,21 @@ class TracksViewer:
     def toggle_display_mode(self, event=None) -> None:
         """Toggle the display mode between available options"""
 
-        if self.mode == 'lineage':
-            self.set_display_mode('all')
+        if self.mode == "lineage":
+            self.set_display_mode("all")
         else:
-            self.set_display_mode('lineage')
+            self.set_display_mode("lineage")
 
     def set_display_mode(self, mode: str) -> None:
         """Update the display mode and call to update colormaps for points, labels, and tracks"""
 
         # toggle between 'all' and 'lineage'
-        if mode == 'lineage':
-            self.mode = 'lineage'
-            self.viewer.text_overlay.text = 'Toggle Display [Q]\n Lineage'
+        if mode == "lineage":
+            self.mode = "lineage"
+            self.viewer.text_overlay.text = "Toggle Display [Q]\n Lineage"
         else:
-            self.mode = 'all'
-            self.viewer.text_overlay.text = 'Toggle Display [Q]\n All'
+            self.mode = "all"
+            self.viewer.text_overlay.text = "Toggle Display [Q]\n All"
 
         self.viewer.text_overlay.visible = True
         visible_tracks = self.filter_visible_nodes()
@@ -155,7 +155,7 @@ class TracksViewer:
 
         if self.tracks is None or self.tracks.graph is None:
             return []
-        if self.mode == 'lineage':
+        if self.mode == "lineage":
             # if no nodes are selected, check which nodes were previously visible and filter those
             if len(self.selected_nodes) == 0 and self.visible is not None:
                 prev_visible = [
@@ -177,8 +177,9 @@ class TracksViewer:
                     for node in self.visible
                 }
             )
-        self.visible = 'all'
-        return 'all'
+        else:
+            self.visible = "all"
+            return "all"
 
     def update_selection(self) -> None:
         """Sets the view and triggers visualization updates in other components"""

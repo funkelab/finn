@@ -1,3 +1,5 @@
+from typing import Optional
+
 from finn.components.overlays.base import SceneOverlay
 from finn.layers.utils.interaction_box import (
     InteractionBoxHandle,
@@ -26,7 +28,7 @@ class SelectionBoxOverlay(SceneOverlay):
 
     bounds: tuple[tuple[float, float], tuple[float, float]] = ((0, 0), (0, 0))
     handles: bool = False
-    selected_handle: InteractionBoxHandle | None = None
+    selected_handle: Optional[InteractionBoxHandle] = None
 
     def update_from_points(self, points):
         """Create as a bounding box of the given points"""
@@ -48,4 +50,4 @@ class TransformBoxOverlay(SceneOverlay):
         The rendering order of the overlay: lower numbers get rendered first.
     """
 
-    selected_handle: InteractionBoxHandle | None = None
+    selected_handle: Optional[InteractionBoxHandle] = None

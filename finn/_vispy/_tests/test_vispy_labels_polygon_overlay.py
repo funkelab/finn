@@ -17,7 +17,9 @@ def test_vispy_labels_polygon_overlay(make_napari_viewer):
     data = np.zeros((50, 50), dtype=int)
     layer = viewer.add_labels(data, opacity=0.5)
 
-    vispy_labels_polygon = VispyLabelsPolygonOverlay(layer=layer, overlay=labels_polygon)
+    vispy_labels_polygon = VispyLabelsPolygonOverlay(
+        layer=layer, overlay=labels_polygon
+    )
 
     assert vispy_labels_polygon._polygon.color.alpha == 0.5
 
@@ -28,7 +30,9 @@ def test_vispy_labels_polygon_overlay(make_napari_viewer):
     labels_polygon.points = [(0, 0), (1, 1)]
     assert vispy_labels_polygon._line.visible
     assert not vispy_labels_polygon._polygon.visible
-    assert np.allclose(vispy_labels_polygon._line.color[:3], layer._selected_color[:3])
+    assert np.allclose(
+        vispy_labels_polygon._line.color[:3], layer._selected_color[:3]
+    )
 
     labels_polygon.points = [(0, 0), (1, 1), (0, 3)]
     assert not vispy_labels_polygon._line.visible

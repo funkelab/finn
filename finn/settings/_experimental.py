@@ -38,7 +38,9 @@ class ExperimentalSettings(EventedSettings):
 
     lasso_vertex_distance: int = Field(
         10,
-        title=trans._('Minimum distance threshold of shapes lasso and path tool'),
+        title=trans._(
+            'Minimum distance threshold of shapes lasso and path tool'
+        ),
         description=trans._(
             'Value determines how many screen pixels one has to move before another vertex can be added to the polygon'
             'or path.'

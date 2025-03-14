@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 import numpy.typing as npt
 
@@ -38,7 +40,7 @@ def convert_image_to_coordinates(vectors: npt.NDArray) -> npt.NDArray:
 
 
 def fix_data_vectors(
-    vectors: np.ndarray | None, ndim: int | None
+    vectors: Optional[np.ndarray], ndim: Optional[int]
 ) -> tuple[np.ndarray, int]:
     """
     Ensure that vectors array is 3d and have second dimension of size 2

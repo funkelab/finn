@@ -6,7 +6,7 @@ localization data.
 import gettext
 import os
 from pathlib import Path
-from typing import ClassVar
+from typing import ClassVar, Optional, Union
 
 from yaml import safe_load
 
@@ -19,7 +19,9 @@ NAPARI_LANGUAGEPACK_ENTRY = 'finn.languagepack'
 LOCALE_DIR = 'locale'
 
 
-def _get_display_name(locale: str, display_locale: str = _DEFAULT_LOCALE) -> str:
+def _get_display_name(
+    locale: str, display_locale: str = _DEFAULT_LOCALE
+) -> str:
     """
     Return the language name to use with a `display_locale` for a given language locale.
 
@@ -45,7 +47,9 @@ def _get_display_name(locale: str, display_locale: str = _DEFAULT_LOCALE) -> str
     else:
         locale = locale if _is_valid_locale(locale) else _DEFAULT_LOCALE
         display_locale = (
-            display_locale if _is_valid_locale(display_locale) else _DEFAULT_LOCALE
+            display_locale
+            if _is_valid_locale(display_locale)
+            else _DEFAULT_LOCALE
         )
         loc = babel.Locale.parse(locale)
         display_name_ = loc.get_display_name(display_locale)
@@ -195,16 +199,18 @@ class TranslationString(str):
 
     def __new__(
         cls,
-        domain: str | None = None,
-        msgctxt: str | None = None,
-        msgid: str | None = None,
-        msgid_plural: str | None = None,
-        n: str | None = None,
+        domain: Optional[str] = None,
+        msgctxt: Optional[str] = None,
+        msgid: Optional[str] = None,
+        msgid_plural: Optional[str] = None,
+        n: Optional[str] = None,
         deferred: bool = False,
         **kwargs,
     ):
         if msgid is None:
-            raise ValueError(trans._('Must provide at least a `msgid` parameter!'))
+            raise ValueError(
+                trans._('Must provide at least a `msgid` parameter!')
+            )
 
         kwargs['n'] = n
 
@@ -222,9 +228,9 @@ class TranslationString(str):
         self,
         domain: str,
         msgid: str,
-        msgctxt: str | None = None,
-        msgid_plural: str | None = None,
-        n: int | None = None,
+        msgctxt: Optional[str] = None,
+        msgid_plural: Optional[str] = None,
+        n: Optional[int] = None,
         deferred: bool = False,
         **kwargs,
     ) -> None:
@@ -376,9 +382,9 @@ class TranslationBundle:
         self,
         *,
         msgid: str,
-        msgctxt: str | None = None,
-        msgid_plural: str | None = None,
-        n: int | None = None,
+        msgctxt: Optional[str] = None,
+        msgid_plural: Optional[str] = None,
+        n: Optional[int] = None,
         **kwargs,
     ) -> str:
         """
@@ -427,7 +433,9 @@ class TranslationBundle:
         kwargs['n'] = n
         return translation.format(**kwargs)
 
-    def _(self, msgid: str, deferred: bool = False, **kwargs) -> TranslationString | str:
+    def _(
+        self, msgid: str, deferred: bool = False, **kwargs
+    ) -> Union[TranslationString, str]:
         """
         Shorthand for `gettext.gettext` with enhanced functionality.
 
@@ -460,9 +468,9 @@ class TranslationBundle:
         msgid: str,
         msgid_plural: str,
         n: int,
-        deferred: bool | None = False,
+        deferred: Optional[bool] = False,
         **kwargs,
-    ) -> TranslationString | str:
+    ) -> Union[TranslationString, str]:
         """
         Shorthand for `gettext.ngettext` with enhanced functionality.
 
@@ -496,16 +504,18 @@ class TranslationBundle:
                 **kwargs,
             )
             if deferred
-            else self._dnpgettext(msgid=msgid, msgid_plural=msgid_plural, n=n, **kwargs)
+            else self._dnpgettext(
+                msgid=msgid, msgid_plural=msgid_plural, n=n, **kwargs
+            )
         )
 
     def _p(
         self,
         msgctxt: str,
         msgid: str,
-        deferred: bool | None = False,
+        deferred: Optional[bool] = False,
         **kwargs,
-    ) -> TranslationString | str:
+    ) -> Union[TranslationString, str]:
         """
         Shorthand for `gettext.pgettext` with enhanced functionality.
 
@@ -545,9 +555,9 @@ class TranslationBundle:
         msgid: str,
         msgid_plural: str,
         n: int,
-        deferred: bool | None = False,
+        deferred: Optional[bool] = False,
         **kwargs,
-    ) -> TranslationString | str:
+    ) -> Union[TranslationString, str]:
         """
         Shorthand for `gettext.npgettext` with enhanced functionality.
 

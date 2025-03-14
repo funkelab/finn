@@ -46,7 +46,9 @@ def test_cli_parses_unknowns(mock_run, monkeypatch, make_napari_viewer):
             finn.components.viewer_model.ViewerModel, 'open', assert_kwargs
         )
         with monkeypatch.context() as m:
-            m.setattr(sys, 'argv', ['n', 'file', '--contrast-limits', '(0, 1)'])
+            m.setattr(
+                sys, 'argv', ['n', 'file', '--contrast-limits', '(0, 1)']
+            )
             __main__._run()
         with monkeypatch.context() as m:
             m.setattr(sys, 'argv', ['n', 'file', '--contrast-limits', '(0,1)'])
@@ -108,7 +110,9 @@ def test_cli_passes_kwargs(qt_open, mock_run, monkeypatch, make_napari_viewer):
 
 
 @mock.patch('finn._qt.qt_viewer.QtViewer._qt_open')
-def test_cli_passes_kwargs_stack(qt_open, mock_run, monkeypatch, make_napari_viewer):
+def test_cli_passes_kwargs_stack(
+    qt_open, mock_run, monkeypatch, make_napari_viewer
+):
     """test that we can parse layer keyword arg variants"""
     v = make_napari_viewer()
 

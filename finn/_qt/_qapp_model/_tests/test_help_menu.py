@@ -32,6 +32,8 @@ def test_about_action(make_napari_viewer, action_id):
     app = get_app_model()
     viewer = make_napari_viewer()
 
-    with mock.patch('finn._qt.dialogs.qt_about.QtAbout.showAbout') as mock_about:
+    with mock.patch(
+        'finn._qt.dialogs.qt_about.QtAbout.showAbout'
+    ) as mock_about:
         app.commands.execute_command(action_id)
     mock_about.assert_called_once_with(viewer.window._qt_window)

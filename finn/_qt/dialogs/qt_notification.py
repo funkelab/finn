@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
-from typing import cast
+from collections.abc import Sequence
+from typing import Callable, Optional, Union, cast
 
 from qtpy.QtCore import (
     QEasingCurve,
@@ -77,8 +77,8 @@ class NapariQtNotification(QDialog):
     def __init__(
         self,
         message: str,
-        severity: str | NotificationSeverity = 'WARNING',
-        source: str | None = None,
+        severity: Union[str, NotificationSeverity] = 'WARNING',
+        source: Optional[str] = None,
         actions: ActionSequence = (),
         parent=None,
     ) -> None:
@@ -95,7 +95,9 @@ class NapariQtNotification(QDialog):
         self._update_icon(str(severity))
         self.message.setText(message)
         if source:
-            self.source_label.setText(trans._('Source: {source}', source=source))
+            self.source_label.setText(
+                trans._('Source: {source}', source=source)
+            )
 
         self.close_button.clicked.connect(self.close)
         self.expand_button.clicked.connect(self.toggle_expansion)
@@ -281,12 +283,16 @@ class NapariQtNotification(QDialog):
         self.severity_icon.setObjectName('severity_icon')
         self.severity_icon.setMinimumWidth(30)
         self.severity_icon.setMaximumWidth(30)
-        self.row1.addWidget(self.severity_icon, alignment=Qt.AlignmentFlag.AlignTop)
+        self.row1.addWidget(
+            self.severity_icon, alignment=Qt.AlignmentFlag.AlignTop
+        )
         self.message = QElidingLabel()
         self.message.setWordWrap(True)
         self.message.setTextInteractionFlags(Qt.TextSelectableByMouse)
         self.message.setMinimumWidth(self.MIN_WIDTH - 200)
-        self.message.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.message.setSizePolicy(
+            QSizePolicy.Expanding, QSizePolicy.Expanding
+        )
         self.row1.addWidget(self.message, alignment=Qt.AlignmentFlag.AlignTop)
         self.expand_button = QPushButton(self.row1_widget)
         self.expand_button.setObjectName('expand_button')
@@ -294,21 +300,27 @@ class NapariQtNotification(QDialog):
         self.expand_button.setMaximumWidth(20)
         self.expand_button.setFlat(True)
 
-        self.row1.addWidget(self.expand_button, alignment=Qt.AlignmentFlag.AlignTop)
+        self.row1.addWidget(
+            self.expand_button, alignment=Qt.AlignmentFlag.AlignTop
+        )
         self.close_button = QPushButton(self.row1_widget)
         self.close_button.setObjectName('close_button')
         self.close_button.setCursor(Qt.PointingHandCursor)
         self.close_button.setMaximumWidth(20)
         self.close_button.setFlat(True)
 
-        self.row1.addWidget(self.close_button, alignment=Qt.AlignmentFlag.AlignTop)
+        self.row1.addWidget(
+            self.close_button, alignment=Qt.AlignmentFlag.AlignTop
+        )
         self.verticalLayout.addWidget(self.row1_widget, 1)
         self.row2_widget = QWidget(self)
         self.row2_widget.hide()
         self.row2 = QHBoxLayout(self.row2_widget)
         self.source_label = QLabel(self.row2_widget)
         self.source_label.setObjectName('source_label')
-        self.row2.addWidget(self.source_label, alignment=Qt.AlignmentFlag.AlignBottom)
+        self.row2.addWidget(
+            self.source_label, alignment=Qt.AlignmentFlag.AlignBottom
+        )
         self.row2.addStretch()
         self.row2.setContentsMargins(12, 2, 16, 12)
         self.row2_widget.setMaximumHeight(34)
@@ -355,7 +367,9 @@ class NapariQtNotification(QDialog):
             self.row2.addWidget(btn)
         if actions:
             self.row2_widget.show()
-            self.setMinimumHeight(self.row2_widget.maximumHeight() + self.minimumHeight())
+            self.setMinimumHeight(
+                self.row2_widget.maximumHeight() + self.minimumHeight()
+            )
 
     def sizeHint(self):
         """Return the size required to show the entire message."""
@@ -373,7 +387,9 @@ class NapariQtNotification(QDialog):
         if isinstance(notification, ErrorNotification):
 
             def show_tb(notification_dialog):
-                tbdialog = TracebackDialog(notification, notification_dialog.parent())
+                tbdialog = TracebackDialog(
+                    notification, notification_dialog.parent()
+                )
                 tbdialog.show()
 
             actions = (
@@ -402,7 +418,8 @@ class NapariQtNotification(QDialog):
         # after https://github.com/napari/napari/issues/2370,
         # the os.getenv can be removed (and NAPARI_CATCH_ERRORS retired)
         if (
-            notification.severity >= settings.application.gui_notification_level
+            notification.severity
+            >= settings.application.gui_notification_level
             and _QtMainWindow.current()
         ):
             canvas = _QtMainWindow.current()._qt_viewer._welcome_widget
@@ -433,7 +450,9 @@ class TracebackDialog(QDialog):
         self.resize(650, 270)
         text = QTextEdit()
         theme = get_theme(get_settings().appearance.theme)
-        _highlight = CodeSyntaxHighlight(text.document(), 'python', theme.syntax_style)
+        _highlight = CodeSyntaxHighlight(
+            text.document(), 'python', theme.syntax_style
+        )
         text.setText(exception.as_text())
         text.setReadOnly(True)
         self.btn = QPushButton(trans._('Enter Debugger'))
@@ -443,7 +462,9 @@ class TracebackDialog(QDialog):
 
     def _enter_debug_mode(self):
         self.btn.setText(
-            trans._('Now Debugging. Please quit debugger in console to continue')
+            trans._(
+                'Now Debugging. Please quit debugger in console to continue'
+            )
         )
         _debug_tb(self.exception.__traceback__)
         self.btn.setText(trans._('Enter Debugger'))

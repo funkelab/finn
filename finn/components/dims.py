@@ -4,6 +4,8 @@ from typing import (
     Any,
     Literal,
     NamedTuple,
+    Optional,
+    Union,
 )
 
 import numpy as np
@@ -171,11 +173,15 @@ class Dims(EventedModel):
         # ensure point is limited to range
         updated['point'] = tuple(
             np.clip(pt, rng.start, rng.stop)
-            for pt, rng in zip(point, updated['range'], strict=False)
+            for pt, rng in zip(point, updated['range'])
         )
 
-        updated['margin_left'] = ensure_len(values['margin_left'], ndim, pad_width=0.0)
-        updated['margin_right'] = ensure_len(values['margin_right'], ndim, pad_width=0.0)
+        updated['margin_left'] = ensure_len(
+            values['margin_left'], ndim, pad_width=0.0
+        )
+        updated['margin_right'] = ensure_len(
+            values['margin_right'], ndim, pad_width=0.0
+        )
 
         # order and label default computation is too different to include in ensure_len()
         # Check the order tuple has same number of elements as ndim
@@ -247,29 +253,31 @@ class Dims(EventedModel):
     @nsteps.setter
     def nsteps(self, value):
         self.range = tuple(
-            RangeTuple(rng.start, rng.stop, (rng.stop - rng.start) / (nsteps - 1))
-            for rng, nsteps in zip(self.range, value, strict=False)
+            RangeTuple(
+                rng.start, rng.stop, (rng.stop - rng.start) / (nsteps - 1)
+            )
+            for rng, nsteps in zip(self.range, value)
         )
 
     @property
     def current_step(self):
         return tuple(
             int(round((point - rng.start) / (rng.step or 1)))
-            for point, rng in zip(self.point, self.range, strict=False)
+            for point, rng in zip(self.point, self.range)
         )
 
     @current_step.setter
     def current_step(self, value):
         self.point = tuple(
             rng.start + point * rng.step
-            for point, rng in zip(value, self.range, strict=False)
+            for point, rng in zip(value, self.range)
         )
 
     @property
     def thickness(self) -> tuple[float, ...]:
         return tuple(
             left + right
-            for left, right in zip(self.margin_left, self.margin_right, strict=False)
+            for left, right in zip(self.margin_left, self.margin_right)
         )
 
     @thickness.setter
@@ -292,8 +300,10 @@ class Dims(EventedModel):
 
     def set_range(
         self,
-        axis: int | Sequence[int],
-        _range: Sequence[int | float] | Sequence[Sequence[int | float]],
+        axis: Union[int, Sequence[int]],
+        _range: Union[
+            Sequence[Union[int, float]], Sequence[Sequence[Union[int, float]]]
+        ],
     ):
         """Sets ranges (min, max, step) for the given dimensions.
 
@@ -305,16 +315,18 @@ class Dims(EventedModel):
             Range specified as (min, max, step) or a sequence of these range
             tuples.
         """
-        axis, value = self._sanitize_input(axis, _range, value_is_sequence=True)
+        axis, value = self._sanitize_input(
+            axis, _range, value_is_sequence=True
+        )
         full_range = list(self.range)
-        for ax, val in zip(axis, value, strict=False):
+        for ax, val in zip(axis, value):
             full_range[ax] = val
         self.range = tuple(full_range)
 
     def set_point(
         self,
-        axis: int | Sequence[int],
-        value: float | Sequence[float],
+        axis: Union[int, Sequence[int]],
+        value: Union[float, Sequence[float]],
     ):
         """Sets point to slice dimension in world coordinates.
 
@@ -325,29 +337,33 @@ class Dims(EventedModel):
         value : scalar or sequence of scalars
             Value of the point for each axis.
         """
-        axis, value = self._sanitize_input(axis, value, value_is_sequence=False)
+        axis, value = self._sanitize_input(
+            axis, value, value_is_sequence=False
+        )
         full_point = list(self.point)
-        for ax, val in zip(axis, value, strict=False):
+        for ax, val in zip(axis, value):
             full_point[ax] = val
         self.point = tuple(full_point)
 
     def set_current_step(
         self,
-        axis: int | Sequence[int],
-        value: int | Sequence[int],
+        axis: Union[int, Sequence[int]],
+        value: Union[int, Sequence[int]],
     ):
-        axis, value = self._sanitize_input(axis, value, value_is_sequence=False)
+        axis, value = self._sanitize_input(
+            axis, value, value_is_sequence=False
+        )
         range_ = list(self.range)
         value_world = []
-        for ax, val in zip(axis, value, strict=False):
+        for ax, val in zip(axis, value):
             rng = range_[ax]
             value_world.append(rng.start + val * rng.step)
         self.set_point(axis, value_world)
 
     def set_axis_label(
         self,
-        axis: int | Sequence[int],
-        label: str | Sequence[str],
+        axis: Union[int, Sequence[int]],
+        label: Union[str, Sequence[str]],
     ):
         """Sets new axis labels for the given axes.
 
@@ -358,9 +374,11 @@ class Dims(EventedModel):
         label : str or sequence of str
             Given labels for the specified axes.
         """
-        axis, label = self._sanitize_input(axis, label, value_is_sequence=False)
+        axis, label = self._sanitize_input(
+            axis, label, value_is_sequence=False
+        )
         full_axis_labels = list(self.axis_labels)
-        for ax, val in zip(axis, label, strict=False):
+        for ax, val in zip(axis, label):
             full_axis_labels[ax] = val
         self.axis_labels = tuple(full_axis_labels)
 
@@ -386,7 +404,7 @@ class Dims(EventedModel):
         order[-2], order[-1] = order[-1], order[-2]
         self.order = order
 
-    def _increment_dims_right(self, axis: int | None = None):
+    def _increment_dims_right(self, axis: Optional[int] = None):
         """Increment dimensions to the right along given axis, or last used axis if None
 
         Parameters
@@ -398,7 +416,7 @@ class Dims(EventedModel):
             axis = self.last_used
         self.set_current_step(axis, self.current_step[axis] + 1)
 
-    def _increment_dims_left(self, axis: int | None = None):
+    def _increment_dims_left(self, axis: Optional[int] = None):
         """Increment dimensions to the left along given axis, or last used axis if None
 
         Parameters
@@ -456,7 +474,9 @@ class Dims(EventedModel):
                 and not isinstance(value, str)
                 and not value_is_sequence
             ):
-                raise ValueError(trans._('cannot set multiple values to a single axis'))
+                raise ValueError(
+                    trans._('cannot set multiple values to a single axis')
+                )
             axis = [axis]
             value = [value]
         else:
@@ -464,7 +484,9 @@ class Dims(EventedModel):
             value = list(value)
 
         if len(axis) != len(value):
-            raise ValueError(trans._('axis and value sequences must have equal length'))
+            raise ValueError(
+                trans._('axis and value sequences must have equal length')
+            )
 
         for ax in axis:
             ensure_axis_in_bounds(ax, self.ndim)

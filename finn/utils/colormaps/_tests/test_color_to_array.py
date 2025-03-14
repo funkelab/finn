@@ -14,7 +14,7 @@ from finn.utils.colormaps.standardize_color import transform_color
 
 @pytest.mark.parametrize(
     ('colors', 'true_colors'),
-    zip(single_color_options, single_colors_as_array, strict=False),
+    zip(single_color_options, single_colors_as_array),
 )
 def test_oned_points(colors, true_colors):
     np.testing.assert_array_equal(true_colors, transform_color(colors))
@@ -29,15 +29,17 @@ def test_warns_but_parses():
     true_colors = [
         np.zeros((1, 4), dtype=np.float32),
         np.array([[1, 3 / 43, 3 / 43, 3 / 43]], dtype=np.float32),
-        np.array([[1.0, 1.0, 1.0, 1.0], [0.0, 0.0, 0.0, 1.0]], dtype=np.float32),
+        np.array(
+            [[1.0, 1.0, 1.0, 1.0], [0.0, 0.0, 0.0, 1.0]], dtype=np.float32
+        ),
     ]
     with pytest.warns(UserWarning):
-        for true, color in zip(true_colors, colors, strict=False):
+        for true, color in zip(true_colors, colors):
             np.testing.assert_array_equal(true, transform_color(color))
 
 
 @pytest.mark.parametrize(
-    ('colors', 'true_colors'), zip(two_color_options, two_colors_as_array, strict=False)
+    ('colors', 'true_colors'), zip(two_color_options, two_colors_as_array)
 )
 def test_twod_points(colors, true_colors):
     np.testing.assert_array_equal(true_colors, transform_color(colors))

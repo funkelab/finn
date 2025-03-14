@@ -17,6 +17,8 @@ from finn.layers import Layer
 from finn.utils.translations import trans
 
 if TYPE_CHECKING:
+    from typing import Optional
+
     from qtpy.QtGui import QKeyEvent  # type: ignore[attr-defined]
     from qtpy.QtWidgets import QWidget  # type: ignore[attr-defined]
 
@@ -45,8 +47,12 @@ class QtLayerList(QtListView[Layer]):
     reversing the view with ReverseProxyModel.
     """
 
-    def __init__(self, root: LayerList, parent: QWidget | None = None) -> None:
-        root._ctx['valid_spatial_json_clipboard'] = is_valid_spatial_in_clipboard
+    def __init__(
+        self, root: LayerList, parent: Optional[QWidget] = None
+    ) -> None:
+        root._ctx['valid_spatial_json_clipboard'] = (
+            is_valid_spatial_in_clipboard
+        )
         super().__init__(root, parent)
         layer_delegate = LayerDelegate()
         self.setItemDelegate(layer_delegate)
@@ -64,7 +70,7 @@ class QtLayerList(QtListView[Layer]):
         # so items at the end of the list are at the top.
         self.setModel(ReverseProxyModel(self.model()))
 
-    def keyPressEvent(self, e: QKeyEvent | None) -> None:
+    def keyPressEvent(self, e: Optional[QKeyEvent]) -> None:
         """Override Qt event to pass events to the viewer."""
         if e is None:
             return

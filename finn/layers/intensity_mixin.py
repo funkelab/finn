@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 import numpy as np
 
@@ -39,11 +39,13 @@ class IntensityVisualizationMixin:
         self._gamma = 1
         self._colormap_name = ''
         self._contrast_limits_msg = ''
-        self._contrast_limits: tuple[float | None, float | None] = (
+        self._contrast_limits: tuple[Optional[float], Optional[float]] = (
             None,
             None,
         )
-        self._contrast_limits_range: tuple[float | None, float | None] = (None, None)
+        self._contrast_limits_range: tuple[
+            Optional[float], Optional[float]
+        ] = (None, None)
         self._auto_contrast_source = 'slice'
         self._keep_auto_contrast = False
 
@@ -96,7 +98,9 @@ class IntensityVisualizationMixin:
         validate_2_tuple(contrast_limits)
         _validate_increasing(contrast_limits)
         self._contrast_limits_msg = (
-            format_float(contrast_limits[0]) + ', ' + format_float(contrast_limits[1])
+            format_float(contrast_limits[0])
+            + ', '
+            + format_float(contrast_limits[1])
         )
         self._contrast_limits = contrast_limits
         # make sure range slider is big enough to fit range

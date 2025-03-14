@@ -35,7 +35,9 @@ class VispyCamera:
         # Set 2D camera by default
         self._view.camera = self._2D_camera
 
-        self._dims.events.ndisplay.connect(self._on_ndisplay_change, position='first')
+        self._dims.events.ndisplay.connect(
+            self._on_ndisplay_change, position='first'
+        )
 
         self._camera.events.center.connect(self._on_center_change)
         self._camera.events.zoom.connect(self._on_zoom_change)
@@ -188,7 +190,9 @@ class VispyCamera:
             self._camera.center = self.center
         with self._camera.events.zoom.blocker(self._on_zoom_change):
             self._camera.zoom = self.zoom
-        with self._camera.events.perspective.blocker(self._on_perspective_change):
+        with self._camera.events.perspective.blocker(
+            self._on_perspective_change
+        ):
             self._camera.perspective = self.perspective
 
 
@@ -230,9 +234,13 @@ def add_mouse_pan_zoom_toggles(
             self.mouse_zoom = True
 
         def viewbox_mouse_event(self, event):
-            if (self.mouse_zoom and event.type in ('mouse_wheel', 'gesture_zoom')) or (
+            if (
+                self.mouse_zoom
+                and event.type in ('mouse_wheel', 'gesture_zoom')
+            ) or (
                 self.mouse_pan
-                and event.type in ('mouse_move', 'mouse_press', 'mouse_release')
+                and event.type
+                in ('mouse_move', 'mouse_press', 'mouse_release')
             ):
                 super().viewbox_mouse_event(event)
             else:

@@ -1,11 +1,14 @@
 import contextlib
 import warnings
-from collections.abc import Callable, Iterable, Iterator
+from collections.abc import Iterable, Iterator
 from functools import partial
 from pathlib import Path
 from types import FunctionType
 from typing import (
     Any,
+    Callable,
+    Optional,
+    Union,
 )
 from warnings import warn
 
@@ -106,7 +109,9 @@ class NapariPluginManager(PluginManager):
             self._extension2reader.update(plugin_settings.extension2reader)
             self._extension2writer.update(plugin_settings.extension2writer)
 
-    def register(self, namespace: Any, name: str | None = None) -> str | None:
+    def register(
+        self, namespace: Any, name: Optional[str] = None
+    ) -> Optional[str]:
         name = super().register(namespace, name=name)
         if name:
             self.events.registered(value=name)
@@ -114,10 +119,10 @@ class NapariPluginManager(PluginManager):
 
     def iter_available(
         self,
-        path: str | None = None,
-        entry_point: str | None = None,
-        prefix: str | None = None,
-    ) -> Iterator[tuple[str, str, str | None]]:
+        path: Optional[str] = None,
+        entry_point: Optional[str] = None,
+        prefix: Optional[str] = None,
+    ) -> Iterator[tuple[str, str, Optional[str]]]:
         # overriding to skip npe2 plugins
         for item in super().iter_available(path, entry_point, prefix):
             if item[-1] not in self._skip_packages:
@@ -126,7 +131,7 @@ class NapariPluginManager(PluginManager):
     def unregister(
         self,
         name_or_object: Any,
-    ) -> Any | None:
+    ) -> Optional[Any]:
         if isinstance(name_or_object, str):
             _name = name_or_object
         else:
@@ -246,7 +251,7 @@ class NapariPluginManager(PluginManager):
 
     def register_sample_data(
         self,
-        data: dict[str, str | Callable[..., Iterable[LayerData]]],
+        data: dict[str, Union[str, Callable[..., Iterable[LayerData]]]],
         hookimpl: HookImplementation,
     ):
         """Register sample data dict returned by `napari_provide_sample_data`.
@@ -293,7 +298,10 @@ class NapariPluginManager(PluginManager):
             else:
                 datum = {'data': _datum, 'display_name': name}
 
-            if not (callable(datum['data']) or isinstance(datum['data'], (str, Path))):
+            if not (
+                callable(datum['data'])
+                or isinstance(datum['data'], (str, Path))
+            ):
                 warn_message = trans._(
                     'Plugin {plugin_name!r} provided invalid data for key {name!r} in the dict returned by {hook_name!r}. (Must be str, callable, or dict), got ({dtype}).',
                     deferred=True,
@@ -333,13 +341,15 @@ class NapariPluginManager(PluginManager):
                 # load first available sample
                 viewer.open_sample(*sample_keys[0])
         """
-        return tuple((p, s) for p in self._sample_data for s in self._sample_data[p])
+        return tuple(
+            (p, s) for p in self._sample_data for s in self._sample_data[p]
+        )
 
     # THEME DATA ------------------------------------
 
     def register_theme_colors(
         self,
-        data: dict[str, dict[str, str | tuple | list]],
+        data: dict[str, dict[str, Union[str, tuple, list]]],
         hookimpl: HookImplementation,
     ):
         """Register theme data dict returned by `napari_experimental_provide_theme`.
@@ -430,17 +440,23 @@ class NapariPluginManager(PluginManager):
 
         dock_widgets = zip(
             repeat('dock'),
-            ((name, sorted(cont)) for name, cont in self._dock_widgets.items()),
+            (
+                (name, sorted(cont))
+                for name, cont in self._dock_widgets.items()
+            ),
         )
         func_widgets = zip(
             repeat('func'),
-            ((name, sorted(cont)) for name, cont in self._function_widgets.items()),
+            (
+                (name, sorted(cont))
+                for name, cont in self._function_widgets.items()
+            ),
         )
         yield from chain(dock_widgets, func_widgets)
 
     def register_dock_widget(
         self,
-        args: AugmentedWidget | list[AugmentedWidget],
+        args: Union[AugmentedWidget, list[AugmentedWidget]],
         hookimpl: HookImplementation,
     ):
         plugin_name = hookimpl.plugin_name
@@ -485,7 +501,9 @@ class NapariPluginManager(PluginManager):
                 continue
 
             # Get widget name
-            name = str(kwargs.get('name', '')) or camel_to_spaces(_cls.__name__)
+            name = str(kwargs.get('name', '')) or camel_to_spaces(
+                _cls.__name__
+            )
 
             if plugin_name not in self._dock_widgets:
                 # tried defaultdict(dict) but got odd KeyErrors...
@@ -503,7 +521,7 @@ class NapariPluginManager(PluginManager):
 
     def register_function_widget(
         self,
-        args: Callable | list[Callable],
+        args: Union[Callable, list[Callable]],
         hookimpl: HookImplementation,
     ):
         plugin_name = hookimpl.plugin_name
@@ -568,7 +586,7 @@ class NapariPluginManager(PluginManager):
         )
 
     def get_widget(
-        self, plugin_name: str, widget_name: str | None = None
+        self, plugin_name: str, widget_name: Optional[str] = None
     ) -> tuple[WidgetCallable, dict[str, Any]]:
         """Get widget `widget_name` provided by plugin `plugin_name`.
 
@@ -632,12 +650,12 @@ class NapariPluginManager(PluginManager):
 
         return plg_wdgs[widget_name]
 
-    def get_reader_for_extension(self, extension: str) -> str | None:
+    def get_reader_for_extension(self, extension: str) -> Optional[str]:
         """Return reader plugin assigned to `extension`, or None."""
         return self._get_plugin_for_extension(extension, type_='reader')
 
     def assign_reader_to_extensions(
-        self, reader: str, extensions: str | Iterable[str]
+        self, reader: str, extensions: Union[str, Iterable[str]]
     ) -> None:
         """Assign a specific reader plugin to `extensions`.
 
@@ -657,12 +675,12 @@ class NapariPluginManager(PluginManager):
             **self._extension2reader,
         }
 
-    def get_writer_for_extension(self, extension: str) -> str | None:
+    def get_writer_for_extension(self, extension: str) -> Optional[str]:
         """Return writer plugin assigned to `extension`, or None."""
         return self._get_plugin_for_extension(extension, type_='writer')
 
     def assign_writer_to_extensions(
-        self, writer: str, extensions: str | Iterable[str]
+        self, writer: str, extensions: Union[str, Iterable[str]]
     ) -> None:
         """Assign a specific writer plugin to `extensions`.
 
@@ -678,7 +696,9 @@ class NapariPluginManager(PluginManager):
         self._assign_plugin_to_extensions(writer, extensions, type_='writer')
         get_settings().plugins.extension2writer = self._extension2writer
 
-    def _get_plugin_for_extension(self, extension: str, type_: str) -> str | None:
+    def _get_plugin_for_extension(
+        self, extension: str, type_: str
+    ) -> Optional[str]:
         """helper method for public get_<type_>_for_extension functions."""
         ext_map = getattr(self, f'_extension2{type_}', None)
         if ext_map is None:
@@ -703,8 +723,8 @@ class NapariPluginManager(PluginManager):
     def _assign_plugin_to_extensions(
         self,
         plugin: str,
-        extensions: str | Iterable[str],
-        type_: str | None = None,
+        extensions: Union[str, Iterable[str]],
+        type_: Optional[str] = None,
     ) -> None:
         """helper method for public assign_<type_>_to_extensions functions."""
         caller: HookCaller = getattr(self.hook, f'napari_get_{type_}', None)

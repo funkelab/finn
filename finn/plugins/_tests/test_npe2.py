@@ -44,11 +44,16 @@ def test_read(mock_pm: 'TestPluginManager'):
     mock_pm.commands.get.assert_not_called()
 
     mock_pm.commands.get.reset_mock()
-    assert _npe2.read(['some.randomext'], stack=True, plugin='not-npe2-plugin') is None
+    assert (
+        _npe2.read(['some.randomext'], stack=True, plugin='not-npe2-plugin')
+        is None
+    )
     mock_pm.commands.get.assert_not_called()
 
     mock_pm.commands.get.reset_mock()
-    _, hookimpl = _npe2.read(['some.fzzy'], stack=False, plugin='my-plugin.some_reader')
+    _, hookimpl = _npe2.read(
+        ['some.fzzy'], stack=False, plugin='my-plugin.some_reader'
+    )
     mock_pm.commands.get.assert_called_once_with(f'{PLUGIN_NAME}.some_reader')
     assert hookimpl.plugin_name == PLUGIN_NAME
 
@@ -82,7 +87,9 @@ def test_write(mock_pm: 'TestPluginManager'):
     writer = mock_pm.get_manifest(PLUGIN_NAME).contributions.writers[0]
     writer = MagicMock(wraps=writer)
     writer.exec.return_value = ['']
-    assert _npe2.write_layers('some_file.tif', [points], writer=writer)[0] == ['']
+    assert _npe2.write_layers('some_file.tif', [points], writer=writer)[0] == [
+        ''
+    ]
     mock_pm.commands.get.assert_not_called()
     writer.exec.assert_called_once()
     assert writer.exec.call_args_list[0].kwargs['args'][0] == 'some_file.tif'

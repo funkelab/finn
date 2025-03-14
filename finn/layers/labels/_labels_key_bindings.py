@@ -71,7 +71,9 @@ labels_fun_to_mode = [
 
 
 @register_label_action(
-    trans._('Set the currently selected label to the largest used label plus one'),
+    trans._(
+        'Set the currently selected label to the largest used label plus one'
+    ),
 )
 def new_label(layer: Labels):
     """Set the currently selected label to the largest used label plus one."""
@@ -87,7 +89,11 @@ def new_label(layer: Labels):
         else:
             layer.selected_label = new_selected_label
     else:
-        show_info(trans._('Calculating empty label on non-numpy array is not supported'))
+        show_info(
+            trans._(
+                'Calculating empty label on non-numpy array is not supported'
+            )
+        )
 
 
 @register_label_action(
@@ -118,7 +124,9 @@ def increase_label_id(layer: Labels):
 )
 def decrease_brush_size(layer: Labels):
     """Decrease the brush size"""
-    if layer.brush_size > MIN_BRUSH_SIZE:  # here we should probably add a non-hard-coded
+    if (
+        layer.brush_size > MIN_BRUSH_SIZE
+    ):  # here we should probably add a non-hard-coded
         # reference to the limit values of brush size?
         layer.brush_size -= 1
 
@@ -132,7 +140,9 @@ def increase_brush_size(layer: Labels):
     layer.brush_size += 1
 
 
-@register_layer_attr_action(Labels, trans._('Toggle preserve labels'), 'preserve_labels')
+@register_layer_attr_action(
+    Labels, trans._('Toggle preserve labels'), 'preserve_labels'
+)
 def toggle_preserve_labels(layer: Labels):
     layer.preserve_labels = not layer.preserve_labels
 
@@ -169,4 +179,6 @@ def complete_polygon(layer: Labels):
         LabelsPolygonOverlay,
     )
 
-    cast(LabelsPolygonOverlay, layer._overlays['polygon']).add_polygon_to_labels(layer)
+    cast(
+        LabelsPolygonOverlay, layer._overlays['polygon']
+    ).add_polygon_to_labels(layer)

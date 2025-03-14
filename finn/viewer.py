@@ -1,5 +1,6 @@
 import typing
 from pathlib import Path
+from typing import Optional, Union
 from weakref import WeakSet
 
 import magicgui as mgui
@@ -93,7 +94,7 @@ class Viewer(ViewerModel):
 
     def export_figure(
         self,
-        path: str | None = None,
+        path: Optional[str] = None,
         *,
         scale_factor: float = 1,
         flash: bool = False,
@@ -147,8 +148,8 @@ class Viewer(ViewerModel):
     def export_rois(
         self,
         rois: list[np.ndarray],
-        paths: str | Path | list[str | Path] | None = None,
-        scale: float | None = None,
+        paths: Optional[Union[str, Path, list[Union[str, Path]]]] = None,
+        scale: Optional[float] = None,
     ):
         """Export the given rectangular rois to specified file paths.
 
@@ -186,16 +187,18 @@ class Viewer(ViewerModel):
                 'dimensions. 3D is not supported.'
             )
 
-        screenshot_list = self.window.export_rois(rois, paths=paths, scale=scale)
+        screenshot_list = self.window.export_rois(
+            rois, paths=paths, scale=scale
+        )
 
         return screenshot_list
 
     def screenshot(
         self,
-        path: str | None = None,
+        path: Optional[str] = None,
         *,
-        size: tuple[str, str] | None = None,
-        scale: float | None = None,
+        size: Optional[tuple[str, str]] = None,
+        scale: Optional[float] = None,
         canvas_only: bool = True,
         flash: bool = False,
     ):
@@ -276,7 +279,7 @@ class Viewer(ViewerModel):
         return ret
 
 
-def current_viewer() -> Viewer | None:
+def current_viewer() -> Optional[Viewer]:
     """Return the currently active napari viewer."""
     try:
         from finn._qt.qt_main_window import _QtMainWindow

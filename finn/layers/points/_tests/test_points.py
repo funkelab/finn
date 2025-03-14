@@ -680,7 +680,9 @@ def test_symbol():
     layer.symbol = symbol
     assert np.array_equal(layer.symbol, expected)
 
-    with pytest.raises(ValueError, match='Symbol array must be the same length as data'):
+    with pytest.raises(
+        ValueError, match='Symbol array must be the same length as data'
+    ):
         layer.symbol = symbol[1:5]
 
     layer = Points(data, symbol='star')
@@ -723,7 +725,9 @@ def test_properties(properties):
     # test copy/paste
     layer.selected_data = {0, 1}
     layer._copy_data()
-    assert np.array_equal(layer._clipboard['features']['point_type'], ['A', 'B'])
+    assert np.array_equal(
+        layer._clipboard['features']['point_type'], ['A', 'B']
+    )
 
     layer._paste_data()
     paste_annotations = np.concatenate((add_annotations, ['A', 'B']), axis=0)
@@ -752,7 +756,9 @@ def test_adding_properties(attribute):
     np.testing.assert_equal(layer.properties, properties)
 
     # add properties as a dictionary with list values
-    properties_list = {'point_type': list(_make_cycled_properties(['A', 'B'], shape[0]))}
+    properties_list = {
+        'point_type': list(_make_cycled_properties(['A', 'B'], shape[0]))
+    }
     layer.properties = properties_list
     assert isinstance(layer.properties['point_type'], np.ndarray)
 
@@ -763,7 +769,9 @@ def test_adding_properties(attribute):
         'values': np.empty(0),
         'current_value': 'A',
     }
-    properties_2 = {'not_point_type': _make_cycled_properties(['A', 'B'], shape[0])}
+    properties_2 = {
+        'not_point_type': _make_cycled_properties(['A', 'B'], shape[0])
+    }
     with pytest.warns(RuntimeWarning):
         layer.properties = properties_2
 
@@ -785,7 +793,9 @@ def test_add_points_with_properties_as_list():
     shape = (10, 2)
     np.random.seed(0)
     data = 20 * np.random.random(shape)
-    properties = {'point_type': list(_make_cycled_properties(['A', 'B'], shape[0]))}
+    properties = {
+        'point_type': list(_make_cycled_properties(['A', 'B'], shape[0]))
+    }
     layer = Points(data, properties=copy(properties))
 
     coord = [18, 18]
@@ -865,7 +875,9 @@ def test_text_from_property_fstring(properties):
     shape = (10, 2)
     np.random.seed(0)
     data = 20 * np.random.random(shape)
-    layer = Points(data, properties=copy(properties), text='type: {point_type}')
+    layer = Points(
+        data, properties=copy(properties), text='type: {point_type}'
+    )
 
     expected_text = ['type: ' + v for v in properties['point_type']]
     np.testing.assert_equal(layer.text.values, expected_text)
@@ -970,7 +982,9 @@ def test_points_errors():
     annotations = {'point_type': np.array(['A', 'B'])}
 
     # try adding properties with the wrong number of properties
-    with pytest.raises(ValueError, match='(does not match length)|(indices imply)'):
+    with pytest.raises(
+        ValueError, match='(does not match length)|(indices imply)'
+    ):
         Points(data, properties=copy(annotations))
 
 
@@ -1014,7 +1028,9 @@ def test_border_width_types(border_width):
     shape = (5, 2)
     np.random.seed(0)
     data = 20 * np.random.random(shape)
-    layer = Points(data, border_width=border_width, border_width_is_relative=False)
+    layer = Points(
+        data, border_width=border_width, border_width_is_relative=False
+    )
     np.testing.assert_array_equal(layer.border_width, border_width)
 
 
@@ -1085,7 +1101,9 @@ def test_switch_color_mode(attribute):
     layer_color_mode = getattr(layer, f'{attribute}_color_mode')
     layer_color = getattr(layer, f'{attribute}_color')
     assert layer_color_mode == 'direct'
-    np.testing.assert_allclose(layer_color, np.repeat([initial_color], shape[0], axis=0))
+    np.testing.assert_allclose(
+        layer_color, np.repeat([initial_color], shape[0], axis=0)
+    )
 
     # there should not be an border_color_property
     color_manager = getattr(layer, f'_{attribute}')
@@ -1182,7 +1200,9 @@ def test_add_point_direct(attribute: str):
         'data_indices': (-1,),
         'vertex_indices': ((),),
     }
-    np.testing.assert_allclose([[1, 0, 0, 1]], getattr(layer, f'{attribute}_color'))
+    np.testing.assert_allclose(
+        [[1, 0, 0, 1]], getattr(layer, f'{attribute}_color')
+    )
 
 
 @pytest.mark.parametrize('attribute', ['border', 'face'])
@@ -1266,7 +1286,9 @@ def test_color_cycle(attribute, color_cycle):
 
     np.testing.assert_equal(layer.properties, properties)
 
-    color_array = transform_color(list(islice(cycle(color_cycle), 0, shape[0])))
+    color_array = transform_color(
+        list(islice(cycle(color_cycle), 0, shape[0]))
+    )
     layer_color = getattr(layer, f'{attribute}_color')
     np.testing.assert_allclose(layer_color, color_array)
 
@@ -1640,7 +1662,9 @@ def test_value():
         ((0, 5, 0, 0), [0, 1, 0, 0], [1, 2, 3], True, (1, 1, 2, 1), None),
     ],
 )
-def test_value_3d(position, view_direction, dims_displayed, world, scale, expected):
+def test_value_3d(
+    position, view_direction, dims_displayed, world, scale, expected
+):
     """Test get_value in 3D with and without scale"""
     data = np.array([[0, 10, 15, 15], [0, 10, 5, 5], [0, 5, 15, 15]])
     layer = Points(data, size=5, scale=scale)
@@ -1679,7 +1703,9 @@ def test_message_3d():
         world_slice=_ThickNDSlice.make_full(ndim=2),
         order=(0, 1, 2),
     )
-    msg = layer.get_status((0, 0, 0), view_direction=[1, 0, 0], dims_displayed=[0, 1, 2])
+    msg = layer.get_status(
+        (0, 0, 0), view_direction=[1, 0, 0], dims_displayed=[0, 1, 2]
+    )
     assert isinstance(msg, dict)
 
 
@@ -1715,9 +1741,15 @@ def test_thumbnail_non_square_data():
     # Check that the thumbnail only contains non-zero RGB values in the middle two rows.
     mid_row = layer.thumbnail.shape[0] // 2
     expected_zeros = np.zeros(shape=(mid_row - 1, 32, 3), dtype=np.uint8)
-    np.testing.assert_array_equal(layer.thumbnail[: mid_row - 1, :, :3], expected_zeros)
-    assert np.count_nonzero(layer.thumbnail[mid_row - 1 : mid_row + 1, :, :3]) > 0
-    np.testing.assert_array_equal(layer.thumbnail[mid_row + 1 :, :, :3], expected_zeros)
+    np.testing.assert_array_equal(
+        layer.thumbnail[: mid_row - 1, :, :3], expected_zeros
+    )
+    assert (
+        np.count_nonzero(layer.thumbnail[mid_row - 1 : mid_row + 1, :, :3]) > 0
+    )
+    np.testing.assert_array_equal(
+        layer.thumbnail[mid_row + 1 :, :, :3], expected_zeros
+    )
 
 
 def test_thumbnail_with_n_points_greater_than_max():
@@ -1780,8 +1812,12 @@ def test_view_size():
 
 def test_view_colors():
     coords = [[0, 1, 1], [0, 2, 2], [1, 3, 3], [3, 3, 3]]
-    face_color = np.array([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1, 1], [0, 0, 1, 1]])
-    border_color = np.array([[0, 0, 1, 1], [1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1, 1]])
+    face_color = np.array(
+        [[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1, 1], [0, 0, 1, 1]]
+    )
+    border_color = np.array(
+        [[0, 0, 1, 1], [1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1, 1]]
+    )
 
     layer = Points(coords, face_color=face_color, border_color=border_color)
     layer._slice_dims(Dims(ndim=3, point=(0, 0, 0)))
@@ -1867,7 +1903,9 @@ def test_set_face_color_mode_after_set_properties():
     with pytest.warns(UserWarning):
         points.face_color_mode = 'cycle'
 
-    first_property_key, first_property_values = next(iter(points.properties.items()))
+    first_property_key, first_property_values = next(
+        iter(points.properties.items())
+    )
     expected_properties = ColorProperties(
         name=first_property_key,
         values=first_property_values,
@@ -2005,7 +2043,9 @@ def test_to_mask_2d_with_overlap():
 def test_to_mask_2d_with_translate():
     points = Points([[1, 4]], size=2)
 
-    mask = points.to_mask(shape=(5, 7), data_to_world=CompositeAffine(translate=(-1, 2)))
+    mask = points.to_mask(
+        shape=(5, 7), data_to_world=CompositeAffine(translate=(-1, 2))
+    )
 
     expected_mask = np.array(
         [
@@ -2025,7 +2065,9 @@ def test_to_mask_2d_with_rotate():
     # included, despite floating point imprecision caused by applying the rotation.
     points = Points([[-4, 1]], size=2.1)
 
-    mask = points.to_mask(shape=(5, 7), data_to_world=CompositeAffine(rotate=90))
+    mask = points.to_mask(
+        shape=(5, 7), data_to_world=CompositeAffine(rotate=90)
+    )
 
     # The point [-4, 1] is defined in world coordinates, so after applying
     # the inverse data_to_world transform will become [1, 4].
@@ -2045,7 +2087,9 @@ def test_to_mask_2d_with_rotate():
 def test_to_mask_2d_with_isotropic_scale():
     points = Points([[2, 8]], size=4)
 
-    mask = points.to_mask(shape=(5, 7), data_to_world=CompositeAffine(scale=(2, 2)))
+    mask = points.to_mask(
+        shape=(5, 7), data_to_world=CompositeAffine(scale=(2, 2))
+    )
 
     expected_mask = np.array(
         [
@@ -2063,7 +2107,9 @@ def test_to_mask_2d_with_isotropic_scale():
 def test_to_mask_2d_with_negative_isotropic_scale():
     points = Points([[2, -8]], size=4)
 
-    mask = points.to_mask(shape=(5, 7), data_to_world=CompositeAffine(scale=(2, -2)))
+    mask = points.to_mask(
+        shape=(5, 7), data_to_world=CompositeAffine(scale=(2, -2))
+    )
 
     expected_mask = np.array(
         [
@@ -2150,7 +2196,9 @@ def test_to_mask_2d_with_same_points_and_mask_scale():
     scale = (2, 2)
     points = Points([[1, 4]], size=2, scale=scale)
 
-    mask = points.to_mask(shape=(5, 7), data_to_world=CompositeAffine(scale=scale))
+    mask = points.to_mask(
+        shape=(5, 7), data_to_world=CompositeAffine(scale=scale)
+    )
 
     expected_mask = np.array(
         [
@@ -2245,7 +2293,9 @@ def test_set_properties_with_invalid_shape_errors_safely():
     np.testing.assert_equal(points.properties, properties)
     np.testing.assert_array_equal(points.text.values, ['A', 'B', 'C'])
 
-    with pytest.raises(ValueError, match='(does not match length)|(indices imply)'):
+    with pytest.raises(
+        ValueError, match='(does not match length)|(indices imply)'
+    ):
         points.properties = {'class': np.array(['D', 'E'])}
 
     np.testing.assert_equal(points.properties, properties)
@@ -2284,7 +2334,9 @@ def test_text_param_and_setter_are_consistent():
         points_init.text.values,
         points_set.text.values,
     )
-    np.testing.assert_array_equal(points_init.text.color, points_set.text.color)
+    np.testing.assert_array_equal(
+        points_init.text.color, points_set.text.color
+    )
 
 
 def test_shown():
@@ -2313,25 +2365,33 @@ def test_shown():
 def test_shown_view_size_and_view_data_have_the_same_dimension():
     data = [[0, 0, 0], [1, 1, 1]]
     # Data with default settings
-    layer = Points(data, out_of_slice_display=False, shown=[True, True], size=3)
+    layer = Points(
+        data, out_of_slice_display=False, shown=[True, True], size=3
+    )
     assert layer._view_size.shape[0] == layer._view_data.shape[0]
     assert layer._view_size.shape[0] == 1
     assert np.array_equal(layer._view_size, [3])
 
     # shown == [True, False]
-    layer = Points(data, out_of_slice_display=False, shown=[True, False], size=3)
+    layer = Points(
+        data, out_of_slice_display=False, shown=[True, False], size=3
+    )
     assert layer._view_size.shape[0] == layer._view_data.shape[0]
     assert layer._view_size.shape[0] == 1
     assert np.array_equal(layer._view_size, [3])
 
     # shown == [False, True]
-    layer = Points(data, out_of_slice_display=False, shown=[False, True], size=3)
+    layer = Points(
+        data, out_of_slice_display=False, shown=[False, True], size=3
+    )
     assert layer._view_size.shape[0] == layer._view_data.shape[0]
     assert layer._view_size.shape[0] == 0
     assert np.array_equal(layer._view_size, [])
 
     # shown == [False, False]
-    layer = Points(data, out_of_slice_display=False, shown=[False, False], size=3)
+    layer = Points(
+        data, out_of_slice_display=False, shown=[False, False], size=3
+    )
     assert layer._view_size.shape[0] == layer._view_data.shape[0]
     assert layer._view_size.shape[0] == 0
     assert np.array_equal(layer._view_size, [])
@@ -2343,19 +2403,25 @@ def test_shown_view_size_and_view_data_have_the_same_dimension():
     assert np.array_equiv(layer._view_size, [3, 2])
 
     # Out of slice display == True && shown == [True, False]
-    layer = Points(data, out_of_slice_display=True, shown=[True, False], size=3)
+    layer = Points(
+        data, out_of_slice_display=True, shown=[True, False], size=3
+    )
     assert layer._view_size.shape[0] == layer._view_data.shape[0]
     assert layer._view_size.shape[0] == 1
     assert np.array_equal(layer._view_size, [3])
 
     # Out of slice display == True && shown == [False, True]
-    layer = Points(data, out_of_slice_display=True, shown=[False, True], size=3)
+    layer = Points(
+        data, out_of_slice_display=True, shown=[False, True], size=3
+    )
     assert layer._view_size.shape[0] == layer._view_data.shape[0]
     assert layer._view_size.shape[0] == 1
     assert np.array_equal(layer._view_size, [2])
 
     # Out of slice display == True && shown == [False, False]
-    layer = Points(data, out_of_slice_display=True, shown=[False, False], size=3)
+    layer = Points(
+        data, out_of_slice_display=True, shown=[False, False], size=3
+    )
     assert layer._view_size.shape[0] == layer._view_data.shape[0]
     assert layer._view_size.shape[0] == 0
     assert np.array_equal(layer._view_size, [])
@@ -2441,11 +2507,13 @@ def test_point_slice_request_response(dims_indices, target_indices):
 
     data_slice = _ThickNDSlice.make_full(point=dims_indices)
 
-    request = layer._make_slice_request_internal(layer._slice_input, data_slice)
+    request = layer._make_slice_request_internal(
+        layer._slice_input, data_slice
+    )
     response = request()
 
     assert len(response.indices) == len(target_indices)
-    assert all(a == b for a, b in zip(response.indices, target_indices, strict=False))
+    assert all(a == b for a, b in zip(response.indices, target_indices))
 
 
 def test_editable_and_visible_are_independent():
@@ -2512,7 +2580,9 @@ def test_data_setter_events():
     assert np.array_equal(
         layer.events.data.call_args_list[1][1]['value'], np.empty((0, 2))
     )
-    assert layer.events.data.call_args_list[1][1]['action'] == ActionType.REMOVED
+    assert (
+        layer.events.data.call_args_list[1][1]['action'] == ActionType.REMOVED
+    )
     assert layer.events.data.call_args_list[1][1]['data_indices'] == ()
     assert layer.events.data.call_args_list[1][1]['vertex_indices'] == ((),)
 
@@ -2520,7 +2590,9 @@ def test_data_setter_events():
     assert np.array_equal(
         layer.events.data.call_args_list[2][1]['value'], np.empty((0, 2))
     )
-    assert layer.events.data.call_args_list[2][1]['action'] == ActionType.ADDING
+    assert (
+        layer.events.data.call_args_list[2][1]['action'] == ActionType.ADDING
+    )
     assert layer.events.data.call_args_list[2][1]['data_indices'] == tuple(
         i for i in range(len(data))
     )

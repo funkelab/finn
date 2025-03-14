@@ -41,7 +41,7 @@ from functools import partial
 from itertools import chain
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from weakref import WeakKeyDictionary
 
 from npe2 import PackageMetadata
@@ -53,18 +53,18 @@ from datetime import timedelta
 from time import perf_counter
 
 import dask.threaded
-import networkx as nx
 import numpy as np
 import pytest
 from _pytest.pathlib import bestrelpath
 from IPython.core.history import HistoryManager
 from packaging.version import parse as parse_version
 from pytest_pretty import CustomTerminalReporter
+import networkx as nx
 
 from finn.components import LayerList
 from finn.layers import Image, Labels, Points, Shapes, Vectors
-from finn.track_data_views.graph_attributes import EdgeAttr, NodeAttr
 from finn.utils.misc import ROOT_DIR
+from finn.track_data_views.graph_attributes import NodeAttr, EdgeAttr
 
 if TYPE_CHECKING:
     from npe2._pytest_plugin import TestPluginManager
@@ -94,12 +94,14 @@ def layer_data_and_types():
         Image(np.random.rand(20, 20), name='ex_img'),
         Image(np.random.rand(20, 20)),
         Points(np.random.rand(20, 2), name='ex_pts'),
-        Points(np.random.rand(20, 2), properties={'values': np.random.rand(20)}),
+        Points(
+            np.random.rand(20, 2), properties={'values': np.random.rand(20)}
+        ),
     ]
     extensions = ['.tif', '.tif', '.csv', '.csv']
     layer_data = [layer.as_layer_data_tuple() for layer in layers]
     layer_types = [layer._type_string for layer in layers]
-    filenames = [layer.name + e for layer, e in zip(layers, extensions, strict=False)]
+    filenames = [layer.name + e for layer, e in zip(layers, extensions)]
     return layers, layer_data, layer_types, filenames
 
 
@@ -179,9 +181,9 @@ def layers():
 @pytest.fixture(autouse=True)
 def _skip_examples(request):
     """Skip examples test if ."""
-    if request.node.get_closest_marker('examples') and request.config.getoption(
-        '--skip_examples'
-    ):
+    if request.node.get_closest_marker(
+        'examples'
+    ) and request.config.getoption('--skip_examples'):
         pytest.skip('running with --skip_examples')
 
 
@@ -362,7 +364,9 @@ def qt_viewer_(qtbot, viewer_model, monkeypatch):
     def patched_dock_layer_controls(self):
         if self._dockLayerControls is None:
             self._dockLayerControls = original_dock_layer_controls(self)
-            qtbot.addWidget(self._dockLayerControls, before_close_func=hide_widget)
+            qtbot.addWidget(
+                self._dockLayerControls, before_close_func=hide_widget
+            )
         return self._dockLayerControls
 
     def patched_dock_console(self):
@@ -374,12 +378,18 @@ def qt_viewer_(qtbot, viewer_model, monkeypatch):
     def patched_dock_performance(self):
         if self._dockPerformance is None:
             self._dockPerformance = original_dock_performance(self)
-            qtbot.addWidget(self._dockPerformance, before_close_func=hide_widget)
+            qtbot.addWidget(
+                self._dockPerformance, before_close_func=hide_widget
+            )
         return self._dockPerformance
 
-    monkeypatch.setattr(viewer.__class__, 'controls', property(patched_controls))
+    monkeypatch.setattr(
+        viewer.__class__, 'controls', property(patched_controls)
+    )
     monkeypatch.setattr(viewer.__class__, 'layers', property(patched_layers))
-    monkeypatch.setattr(viewer.__class__, 'layerButtons', property(patched_layer_buttons))
+    monkeypatch.setattr(
+        viewer.__class__, 'layerButtons', property(patched_layer_buttons)
+    )
     monkeypatch.setattr(
         viewer.__class__, 'viewerButtons', property(patched_viewer_buttons)
     )
@@ -391,7 +401,9 @@ def qt_viewer_(qtbot, viewer_model, monkeypatch):
         'dockLayerControls',
         property(patched_dock_layer_controls),
     )
-    monkeypatch.setattr(viewer.__class__, 'dockConsole', property(patched_dock_console))
+    monkeypatch.setattr(
+        viewer.__class__, 'dockConsole', property(patched_dock_console)
+    )
     monkeypatch.setattr(
         viewer.__class__, 'dockPerformance', property(patched_dock_performance)
     )
@@ -428,9 +440,13 @@ def _event_check(instance):
     def _prepare_check(name, no_event_):
         def check(instance, no_event=no_event_):
             if name in no_event:
-                assert not hasattr(instance.events, name), f'event {name} defined'
+                assert not hasattr(instance.events, name), (
+                    f'event {name} defined'
+                )
             else:
-                assert hasattr(instance.events, name), f'event {name} not defined'
+                assert hasattr(instance.events, name), (
+                    f'event {name} not defined'
+                )
 
         return check
 
@@ -480,7 +496,10 @@ def pytest_collection_modifyitems(session, config, items):
             if test_subset.lower() == 'qt' and 'qapp' not in item.fixturenames:
                 # Skip non Qt tests
                 continue
-            if test_subset.lower() == 'headless' and 'qapp' in item.fixturenames:
+            if (
+                test_subset.lower() == 'headless'
+                and 'qapp' in item.fixturenames
+            ):
                 # Skip Qt tests
                 continue
 
@@ -1020,7 +1039,7 @@ class NapariTerminalReporter(CustomTerminalReporter):
     It is created to be able to see if timeout is caused by long time execution, or it is just hanging.
     """
 
-    currentfspath: Path | None
+    currentfspath: Optional[Path]
 
     def write_fspath_result(self, nodeid: str, res, **markup: bool) -> None:
         if getattr(self, '_start_time', None) is None:

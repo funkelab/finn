@@ -1,7 +1,9 @@
 import logging
-from collections.abc import Callable, Iterable, MutableSequence, Sequence
+from collections.abc import Iterable, MutableSequence, Sequence
 from typing import (
     Any,
+    Callable,
+    Optional,
     TypeVar,
     Union,
     overload,
@@ -45,8 +47,8 @@ class TypedMutableSequence(MutableSequence[_T]):
         self,
         data: Iterable[_T] = (),
         *,
-        basetype: type[_T] | Sequence[type[_T]] = (),
-        lookup: dict[type[_L], Callable[[_T], _T | _L]] | None = None,
+        basetype: Union[type[_T], Sequence[type[_T]]] = (),
+        lookup: Optional[dict[type[_L], Callable[[_T], Union[_T, _L]]]] = None,
     ) -> None:
         if lookup is None:
             lookup = {}
@@ -75,7 +77,9 @@ class TypedMutableSequence(MutableSequence[_T]):
     def __setitem__(self, key: int, value: _T): ...  # pragma: no cover
 
     @overload
-    def __setitem__(self, key: slice, value: Iterable[_T]): ...  # pragma: no cover
+    def __setitem__(
+        self, key: slice, value: Iterable[_T]
+    ): ...  # pragma: no cover
 
     def __setitem__(self, key, value):
         if isinstance(key, slice):
@@ -149,7 +153,9 @@ class TypedMutableSequence(MutableSequence[_T]):
         del self._list[_key]
 
     def _type_check(self, e: Any) -> _T:
-        if self._basetypes and not any(isinstance(e, t) for t in self._basetypes):
+        if self._basetypes and not any(
+            isinstance(e, t) for t in self._basetypes
+        ):
             raise TypeError(
                 trans._(
                     'Cannot add object with type {dtype!r} to TypedList expecting type {basetypes!r}',
@@ -160,7 +166,9 @@ class TypedMutableSequence(MutableSequence[_T]):
             )
         return e
 
-    def __newlike__(self, iterable: Iterable[_T]) -> 'TypedMutableSequence[_T]':
+    def __newlike__(
+        self, iterable: Iterable[_T]
+    ) -> 'TypedMutableSequence[_T]':
         new = self.__class__()
         # separating this allows subclasses to omit these from their `__init__`
         new._basetypes = self._basetypes
@@ -187,7 +195,9 @@ class TypedMutableSequence(MutableSequence[_T]):
         """Add other to self in place (self += other)."""
         return other + list(self)
 
-    def index(self, value: _L, start: int = 0, stop: int | None = None) -> int:
+    def index(
+        self, value: _L, start: int = 0, stop: Optional[int] = None
+    ) -> int:
         """Return first index of value.
 
         Parameters
@@ -231,7 +241,9 @@ class TypedMutableSequence(MutableSequence[_T]):
             )
         )
 
-    def _iter_indices(self, start: int = 0, stop: int | None = None) -> Iterable[int]:
+    def _iter_indices(
+        self, start: int = 0, stop: Optional[int] = None
+    ) -> Iterable[int]:
         """Iter indices from start to stop.
 
         While this is trivial for this basic sequence type, this method lets

@@ -1,15 +1,12 @@
+import finn
+import pandas as pd
+import networkx as nx
 from typing import Any
 
-import networkx as nx
-import pandas as pd
 from funtracks.data_model import SolutionTracks
-
-import finn
 from finn.track_data_views.views.tree_view.tree_widget_utils import (
     extract_sorted_tracks,
 )
-
-
 def assign_tracklet_ids(graph: nx.DiGraph) -> tuple[nx.DiGraph, list[Any], int]:
     """Add a track_id attribute to a graph by removing division edges,
     assigning one id to each connected component.
@@ -38,10 +35,11 @@ def assign_tracklet_ids(graph: nx.DiGraph) -> tuple[nx.DiGraph, list[Any], int]:
 
     track_id = 1
     for tracklet in nx.weakly_connected_components(graph_copy):
-        nx.set_node_attributes(graph, {node: {'track_id': track_id} for node in tracklet})
+        nx.set_node_attributes(
+            graph, {node: {"track_id": track_id} for node in tracklet}
+        )
         track_id += 1
     return graph, intertrack_edges, track_id
-
 
 def test_track_df(graph_2d):
     tracks = SolutionTracks(graph=graph_2d, ndim=3)
@@ -59,6 +57,6 @@ def test_track_df(graph_2d):
 
     track_df = extract_sorted_tracks(tracks, colormap)
     assert isinstance(track_df, pd.DataFrame)
-    assert track_df.loc[track_df['node_id'] == 1, 'area'].values[0] == 1245
-    assert track_df.loc[track_df['node_id'] == 2, 'area'].values[0] == 0
-    assert track_df['area'].notna().all()
+    assert track_df.loc[track_df["node_id"] == 1, "area"].values[0] == 1245
+    assert track_df.loc[track_df["node_id"] == 2, "area"].values[0] == 0
+    assert track_df["area"].notna().all()

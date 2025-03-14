@@ -5,10 +5,11 @@ import os
 import sys
 import threading
 import warnings
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from datetime import datetime
 from enum import auto
 from types import TracebackType
+from typing import Callable, Optional, Union
 
 from finn.utils.events import Event, EventEmitter
 from finn.utils.misc import StringEnum
@@ -95,7 +96,9 @@ class Notification(Event):
     def __init__(
         self,
         message: str,
-        severity: str | NotificationSeverity = NotificationSeverity.WARNING,
+        severity: Union[
+            str, NotificationSeverity
+        ] = NotificationSeverity.WARNING,
         actions: ActionSequence = (),
         **kwargs,
     ) -> None:
@@ -218,7 +221,7 @@ class NotificationManager:
     """
 
     records: list[Notification]
-    _instance: NotificationManager | None = None
+    _instance: Optional[NotificationManager] = None
 
     def __init__(self) -> None:
         self.records: list[Notification] = []
@@ -282,8 +285,8 @@ class NotificationManager:
         args: tuple[
             type[BaseException],
             BaseException,
-            TracebackType | None,
-            threading.Thread | None,
+            Optional[TracebackType],
+            Optional[threading.Thread],
         ],
     ):
         self.receive_error(*args)
@@ -292,8 +295,8 @@ class NotificationManager:
         self,
         exctype: type[BaseException],
         value: BaseException,
-        traceback: TracebackType | None = None,
-        thread: threading.Thread | None = None,
+        traceback: Optional[TracebackType] = None,
+        thread: Optional[threading.Thread] = None,
     ):
         if isinstance(value, KeyboardInterrupt):
             sys.exit('Closed by KeyboardInterrupt')
@@ -320,7 +323,9 @@ class NotificationManager:
             return
         self._seen_warnings.add((msg, category, filename, lineno))
         self.dispatch(
-            Notification.from_warning(message, filename=filename, lineno=lineno)
+            Notification.from_warning(
+                message, filename=filename, lineno=lineno
+            )
         )
 
     def receive_info(self, message: str):
@@ -373,7 +378,10 @@ def show_console_notification(notification: Notification):
     try:
         from finn.settings import get_settings
 
-        if notification.severity < get_settings().application.console_notification_level:
+        if (
+            notification.severity
+            < get_settings().application.console_notification_level
+        ):
             return
 
         print(notification)  # noqa: T201

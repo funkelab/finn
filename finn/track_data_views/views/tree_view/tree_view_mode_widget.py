@@ -17,16 +17,16 @@ class TreeViewModeWidget(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.mode = 'all'
+        self.mode = "all"
 
-        display_box = QGroupBox('Display [Q]')
+        display_box = QGroupBox("Display [Q]")
         display_layout = QHBoxLayout()
         button_group = QButtonGroup()
-        self.show_all_radio = QRadioButton('All cells')
+        self.show_all_radio = QRadioButton("All cells")
         self.show_all_radio.setChecked(True)
-        self.show_all_radio.clicked.connect(lambda: self._set_mode('all'))
-        self.show_lineage_radio = QRadioButton('Current lineage(s)')
-        self.show_lineage_radio.clicked.connect(lambda: self._set_mode('lineage'))
+        self.show_all_radio.clicked.connect(lambda: self._set_mode("all"))
+        self.show_lineage_radio = QRadioButton("Current lineage(s)")
+        self.show_lineage_radio.clicked.connect(lambda: self._set_mode("lineage"))
         button_group.addButton(self.show_all_radio)
         button_group.addButton(self.show_lineage_radio)
         display_layout.addWidget(self.show_all_radio)
@@ -43,11 +43,11 @@ class TreeViewModeWidget(QWidget):
     def _toggle_display_mode(self, event=None) -> None:
         """Toggle display mode"""
 
-        if self.mode == 'lineage':
-            self._set_mode('all')
+        if self.mode == "lineage":
+            self._set_mode("all")
             self.show_all_radio.setChecked(True)
         else:
-            self._set_mode('lineage')
+            self._set_mode("lineage")
             self.show_lineage_radio.setChecked(True)
 
     def _set_mode(self, mode: str):

@@ -14,7 +14,9 @@ class VispyBoundingBoxOverlay(LayerOverlayMixin, VispySceneOverlay):
         )
         self.layer.events.set_data.connect(self._on_bounds_change)
         self.overlay.events.lines.connect(self._on_lines_change)
-        self.overlay.events.line_thickness.connect(self._on_line_thickness_change)
+        self.overlay.events.line_thickness.connect(
+            self._on_line_thickness_change
+        )
         self.overlay.events.line_color.connect(self._on_line_color_change)
         self.overlay.events.points.connect(self._on_points_change)
         self.overlay.events.point_size.connect(self._on_point_size_change)

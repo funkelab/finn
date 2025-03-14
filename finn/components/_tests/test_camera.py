@@ -79,15 +79,21 @@ def test_calculate_view_direction_nd():
     camera = Camera(center=(0, 0, 0), angles=(90, 0, 0), zoom=1)
 
     # should return none if ndim == 2
-    view_direction = camera.calculate_nd_view_direction(ndim=2, dims_displayed=[0, 1])
+    view_direction = camera.calculate_nd_view_direction(
+        ndim=2, dims_displayed=[0, 1]
+    )
     assert view_direction is None
 
     # should return 3d if ndim == 3
-    view_direction = camera.calculate_nd_view_direction(ndim=3, dims_displayed=[0, 1, 2])
+    view_direction = camera.calculate_nd_view_direction(
+        ndim=3, dims_displayed=[0, 1, 2]
+    )
     assert len(view_direction) == 3
     assert np.allclose(view_direction, (0, 1, 0))
 
     # should return nD with 3d embedded in nD if ndim > 3
-    view_direction = camera.calculate_nd_view_direction(ndim=5, dims_displayed=[0, 2, 4])
+    view_direction = camera.calculate_nd_view_direction(
+        ndim=5, dims_displayed=[0, 2, 4]
+    )
     assert len(view_direction) == 5
     assert np.allclose(view_direction[[0, 2, 4]], (0, 1, 0))

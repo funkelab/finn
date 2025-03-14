@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from vispy.visuals.visual import Visual
@@ -17,7 +17,7 @@ class TextureMixin(Visual):
     access private VisPy attributes.
     """
 
-    def __init__(self, *args, texture_format: str | None, **kwargs) -> None:  # type: ignore [no-untyped-def]
+    def __init__(self, *args, texture_format: Optional[str], **kwargs) -> None:  # type: ignore [no-untyped-def]
         super().__init__(*args, texture_format=texture_format, **kwargs)
         # classes using this mixin may be frozen dataclasses.
         # we save the texture format between unfreeze/freeze.
@@ -26,5 +26,5 @@ class TextureMixin(Visual):
         self.freeze()
 
     @property
-    def texture_format(self) -> str | None:
+    def texture_format(self) -> Optional[str]:
         return self._texture_format

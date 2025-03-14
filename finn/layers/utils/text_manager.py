@@ -1,7 +1,7 @@
 import warnings
 from collections.abc import Sequence
 from copy import deepcopy
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -174,7 +174,10 @@ class TextManager(EventedModel):
             stacklevel=2,
         )
         features = pd.DataFrame(
-            {name: np.repeat(value, n_text, axis=0) for name, value in properties.items()}
+            {
+                name: np.repeat(value, n_text, axis=0)
+                for name, value in properties.items()
+            }
         )
         values = self.string(features)
         self.string._append(values)
@@ -182,7 +185,7 @@ class TextManager(EventedModel):
         colors = self.color(features)
         self.color._append(colors)
 
-    def remove(self, indices_to_remove: range | set | list | np.ndarray):
+    def remove(self, indices_to_remove: Union[range, set, list, np.ndarray]):
         """Remove the indicated text elements
 
         Parameters
@@ -226,7 +229,7 @@ class TextManager(EventedModel):
         self,
         view_data: np.ndarray,
         ndisplay: int,
-        order: tuple[int, ...] | None = None,
+        order: Optional[tuple[int, ...]] = None,
     ) -> tuple[np.ndarray, str, str]:
         """Calculate the coordinates for each text element in view
 
@@ -282,7 +285,11 @@ class TextManager(EventedModel):
             Array of text strings for the N text elements in view
         """
         values = _get_style_values(self.string, indices_view)
-        return np.broadcast_to(values, len(indices_view)) if values.ndim == 0 else values
+        return (
+            np.broadcast_to(values, len(indices_view))
+            if values.ndim == 0
+            else values
+        )
 
     def _view_color(self, indices_view: np.ndarray) -> np.ndarray:
         """Get the colors of the text elements at the given indices."""
@@ -379,7 +386,9 @@ class TextManager(EventedModel):
 
 def _warn_about_deprecated_text_parameter():
     warnings.warn(
-        trans._('text is a deprecated parameter since 0.4.16. Use string instead.'),
+        trans._(
+            'text is a deprecated parameter since 0.4.16. Use string instead.'
+        ),
         DeprecationWarning,
         stacklevel=2,
     )
@@ -397,7 +406,9 @@ def _warn_about_deprecated_properties_parameter():
 
 def _warn_about_deprecated_n_text_parameter():
     warnings.warn(
-        trans._('n_text is a deprecated parameter since 0.4.16. Use features instead.'),
+        trans._(
+            'n_text is a deprecated parameter since 0.4.16. Use features instead.'
+        ),
         DeprecationWarning,
         stacklevel=2,
     )
@@ -405,7 +416,9 @@ def _warn_about_deprecated_n_text_parameter():
 
 def _warn_about_deprecated_values_parameter():
     warnings.warn(
-        trans._('values is a deprecated parameter since 0.4.16. Use string instead.'),
+        trans._(
+            'values is a deprecated parameter since 0.4.16. Use string instead.'
+        ),
         DeprecationWarning,
         stacklevel=2,
     )

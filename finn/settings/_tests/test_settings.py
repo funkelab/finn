@@ -328,7 +328,9 @@ def test_settings_only_saves_non_default_values(monkeypatch, tmp_path):
     NapariSettings(fake_path).save()
 
     # make sure that the only value is now the schema version
-    assert safe_load(fake_path.read_text()) == {'schema_version': CURRENT_SCHEMA_VERSION}
+    assert safe_load(fake_path.read_text()) == {
+        'schema_version': CURRENT_SCHEMA_VERSION
+    }
 
 
 def test_get_settings(tmp_path):
@@ -340,7 +342,9 @@ def test_get_settings(tmp_path):
 def test_get_settings_fails(monkeypatch, tmp_path):
     p = f'{tmp_path}.yaml'
     settings.get_settings(p)
-    with pytest.raises(RuntimeError, match='The path can only be set once per session'):
+    with pytest.raises(
+        RuntimeError, match='The path can only be set once per session'
+    ):
         settings.get_settings(p)
 
 

@@ -282,8 +282,10 @@ def test_grid_mode(make_napari_viewer):
         [255, 255, 0, 255],
         [0, 255, 255, 255],
     ]
-    for c, p in zip(color, pos, strict=False):
-        coord = tuple(np.round(np.multiply(screenshot.shape[:2], p)).astype(int))
+    for c, p in zip(color, pos):
+        coord = tuple(
+            np.round(np.multiply(screenshot.shape[:2], p)).astype(int)
+        )
         np.testing.assert_almost_equal(screenshot[coord], c)
 
     # reorder layers, swapping 0 and 5
@@ -301,8 +303,10 @@ def test_grid_mode(make_napari_viewer):
         [255, 255, 0, 255],
         [0, 0, 255, 255],
     ]
-    for c, p in zip(color, pos, strict=False):
-        coord = tuple(np.round(np.multiply(screenshot.shape[:2], p)).astype(int))
+    for c, p in zip(color, pos):
+        coord = tuple(
+            np.round(np.multiply(screenshot.shape[:2], p)).astype(int)
+        )
         np.testing.assert_almost_equal(screenshot[coord], c)
 
     # return to stack view
@@ -563,7 +567,9 @@ def test_active_layer_highlight_visibility(qt_viewer):
 
     # add shapes layer setting edge and face color to `black` (so shapes aren't
     # visible unless they're selected), create a rectangle and select the created shape
-    shapes_layer: Shapes = viewer.add_shapes(edge_color='black', face_color='black')
+    shapes_layer: Shapes = viewer.add_shapes(
+        edge_color='black', face_color='black'
+    )
     shapes_layer.add_rectangles([[0, 0], [1, 1]])
     shapes_layer.selected_data = {0}
 

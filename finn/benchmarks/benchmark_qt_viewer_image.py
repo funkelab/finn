@@ -77,11 +77,19 @@ class QtViewerImageSuite:
     def time_zoom(self, n):
         """Time to zoom in and zoom out."""
         if NAPARI_0_4_19:
-            self.viewer.window._qt_viewer.view.camera.zoom(0.5, center=(0.5, 0.5))
-            self.viewer.window._qt_viewer.view.camera.zoom(2.0, center=(0.5, 0.5))
+            self.viewer.window._qt_viewer.view.camera.zoom(
+                0.5, center=(0.5, 0.5)
+            )
+            self.viewer.window._qt_viewer.view.camera.zoom(
+                2.0, center=(0.5, 0.5)
+            )
         else:
-            self.viewer.window._qt_viewer.canvas.view.camera.zoom(0.5, center=(0.5, 0.5))
-            self.viewer.window._qt_viewer.canvas.view.camera.zoom(2.0, center=(0.5, 0.5))
+            self.viewer.window._qt_viewer.canvas.view.camera.zoom(
+                0.5, center=(0.5, 0.5)
+            )
+            self.viewer.window._qt_viewer.canvas.view.camera.zoom(
+                2.0, center=(0.5, 0.5)
+            )
 
     def time_refresh(self, n):
         """Time to refresh view."""
@@ -116,11 +124,19 @@ class QtViewerSingleImageSuite:
     def time_zoom(self):
         """Time to zoom in and zoom out."""
         if NAPARI_0_4_19:
-            self.viewer.window._qt_viewer.view.camera.zoom(0.5, center=(0.5, 0.5))
-            self.viewer.window._qt_viewer.view.camera.zoom(2.0, center=(0.5, 0.5))
+            self.viewer.window._qt_viewer.view.camera.zoom(
+                0.5, center=(0.5, 0.5)
+            )
+            self.viewer.window._qt_viewer.view.camera.zoom(
+                2.0, center=(0.5, 0.5)
+            )
         else:
-            self.viewer.window._qt_viewer.canvas.view.camera.zoom(0.5, center=(0.5, 0.5))
-            self.viewer.window._qt_viewer.canvas.view.camera.zoom(2.0, center=(0.5, 0.5))
+            self.viewer.window._qt_viewer.canvas.view.camera.zoom(
+                0.5, center=(0.5, 0.5)
+            )
+            self.viewer.window._qt_viewer.canvas.view.camera.zoom(
+                2.0, center=(0.5, 0.5)
+            )
 
     def time_set_data(self):
         """Time to set view slice."""
@@ -163,11 +179,19 @@ class QtViewerSingleInvisbleImageSuite:
     def time_zoom(self):
         """Time to zoom in and zoom out."""
         if NAPARI_0_4_19:
-            self.viewer.window._qt_viewer.view.camera.zoom(0.5, center=(0.5, 0.5))
-            self.viewer.window._qt_viewer.view.camera.zoom(2.0, center=(0.5, 0.5))
+            self.viewer.window._qt_viewer.view.camera.zoom(
+                0.5, center=(0.5, 0.5)
+            )
+            self.viewer.window._qt_viewer.view.camera.zoom(
+                2.0, center=(0.5, 0.5)
+            )
         else:
-            self.viewer.window._qt_viewer.canvas.view.camera.zoom(0.5, center=(0.5, 0.5))
-            self.viewer.window._qt_viewer.canvas.view.camera.zoom(2.0, center=(0.5, 0.5))
+            self.viewer.window._qt_viewer.canvas.view.camera.zoom(
+                0.5, center=(0.5, 0.5)
+            )
+            self.viewer.window._qt_viewer.canvas.view.camera.zoom(
+                2.0, center=(0.5, 0.5)
+            )
 
     def time_set_data(self):
         """Time to set view slice."""

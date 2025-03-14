@@ -1,3 +1,5 @@
+from typing import Union
+
 import numpy as np
 import numpy.typing as npt
 
@@ -6,7 +8,7 @@ from finn.utils.translations import trans
 
 
 def get_text_anchors(
-    view_data: np.ndarray | list,
+    view_data: Union[np.ndarray, list],
     ndisplay: int,
     anchor: Anchor = Anchor.CENTER,
 ) -> tuple[np.ndarray, str, str]:
@@ -17,7 +19,7 @@ def get_text_anchors(
 
 
 def _calculate_anchor_center(
-    view_data: np.ndarray | list, ndisplay: int
+    view_data: Union[np.ndarray, list], ndisplay: int
 ) -> tuple[np.ndarray, str, str]:
     text_coords = _calculate_bbox_centers(view_data)
 
@@ -27,7 +29,7 @@ def _calculate_anchor_center(
     return text_coords, anchor_x, anchor_y
 
 
-def _calculate_bbox_centers(view_data: np.ndarray | list) -> np.ndarray:
+def _calculate_bbox_centers(view_data: Union[np.ndarray, list]) -> np.ndarray:
     """
     Calculate the bounding box of the given centers,
 
@@ -56,7 +58,9 @@ def _calculate_bbox_centers(view_data: np.ndarray | list) -> np.ndarray:
     elif isinstance(view_data, list):
         for coord in view_data:
             assert coord.shape[1] in (2, 3), coord.shape
-        bbox_centers = np.array([np.mean(coords, axis=0) for coords in view_data])
+        bbox_centers = np.array(
+            [np.mean(coords, axis=0) for coords in view_data]
+        )
     else:
         raise TypeError(
             trans._(
@@ -68,7 +72,7 @@ def _calculate_bbox_centers(view_data: np.ndarray | list) -> np.ndarray:
 
 
 def _calculate_anchor_upper_left(
-    view_data: np.ndarray | list, ndisplay: int
+    view_data: Union[np.ndarray, list], ndisplay: int
 ) -> tuple[np.ndarray, str, str]:
     if ndisplay == 2:
         bbox_min, bbox_max = _calculate_bbox_extents(view_data)
@@ -78,13 +82,15 @@ def _calculate_anchor_upper_left(
         anchor_y = 'top'
     else:
         # in 3D, use centered anchor
-        text_anchors, anchor_x, anchor_y = _calculate_anchor_center(view_data, ndisplay)
+        text_anchors, anchor_x, anchor_y = _calculate_anchor_center(
+            view_data, ndisplay
+        )
 
     return text_anchors, anchor_x, anchor_y
 
 
 def _calculate_anchor_upper_right(
-    view_data: np.ndarray | list, ndisplay: int
+    view_data: Union[np.ndarray, list], ndisplay: int
 ) -> tuple[np.ndarray, str, str]:
     if ndisplay == 2:
         bbox_min, bbox_max = _calculate_bbox_extents(view_data)
@@ -94,13 +100,15 @@ def _calculate_anchor_upper_right(
         anchor_y = 'top'
     else:
         # in 3D, use centered anchor
-        text_anchors, anchor_x, anchor_y = _calculate_anchor_center(view_data, ndisplay)
+        text_anchors, anchor_x, anchor_y = _calculate_anchor_center(
+            view_data, ndisplay
+        )
 
     return text_anchors, anchor_x, anchor_y
 
 
 def _calculate_anchor_lower_left(
-    view_data: np.ndarray | list, ndisplay: int
+    view_data: Union[np.ndarray, list], ndisplay: int
 ) -> tuple[np.ndarray, str, str]:
     if ndisplay == 2:
         bbox_min, bbox_max = _calculate_bbox_extents(view_data)
@@ -110,13 +118,15 @@ def _calculate_anchor_lower_left(
         anchor_y = 'bottom'
     else:
         # in 3D, use centered anchor
-        text_anchors, anchor_x, anchor_y = _calculate_anchor_center(view_data, ndisplay)
+        text_anchors, anchor_x, anchor_y = _calculate_anchor_center(
+            view_data, ndisplay
+        )
 
     return text_anchors, anchor_x, anchor_y
 
 
 def _calculate_anchor_lower_right(
-    view_data: np.ndarray | list, ndisplay: int
+    view_data: Union[np.ndarray, list], ndisplay: int
 ) -> tuple[np.ndarray, str, str]:
     if ndisplay == 2:
         bbox_min, bbox_max = _calculate_bbox_extents(view_data)
@@ -126,13 +136,15 @@ def _calculate_anchor_lower_right(
         anchor_y = 'bottom'
     else:
         # in 3D, use centered anchor
-        text_anchors, anchor_x, anchor_y = _calculate_anchor_center(view_data, ndisplay)
+        text_anchors, anchor_x, anchor_y = _calculate_anchor_center(
+            view_data, ndisplay
+        )
 
     return text_anchors, anchor_x, anchor_y
 
 
 def _calculate_bbox_extents(
-    view_data: np.ndarray | list,
+    view_data: Union[np.ndarray, list],
 ) -> tuple[npt.NDArray, npt.NDArray]:
     """Calculate the extents of the bounding box"""
     if isinstance(view_data, np.ndarray):

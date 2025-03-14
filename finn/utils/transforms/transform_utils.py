@@ -464,7 +464,9 @@ def is_matrix_triangular(matrix):
     bool
         Whether matrix is triangular or not.
     """
-    return is_matrix_upper_triangular(matrix) or is_matrix_lower_triangular(matrix)
+    return is_matrix_upper_triangular(matrix) or is_matrix_lower_triangular(
+        matrix
+    )
 
 
 def is_diagonal(matrix, tol=1e-8):

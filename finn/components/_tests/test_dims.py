@@ -83,7 +83,9 @@ def test_sanitize_input_setters():
     # one value
     with pytest.raises(ValueError, match='cannot set multiple values'):
         dims._sanitize_input(axis=0, value=(1, 2, 3))
-    ax, val = dims._sanitize_input(axis=0, value=(1, 2, 3), value_is_sequence=True)
+    ax, val = dims._sanitize_input(
+        axis=0, value=(1, 2, 3), value_is_sequence=True
+    )
     assert ax == [0]
     assert val == [(1, 2, 3)]
 

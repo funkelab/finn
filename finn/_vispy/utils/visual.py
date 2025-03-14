@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Optional
+
 import numpy as np
 from vispy.scene.widgets.viewbox import ViewBox
 
@@ -125,7 +127,7 @@ def get_view_direction_in_scene_coordinates(
     view: ViewBox,
     ndim: int,
     dims_displayed: tuple[int],
-) -> np.ndarray | None:
+) -> Optional[np.ndarray]:
     """Calculate the unit vector pointing in the direction of the view.
 
     This is only for 3D viewing, so it returns None when

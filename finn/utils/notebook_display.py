@@ -111,7 +111,9 @@ class NotebookScreenshot:
         from finn._qt.qt_event_loop import get_qapp
 
         get_qapp().processEvents()
-        self.image = self.viewer.screenshot(canvas_only=self.canvas_only, flash=False)
+        self.image = self.viewer.screenshot(
+            canvas_only=self.canvas_only, flash=False
+        )
         with BytesIO() as file_obj:
             imsave_png(file_obj, self.image)
             file_obj.seek(0)

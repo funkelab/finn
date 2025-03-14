@@ -1,5 +1,7 @@
 """Scale bar model."""
 
+from typing import Optional
+
 from finn._pydantic_compat import Field
 from finn.components.overlays.base import CanvasOverlay
 from finn.utils.color import ColorValue
@@ -51,6 +53,8 @@ class ScaleBarOverlay(CanvasOverlay):
     ticks: bool = True
     font_size: float = 10
     box: bool = False
-    box_color: ColorValue = Field(default_factory=lambda: ColorValue([0, 0, 0, 0.6]))
-    unit: str | None = None
-    length: float | None = None
+    box_color: ColorValue = Field(
+        default_factory=lambda: ColorValue([0, 0, 0, 0.6])
+    )
+    unit: Optional[str] = None
+    length: Optional[float] = None

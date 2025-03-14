@@ -10,7 +10,9 @@ from finn.utils.events.containers import (
 # this is a parametrized fixture, all tests using ``list_type`` will be run
 # once using each of the items in params
 # https://docs.pytest.org/en/stable/fixture.html#parametrizing-fixtures
-@pytest.fixture(params=[TypedMutableSequence, EventedList, NestableEventedList])
+@pytest.fixture(
+    params=[TypedMutableSequence, EventedList, NestableEventedList]
+)
 def list_type(request):
     return request.param
 

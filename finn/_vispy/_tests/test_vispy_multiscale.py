@@ -78,8 +78,12 @@ def test_multiscale_screenshot(make_napari_viewer):
     screen_offset = 3  # Offset is needed as our screenshots have black borders
 
     np.testing.assert_allclose(screenshot[tuple(center_coord)], target_center)
-    np.testing.assert_allclose(screenshot[screen_offset, screen_offset], target_edge)
-    np.testing.assert_allclose(screenshot[-screen_offset, -screen_offset], target_edge)
+    np.testing.assert_allclose(
+        screenshot[screen_offset, screen_offset], target_edge
+    )
+    np.testing.assert_allclose(
+        screenshot[-screen_offset, -screen_offset], target_edge
+    )
 
 
 @skip_on_win_ci
@@ -113,8 +117,12 @@ def test_multiscale_screenshot_zoomed(make_napari_viewer):
     if not np.allclose(screenshot[:6, :6], np.array([0, 0, 0, 255])):
         screen_offset = 6  # Hi DPI
     np.testing.assert_allclose(screenshot[tuple(center_coord)], target_center)
-    np.testing.assert_allclose(screenshot[screen_offset, screen_offset], target_center)
-    np.testing.assert_allclose(screenshot[-screen_offset, -screen_offset], target_center)
+    np.testing.assert_allclose(
+        screenshot[screen_offset, screen_offset], target_center
+    )
+    np.testing.assert_allclose(
+        screenshot[-screen_offset, -screen_offset], target_center
+    )
 
 
 @skip_on_win_ci
@@ -140,8 +148,12 @@ def test_image_screenshot_zoomed(make_napari_viewer):
     screen_offset = 3  # Offset is needed as our screenshots have black borders
 
     np.testing.assert_allclose(screenshot[tuple(center_coord)], target_center)
-    np.testing.assert_allclose(screenshot[screen_offset, screen_offset], target_center)
-    np.testing.assert_allclose(screenshot[-screen_offset, -screen_offset], target_center)
+    np.testing.assert_allclose(
+        screenshot[screen_offset, screen_offset], target_center
+    )
+    np.testing.assert_allclose(
+        screenshot[-screen_offset, -screen_offset], target_center
+    )
 
 
 @skip_on_win_ci
@@ -206,7 +218,9 @@ def test_multiscale_flipped_axes(make_napari_viewer):
     shapes = [(4000, 3000), (2000, 1500), (1000, 750), (500, 375)]
     data = [np.ones(s) for s in shapes]
     # this used to crash, see issue #3057
-    _ = viewer.add_image(data, multiscale=True, contrast_limits=[0, 1], scale=(-1, 1))
+    _ = viewer.add_image(
+        data, multiscale=True, contrast_limits=[0, 1], scale=(-1, 1)
+    )
 
 
 @skip_on_win_ci
@@ -222,4 +236,6 @@ def test_multiscale_rotated_image(make_napari_viewer):
     viewer.add_image(arrays, multiscale=True, rotate=44)
     screenshot_rgba = viewer.screenshot(canvas_only=True, flash=False)
     screenshot_rgb = screenshot_rgba[..., :3]
-    assert np.any(screenshot_rgb)  # make sure there is at least one white pixel
+    assert np.any(
+        screenshot_rgb
+    )  # make sure there is at least one white pixel

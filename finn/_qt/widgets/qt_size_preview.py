@@ -1,3 +1,5 @@
+import typing
+
 from qtpy.QtCore import QSize, Qt, Signal
 from qtpy.QtGui import QFont, QIntValidator
 from qtpy.QtWidgets import (
@@ -26,7 +28,9 @@ class QtFontSizePreview(QFrame):
         Preview text to display. Default is None.
     """
 
-    def __init__(self, parent: QWidget = None, text: str | None = None) -> None:
+    def __init__(
+        self, parent: QWidget = None, text: typing.Optional[str] = None
+    ) -> None:
         super().__init__(parent)
 
         self._text = text or ''
@@ -98,9 +102,9 @@ class QtSizeSliderPreviewWidget(QWidget):
     def __init__(
         self,
         parent: QWidget = None,
-        description: str | None = None,
-        preview_text: str | None = None,
-        value: int | None = None,
+        description: typing.Optional[str] = None,
+        preview_text: typing.Optional[str] = None,
+        value: typing.Optional[int] = None,
         min_value: int = 1,
         max_value: int = 50,
         unit: str = 'px',
@@ -185,7 +189,7 @@ class QtSizeSliderPreviewWidget(QWidget):
         self._lineedit.setMaximumWidth(size)
         self._lineedit.setMinimumWidth(size)
 
-    def _update_value(self, value: int | str):
+    def _update_value(self, value: typing.Union[int, str]):
         """Update internal value and emit if changed."""
         if value == '':
             value = int(self._value)
@@ -203,7 +207,7 @@ class QtSizeSliderPreviewWidget(QWidget):
         self._value = value
         self._refresh(self._value)
 
-    def _refresh(self, value: int | None = None):
+    def _refresh(self, value: typing.Optional[int] = None):
         """Refresh the value on all subwidgets."""
         value = value or self._value
         self.blockSignals(True)

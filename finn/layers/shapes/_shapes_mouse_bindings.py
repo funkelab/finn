@@ -19,6 +19,7 @@ from finn.settings import get_settings
 
 if TYPE_CHECKING:
     from collections.abc import Generator
+    from typing import Optional
 
     import numpy.typing as npt
     from vispy.app.canvas import MouseEvent
@@ -112,7 +113,10 @@ def select(layer: Shapes, event: MouseEvent) -> Generator[None, None, None]:
     # only emit data once dragging has finished
     if layer._is_moving:
         vertex_indices = tuple(
-            tuple(vertex_index for vertex_index, coord in enumerate(layer.data[i]))
+            tuple(
+                vertex_index
+                for vertex_index, coord in enumerate(layer.data[i])
+            )
             for i in layer.selected_data
         )
         layer.events.data(
@@ -173,10 +177,14 @@ def add_line(layer: Shapes, event: MouseEvent) -> Generator[None, None, None]:
     data = np.array([corner, corner + full_size])
 
     # adds data to layer.data and handles mouse move (cursor tracking) and release event (setting second point)
-    yield from _add_line_rectangle_ellipse(layer, event, data=data, shape_type='line')
+    yield from _add_line_rectangle_ellipse(
+        layer, event, data=data, shape_type='line'
+    )
 
 
-def add_ellipse(layer: Shapes, event: MouseEvent) -> Generator[None, None, None]:
+def add_ellipse(
+    layer: Shapes, event: MouseEvent
+) -> Generator[None, None, None]:
     """
     Add an ellipse to the shapes layer.
 
@@ -195,11 +203,17 @@ def add_ellipse(layer: Shapes, event: MouseEvent) -> Generator[None, None, None]
 
     coordinates = layer.world_to_data(event.position)
     corner = np.array(coordinates)
-    data = np.array([corner, corner + size_v, corner + size_h + size_v, corner + size_h])
-    yield from _add_line_rectangle_ellipse(layer, event, data=data, shape_type='ellipse')
+    data = np.array(
+        [corner, corner + size_v, corner + size_h + size_v, corner + size_h]
+    )
+    yield from _add_line_rectangle_ellipse(
+        layer, event, data=data, shape_type='ellipse'
+    )
 
 
-def add_rectangle(layer: Shapes, event: MouseEvent) -> Generator[None, None, None]:
+def add_rectangle(
+    layer: Shapes, event: MouseEvent
+) -> Generator[None, None, None]:
     """Add a rectangle to the shapes layer.
 
     Parameters
@@ -217,7 +231,9 @@ def add_rectangle(layer: Shapes, event: MouseEvent) -> Generator[None, None, Non
 
     coordinates = layer.world_to_data(event.position)
     corner = np.array(coordinates)
-    data = np.array([corner, corner + size_v, corner + size_h + size_v, corner + size_h])
+    data = np.array(
+        [corner, corner + size_v, corner + size_h + size_v, corner + size_h]
+    )
 
     yield from _add_line_rectangle_ellipse(
         layer, event, data=data, shape_type='rectangle'
@@ -280,7 +296,9 @@ def finish_drawing_shape(layer: Shapes, event: MouseEvent) -> None:
     layer._finish_drawing()
 
 
-def initiate_polygon_draw(layer: Shapes, coordinates: tuple[float, ...]) -> None:
+def initiate_polygon_draw(
+    layer: Shapes, coordinates: tuple[float, ...]
+) -> None:
     """Start drawing of polygon.
 
     Creates the polygon shape when initializing the draw, adding to layer and selecting the initiatlized shape and
@@ -345,7 +363,7 @@ def add_vertex_to_path(
     event: MouseEvent,
     index: int,
     coordinates: tuple[float, ...],
-    new_type: str | None,
+    new_type: Optional[str],
 ) -> None:
     """Add a vertex to an existing path or polygon and edit the layer view.
 
@@ -399,8 +417,13 @@ def polygon_creating(layer: Shapes, event: MouseEvent) -> None:
         if layer._mode in [Mode.ADD_POLYGON_LASSO, Mode.ADD_PATH]:
             index = layer._moving_value[0]
 
-            position_diff = np.linalg.norm(event.pos - layer._last_cursor_position)
-            if position_diff > get_settings().experimental.lasso_vertex_distance:
+            position_diff = np.linalg.norm(
+                event.pos - layer._last_cursor_position
+            )
+            if (
+                position_diff
+                > get_settings().experimental.lasso_vertex_distance
+            ):
                 add_vertex_to_path(layer, event, index, coordinates, None)
 
 
@@ -430,7 +453,9 @@ def add_path_polygon(layer: Shapes, event: MouseEvent) -> None:
         new_type = Polygon if layer._mode == Mode.ADD_POLYGON else None
         # Ensure the position of the new vertex is different from the previous
         # one before adding it. See napari/napari#6597
-        if not np.array_equal(np.array(event.pos), layer._last_cursor_position):
+        if not np.array_equal(
+            np.array(event.pos), layer._last_cursor_position
+        ):
             add_vertex_to_path(layer, event, index, coordinates, new_type)
 
 
@@ -481,11 +506,17 @@ def vertex_insert(layer: Shapes, event: MouseEvent) -> None:
             closed = shape_type != Path
             n = len(vertices)
             if closed:
-                lines = np.array([[vertices[i], vertices[(i + 1) % n]] for i in range(n)])
+                lines = np.array(
+                    [[vertices[i], vertices[(i + 1) % n]] for i in range(n)]
+                )
             else:
-                lines = np.array([[vertices[i], vertices[i + 1]] for i in range(n - 1)])
+                lines = np.array(
+                    [[vertices[i], vertices[i + 1]] for i in range(n - 1)]
+                )
             all_edges = np.append(all_edges, lines, axis=0)
-            indices = np.array([np.repeat(index, len(lines)), list(range(len(lines)))]).T
+            indices = np.array(
+                [np.repeat(index, len(lines)), list(range(len(lines)))]
+            ).T
             all_edges_shape = np.append(all_edges_shape, indices, axis=0)
 
     if len(all_edges) == 0:
@@ -585,7 +616,9 @@ def vertex_remove(layer: Shapes, event: MouseEvent) -> None:
         # Remove clicked on vertex
         vertices = np.delete(vertices, vertex_under_cursor, axis=0)
         with layer.events.set_data.blocker():
-            layer._data_view.edit(shape_under_cursor, vertices, new_type=new_type)
+            layer._data_view.edit(
+                shape_under_cursor, vertices, new_type=new_type
+            )
             shapes = layer.selected_data
             layer._selected_box = layer.interaction_box(shapes)
     layer.events.data(
@@ -621,7 +654,9 @@ def _drag_selection_box(layer: Shapes, coordinates: tuple[float, ...]) -> None:
     layer._set_highlight()
 
 
-def _set_drag_start(layer: Shapes, coordinates: tuple[float, ...]) -> list[float]:
+def _set_drag_start(
+    layer: Shapes, coordinates: tuple[float, ...]
+) -> list[float]:
     """Indicate where in data space a drag event started.
 
     Sets the coordinates relative to the center of the bounding box of a shape and returns the position
@@ -669,7 +704,10 @@ def _move_active_element_under_cursor(
     ):
         if layer._mode == Mode.SELECT and not layer._is_moving:
             vertex_indices = tuple(
-                tuple(vertex_index for vertex_index, coord in enumerate(layer.data[i]))
+                tuple(
+                    vertex_index
+                    for vertex_index, coord in enumerate(layer.data[i])
+                )
                 for i in layer.selected_data
             )
             layer.events.data(
@@ -733,7 +771,9 @@ def _move_active_element_under_cursor(
 
             if layer._fixed_index % 2 == 0:
                 # corner selected
-                drag_scale = (inv_rot @ (new - fixed)) / (inv_rot @ (box[vertex] - fixed))
+                drag_scale = (inv_rot @ (new - fixed)) / (
+                    inv_rot @ (box[vertex] - fixed)
+                )
             elif layer._fixed_index % 4 == 3:
                 # top or bottom selected
                 drag_scale = np.array(
@@ -755,7 +795,10 @@ def _move_active_element_under_cursor(
 
             # prevent box from shrinking below a threshold size
             size = (np.linalg.norm(box[Box.TOP_LEFT] - box_center),)
-            if np.linalg.norm(size * drag_scale) < layer._normalized_vertex_radius:
+            if (
+                np.linalg.norm(size * drag_scale)
+                < layer._normalized_vertex_radius
+            ):
                 drag_scale[:] = 1
             # on vertical/horizontal drags we get scale of 0
             # when we actually simply don't want to scale
@@ -764,7 +807,9 @@ def _move_active_element_under_cursor(
             # check orientation of box
             if abs(handle_offset_norm[0]) == 1:
                 for index in layer.selected_data:
-                    layer._data_view.scale(index, drag_scale, center=layer._fixed_vertex)
+                    layer._data_view.scale(
+                        index, drag_scale, center=layer._fixed_vertex
+                    )
                 layer._scale_box(drag_scale, center=layer._fixed_vertex)
             else:
                 scale_mat = np.array([[drag_scale[0], 0], [0, drag_scale[1]]])
@@ -785,7 +830,9 @@ def _move_active_element_under_cursor(
             new_offset = coord - layer._fixed_vertex
             new_angle = -np.degrees(np.arctan2(new_offset[0], -new_offset[1]))
             fixed_offset = handle - layer._fixed_vertex
-            fixed_angle = -np.degrees(np.arctan2(fixed_offset[0], -fixed_offset[1]))
+            fixed_angle = -np.degrees(
+                np.arctan2(fixed_offset[0], -fixed_offset[1])
+            )
 
             if layer._fixed_aspect:
                 angle = np.round(new_angle / 45) * 45 - fixed_angle
@@ -793,7 +840,9 @@ def _move_active_element_under_cursor(
                 angle = new_angle - fixed_angle
 
             for index in layer.selected_data:
-                layer._data_view.rotate(index, angle, center=layer._fixed_vertex)
+                layer._data_view.rotate(
+                    index, angle, center=layer._fixed_vertex
+                )
             layer._rotate_box(angle, center=layer._fixed_vertex)
             layer.refresh()
 

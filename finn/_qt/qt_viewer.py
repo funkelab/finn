@@ -11,6 +11,8 @@ from types import FrameType
 from typing import (
     TYPE_CHECKING,
     Any,
+    Optional,
+    Union,
 )
 from weakref import WeakSet, ref
 
@@ -68,7 +70,7 @@ if TYPE_CHECKING:
 
 def _npe2_decode_selected_filter(
     ext_str: str, selected_filter: str, writers: Sequence[WriterContribution]
-) -> WriterContribution | None:
+) -> Optional[WriterContribution]:
     """Determine the writer that should be invoked to save data.
 
     When npe2 can be imported, resolves a selected file extension
@@ -80,7 +82,6 @@ def _npe2_decode_selected_filter(
     for entry, writer in zip(
         ext_str.split(';;'),
         writers,
-        strict=False,
     ):
         if entry.startswith(selected_filter):
             return writer
@@ -182,7 +183,9 @@ class QtViewer(QSplitter):
 
         self._show_welcome_screen = show_welcome_screen
 
-        QCoreApplication.setAttribute(Qt.AA_UseStyleSheetPropagationInWidgetStyles, True)
+        QCoreApplication.setAttribute(
+            Qt.AA_UseStyleSheetPropagationInWidgetStyles, True
+        )
 
         self.viewer = viewer
         self.dims = QtDims(self.viewer.dims)
@@ -235,7 +238,9 @@ class QtViewer(QSplitter):
         self.viewer.dims.events.ndisplay.connect(self._update_camera_depth)
         self.viewer.layers.events.inserted.connect(self._update_welcome_screen)
         self.viewer.layers.events.removed.connect(self._update_welcome_screen)
-        self.viewer.layers.selection.events.active.connect(self._on_active_change)
+        self.viewer.layers.selection.events.active.connect(
+            self._on_active_change
+        )
 
         self.viewer.layers.events.inserted.connect(self._on_add_layer_change)
 
@@ -245,7 +250,9 @@ class QtViewer(QSplitter):
         self._qt_poll = _create_qt_poll(self, self.viewer.camera)
 
         # Create the experimental RemoteManager for the monitor.
-        self._remote_manager = _create_remote_manager(self.viewer.layers, self._qt_poll)
+        self._remote_manager = _create_remote_manager(
+            self.viewer.layers, self._qt_poll
+        )
 
         # bind shortcuts stored in settings last.
         self._bind_shortcuts()
@@ -253,7 +260,9 @@ class QtViewer(QSplitter):
         settings = get_settings()
         self._update_dask_cache_settings(settings.application.dask)
 
-        settings.application.dask.events.connect(self._update_dask_cache_settings)
+        settings.application.dask.events.connect(
+            self._update_dask_cache_settings
+        )
 
         for layer in self.viewer.layers:
             self._add_layer(layer)
@@ -301,7 +310,7 @@ class QtViewer(QSplitter):
 
     @staticmethod
     def _update_dask_cache_settings(
-        dask_setting: DaskSettings | Event = None,
+        dask_setting: Union[DaskSettings, Event] = None,
     ):
         """Update dask cache to match settings."""
         if not dask_setting:
@@ -529,7 +538,7 @@ class QtViewer(QSplitter):
         """List: items to push to console when instantiated."""
         return self._console_backlog
 
-    def _get_console(self) -> QtConsole | None:
+    def _get_console(self) -> Optional[QtConsole]:
         """Function to setup console.
 
         Returns
@@ -558,7 +567,9 @@ class QtViewer(QSplitter):
             with warnings.catch_warnings():
                 warnings.filterwarnings('ignore')
                 console = QtConsole(self.viewer, style_sheet=self.styleSheet())
-                console.push({'napari': napari, 'action_manager': action_manager})
+                console.push(
+                    {'napari': napari, 'action_manager': action_manager}
+                )
                 with CallerFrame(_in_napari) as c:
                     if c.frame.f_globals.get('__name__', '') == '__main__':
                         console.push({'np': np})
@@ -584,7 +595,9 @@ class QtViewer(QSplitter):
         except ImportError:
             traceback.print_exc()
             warnings.warn(
-                trans._('error importing napari-console. See console for full error.'),
+                trans._(
+                    'error importing napari-console. See console for full error.'
+                ),
                 stacklevel=1,
             )
             return None
@@ -774,14 +787,17 @@ class QtViewer(QSplitter):
             msg = trans._('There are no layers in the viewer to save')
         elif selected and not len(self.viewer.layers.selection):
             msg = trans._(
-                'Please select one or more layers to save,\nor use "Save all layers..."'
+                'Please select one or more layers to save,'
+                '\nor use "Save all layers..."'
             )
         if msg:
             raise OSError(trans._('Nothing to save'))
 
         # prepare list of extensions for drop down menu.
         ext_str, writers = _extension_string_for_layers(
-            list(self.viewer.layers.selection) if selected else self.viewer.layers
+            list(self.viewer.layers.selection)
+            if selected
+            else self.viewer.layers
         )
 
         msg = trans._('selected') if selected else trans._('all')
@@ -792,27 +808,36 @@ class QtViewer(QSplitter):
         selected_layer_name = ''
         if self.viewer.layers.selection.active is not None:
             selected_layer_name = self.viewer.layers.selection.active.name
-            selected_layer_name = self._remove_invalid_chars(selected_layer_name)
+            selected_layer_name = self._remove_invalid_chars(
+                selected_layer_name
+            )
         filename, selected_filter = dlg.getSaveFileName(
             self,  # parent
             trans._('Save {msg} layers', msg=msg),  # caption
             # home dir by default if selected all, home dir and file name if only 1 layer
-            str(Path(hist[0]) / selected_layer_name),  # directory in PyQt, dir in PySide
+            str(
+                Path(hist[0]) / selected_layer_name
+            ),  # directory in PyQt, dir in PySide
             filter=ext_str,
             options=(
-                QFileDialog.DontUseNativeDialog if in_ipython() else QFileDialog.Options()
+                QFileDialog.DontUseNativeDialog
+                if in_ipython()
+                else QFileDialog.Options()
             ),
         )
         logging.debug(
             trans._(
-                'QFileDialog - filename: {filename} selected_filter: {selected_filter}',
+                'QFileDialog - filename: {filename} '
+                'selected_filter: {selected_filter}',
                 filename=filename or None,
                 selected_filter=selected_filter or None,
             )
         )
 
         if filename:
-            writer = _npe2_decode_selected_filter(ext_str, selected_filter, writers)
+            writer = _npe2_decode_selected_filter(
+                ext_str, selected_filter, writers
+            )
             with warnings.catch_warnings(record=True) as wa:
                 saved = self.viewer.layers.save(
                     filename, selected=selected, _writer=writer
@@ -945,7 +970,11 @@ class QtViewer(QSplitter):
             self,
             trans._('Select folder...'),
             hist[0],  # home dir by default
-            (QFileDialog.DontUseNativeDialog if in_ipython() else QFileDialog.Options()),
+            (
+                QFileDialog.DontUseNativeDialog
+                if in_ipython()
+                else QFileDialog.Options()
+            ),
         )
 
         if folder not in {'', None}:
@@ -955,10 +984,10 @@ class QtViewer(QSplitter):
     def _qt_open(
         self,
         filenames: list[str],
-        stack: bool | list[list[str]],
+        stack: Union[bool, list[list[str]]],
         choose_plugin: bool = False,
-        plugin: str | None = None,
-        layer_type: str | None = None,
+        plugin: Optional[str] = None,
+        layer_type: Optional[str] = None,
         **kwargs,
     ):
         """Open files, potentially popping reader dialog for plugin selection.
@@ -1034,7 +1063,9 @@ class QtViewer(QSplitter):
         self.viewerButtons.consoleButton.style().unpolish(
             self.viewerButtons.consoleButton
         )
-        self.viewerButtons.consoleButton.style().polish(self.viewerButtons.consoleButton)
+        self.viewerButtons.consoleButton.style().polish(
+            self.viewerButtons.consoleButton
+        )
 
     def set_welcome_visible(self, visible):
         """Show welcome screen widget."""
@@ -1143,9 +1174,13 @@ class QtViewer(QSplitter):
             Event from the Qt context.
         """
         shift_down = (
-            QGuiApplication.keyboardModifiers() & Qt.KeyboardModifier.ShiftModifier
+            QGuiApplication.keyboardModifiers()
+            & Qt.KeyboardModifier.ShiftModifier
         )
-        alt_down = QGuiApplication.keyboardModifiers() & Qt.KeyboardModifier.AltModifier
+        alt_down = (
+            QGuiApplication.keyboardModifiers()
+            & Qt.KeyboardModifier.AltModifier
+        )
         self._open_from_list_of_urls_data(
             event.mimeData().urls(),
             stack=bool(shift_down),
@@ -1198,7 +1233,7 @@ if TYPE_CHECKING:
     from finn.components.experimental.remote import RemoteManager
 
 
-def _create_qt_poll(parent: QObject, camera: Camera) -> QtPoll | None:
+def _create_qt_poll(parent: QObject, camera: Camera) -> Optional[QtPoll]:
     """Create and return a QtPoll instance, if needed.
 
     Create a QtPoll instance for the monitor.
@@ -1229,7 +1264,9 @@ def _create_qt_poll(parent: QObject, camera: Camera) -> QtPoll | None:
     return qt_poll
 
 
-def _create_remote_manager(layers: LayerList, qt_poll) -> RemoteManager | None:
+def _create_remote_manager(
+    layers: LayerList, qt_poll
+) -> Optional[RemoteManager]:
     """Create and return a RemoteManager instance, if we need one.
 
     Parameters

@@ -91,7 +91,9 @@ class QtBaseImageControls(QtLayerControls):
 
         self.layer.events.colormap.connect(self._on_colormap_change)
         self.layer.events.gamma.connect(self._on_gamma_change)
-        self.layer.events.contrast_limits.connect(self._on_contrast_limits_change)
+        self.layer.events.contrast_limits.connect(
+            self._on_contrast_limits_change
+        )
         self.layer.events.contrast_limits_range.connect(
             self._on_contrast_limits_range_change
         )
@@ -108,8 +110,12 @@ class QtBaseImageControls(QtLayerControls):
         self.colormapComboBox = comboBox
 
         # Create contrast_limits slider
-        self.contrastLimitsSlider = _QDoubleRangeSlider(Qt.Orientation.Horizontal, self)
-        decimals = range_to_decimals(self.layer.contrast_limits_range, self.layer.dtype)
+        self.contrastLimitsSlider = _QDoubleRangeSlider(
+            Qt.Orientation.Horizontal, self
+        )
+        decimals = range_to_decimals(
+            self.layer.contrast_limits_range, self.layer.dtype
+        )
         self.contrastLimitsSlider.setRange(*self.layer.contrast_limits_range)
         self.contrastLimitsSlider.setSingleStep(10**-decimals)
         self.contrastLimitsSlider.setValue(self.layer.contrast_limits)
@@ -177,12 +183,16 @@ class QtBaseImageControls(QtLayerControls):
             decimals = range_to_decimals(
                 self.layer.contrast_limits_range, self.layer.dtype
             )
-            self.contrastLimitsSlider.setRange(*self.layer.contrast_limits_range)
+            self.contrastLimitsSlider.setRange(
+                *self.layer.contrast_limits_range
+            )
             self.contrastLimitsSlider.setSingleStep(10**-decimals)
 
         if self.clim_popup:
             with qt_signals_blocked(self.clim_popup.slider):
-                self.clim_popup.slider.setRange(*self.layer.contrast_limits_range)
+                self.clim_popup.slider.setRange(
+                    *self.layer.contrast_limits_range
+                )
 
     def _on_colormap_change(self):
         """Receive layer model colormap change event and update dropdown menu."""
@@ -261,12 +271,16 @@ class QContrastLimitsPopup(QRangeSliderPopup):
         self.slider.setValue(layer.contrast_limits)
 
         connect_setattr(self.slider.valueChanged, layer, 'contrast_limits')
-        connect_setattr(self.slider.rangeChanged, layer, 'contrast_limits_range')
+        connect_setattr(
+            self.slider.rangeChanged, layer, 'contrast_limits_range'
+        )
 
         def reset():
             layer.reset_contrast_limits()
             layer.contrast_limits_range = layer.contrast_limits
-            decimals_ = range_to_decimals(layer.contrast_limits_range, layer.dtype)
+            decimals_ = range_to_decimals(
+                layer.contrast_limits_range, layer.dtype
+            )
             self.slider.setDecimals(decimals_)
             self.slider.setSingleStep(10**-decimals_)
 
@@ -275,7 +289,9 @@ class QContrastLimitsPopup(QRangeSliderPopup):
         reset_btn.setToolTip(trans._('Autoscale contrast to data range'))
         reset_btn.setFixedWidth(45)
         reset_btn.clicked.connect(reset)
-        self._layout.addWidget(reset_btn, alignment=Qt.AlignmentFlag.AlignBottom)
+        self._layout.addWidget(
+            reset_btn, alignment=Qt.AlignmentFlag.AlignBottom
+        )
 
         # the "full range" button doesn't do anything if it's not an
         # unsigned integer type (it's unclear what range should be set)
@@ -283,10 +299,14 @@ class QContrastLimitsPopup(QRangeSliderPopup):
         if np.issubdtype(normalize_dtype(layer.dtype), np.integer):
             range_btn = QPushButton('full range')
             range_btn.setObjectName('full_clim_range_button')
-            range_btn.setToolTip(trans._('Set contrast range to full bit-depth'))
+            range_btn.setToolTip(
+                trans._('Set contrast range to full bit-depth')
+            )
             range_btn.setFixedWidth(75)
             range_btn.clicked.connect(layer.reset_contrast_limits_range)
-            self._layout.addWidget(range_btn, alignment=Qt.AlignmentFlag.AlignBottom)
+            self._layout.addWidget(
+                range_btn, alignment=Qt.AlignmentFlag.AlignBottom
+            )
 
 
 def range_to_decimals(range_, dtype):

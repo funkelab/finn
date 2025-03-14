@@ -248,7 +248,9 @@ def _set_centers_and_offsets(
         counterclockwise = not clockwise
         invert = -1.0 if counterclockwise else 1.0
         offsets[j + counterclockwise] = invert * miter
-        offsets[j + clockwise] = 0.5 * _orthogonal_vector(vec1, ccw=counterclockwise)
+        offsets[j + clockwise] = 0.5 * _orthogonal_vector(
+            vec1, ccw=counterclockwise
+        )
         offsets[j + 2] = 0.5 * _orthogonal_vector(vec2, ccw=counterclockwise)
         triangles[j] = [j, j + 1, j + 2]
         triangles[j + 1] = [j + counterclockwise, j + 2, j + 3]
@@ -519,9 +521,13 @@ def generate_2D_edge_meshes(
     # https://github.com/napari/napari/pull/7268#user-content-bevel-limit
     cos_limit = 1 / (2 * (limit / 2) ** 2) - 1.0
 
-    direction_vectors, bevel_limit_array = _direction_vec_and_half_length(path, closed)
+    direction_vectors, bevel_limit_array = _direction_vec_and_half_length(
+        path, closed
+    )
 
-    point_count = _calc_output_size(direction_vectors, closed, cos_limit, bevel)
+    point_count = _calc_output_size(
+        direction_vectors, closed, cos_limit, bevel
+    )
 
     centers = np.empty((point_count, 2), dtype=np.float32)
     offsets = np.empty((point_count, 2), dtype=np.float32)

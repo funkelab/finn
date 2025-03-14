@@ -33,7 +33,9 @@ def reader_dialog(qtbot):
 
 
 def test_reader_dialog_buttons(reader_dialog):
-    widg = reader_dialog(readers={'display name': 'plugin-name', 'display 2': 'plugin2'})
+    widg = reader_dialog(
+        readers={'display name': 'plugin-name', 'display 2': 'plugin2'}
+    )
     assert len(widg.findChildren(QRadioButton)) == 2
 
 
@@ -153,7 +155,9 @@ def test_open_sample_data_shows_all_readers(
     # required so setup steps run in init of `Viewer` and `Window`
     viewer = make_napari_viewer()
     # Ensure that `handle_gui_reading`` is not passed the sample plugin name
-    with mock.patch('finn._qt.dialogs.qt_reader_dialog.handle_gui_reading') as mock_read:
+    with mock.patch(
+        'finn._qt.dialogs.qt_reader_dialog.handle_gui_reading'
+    ) as mock_read:
         app.commands.execute_command('tmp_plugin:tmp-sample')
 
     mock_read.assert_called_once_with(
@@ -187,7 +191,9 @@ def test_open_with_dialog_choices_persist(builtins, tmp_path, qtbot):
 
 def test_open_with_dialog_choices_persist_dir(builtins, tmp_path, qtbot):
     pth = tmp_path / 'data.zarr'
-    z = zarr.open(store=str(pth), mode='w', shape=(10, 10), chunks=(5, 5), dtype='f4')
+    z = zarr.open(
+        store=str(pth), mode='w', shape=(10, 10), chunks=(5, 5), dtype='f4'
+    )
     z[:] = np.random.random((10, 10))
 
     viewer = ViewerModel()
@@ -205,7 +211,10 @@ def test_open_with_dialog_choices_persist_dir(builtins, tmp_path, qtbot):
     )
     assert len(viewer.layers) == 1
     # make sure extension was saved without * and with trailing slash
-    assert get_settings().plugins.extension2reader[f'{pth}{os.sep}'] == builtins.name
+    assert (
+        get_settings().plugins.extension2reader[f'{pth}{os.sep}']
+        == builtins.name
+    )
 
 
 def test_open_with_dialog_choices_raises(make_napari_viewer):

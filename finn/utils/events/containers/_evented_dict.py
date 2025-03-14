@@ -1,6 +1,7 @@
 """MutableMapping that emits events when altered."""
 
 from collections.abc import Mapping, Sequence
+from typing import Optional, Union
 
 from finn.utils.events.containers._dict import _K, _T, TypedMutableMapping
 from finn.utils.events.event import EmitterGroup, Event
@@ -46,8 +47,8 @@ class EventedDict(TypedMutableMapping[_K, _T]):
 
     def __init__(
         self,
-        data: Mapping[_K, _T] | None = None,
-        basetype: type[_T] | Sequence[type[_T]] = (),
+        data: Optional[Mapping[_K, _T]] = None,
+        basetype: Union[type[_T], Sequence[type[_T]]] = (),
     ) -> None:
         _events = {
             'changing': None,
@@ -63,7 +64,9 @@ class EventedDict(TypedMutableMapping[_K, _T]):
             self.events.add(**_events)
         else:
             # otherwise create a new one
-            self.events = EmitterGroup(source=self, auto_connect=False, **_events)
+            self.events = EmitterGroup(
+                source=self, auto_connect=False, **_events
+            )
         super().__init__(data, basetype)
 
     def __setitem__(self, key: _K, value: _T) -> None:
@@ -107,7 +110,7 @@ class EventedDict(TypedMutableMapping[_K, _T]):
                 child.events.source = child
             child.events.connect(self._reemit_child_event)
 
-    def key(self, value: _T) -> _K | None:
+    def key(self, value: _T) -> Optional[_K]:
         """Return first instance of value."""
         for k, v in self._dict.items():
             if v is value or v == value:

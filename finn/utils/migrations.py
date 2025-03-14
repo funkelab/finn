@@ -1,9 +1,8 @@
 import inspect
 import warnings
 from collections import UserDict
-from collections.abc import Callable
 from functools import wraps
-from typing import Any, NamedTuple
+from typing import Any, Callable, NamedTuple
 
 from finn.utils.translations import trans
 

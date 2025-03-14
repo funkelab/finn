@@ -68,7 +68,9 @@ Q_DEBUG_ACTIONS: list[Action] = [
         id='finn.window.debug.start_trace_dialog',
         title=trans._('Start Recording...'),
         callback=_start_trace_dialog,
-        menus=[{'id': MenuId.DEBUG_PERFORMANCE, 'group': MenuGroup.NAVIGATION}],
+        menus=[
+            {'id': MenuId.DEBUG_PERFORMANCE, 'group': MenuGroup.NAVIGATION}
+        ],
         keybindings=[{'primary': KeyMod.Alt | KeyCode.KeyT}],
         enablement='not is_set_trace_active',
         status_tip=trans._('Start recording a trace file'),
@@ -77,7 +79,9 @@ Q_DEBUG_ACTIONS: list[Action] = [
         id='finn.window.debug.stop_trace',
         title=trans._('Stop Recording...'),
         callback=_stop_trace,
-        menus=[{'id': MenuId.DEBUG_PERFORMANCE, 'group': MenuGroup.NAVIGATION}],
+        menus=[
+            {'id': MenuId.DEBUG_PERFORMANCE, 'group': MenuGroup.NAVIGATION}
+        ],
         keybindings=[{'primary': KeyMod.Alt | KeyMod.Shift | KeyCode.KeyT}],
         enablement='is_set_trace_active',
         status_tip=trans._('Stop recording a trace file'),

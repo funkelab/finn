@@ -1,4 +1,5 @@
-from collections.abc import Callable, Generator
+from collections.abc import Generator
+from typing import Callable
 
 import numpy as np
 from app_model.types import KeyCode
@@ -185,7 +186,9 @@ def move_shapes_selection_to_back(layer: Shapes) -> None:
 
 
 @register_shapes_action(
-    trans._('Finish any drawing, for example when using the path or polygon tool'),
+    trans._(
+        'Finish any drawing, for example when using the path or polygon tool'
+    ),
 )
 def finish_drawing_shape(layer: Shapes) -> None:
     """Finish any drawing, for example when using the path or polygon tool."""

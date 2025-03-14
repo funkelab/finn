@@ -195,7 +195,9 @@ def test_dask_local_unoptimized_slicing(delayed_dask_stack, monkeypatch):
     resize_dask_cache(0)
     assert _dask_utils._DASK_CACHE.cache.available_bytes == 0
 
-    monkeypatch.setattr(layers.base.base, 'configure_dask', lambda *_: nullcontext)
+    monkeypatch.setattr(
+        layers.base.base, 'configure_dask', lambda *_: nullcontext
+    )
 
     # add dask stack to viewer.
     v = ViewerModel()

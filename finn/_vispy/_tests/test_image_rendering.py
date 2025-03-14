@@ -63,7 +63,9 @@ def test_visibility_consistency(qapp, make_napari_viewer):
     """
     viewer = make_napari_viewer(show=True)
 
-    layer = viewer.add_image(np.random.random((200, 200)), contrast_limits=[0, 10])
+    layer = viewer.add_image(
+        np.random.random((200, 200)), contrast_limits=[0, 10]
+    )
     qapp.processEvents()
     layer.contrast_limits = (0, 2)
     screen1 = viewer.screenshot(flash=False).astype('float')
@@ -81,7 +83,9 @@ def test_clipping_planes_dims():
         'position': (1, 2, 3),
         'normal': (1, 2, 3),
     }
-    image_layer = Image(np.zeros((2, 2, 2)), experimental_clipping_planes=clipping_planes)
+    image_layer = Image(
+        np.zeros((2, 2, 2)), experimental_clipping_planes=clipping_planes
+    )
     vispy_layer = VispyImageLayer(image_layer)
     napari_clip = image_layer.experimental_clipping_planes.as_array()
     # needed to get volume node

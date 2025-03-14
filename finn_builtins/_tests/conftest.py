@@ -21,7 +21,9 @@ def mock_npe2_pm():
 @pytest.fixture(autouse=True)
 def use_builtins(mock_npe2_pm: PluginManager):
     plugin = DynamicPlugin('napari', plugin_manager=mock_npe2_pm)
-    mf = PluginManifest.from_file(Path(finn_builtins.__file__).parent / 'builtins.yaml')
+    mf = PluginManifest.from_file(
+        Path(finn_builtins.__file__).parent / 'builtins.yaml'
+    )
     plugin.manifest = mf
     with plugin:
         yield plugin
@@ -31,7 +33,9 @@ LAYERS: list[layers.Layer] = [
     layers.Image(np.random.rand(10, 10)),
     layers.Labels(np.random.randint(0, 16000, (32, 32), 'uint64')),
     layers.Points(np.random.rand(20, 2)),
-    layers.Points(np.random.rand(20, 2), properties={'values': np.random.rand(20)}),
+    layers.Points(
+        np.random.rand(20, 2), properties={'values': np.random.rand(20)}
+    ),
     layers.Shapes(
         [
             [(0, 0), (1, 1)],

@@ -4,6 +4,7 @@ File with things that are useful for testing, but not to be fixtures
 
 import inspect
 from dataclasses import dataclass, field
+from typing import Optional, Union
 
 import numpy as np
 from docstring_parser import parse
@@ -18,20 +19,24 @@ class MouseEvent:
     type: str
     is_dragging: bool = False
     modifiers: list[str] = field(default_factory=list)
-    position: tuple[int, int] | tuple[int, int, int] = (
+    position: Union[tuple[int, int], tuple[int, int, int]] = (
         0,
         0,
     )  # world coords
-    pos: np.ndarray = field(default_factory=lambda: np.zeros(2))  # canvas coords
-    view_direction: list[float] | None = None
-    up_direction: list[float] | None = None
+    pos: np.ndarray = field(
+        default_factory=lambda: np.zeros(2)
+    )  # canvas coords
+    view_direction: Optional[list[float]] = None
+    up_direction: Optional[list[float]] = None
     dims_displayed: list[int] = field(default_factory=lambda: [0, 1])
-    delta: tuple[float, float] | None = None
-    native: bool | None = None
+    delta: Optional[tuple[float, float]] = None
+    native: Optional[bool] = None
 
 
 def read_only_mouse_event(*args, **kwargs):
-    return ReadOnlyWrapper(MouseEvent(*args, **kwargs), exceptions=('handled',))
+    return ReadOnlyWrapper(
+        MouseEvent(*args, **kwargs), exceptions=('handled',)
+    )
 
 
 def validate_all_params_in_docstring(func):
@@ -48,7 +53,7 @@ def validate_all_params_in_docstring(func):
     assert set(signature.parameters.keys()) == {x.arg_name for x in params}, (
         'Parameters in signature and docstring do not match'
     )
-    for sig, doc in zip(signature.parameters.values(), params, strict=False):
+    for sig, doc in zip(signature.parameters.values(), params):
         assert sig.name == doc.arg_name, (
             'Parameters in signature and docstring are not in the same order.'
         )

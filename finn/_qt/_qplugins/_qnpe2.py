@@ -11,6 +11,8 @@ from itertools import chain
 from typing import (
     TYPE_CHECKING,
     Any,
+    Optional,
+    Union,
     cast,
 )
 
@@ -131,7 +133,9 @@ def _rebuild_npe1_plugins_menu() -> None:
 
     widget_actions: list[Action] = []
     widget_submenus: list[Any] = []
-    for hook_type, (plugin_name, widgets) in chain(plugin_manager.iter_widgets()):
+    for hook_type, (plugin_name, widgets) in chain(
+        plugin_manager.iter_widgets()
+    ):
         multiprovider = len(widgets) > 1
         if multiprovider:
             submenu_id = f'napari/plugins/{plugin_name}'
@@ -172,7 +176,9 @@ def _rebuild_npe1_plugins_menu() -> None:
                     }
                 ],
                 callback=_widget_callback,
-                toggled=ToggleRule(get_current=_get_current_dock_status_partial),
+                toggled=ToggleRule(
+                    get_current=_get_current_dock_status_partial
+                ),
             )
             widget_actions.append(action)
 
@@ -188,7 +194,7 @@ def _get_contrib_parent_menu(
     multiprovider: bool,
     parent_menu: MenuId,
     mf: PluginManifest,
-    group: str | None = None,
+    group: Optional[str] = None,
 ) -> tuple[str, list[tuple[str, SubmenuItem]]]:
     """Get parent menu of plugin contribution (samples/widgets).
 
@@ -257,7 +263,9 @@ def _build_samples_submenu_actions(
         if multiprovider:
             title = sample.display_name
         else:
-            title = menu_item_template.format(mf.display_name, sample.display_name)
+            title = menu_item_template.format(
+                mf.display_name, sample.display_name
+            )
         # To display '&' instead of creating a shortcut
         title = title.replace('&', '&&')
 
@@ -271,7 +279,9 @@ def _build_samples_submenu_actions(
     return submenu, sample_actions
 
 
-def _get_widget_viewer_param(widget_callable: WidgetCreator, widget_name: str) -> str:
+def _get_widget_viewer_param(
+    widget_callable: WidgetCreator, widget_name: str
+) -> str:
     """Get widget parameter name for `viewer` (if any) and check type."""
     if inspect.isclass(widget_callable) and issubclass(
         widget_callable,
@@ -295,7 +305,9 @@ def _get_widget_viewer_param(widget_callable: WidgetCreator, widget_name: str) -
 
     # For magicgui type widget contributions, `Viewer` injection is done by
     # `magicgui.register_type`.
-    elif isinstance(widget_callable, MagicFactory) or inspect.isfunction(widget_callable):
+    elif isinstance(widget_callable, MagicFactory) or inspect.isfunction(
+        widget_callable
+    ):
         widget_param = ''
     else:
         raise TypeError(
@@ -312,7 +324,7 @@ def _toggle_or_get_widget(
     plugin: str,
     widget_name: str,
     full_name: str,
-) -> tuple[FunctionGui | QWidget | Widget, str] | None:
+) -> Optional[tuple[Union[FunctionGui, QWidget, Widget], str]]:
     """Toggle if widget already built otherwise return widget.
 
     Returned widget will be added to main window by a processor.
@@ -413,7 +425,9 @@ def _build_widgets_submenu_actions(
                 title=title,
                 callback=_widget_callback,
                 menus=action_menus,
-                toggled=ToggleRule(get_current=_get_current_dock_status_partial),
+                toggled=ToggleRule(
+                    get_current=_get_current_dock_status_partial
+                ),
             )
         )
     return default_submenu, widget_actions

@@ -6,7 +6,9 @@ import zarr
 
 from finn.layers import Image
 
-data_dask = da.random.random(size=(100_000, 1000, 1000), chunks=(1, 1000, 1000))
+data_dask = da.random.random(
+    size=(100_000, 1000, 1000), chunks=(1, 1000, 1000)
+)
 data_zarr = zarr.zeros((100_000, 1000, 1000))
 
 
@@ -25,7 +27,9 @@ def test_timing_fast_big_dask(data, kwargs):
     now = time.monotonic()
     assert Image(data, **kwargs).data.shape == data.shape
     elapsed = time.monotonic() - now
-    assert elapsed < 2, 'Test took to long some computation are likely not lazy'
+    assert elapsed < 2, (
+        'Test took to long some computation are likely not lazy'
+    )
 
 
 def test_non_visible_images():

@@ -31,7 +31,9 @@ class Extension2ReaderTable(QWidget):
 
     valueChanged = Signal(int)
 
-    def __init__(self, parent=None, npe2_readers=None, npe1_readers=None) -> None:
+    def __init__(
+        self, parent=None, npe2_readers=None, npe1_readers=None
+    ) -> None:
         super().__init__(parent=parent)
 
         npe2, npe1 = get_all_readers()
@@ -58,7 +60,9 @@ class Extension2ReaderTable(QWidget):
         instructions.setOpenExternalLinks(True)
 
         layout = QVBoxLayout()
-        instructions.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Expanding)
+        instructions.setSizePolicy(
+            QSizePolicy.MinimumExpanding, QSizePolicy.Expanding
+        )
         layout.addWidget(instructions)
         layout.addWidget(self._edit_row)
         layout.addWidget(self._table)
@@ -76,7 +80,9 @@ class Extension2ReaderTable(QWidget):
         self._table.setColumnWidth(self._reader_col, 200)
         self._table.verticalHeader().setVisible(False)
         self._table.setMinimumHeight(120)
-        self._table.horizontalHeader().setStyleSheet('border-bottom: 2px solid white;')
+        self._table.horizontalHeader().setStyleSheet(
+            'border-bottom: 2px solid white;'
+        )
         self._table.setHorizontalHeaderLabels(header_strs)
         self._table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
@@ -101,7 +107,9 @@ class Extension2ReaderTable(QWidget):
         self._fn_pattern_edit.setPlaceholderText(
             trans._('Start typing filename pattern...')
         )
-        self._fn_pattern_edit.textChanged.connect(self._filter_compatible_readers)
+        self._fn_pattern_edit.textChanged.connect(
+            self._filter_compatible_readers
+        )
 
         add_reader_widg = QWidget()
         add_reader_widg.setLayout(QHBoxLayout())
@@ -177,7 +185,9 @@ class Extension2ReaderTable(QWidget):
 
         readers.update(self._npe1_readers)
 
-        for i, (plugin_name, display_name) in enumerate(sorted(readers.items())):
+        for i, (plugin_name, display_name) in enumerate(
+            sorted(readers.items())
+        ):
             self._add_reader_choice(i, plugin_name, display_name)
         if self._new_reader_dropdown.count() == 0:
             self._new_reader_dropdown.addItem(trans._('None available'))
@@ -216,7 +226,8 @@ class Extension2ReaderTable(QWidget):
 
         if (
             last_row == 1
-            and 'No filename preferences found' in self._table.item(0, 0).text()
+            and 'No filename preferences found'
+            in self._table.item(0, 0).text()
         ):
             self._table.removeRow(0)
             last_row = 0
@@ -260,7 +271,9 @@ class Extension2ReaderTable(QWidget):
         }
 
         for i in range(self._table.rowCount()):
-            row_widg_name = self._table.cellWidget(i, self._reader_col).objectName()
+            row_widg_name = self._table.cellWidget(
+                i, self._reader_col
+            ).objectName()
             if row_widg_name == pattern_to_remove:
                 self._table.removeRow(i)
                 break

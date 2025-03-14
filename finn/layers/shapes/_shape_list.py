@@ -2,7 +2,7 @@ import typing
 from collections.abc import Generator, Iterable, Sequence
 from contextlib import contextmanager
 from functools import cached_property, wraps
-from typing import Literal
+from typing import Literal, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -84,7 +84,9 @@ class ShapeList:
         be rendered.
     """
 
-    def __init__(self, data: typing.Iterable[Shape] = (), ndisplay: int = 2) -> None:
+    def __init__(
+        self, data: typing.Iterable[Shape] = (), ndisplay: int = 2
+    ) -> None:
         self._ndisplay = ndisplay
         self.shapes: list[Shape] = []
         self._displayed = np.array([])
@@ -202,7 +204,9 @@ class ShapeList:
         self._set_color(face_color, 'face')
 
     @_batch_dec
-    def _set_color(self, colors: npt.NDArray, attribute: Literal['edge', 'face']) -> None:
+    def _set_color(
+        self, colors: npt.NDArray, attribute: Literal['edge', 'face']
+    ) -> None:
         """Set the face_color or edge_color property
 
         Parameters
@@ -282,14 +286,18 @@ class ShapeList:
         disp_indices = np.where(self._displayed)[0]
 
         z_order = self._mesh.triangles_z_order
-        disp_tri = np.isin(self._mesh.triangles_index[z_order, 0], disp_indices)
-        self._mesh.displayed_triangles = self._mesh.triangles[z_order][disp_tri]
-        self._mesh.displayed_triangles_index = self._mesh.triangles_index[z_order][
+        disp_tri = np.isin(
+            self._mesh.triangles_index[z_order, 0], disp_indices
+        )
+        self._mesh.displayed_triangles = self._mesh.triangles[z_order][
             disp_tri
         ]
-        self._mesh.displayed_triangles_colors = self._mesh.triangles_colors[z_order][
-            disp_tri
-        ]
+        self._mesh.displayed_triangles_index = self._mesh.triangles_index[
+            z_order
+        ][disp_tri]
+        self._mesh.displayed_triangles_colors = self._mesh.triangles_colors[
+            z_order
+        ][disp_tri]
 
         disp_vert = np.isin(self._index, disp_indices)
         self.displayed_vertices = self._vertices[disp_vert]
@@ -297,7 +305,7 @@ class ShapeList:
 
     def add(
         self,
-        shape: Shape | Sequence[Shape],
+        shape: Union[Shape, Sequence[Shape]],
         face_color=None,
         edge_color=None,
         shape_index=None,
@@ -417,7 +425,9 @@ class ShapeList:
             else:
                 self._edge_color[shape_index, :] = edge_color
 
-        self._vertices = np.append(self._vertices, shape.data_displayed, axis=0)
+        self._vertices = np.append(
+            self._vertices, shape.data_displayed, axis=0
+        )
         index = np.repeat(shape_index, len(shape.data))
         self._index = np.append(self._index, index, axis=0)
 
@@ -434,12 +444,18 @@ class ShapeList:
             self._mesh.vertices_offsets, vertices, axis=0
         )
         index = np.repeat([[shape_index, 0]], len(vertices), axis=0)
-        self._mesh.vertices_index = np.append(self._mesh.vertices_index, index, axis=0)
+        self._mesh.vertices_index = np.append(
+            self._mesh.vertices_index, index, axis=0
+        )
 
         triangles = shape._face_triangles + m
-        self._mesh.triangles = np.append(self._mesh.triangles, triangles, axis=0)
+        self._mesh.triangles = np.append(
+            self._mesh.triangles, triangles, axis=0
+        )
         index = np.repeat([[shape_index, 0]], len(triangles), axis=0)
-        self._mesh.triangles_index = np.append(self._mesh.triangles_index, index, axis=0)
+        self._mesh.triangles_index = np.append(
+            self._mesh.triangles_index, index, axis=0
+        )
         color_array = np.repeat([face_color], len(triangles), axis=0)
         self._mesh.triangles_colors = np.append(
             self._mesh.triangles_colors, color_array, axis=0
@@ -447,7 +463,9 @@ class ShapeList:
 
         # Add edges to mesh
         m = len(self._mesh.vertices)
-        vertices = shape._edge_vertices + shape.edge_width * shape._edge_offsets
+        vertices = (
+            shape._edge_vertices + shape.edge_width * shape._edge_offsets
+        )
         self._mesh.vertices = np.append(self._mesh.vertices, vertices, axis=0)
         vertices = shape._edge_vertices
         self._mesh.vertices_centers = np.append(
@@ -458,12 +476,18 @@ class ShapeList:
             self._mesh.vertices_offsets, vertices, axis=0
         )
         index = np.repeat([[shape_index, 1]], len(vertices), axis=0)
-        self._mesh.vertices_index = np.append(self._mesh.vertices_index, index, axis=0)
+        self._mesh.vertices_index = np.append(
+            self._mesh.vertices_index, index, axis=0
+        )
 
         triangles = shape._edge_triangles + m
-        self._mesh.triangles = np.append(self._mesh.triangles, triangles, axis=0)
+        self._mesh.triangles = np.append(
+            self._mesh.triangles, triangles, axis=0
+        )
         index = np.repeat([[shape_index, 1]], len(triangles), axis=0)
-        self._mesh.triangles_index = np.append(self._mesh.triangles_index, index, axis=0)
+        self._mesh.triangles_index = np.append(
+            self._mesh.triangles_index, index, axis=0
+        )
         color_array = np.repeat([edge_color], len(triangles), axis=0)
         self._mesh.triangles_colors = np.append(
             self._mesh.triangles_colors, color_array, axis=0
@@ -549,7 +573,7 @@ class ShapeList:
             )
 
         for shape, face_color, edge_color in zip(
-            shapes, face_colors, edge_colors, strict=False
+            shapes, face_colors, edge_colors
         ):
             shape_index = len(self.shapes)
             self.shapes.append(shape)
@@ -580,7 +604,9 @@ class ShapeList:
             # Add edges to mesh
             m_tmp = m_mesh_vertices_count
 
-            vertices = shape._edge_vertices + shape.edge_width * shape._edge_offsets
+            vertices = (
+                shape._edge_vertices + shape.edge_width * shape._edge_offsets
+            )
             all_mesh_vertices.append(vertices)
             m_mesh_vertices_count += len(vertices)
 
@@ -679,7 +705,9 @@ class ShapeList:
         num_indices = len(indices)
         if num_indices > 0:
             indices = self._mesh.triangles > indices[0]
-            self._mesh.triangles[indices] = self._mesh.triangles[indices] - num_indices
+            self._mesh.triangles[indices] = (
+                self._mesh.triangles[indices] - num_indices
+            )
 
         if renumber:
             del self.shapes[index]
@@ -750,7 +778,9 @@ class ShapeList:
             self._mesh.triangles_z_order = np.concatenate(triangles_z_order)
         self._update_displayed()
 
-    def edit(self, index, data, face_color=None, edge_color=None, new_type=None):
+    def edit(
+        self, index, data, face_color=None, edge_color=None, new_type=None
+    ):
         """Updates the data of a single shape located at index. If
         `new_type` is not None then converts the shape type to the new type
 
@@ -996,7 +1026,7 @@ class ShapeList:
         self._clear_cache()
 
     def outline(
-        self, indices: int | Sequence[int]
+        self, indices: Union[int, Sequence[int]]
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Finds outlines of shapes listed in indices
 
@@ -1048,9 +1078,11 @@ class ShapeList:
         shapes_list = [self.shapes[i] for i in indices]
         offsets = np.vstack([s._edge_offsets for s in shapes_list])
         centers = np.vstack([s._edge_vertices for s in shapes_list])
-        vert_count = np.cumsum([0] + [len(s._edge_vertices) for s in shapes_list])
+        vert_count = np.cumsum(
+            [0] + [len(s._edge_vertices) for s in shapes_list]
+        )
         triangles = np.vstack(
-            [s._edge_triangles + c for s, c in zip(shapes_list, vert_count, strict=False)]
+            [s._edge_triangles + c for s, c in zip(shapes_list, vert_count)]
         )
 
         return centers, offsets, triangles
@@ -1123,7 +1155,9 @@ class ShapeList:
         if inside_indices.size == 0:
             return None
         try:
-            z_index = [self._visible_shapes[i][1].z_index for i in inside_indices]
+            z_index = [
+                self._visible_shapes[i][1].z_index for i in inside_indices
+            ]
             pos = np.argsort(z_index)
             return self._visible_shapes[
                 next(
@@ -1131,7 +1165,9 @@ class ShapeList:
                     for p in pos[::-1]
                     if np.any(
                         inside_triangles(
-                            self._visible_shapes[inside_indices[p]][1]._all_triangles()
+                            self._visible_shapes[inside_indices[p]][
+                                1
+                            ]._all_triangles()
                             - coord
                         )
                     )
@@ -1291,7 +1327,9 @@ class ShapeList:
 
         return labels
 
-    def to_colors(self, colors_shape=None, zoom_factor=1, offset=(0, 0), max_shapes=None):
+    def to_colors(
+        self, colors_shape=None, zoom_factor=1, offset=(0, 0), max_shapes=None
+    ):
         """Rasterize shapes to an RGBA image array.
 
         Each shape is embedded in an array of shape `colors_shape` with the

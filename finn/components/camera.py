@@ -1,4 +1,5 @@
 import warnings
+from typing import Optional, Union
 
 import numpy as np
 from scipy.spatial.transform import Rotation as R
@@ -37,7 +38,7 @@ class Camera(EventedModel):
     """
 
     # fields
-    center: tuple[float, float, float] | tuple[float, float] = (
+    center: Union[tuple[float, float, float], tuple[float, float]] = (
         0.0,
         0.0,
         0.0,
@@ -146,12 +147,14 @@ class Camera(EventedModel):
 
         # construct rotation matrix, convert to euler angles
         rotation_matrix = np.column_stack((up_vector, view_vector, x_vector))
-        euler_angles = R.from_matrix(rotation_matrix).as_euler(seq='yzx', degrees=True)
+        euler_angles = R.from_matrix(rotation_matrix).as_euler(
+            seq='yzx', degrees=True
+        )
         self.angles = euler_angles
 
     def calculate_nd_view_direction(
         self, ndim: int, dims_displayed: tuple[int, ...]
-    ) -> np.ndarray | None:
+    ) -> Optional[np.ndarray]:
         """Calculate the nD view direction vector of the camera.
 
         Parameters
@@ -174,7 +177,7 @@ class Camera(EventedModel):
 
     def calculate_nd_up_direction(
         self, ndim: int, dims_displayed: tuple[int, ...]
-    ) -> np.ndarray | None:
+    ) -> Optional[np.ndarray]:
         """Calculate the nD up direction vector of the camera.
 
         Parameters

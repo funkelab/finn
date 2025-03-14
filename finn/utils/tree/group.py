@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Generator, Iterable
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, TypeVar, Union
 
 from finn.utils.events.containers._selectable_list import (
     SelectableNestableEventedList,
@@ -71,7 +71,7 @@ class Group(Node, SelectableNestableEventedList[NodeType]):
         new._list.extend(iterable)
         return new
 
-    def __getitem__(self, key) -> NodeType | Group[NodeType]:
+    def __getitem__(self, key) -> Union[NodeType, Group[NodeType]]:
         return super().__getitem__(key)
 
     def __delitem__(self, key: MaybeNestedIndex):
@@ -111,7 +111,9 @@ class Group(Node, SelectableNestableEventedList[NodeType]):
         lines = [self._node_name()]
 
         for n, child in enumerate(self):
-            spacer, bul = ('   ', '└──') if n == len(self) - 1 else ('  │', '├──')
+            spacer, bul = (
+                ('   ', '└──') if n == len(self) - 1 else ('  │', '├──')
+            )
             child_tree = child._render()
             lines.append(f'  {bul}' + child_tree.pop(0))
             lines.extend([spacer + lay for lay in child_tree])

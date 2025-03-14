@@ -19,7 +19,9 @@ def test_cant_overwrite_source():
         points = Points()
     assert points.source == Source(path='some_path', reader_plugin='napari')
     with pytest.raises(ValueError, match='Tried to set source on layer'):
-        points._set_source(Source(path='other_path', reader_plugin='other_plugin'))
+        points._set_source(
+            Source(path='other_path', reader_plugin='other_plugin')
+        )
 
 
 def test_source_context():
@@ -47,7 +49,9 @@ def test_source_context():
 
         point = Points()
         with layer_source(parent=point):
-            assert current_source() == Source(sample=('samp', 'name'), parent=point)
+            assert current_source() == Source(
+                sample=('samp', 'name'), parent=point
+            )
     assert current_source() == Source()
 
 

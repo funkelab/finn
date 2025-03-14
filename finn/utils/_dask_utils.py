@@ -2,8 +2,8 @@
 
 import collections.abc
 import contextlib
-from collections.abc import Callable, Iterator
-from typing import Any
+from collections.abc import Iterator
+from typing import Any, Callable, Optional
 
 import dask
 import dask.array as da
@@ -16,11 +16,13 @@ from dask.cache import Cache
 _DASK_CACHE = Cache(1)
 _DEFAULT_MEM_FRACTION = 0.25
 
-DaskIndexer = Callable[[], contextlib.AbstractContextManager[tuple[dict, Cache] | None]]
+DaskIndexer = Callable[
+    [], contextlib.AbstractContextManager[Optional[tuple[dict, Cache]]]
+]
 
 
 def resize_dask_cache(
-    nbytes: int | None = None, mem_fraction: float | None = None
+    nbytes: Optional[int] = None, mem_fraction: Optional[float] = None
 ) -> Cache:
     """Create or resize the dask cache used for opportunistic caching.
 

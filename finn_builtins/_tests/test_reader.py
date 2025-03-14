@@ -1,5 +1,5 @@
-from collections.abc import Callable
 from pathlib import Path
+from typing import Callable, Optional
 
 import imageio.v3 as iio
 import npe2
@@ -14,7 +14,7 @@ from finn_builtins.io._write import write_csv
 def save_image(tmp_path: Path):
     """Create a temporary file."""
 
-    def _save(filename: str, data: np.ndarray | None = None):
+    def _save(filename: str, data: Optional[np.ndarray] = None):
         dest = tmp_path / filename
         data_: np.ndarray = np.random.rand(20, 20) if data is None else data
         if filename.endswith(('png', 'jpg')):
@@ -34,7 +34,9 @@ def save_image(tmp_path: Path):
 @pytest.mark.parametrize('stack', [False, True])
 def test_reader_plugin_tif(save_image: Callable[..., Path], ext, stack):
     """Test the builtin reader plugin reads a temporary file."""
-    files = [str(save_image(f'test_{i}{ext}')) for i in range(5 if stack else 1)]
+    files = [
+        str(save_image(f'test_{i}{ext}')) for i in range(5 if stack else 1)
+    ]
     layer_data = npe2.read(files, stack=stack)
     assert isinstance(layer_data, list)
     assert len(layer_data) == 1
@@ -51,7 +53,9 @@ def test_animated_gif_reader(save_image):
 
 @pytest.mark.slow
 def test_reader_plugin_url():
-    layer_data = npe2.read(['https://samples.fiji.sc/FakeTracks.tif'], stack=False)
+    layer_data = npe2.read(
+        ['https://samples.fiji.sc/FakeTracks.tif'], stack=False
+    )
     assert isinstance(layer_data, list)
     assert len(layer_data) == 1
     assert isinstance(layer_data[0], tuple)

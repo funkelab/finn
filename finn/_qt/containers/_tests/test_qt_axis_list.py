@@ -46,7 +46,9 @@ def test_AxisList():
 def test_QtAxisListModel_data(qtbot):
     dims, axislist, listview, axislistmodel = make_QtAxisListModel(qtbot)
     assert all(
-        axislistmodel.data(axislistmodel.index(idx), role=Qt.ItemDataRole.DisplayRole)
+        axislistmodel.data(
+            axislistmodel.index(idx), role=Qt.ItemDataRole.DisplayRole
+        )
         == axislist[idx]
         for idx in dims.order
     )
@@ -90,7 +92,9 @@ def test_QtAxisListModel_data(qtbot):
 def test_QtAxisListModel_flags(qtbot):
     dims, axislist, listview, axislistmodel = make_QtAxisListModel(qtbot)
     assert axislistmodel.flags(QModelIndex()) == Qt.ItemFlag.ItemIsDropEnabled
-    flags = [axislistmodel.flags(axislistmodel.index(idx)) for idx in dims.order]
+    flags = [
+        axislistmodel.flags(axislistmodel.index(idx)) for idx in dims.order
+    ]
     ref_flags = [FLAGS for idx in dims.order]
     assert flags == ref_flags
 

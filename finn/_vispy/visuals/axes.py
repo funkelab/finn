@@ -141,7 +141,9 @@ class Axes(Compound):
         self._text_offsets = 0.1 * np.array([1, 1, 1])
 
         # note order is x, y, z for VisPy
-        self._line_data2D = np.array([[0, 0, 0], [1, 0, 0], [0, 0, 0], [0, 1, 0]])
+        self._line_data2D = np.array(
+            [[0, 0, 0], [1, 0, 0], [0, 0, 0], [0, 1, 0]]
+        )
         self._line_data3D = np.array(
             [[0, 0, 0], [1, 0, 0], [0, 0, 0], [0, 1, 0], [0, 0, 0], [0, 0, 1]]
         )
@@ -210,7 +212,8 @@ class Axes(Compound):
         # Determine colors of axes based on reverse position
         if colored:
             axes_colors = [
-                self._default_color[ra % len(self._default_color)] for ra in reversed_axes
+                self._default_color[ra % len(self._default_color)]
+                for ra in reversed_axes
             ]
         else:
             # the reason for using the `as_hex` here is to avoid
@@ -249,11 +252,15 @@ class Axes(Compound):
         if arrows and ndisplay == 2:
             arrow_vertices = self._default_arrow_vertices2D
             arrow_faces = self._default_arrow_faces2D
-            arrow_color = color_arrowheads(axes_colors, self._num_segments_arrowhead)
+            arrow_color = color_arrowheads(
+                axes_colors, self._num_segments_arrowhead
+            )
         elif arrows and ndisplay == 3:
             arrow_vertices = self._default_arrow_vertices3D
             arrow_faces = self._default_arrow_faces3D
-            arrow_color = color_arrowheads(axes_colors, self._num_segments_arrowhead)
+            arrow_color = color_arrowheads(
+                axes_colors, self._num_segments_arrowhead
+            )
         else:
             arrow_vertices = np.zeros((3, 3))
             arrow_faces = np.array([[0, 1, 2]])

@@ -4,6 +4,7 @@ import contextlib
 import os
 from collections.abc import Generator
 from time import perf_counter_ns
+from typing import Optional, Union
 
 from finn.utils.perf._event import PerfEvent
 from finn.utils.perf._stat import Stat
@@ -50,7 +51,7 @@ class PerfTimers:
         self.timers: dict[str, Stat] = {}
 
         # Menu item "Debug -> Record Trace File..." starts a trace.
-        self.trace_file: PerfTraceFile | None = None
+        self.trace_file: Optional[PerfTraceFile] = None
 
     def add_event(self, event: PerfEvent) -> None:
         """Save an event to performance trace file and
@@ -78,9 +79,9 @@ class PerfTimers:
         self,
         name: str,
         *,
-        category: str | None = None,
-        process_id: int | None = None,
-        thread_id: int | None = None,
+        category: Optional[str] = None,
+        process_id: Optional[int] = None,
+        thread_id: Optional[int] = None,
         **kwargs: float,
     ) -> None:
         """Build and add one event of length 0.
@@ -166,11 +167,11 @@ class PerfTimers:
 @contextlib.contextmanager
 def block_timer(
     name: str,
-    category: str | None = None,
+    category: Optional[str] = None,
     print_time: bool = False,
     *,
-    process_id: int | None = None,
-    thread_id: int | None = None,
+    process_id: Optional[int] = None,
+    thread_id: Optional[int] = None,
     phase: str = 'X',
     **kwargs: float,
 ) -> Generator[PerfEvent, None, None]:
@@ -240,7 +241,9 @@ class DummyTimer:
     def __init__(self) -> None:
         self.trace_file = None
 
-    def add_instant_event(self, name: str, **kwargs: str | float | None) -> None:
+    def add_instant_event(
+        self, name: str, **kwargs: Union[str, float, None]
+    ) -> None:
         """empty timer to use when perfmon is disabled"""
 
     def add_counter_event(self, name: str, **kwargs: float) -> None:
@@ -259,9 +262,9 @@ class DummyTimer:
 def add_instant_event(
     name: str,
     *,
-    category: str | None = None,
-    process_id: int | None = None,
-    thread_id: int | None = None,
+    category: Optional[str] = None,
+    process_id: Optional[int] = None,
+    thread_id: Optional[int] = None,
     **kwargs: float,
 ) -> None:
     """Add one instant event.
@@ -305,7 +308,7 @@ def add_counter_event(name: str, **kwargs: float) -> None:
     timers.add_counter_event(name, **kwargs)
 
 
-timers: DummyTimer | PerfTimers
+timers: Union[DummyTimer, PerfTimers]
 
 if USE_PERFMON:
     timers = PerfTimers()
@@ -319,11 +322,11 @@ else:
     @contextlib.contextmanager  # type: ignore [misc]
     def perf_timer(
         name: str,
-        category: str | None = None,
+        category: Optional[str] = None,
         print_time: bool = False,
         *,
-        process_id: int | None = None,
-        thread_id: int | None = None,
+        process_id: Optional[int] = None,
+        thread_id: Optional[int] = None,
         phase: str = 'X',
         **kwargs: float,
     ) -> Generator[None, None, None]:

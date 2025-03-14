@@ -31,5 +31,7 @@ def test_validate_increasing():
 
     invalid_sources = [[3, 2, 1], [1, 1, 2]]
     for source in invalid_sources:
-        with pytest.raises(ValueError, match='must be monotonically increasing'):
+        with pytest.raises(
+            ValueError, match='must be monotonically increasing'
+        ):
             validators._validate_increasing(source)

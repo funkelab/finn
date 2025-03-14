@@ -16,8 +16,8 @@ from textwrap import wrap
 from typing import Any
 
 from finn.errors import ReaderPluginError
-from finn.track_application_menus.main_app import MainApp
 from finn.utils.translations import trans
+from finn.track_application_menus.main_app import MainApp
 
 
 class InfoAction(argparse.Action):
@@ -241,7 +241,8 @@ def _run() -> None:
         # make sure plugin is only used when files are specified
         if not args.paths:
             sys.exit(
-                "error: The '--plugin' argument is only valid when providing a file name"
+                "error: The '--plugin' argument is only valid "
+                'when providing a file name'
             )
         # I *think* that Qt is looking in sys.argv for a flag `--plugins`,
         # which emits "WARNING: No such plugin for spec 'builtins'"
@@ -315,9 +316,9 @@ def _run() -> None:
                             pname, wname
                         ) or plugin_manager.get_widget(pname, wname)
                 else:
-                    _npe2.get_widget_contribution(pname) or plugin_manager.get_widget(
+                    _npe2.get_widget_contribution(
                         pname
-                    )
+                    ) or plugin_manager.get_widget(pname)
 
         from finn._qt.widgets.qt_splash_screen import NapariSplashScreen
 
@@ -331,7 +332,7 @@ def _run() -> None:
         # it will collect it and hang finn at start time.
         # in a way that is machine, os, time (and likely weather dependant).
         viewer = Viewer()
-
+        
         # add in track viewing widgets by default
         main_tracks_widget = MainApp(viewer)
         viewer.window.add_dock_widget(main_tracks_widget)
@@ -388,7 +389,9 @@ def _run() -> None:
                         pname, wnames[0], tabify=tabify
                     )[0]
                     for wname in wnames[1:]:
-                        viewer.window.add_plugin_dock_widget(pname, wname, tabify=tabify)
+                        viewer.window.add_plugin_dock_widget(
+                            pname, wname, tabify=tabify
+                        )
                     first_dock_widget.show()
                     first_dock_widget.raise_()
                 else:
@@ -455,7 +458,11 @@ def _maybe_rerun_with_macos_fixes():
 
     # This import mus be here to raise exception about PySide6 problem
 
-    if sys.platform != 'darwin' or 'pdb' in sys.modules or 'pydevd' in sys.modules:
+    if (
+        sys.platform != 'darwin'
+        or 'pdb' in sys.modules
+        or 'pydevd' in sys.modules
+    ):
         return
 
     if '_FINN_RERUN_WITH_FIXES' in os.environ:

@@ -16,7 +16,9 @@ from __future__ import annotations
 
 import weakref
 from functools import cache, partial
-from typing import TYPE_CHECKING, Any, get_args
+from typing import TYPE_CHECKING, Any, Optional
+
+from typing_extensions import get_args
 
 from finn.utils._proxies import PublicOnlyProxy
 
@@ -110,10 +112,14 @@ def add_layer_data_tuples_to_viewer(gui, result, return_type):
     )
 
     if viewer := find_viewer_ancestor(gui):
-        _add_layer_data_tuples_to_viewer(result, viewer=viewer, source={'widget': gui})
+        _add_layer_data_tuples_to_viewer(
+            result, viewer=viewer, source={'widget': gui}
+        )
 
 
-def add_worker_data(widget, worker: FunctionWorker, return_type, _from_tuple=True):
+def add_worker_data(
+    widget, worker: FunctionWorker, return_type, _from_tuple=True
+):
     """Handle a thread_worker object returned from a magicgui widget.
 
     This allows someone annotate their magicgui with a return type of
@@ -152,9 +158,15 @@ def add_worker_data(widget, worker: FunctionWorker, return_type, _from_tuple=Tru
 
     """
 
-    cb = add_layer_data_tuples_to_viewer if _from_tuple else add_layer_data_to_viewer
+    cb = (
+        add_layer_data_tuples_to_viewer
+        if _from_tuple
+        else add_layer_data_to_viewer
+    )
     _return_type = get_args(return_type)[0]
-    worker.signals.returned.connect(partial(cb, widget, return_type=_return_type))
+    worker.signals.returned.connect(
+        partial(cb, widget, return_type=_return_type)
+    )
 
 
 def add_future_data(gui, future: Future, return_type, _from_tuple=True):
@@ -193,7 +205,7 @@ def add_future_data(gui, future: Future, return_type, _from_tuple=True):
         )
 
 
-def find_viewer_ancestor(widget) -> Viewer | None:
+def find_viewer_ancestor(widget) -> Optional[Viewer]:
     """Return the closest parent Viewer of ``widget``.
 
     Priority is given to `Viewer` ancestors of ``widget``.
@@ -232,7 +244,7 @@ def find_viewer_ancestor(widget) -> Viewer | None:
     return current_viewer()
 
 
-def proxy_viewer_ancestor(widget) -> PublicOnlyProxy[Viewer] | None:
+def proxy_viewer_ancestor(widget) -> Optional[PublicOnlyProxy[Viewer]]:
     if viewer := find_viewer_ancestor(widget):
         return PublicOnlyProxy(viewer)
     return None

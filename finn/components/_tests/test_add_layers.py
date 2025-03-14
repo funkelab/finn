@@ -160,7 +160,9 @@ def test_add_points_layer_with_different_range_updates_all_slices():
     same_slice_as_initial_point = viewer.add_points([[10, 1, 1]])
     np.testing.assert_array_equal(initial_point._indices_view, [0])
     np.testing.assert_array_equal(earlier_point._indices_view, [])
-    np.testing.assert_array_equal(same_slice_as_initial_point._indices_view, [0])
+    np.testing.assert_array_equal(
+        same_slice_as_initial_point._indices_view, [0]
+    )
     assert viewer.dims.point == (10, 5, 5)
 
     # Adding a later point should keep the dim slider at the position
@@ -168,7 +170,9 @@ def test_add_points_layer_with_different_range_updates_all_slices():
     later_point = viewer.add_points([[14, 1, 1]])
     np.testing.assert_array_equal(initial_point._indices_view, [0])
     np.testing.assert_array_equal(earlier_point._indices_view, [])
-    np.testing.assert_array_equal(same_slice_as_initial_point._indices_view, [0])
+    np.testing.assert_array_equal(
+        same_slice_as_initial_point._indices_view, [0]
+    )
     np.testing.assert_array_equal(later_point._indices_view, [])
     assert viewer.dims.point == (10, 5, 5)
 
@@ -176,7 +180,9 @@ def test_add_points_layer_with_different_range_updates_all_slices():
     # and therefore should not change the viewport.
     viewer.layers.remove(earlier_point)
     np.testing.assert_array_equal(initial_point._indices_view, [0])
-    np.testing.assert_array_equal(same_slice_as_initial_point._indices_view, [0])
+    np.testing.assert_array_equal(
+        same_slice_as_initial_point._indices_view, [0]
+    )
     np.testing.assert_array_equal(later_point._indices_view, [])
     assert viewer.dims.point == (10, 5, 5)
 

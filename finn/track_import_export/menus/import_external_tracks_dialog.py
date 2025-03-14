@@ -21,7 +21,7 @@ class ImportTracksDialog(QDialog):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Import external tracks from CSV')
+        self.setWindowTitle("Import external tracks from CSV")
 
         self.csv = None
         self.segmentation = None
@@ -32,9 +32,9 @@ class ImportTracksDialog(QDialog):
 
         # navigation buttons
         self.button_layout = QHBoxLayout()
-        self.previous_button = QPushButton('Previous')
-        self.next_button = QPushButton('Next')
-        self.finish_button = QPushButton('Finish')
+        self.previous_button = QPushButton("Previous")
+        self.next_button = QPushButton("Next")
+        self.finish_button = QPushButton("Finish")
         self.button_layout.addWidget(self.previous_button)
         self.button_layout.addWidget(self.next_button)
         self.button_layout.addWidget(self.finish_button)
@@ -150,7 +150,7 @@ class ImportTracksDialog(QDialog):
         # Do not allow to finish if no CSV file is loaded, or if the segmentation checkbox was checked but no seg file path is given.
         if self.data_widget.df is None or (
             self.menu_widget.segmentation_checkbox.isChecked()
-            and self.segmentation_page.image_path_line.text() == ''
+            and self.segmentation_page.image_path_line.text() == ""
         ):
             self.finish_button.setEnabled(False)
         else:
@@ -191,10 +191,10 @@ class ImportTracksDialog(QDialog):
         if self.measurement_widget is not None:
             features = self.measurement_widget.get_measurements()
             for feature in features:
-                if features[feature] != 'Recompute' and (
-                    feature == 'Area' or feature == 'Volume'
+                if features[feature] != "Recompute" and (
+                    feature == "Area" or feature == "Volume"
                 ):
-                    df['area'] = self.data_widget.df[features[feature]]
+                    df["area"] = self.data_widget.df[features[feature]]
         else:
             features = []
 
@@ -211,6 +211,6 @@ class ImportTracksDialog(QDialog):
             self.tracks = tracks_from_df(df, segmentation, scale, features)
 
         except ValueError as e:
-            QMessageBox.critical(self, 'Error', f'Failed to load tracks: {e}')
+            QMessageBox.critical(self, "Error", f"Failed to load tracks: {e}")
             return
         self.accept()

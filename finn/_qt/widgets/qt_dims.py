@@ -1,4 +1,5 @@
 import warnings
+from typing import Optional
 
 import numpy as np
 from qtpy.QtCore import Slot
@@ -146,7 +147,10 @@ class QtDims(QWidget):
             maxwidth = int(self.slider_widgets[0].width() * 0.2)
             # set new width to the width of the longest label being displayed
             newwidth = max(
-                [int(fm.boundingRect(dlab.text()).width()) for dlab in displayed_labels]
+                [
+                    int(fm.boundingRect(dlab.text()).width())
+                    for dlab in displayed_labels
+                ]
             )
 
             for slider in self.slider_widgets:
@@ -190,7 +194,9 @@ class QtDims(QWidget):
         for slider_num in range(self.nsliders, number_of_sliders):
             dim_axis = number_of_sliders - slider_num - 1
             slider_widget = QtDimSliderWidget(self, dim_axis)
-            slider_widget.axis_label.textChanged.connect(self._resize_axis_labels)
+            slider_widget.axis_label.textChanged.connect(
+                self._resize_axis_labels
+            )
             slider_widget.size_changed.connect(self._resize_axis_labels)
             slider_widget.play_button.play_requested.connect(self.play)
             self.layout().addWidget(slider_widget)
@@ -237,9 +243,9 @@ class QtDims(QWidget):
     def play(
         self,
         axis: int = 0,
-        fps: float | None = None,
-        loop_mode: str | None = None,
-        frame_range: tuple[int, int] | None = None,
+        fps: Optional[float] = None,
+        loop_mode: Optional[str] = None,
+        frame_range: Optional[tuple[int, int]] = None,
     ):
         """Animate (play) axis.
 
@@ -290,7 +296,9 @@ class QtDims(QWidget):
             raise IndexError(trans._('axis argument out of range'))
 
         if self.is_playing and self._animation_thread.axis == axis:
-            self.slider_widgets[axis]._update_play_settings(fps, loop_mode, frame_range)
+            self.slider_widgets[axis]._update_play_settings(
+                fps, loop_mode, frame_range
+            )
             return
 
         # we want to avoid playing a dimension that does not have a slider
@@ -298,7 +306,9 @@ class QtDims(QWidget):
         if self._displayed_sliders[axis]:
             if self._animation_thread.isRunning():
                 self._animation_thread.slider.play_button._handle_stop()
-            self.slider_widgets[axis]._update_play_settings(fps, loop_mode, frame_range)
+            self.slider_widgets[axis]._update_play_settings(
+                fps, loop_mode, frame_range
+            )
             self._animation_thread.set_slider(self.slider_widgets[axis])
             self._animation_thread.frame_requested.connect(self._set_frame)
             if not self._animation_thread.isRunning():
