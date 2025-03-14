@@ -19,92 +19,51 @@ def _show_about(window: Window):
 
 
 v = parse(__version__)
-VERSION = 'dev' if v.is_devrelease or v.is_prerelease else str(v.base_version)
+VERSION = "dev" if v.is_devrelease or v.is_prerelease else str(v.base_version)
 
 HELP_URLS: dict[str, str] = {
-    'getting_started': f'https://finn.org/{VERSION}/tutorials/start_index.html',
-    'tutorials': f'https://finn.org/{VERSION}/tutorials/index.html',
-    'layers_guide': f'https://finn.org/{VERSION}/howtos/layers/index.html',
-    'examples_gallery': f'https://finn.org/{VERSION}/gallery.html',
-    'release_notes': f'https://finn.org/{VERSION}/release/release_{VERSION.replace(".", "_")}.html',
-    'github_issue': 'https://github.com/napari/napari/issues',
-    'homepage': 'https://finn.org',
+    "getting_started": "https://funkelab.github.io/motile_tracker/getting_started.html",
+    "github_issue": "https://github.com/funkelab/motile_tracker/issues",
 }
 
 Q_HELP_ACTIONS: list[Action] = [
     Action(
-        id='finn.window.help.info',
-        title=trans._('‎napari Info'),
+        id="finn.window.help.info",
+        title=trans._("‎finn Info"),
         callback=_show_about,
-        menus=[{'id': MenuId.MENUBAR_HELP, 'group': MenuGroup.RENDER}],
-        status_tip=trans._('About napari'),
+        menus=[{"id": MenuId.MENUBAR_HELP, "group": MenuGroup.RENDER}],
+        status_tip=trans._("About finn"),
         keybindings=[KeyBindingRule(primary=KeyMod.CtrlCmd | KeyCode.Slash)],
     ),
     Action(
-        id='finn.window.help.about_macos',
-        title=trans._('About napari'),
+        id="finn.window.help.about_macos",
+        title=trans._("About finn"),
         callback=_show_about,
         menus=[
             {
-                'id': MenuId.MENUBAR_HELP,
-                'group': MenuGroup.RENDER,
-                'when': sys.platform == 'darwin',
+                "id": MenuId.MENUBAR_HELP,
+                "group": MenuGroup.RENDER,
+                "when": sys.platform == "darwin",
             }
         ],
-        status_tip=trans._('About napari'),
+        status_tip=trans._("About finn"),
     ),
     Action(
-        id='finn.window.help.getting_started',
-        title=trans._('Getting started'),
-        callback=partial(web_open, url=HELP_URLS['getting_started']),
-        menus=[{'id': MenuId.MENUBAR_HELP}],
+        id="finn.window.help.getting_started",
+        title=trans._("Getting started"),
+        callback=partial(web_open, url=HELP_URLS["getting_started"]),
+        menus=[{"id": MenuId.MENUBAR_HELP}],
     ),
     Action(
-        id='finn.window.help.tutorials',
-        title=trans._('Tutorials'),
-        callback=partial(web_open, url=HELP_URLS['tutorials']),
-        menus=[{'id': MenuId.MENUBAR_HELP}],
-    ),
-    Action(
-        id='finn.window.help.layers_guide',
-        title=trans._('Using Layers Guides'),
-        callback=partial(web_open, url=HELP_URLS['layers_guide']),
-        menus=[{'id': MenuId.MENUBAR_HELP}],
-    ),
-    Action(
-        id='finn.window.help.examples',
-        title=trans._('Examples Gallery'),
-        callback=partial(web_open, url=HELP_URLS['examples_gallery']),
-        menus=[{'id': MenuId.MENUBAR_HELP}],
-    ),
-    Action(
-        id='finn.window.help.release_notes',
-        title=trans._('Release Notes'),
-        callback=partial(web_open, url=HELP_URLS['release_notes']),
+        id="finn.window.help.github_issue",
+        title=trans._("Report an issue on GitHub"),
+        callback=partial(web_open, url=HELP_URLS["github_issue"]),
         menus=[
             {
-                'id': MenuId.MENUBAR_HELP,
-                'when': VERSION != 'dev',
-                'group': MenuGroup.NAVIGATION,
+                "id": MenuId.MENUBAR_HELP,
+                "when": VERSION == "dev",
+                "group": MenuGroup.NAVIGATION,
             }
         ],
-    ),
-    Action(
-        id='finn.window.help.github_issue',
-        title=trans._('Report an issue on GitHub'),
-        callback=partial(web_open, url=HELP_URLS['github_issue']),
-        menus=[
-            {
-                'id': MenuId.MENUBAR_HELP,
-                'when': VERSION == 'dev',
-                'group': MenuGroup.NAVIGATION,
-            }
-        ],
-    ),
-    Action(
-        id='finn.window.help.homepage',
-        title=trans._('napari homepage'),
-        callback=partial(web_open, url=HELP_URLS['homepage']),
-        menus=[{'id': MenuId.MENUBAR_HELP, 'group': MenuGroup.NAVIGATION}],
     ),
 ]

@@ -11,8 +11,6 @@ from itertools import chain
 from typing import (
     TYPE_CHECKING,
     Any,
-    Optional,
-    Union,
     cast,
 )
 
@@ -61,7 +59,7 @@ def _rebuild_npe1_samples_menu() -> None:  # pragma: no cover
     for plugin_name, samples in plugin_manager._sample_data.items():
         multiprovider = len(samples) > 1
         if multiprovider:
-            submenu_id = f'napari/file/samples/{plugin_name}'
+            submenu_id = f"napari/file/samples/{plugin_name}"
             submenu = (
                 MenuId.FILE_SAMPLES,
                 SubmenuItem(submenu=submenu_id, title=trans._(plugin_name)),
@@ -77,16 +75,16 @@ def _rebuild_npe1_samples_menu() -> None:  # pragma: no cover
                 sample=sample_name,
             )
 
-            display_name = sample_dict['display_name'].replace('&', '&&')
+            display_name = sample_dict["display_name"].replace("&", "&&")
             if multiprovider:
                 title = display_name
             else:
                 title = menu_item_template.format(plugin_name, display_name)
 
             action: Action = Action(
-                id=f'{plugin_name}:{display_name}',
+                id=f"{plugin_name}:{display_name}",
                 title=title,
-                menus=[{'id': submenu_id, 'group': MenuGroup.NAVIGATION}],
+                menus=[{"id": submenu_id, "group": MenuGroup.NAVIGATION}],
                 callback=_add_sample_partial,
             )
             sample_actions.append(action)
@@ -108,14 +106,14 @@ def _toggle_or_get_widget_npe1(
 ) -> None:  # pragma: no cover
     """Toggle if widget already built otherwise return widget for npe1."""
     window = _provide_window_or_raise(
-        msg='Note that widgets cannot be opened in headless mode.'
+        msg="Note that widgets cannot be opened in headless mode."
     )
 
     if window and (dock_widget := window._dock_widgets.get(name)):
         dock_widget.setVisible(not dock_widget.isVisible())
         return
 
-    if hook_type == 'dock':
+    if hook_type == "dock":
         window.add_plugin_dock_widget(plugin, widget_name)
     else:
         window._add_plugin_function_widget(plugin, widget_name)
@@ -133,12 +131,10 @@ def _rebuild_npe1_plugins_menu() -> None:
 
     widget_actions: list[Action] = []
     widget_submenus: list[Any] = []
-    for hook_type, (plugin_name, widgets) in chain(
-        plugin_manager.iter_widgets()
-    ):
+    for hook_type, (plugin_name, widgets) in chain(plugin_manager.iter_widgets()):
         multiprovider = len(widgets) > 1
         if multiprovider:
-            submenu_id = f'napari/plugins/{plugin_name}'
+            submenu_id = f"napari/plugins/{plugin_name}"
             submenu = (
                 MenuId.MENUBAR_PLUGINS,
                 SubmenuItem(
@@ -167,18 +163,16 @@ def _rebuild_npe1_plugins_menu() -> None:
                 full_name=full_name,
             )
             action: Action = Action(
-                id=f'{plugin_name}:{widget_name.replace("&", "&&")}',
-                title=title.replace('&', '&&'),
+                id=f"{plugin_name}:{widget_name.replace('&', '&&')}",
+                title=title.replace("&", "&&"),
                 menus=[
                     {
-                        'id': submenu_id,
-                        'group': MenuGroup.PLUGIN_SINGLE_CONTRIBUTIONS,
+                        "id": submenu_id,
+                        "group": MenuGroup.PLUGIN_SINGLE_CONTRIBUTIONS,
                     }
                 ],
                 callback=_widget_callback,
-                toggled=ToggleRule(
-                    get_current=_get_current_dock_status_partial
-                ),
+                toggled=ToggleRule(get_current=_get_current_dock_status_partial),
             )
             widget_actions.append(action)
 
@@ -194,7 +188,7 @@ def _get_contrib_parent_menu(
     multiprovider: bool,
     parent_menu: MenuId,
     mf: PluginManifest,
-    group: Optional[str] = None,
+    group: str | None = None,
 ) -> tuple[str, list[tuple[str, SubmenuItem]]]:
     """Get parent menu of plugin contribution (samples/widgets).
 
@@ -202,7 +196,7 @@ def _get_contrib_parent_menu(
     """
     submenu: list[tuple[str, SubmenuItem]] = []
     if multiprovider:
-        submenu_id = f'{parent_menu}/{mf.name}'
+        submenu_id = f"{parent_menu}/{mf.name}"
         submenu = [
             (
                 parent_menu,
@@ -263,31 +257,27 @@ def _build_samples_submenu_actions(
         if multiprovider:
             title = sample.display_name
         else:
-            title = menu_item_template.format(
-                mf.display_name, sample.display_name
-            )
+            title = menu_item_template.format(mf.display_name, sample.display_name)
         # To display '&' instead of creating a shortcut
-        title = title.replace('&', '&&')
+        title = title.replace("&", "&&")
 
         action: Action = Action(
-            id=f'{mf.name}:{sample.key}',
+            id=f"{mf.name}:{sample.key}",
             title=title,
-            menus=[{'id': submenu_id, 'group': MenuGroup.NAVIGATION}],
+            menus=[{"id": submenu_id, "group": MenuGroup.NAVIGATION}],
             callback=_add_sample_partial,
         )
         sample_actions.append(action)
     return submenu, sample_actions
 
 
-def _get_widget_viewer_param(
-    widget_callable: WidgetCreator, widget_name: str
-) -> str:
+def _get_widget_viewer_param(widget_callable: WidgetCreator, widget_name: str) -> str:
     """Get widget parameter name for `viewer` (if any) and check type."""
     if inspect.isclass(widget_callable) and issubclass(
         widget_callable,
         (QWidget, Widget),
     ):
-        widget_param = ''
+        widget_param = ""
         try:
             sig = inspect.signature(widget_callable.__init__)
         except ValueError:  # pragma: no cover
@@ -296,8 +286,8 @@ def _get_widget_viewer_param(
             pass
         else:
             for param in sig.parameters.values():
-                if param.name == 'napari_viewer' or param.annotation in (
-                    'finn.viewer.Viewer',
+                if param.name == "napari_viewer" or param.annotation in (
+                    "finn.viewer.Viewer",
                     Viewer,
                 ):
                     widget_param = param.name
@@ -305,10 +295,8 @@ def _get_widget_viewer_param(
 
     # For magicgui type widget contributions, `Viewer` injection is done by
     # `magicgui.register_type`.
-    elif isinstance(widget_callable, MagicFactory) or inspect.isfunction(
-        widget_callable
-    ):
-        widget_param = ''
+    elif isinstance(widget_callable, MagicFactory) or inspect.isfunction(widget_callable):
+        widget_param = ""
     else:
         raise TypeError(
             trans._(
@@ -324,7 +312,7 @@ def _toggle_or_get_widget(
     plugin: str,
     widget_name: str,
     full_name: str,
-) -> Optional[tuple[Union[FunctionGui, QWidget, Widget], str]]:
+) -> tuple[FunctionGui | QWidget | Widget, str] | None:
     """Toggle if widget already built otherwise return widget.
 
     Returned widget will be added to main window by a processor.
@@ -332,7 +320,7 @@ def _toggle_or_get_widget(
     `magicgui.register_type` instead of a provider via annnotation.
     """
     viewer = _provide_viewer_or_raise(
-        msg='Note that widgets cannot be opened in headless mode.',
+        msg="Note that widgets cannot be opened in headless mode.",
     )
 
     window = viewer.window
@@ -352,7 +340,7 @@ def _toggle_or_get_widget(
 
 def _get_current_dock_status(full_name: str) -> bool:
     window = _provide_window_or_raise(
-        msg='Note that widgets cannot be opened in headless mode.',
+        msg="Note that widgets cannot be opened in headless mode.",
     )
     if full_name in window._dock_widgets:
         return window._dock_widgets[full_name].isVisible()
@@ -404,30 +392,28 @@ def _build_widgets_submenu_actions(
         )
 
         action_menus = [
-            dict({'id': menu_key}, **_when_group_order(menu_item))
+            dict({"id": menu_key}, **_when_group_order(menu_item))
             for menu_key, menu_items in pm.instance()
             ._command_menu_map[mf.name][widget.command]
             .items()
             for menu_item in menu_items
         ] + [
             {
-                'id': default_submenu_id,
-                'group': MenuGroup.PLUGIN_SINGLE_CONTRIBUTIONS,
+                "id": default_submenu_id,
+                "group": MenuGroup.PLUGIN_SINGLE_CONTRIBUTIONS,
             }
         ]
         title = full_name if needs_full_title else widget.display_name
         # To display '&' instead of creating a shortcut
-        title = title.replace('&', '&&')
+        title = title.replace("&", "&&")
 
         widget_actions.append(
             Action(
-                id=f'{mf.name}:{widget.display_name}',
+                id=f"{mf.name}:{widget.display_name}",
                 title=title,
                 callback=_widget_callback,
                 menus=action_menus,
-                toggled=ToggleRule(
-                    get_current=_get_current_dock_status_partial
-                ),
+                toggled=ToggleRule(get_current=_get_current_dock_status_partial),
             )
         )
     return default_submenu, widget_actions
@@ -443,7 +429,7 @@ def _register_qt_actions(mf: PluginManifest) -> None:
     samples_submenu, sample_actions = _build_samples_submenu_actions(mf)
     widgets_submenu, widget_actions = _build_widgets_submenu_actions(mf)
 
-    context = pm.get_context(cast('PluginName', mf.name))
+    context = pm.get_context(cast("PluginName", mf.name))
     actions = sample_actions + widget_actions
     if actions:
         context.register_disposable(app.register_actions(actions))
@@ -455,7 +441,7 @@ def _register_qt_actions(mf: PluginManifest) -> None:
     # `window._dock_widgets`
     if window := _provide_window():
         for widget in mf.contributions.widgets or ():
-            widget_event = Event(type_name='', value=widget.display_name)
+            widget_event = Event(type_name="", value=widget.display_name)
 
             def _remove_widget(event: Event = widget_event) -> None:
                 window._remove_dock_widget(event)

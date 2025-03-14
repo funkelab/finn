@@ -23,11 +23,11 @@ from finn.viewer import Viewer
 VIEW_SUBMENUS = [
     (
         MenuId.MENUBAR_VIEW,
-        SubmenuItem(submenu=MenuId.VIEW_AXES, title=trans._('Axes')),
+        SubmenuItem(submenu=MenuId.VIEW_AXES, title=trans._("Axes")),
     ),
     (
         MenuId.MENUBAR_VIEW,
-        SubmenuItem(submenu=MenuId.VIEW_SCALEBAR, title=trans._('Scale Bar')),
+        SubmenuItem(submenu=MenuId.VIEW_SCALEBAR, title=trans._("Scale Bar")),
     ),
 ]
 
@@ -76,13 +76,13 @@ def _zoom_out(viewer: Viewer):
 
 Q_VIEW_ACTIONS: list[Action] = [
     Action(
-        id='finn.window.view.toggle_fullscreen',
-        title=trans._('Toggle Full Screen'),
+        id="finn.window.view.toggle_fullscreen",
+        title=trans._("Toggle Full Screen"),
         menus=[
             {
-                'id': MenuId.MENUBAR_VIEW,
-                'group': MenuGroup.NAVIGATION,
-                'order': 1,
+                "id": MenuId.MENUBAR_VIEW,
+                "group": MenuGroup.NAVIGATION,
+                "order": 1,
             }
         ],
         callback=Window._toggle_fullscreen,
@@ -90,100 +90,98 @@ Q_VIEW_ACTIONS: list[Action] = [
         toggled=ToggleRule(get_current=_get_current_fullscreen_status),
     ),
     Action(
-        id='finn.window.view.toggle_menubar',
-        title=trans._('Toggle Menubar Visibility'),
+        id="finn.window.view.toggle_menubar",
+        title=trans._("Toggle Menubar Visibility"),
         menus=[
             {
-                'id': MenuId.MENUBAR_VIEW,
-                'group': MenuGroup.NAVIGATION,
-                'order': 2,
-                'when': sys.platform != 'darwin',
+                "id": MenuId.MENUBAR_VIEW,
+                "group": MenuGroup.NAVIGATION,
+                "order": 2,
+                "when": sys.platform != "darwin",
             }
         ],
         callback=Window._toggle_menubar_visible,
         keybindings=[
             {
-                'win': KeyMod.CtrlCmd | KeyCode.KeyM,
-                'linux': KeyMod.CtrlCmd | KeyCode.KeyM,
+                "win": KeyMod.CtrlCmd | KeyCode.KeyM,
+                "linux": KeyMod.CtrlCmd | KeyCode.KeyM,
             }
         ],
         # TODO: add is_mac global context keys (rather than boolean here)
-        enablement=sys.platform != 'darwin',
-        status_tip=trans._('Show/Hide Menubar'),
+        enablement=sys.platform != "darwin",
+        status_tip=trans._("Show/Hide Menubar"),
         toggled=ToggleRule(get_current=_get_current_menubar_status),
     ),
     Action(
-        id='finn.window.view.toggle_play',
-        title=trans._('Toggle Play'),
+        id="finn.window.view.toggle_play",
+        title=trans._("Toggle Play"),
         menus=[
             {
-                'id': MenuId.MENUBAR_VIEW,
-                'group': MenuGroup.NAVIGATION,
-                'order': 3,
+                "id": MenuId.MENUBAR_VIEW,
+                "group": MenuGroup.NAVIGATION,
+                "order": 3,
             }
         ],
         callback=Window._toggle_play,
-        keybindings=[{'primary': KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.KeyP}],
+        keybindings=[{"primary": KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.KeyP}],
         toggled=ToggleRule(get_current=_get_current_play_status),
     ),
     Action(
-        id='finn.viewer.fit_to_view',
-        title=trans._('Fit to View'),
+        id="finn.viewer.fit_to_view",
+        title=trans._("Fit to View"),
         menus=[
             {
-                'id': MenuId.MENUBAR_VIEW,
-                'group': MenuGroup.ZOOM,
-                'order': 1,
+                "id": MenuId.MENUBAR_VIEW,
+                "group": MenuGroup.ZOOM,
+                "order": 1,
             }
         ],
         callback=_fit_to_view,
         keybindings=[StandardKeyBinding.OriginalSize],
     ),
     Action(
-        id='finn.viewer.camera.zoom_in',
-        title=trans._('Zoom In'),
+        id="finn.viewer.camera.zoom_in",
+        title=trans._("Zoom In"),
         menus=[
             {
-                'id': MenuId.MENUBAR_VIEW,
-                'group': MenuGroup.ZOOM,
-                'order': 1,
+                "id": MenuId.MENUBAR_VIEW,
+                "group": MenuGroup.ZOOM,
+                "order": 1,
             }
         ],
         callback=_zoom_in,
         keybindings=[StandardKeyBinding.ZoomIn],
     ),
     Action(
-        id='finn.viewer.camera.zoom_out',
-        title=trans._('Zoom Out'),
+        id="finn.viewer.camera.zoom_out",
+        title=trans._("Zoom Out"),
         menus=[
             {
-                'id': MenuId.MENUBAR_VIEW,
-                'group': MenuGroup.ZOOM,
-                'order': 1,
+                "id": MenuId.MENUBAR_VIEW,
+                "group": MenuGroup.ZOOM,
+                "order": 1,
             }
         ],
         callback=_zoom_out,
         keybindings=[StandardKeyBinding.ZoomOut],
     ),
     Action(
-        id='finn.window.view.toggle_activity_dock',
-        title=trans._('Toggle Activity Dock'),
-        menus=[
-            {'id': MenuId.MENUBAR_VIEW, 'group': MenuGroup.RENDER, 'order': 11}
-        ],
+        id="finn.window.view.toggle_activity_dock",
+        title=trans._("Toggle Activity Dock"),
+        menus=[{"id": MenuId.MENUBAR_VIEW, "group": MenuGroup.RENDER, "order": 11}],
         callback=_toggle_activity_dock,
         toggled=ToggleRule(get_current=_get_current_activity_dock_status),
     ),
     # TODO: this could be made into a toggle setting Action subclass
     # using a similar pattern to the above ViewerToggleAction classes
     Action(
-        id='finn.window.view.toggle_layer_tooltips',
-        title=trans._('Toggle Layer Tooltips'),
+        id="finn.window.view.toggle_layer_tooltips",
+        title=trans._("Toggle Layer Tooltips"),
         menus=[
             {
-                'id': MenuId.MENUBAR_VIEW,
-                'group': MenuGroup.RENDER,
-                'order': 10,
+                "id": MenuId.MENUBAR_VIEW,
+                "group": MenuGroup.RENDER,
+                "order": 10,
             }
         ],
         callback=_tooltip_visibility_toggle,
@@ -191,56 +189,56 @@ Q_VIEW_ACTIONS: list[Action] = [
     ),
 ]
 
-MENUID_DICT = {'axes': MenuId.VIEW_AXES, 'scale_bar': MenuId.VIEW_SCALEBAR}
+MENUID_DICT = {"axes": MenuId.VIEW_AXES, "scale_bar": MenuId.VIEW_SCALEBAR}
 
 toggle_action_details = [
     (
-        'finn.window.view.toggle_viewer_axes',
-        trans._('Axes Visible'),
-        'axes',
-        'visible',
+        "finn.window.view.toggle_viewer_axes",
+        trans._("Axes Visible"),
+        "axes",
+        "visible",
     ),
     (
-        'finn.window.view.toggle_viewer_axes_colored',
-        trans._('Axes Colored'),
-        'axes',
-        'colored',
+        "finn.window.view.toggle_viewer_axes_colored",
+        trans._("Axes Colored"),
+        "axes",
+        "colored",
     ),
     (
-        'finn.window.view.toggle_viewer_axes_labels',
-        trans._('Axes Labels'),
-        'axes',
-        'labels',
+        "finn.window.view.toggle_viewer_axes_labels",
+        trans._("Axes Labels"),
+        "axes",
+        "labels",
     ),
     (
-        'finn.window.view.toggle_viewer_axesdashed',
-        trans._('Axes Dashed'),
-        'axes',
-        'dashed',
+        "finn.window.view.toggle_viewer_axesdashed",
+        trans._("Axes Dashed"),
+        "axes",
+        "dashed",
     ),
     (
-        'finn.window.view.toggle_viewer_axes_arrows',
-        trans._('Axes Arrows'),
-        'axes',
-        'arrows',
+        "finn.window.view.toggle_viewer_axes_arrows",
+        trans._("Axes Arrows"),
+        "axes",
+        "arrows",
     ),
     (
-        'finn.window.view.toggle_viewer_scale_bar',
-        trans._('Scale Bar Visible'),
-        'scale_bar',
-        'visible',
+        "finn.window.view.toggle_viewer_scale_bar",
+        trans._("Scale Bar Visible"),
+        "scale_bar",
+        "visible",
     ),
     (
-        'finn.window.view.toggle_viewer_scale_bar_colored',
-        trans._('Scale Bar Colored'),
-        'scale_bar',
-        'colored',
+        "finn.window.view.toggle_viewer_scale_bar_colored",
+        trans._("Scale Bar Colored"),
+        "scale_bar",
+        "colored",
     ),
     (
-        'finn.window.view.toggle_viewer_scale_bar_ticks',
-        trans._('Scale Bar Ticks'),
-        'scale_bar',
-        'ticks',
+        "finn.window.view.toggle_viewer_scale_bar_ticks",
+        trans._("Scale Bar Ticks"),
+        "scale_bar",
+        "ticks",
     ),
 ]
 
@@ -254,6 +252,6 @@ for cmd, cmd_title, viewer_attr, sub_attr in toggle_action_details:
             title=cmd_title,
             viewer_attribute=viewer_attr,
             sub_attribute=sub_attr,
-            menus=[{'id': MENUID_DICT[viewer_attr]}],
+            menus=[{"id": MENUID_DICT[viewer_attr]}],
         )
     )

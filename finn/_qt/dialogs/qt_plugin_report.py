@@ -1,7 +1,6 @@
 """Provides a QtPluginErrReporter that allows the user report plugin errors."""
 
 import contextlib
-from typing import Optional
 
 from napari_plugin_engine import standard_metadata
 from qtpy.QtCore import Qt
@@ -53,20 +52,20 @@ class QtPluginErrReporter(QDialog):
         A label that will show available plugin metadata (such as home page).
     """
 
-    NULL_OPTION = trans._('select plugin... ')
+    NULL_OPTION = trans._("select plugin... ")
 
     def __init__(
         self,
         *,
-        parent: Optional[QWidget] = None,
-        initial_plugin: Optional[str] = None,
+        parent: QWidget | None = None,
+        initial_plugin: str | None = None,
     ) -> None:
         super().__init__(parent)
         from finn.plugins import plugin_manager
 
         self.plugin_manager = plugin_manager
 
-        self.setWindowTitle(trans._('Recorded Plugin Exceptions'))
+        self.setWindowTitle(trans._("Recorded Plugin Exceptions"))
         self.setWindowModality(Qt.WindowModality.NonModal)
         self.layout = QVBoxLayout()
         self.layout.setSpacing(0)
@@ -76,7 +75,7 @@ class QtPluginErrReporter(QDialog):
         self.text_area = QTextEdit()
         theme = get_theme(get_settings().appearance.theme)
         self._highlight = CodeSyntaxHighlight(
-            self.text_area.document(), 'python', theme.syntax_style
+            self.text_area.document(), "python", theme.syntax_style
         )
         self.text_area.setTextInteractionFlags(
             Qt.TextInteractionFlag.TextSelectableByMouse
@@ -92,7 +91,7 @@ class QtPluginErrReporter(QDialog):
         self.plugin_combo.setCurrentText(self.NULL_OPTION)
 
         # create github button (gets connected in self.set_plugin)
-        self.github_button = QPushButton(trans._('Open issue on GitHub'), self)
+        self.github_button = QPushButton(trans._("Open issue on GitHub"), self)
         self.github_button.setToolTip(
             trans._(
                 "Open a web browser to submit this error log\nto the developer's GitHub issue tracker",
@@ -103,15 +102,13 @@ class QtPluginErrReporter(QDialog):
         # create copy to clipboard button
         self.clipboard_button = QPushButton()
         self.clipboard_button.hide()
-        self.clipboard_button.setObjectName('QtCopyToClipboardButton')
-        self.clipboard_button.setToolTip(
-            trans._('Copy error log to clipboard')
-        )
+        self.clipboard_button.setObjectName("QtCopyToClipboardButton")
+        self.clipboard_button.setToolTip(trans._("Copy error log to clipboard"))
         self.clipboard_button.clicked.connect(self.copyToClipboard)
 
         # plugin_meta contains a URL to the home page, (and/or other details)
-        self.plugin_meta = QLabel('', parent=self)
-        self.plugin_meta.setObjectName('pluginInfo')
+        self.plugin_meta = QLabel("", parent=self)
+        self.plugin_meta.setObjectName("pluginInfo")
         self.plugin_meta.setTextFormat(Qt.TextFormat.RichText)
         self.plugin_meta.setTextInteractionFlags(
             Qt.TextInteractionFlag.TextBrowserInteraction
@@ -156,49 +153,47 @@ class QtPluginErrReporter(QDialog):
             # PySide2 raises runtimeError, PyQt5 raises TypeError
 
         if not plugin or (plugin == self.NULL_OPTION):
-            self.plugin_meta.setText('')
-            self.text_area.setText('')
+            self.plugin_meta.setText("")
+            self.text_area.setText("")
             return
 
         if not self.plugin_manager.get_errors(plugin):
             raise ValueError(
-                trans._(
-                    "No errors reported for plugin '{plugin}'", plugin=plugin
-                )
+                trans._("No errors reported for plugin '{plugin}'", plugin=plugin)
             )
 
         self.plugin_combo.setCurrentText(plugin)
 
-        err_string = format_exceptions(plugin, as_html=False, color='NoColor')
+        err_string = format_exceptions(plugin, as_html=False, color="NoColor")
         self.text_area.setText(err_string)
         self.clipboard_button.show()
 
         # set metadata and outbound links/buttons
         err0 = self.plugin_manager.get_errors(plugin)[0]
         meta = standard_metadata(err0.plugin) if err0.plugin else {}
-        meta_text = ''
+        meta_text = ""
         if not meta:
             self.plugin_meta.setText(meta_text)
             return
 
-        url = meta.get('url')
+        url = meta.get("url")
         if url:
             meta_text += (
                 '<span style="color:#999;">plugin home page:&nbsp;&nbsp;'
                 f'</span><a href="{url}" style="color:#999">{url}</a>'
             )
-            if 'github.com' in url:
+            if "github.com" in url:
 
                 def onclick():
                     import webbrowser
 
                     err = format_exceptions(plugin, as_html=False)
                     err = (
-                        '<!--Provide detail on the error here-->\n\n\n\n'
-                        '<details>\n<summary>Traceback from napari</summary>'
-                        f'\n\n```\n{err}\n```\n</details>'
+                        "<!--Provide detail on the error here-->\n\n\n\n"
+                        "<details>\n<summary>Traceback from napari</summary>"
+                        f"\n\n```\n{err}\n```\n</details>"
                     )
-                    url = f'{meta.get("url")}/issues/new?&body={err}'
+                    url = f"{meta.get('url')}/issues/new?&body={err}"
                     webbrowser.open(url, new=2)
 
                 self.github_button.clicked.connect(onclick)

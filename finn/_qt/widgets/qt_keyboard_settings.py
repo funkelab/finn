@@ -2,7 +2,6 @@ import contextlib
 import itertools
 import sys
 from collections import OrderedDict
-from typing import Optional
 
 from app_model.backends.qt import (
     qkeysequence2modelkeybinding,
@@ -46,13 +45,13 @@ class ShortcutEditor(QWidget):
     """Widget to edit keybindings for finn."""
 
     valueChanged = Signal(dict)
-    VIEWER_KEYBINDINGS = trans._('Viewer key bindings')
+    VIEWER_KEYBINDINGS = trans._("Viewer key bindings")
 
     def __init__(
         self,
         parent: QWidget = None,
-        description: str = '',
-        value: Optional[dict] = None,
+        description: str = "",
+        value: dict | None = None,
     ) -> None:
         super().__init__(parent=parent)
 
@@ -80,7 +79,7 @@ class ShortcutEditor(QWidget):
         self._table.setSelectionBehavior(QAbstractItemView.SelectItems)
         self._table.setSelectionMode(QAbstractItemView.SingleSelection)
         self._table.setShowGrid(False)
-        self._restore_button = QPushButton(trans._('Restore All Keybindings'))
+        self._restore_button = QPushButton(trans._("Restore All Keybindings"))
 
         # Set up dictionary for layers and associated actions.
         all_actions = action_manager._actions.copy()
@@ -93,7 +92,7 @@ class ShortcutEditor(QWidget):
                 actions = action_manager._get_provider_actions(layer)
                 for name in actions:
                     all_actions.pop(name)
-            self.key_bindings_strs[f'{layer.__name__} layer'] = actions
+            self.key_bindings_strs[f"{layer.__name__} layer"] = actions
 
         # Don't include actions without keymapproviders
         for action_name in all_actions.copy():
@@ -107,7 +106,7 @@ class ShortcutEditor(QWidget):
         self.layer_combo_box.currentTextChanged.connect(self._set_table)
         self.layer_combo_box.setCurrentText(self.VIEWER_KEYBINDINGS)
         self._set_table()
-        self._label.setText(trans._('Group'))
+        self._label.setText(trans._("Group"))
         self._restore_button.clicked.connect(self.restore_defaults)
 
         # layout
@@ -128,7 +127,7 @@ class ShortcutEditor(QWidget):
         layout.addWidget(
             QLabel(
                 trans._(
-                    'To edit, double-click the keybinding. To unbind a shortcut, use Backspace or Delete. To set Backspace or Delete, first unbind.'
+                    "To edit, double-click the keybinding. To unbind a shortcut, use Backspace or Delete. To set Backspace or Delete, first unbind."
                 )
             )
         )
@@ -145,8 +144,8 @@ class ShortcutEditor(QWidget):
         )
         response = QMessageBox.question(
             self,
-            trans._('Restore Shortcuts'),
-            trans._('Are you sure you want to restore default shortcuts?'),
+            trans._("Restore Shortcuts"),
+            trans._("Are you sure you want to restore default shortcuts?"),
             QMessageBox.StandardButton.RestoreDefaults
             | QMessageBox.StandardButton.Cancel,
             QMessageBox.StandardButton.RestoreDefaults,
@@ -172,7 +171,7 @@ class ShortcutEditor(QWidget):
 
         self._set_table(layer_str=self.layer_combo_box.currentText())
 
-    def _set_table(self, layer_str: str = ''):
+    def _set_table(self, layer_str: str = ""):
         """Builds and populates keybindings table.
 
         Parameters
@@ -190,10 +189,10 @@ class ShortcutEditor(QWidget):
         self._action_col = 4
 
         # Set header strings for table.
-        header_strs = ['', '', '', '', '']
-        header_strs[self._action_name_col] = trans._('Action')
-        header_strs[self._shortcut_col] = trans._('Keybinding')
-        header_strs[self._shortcut_col2] = trans._('Alternative Keybinding')
+        header_strs = ["", "", "", "", ""]
+        header_strs[self._action_name_col] = trans._("Action")
+        header_strs[self._shortcut_col] = trans._("Keybinding")
+        header_strs[self._shortcut_col2] = trans._("Alternative Keybinding")
 
         # If no layer_str, then set the page to the viewer keybindings page.
         if not layer_str:
@@ -207,9 +206,7 @@ class ShortcutEditor(QWidget):
 
         # Table styling set up.
         self._table.horizontalHeader().setStretchLastSection(True)
-        self._table.horizontalHeader().setStyleSheet(
-            'border-bottom: 2px solid white;'
-        )
+        self._table.horizontalHeader().setStyleSheet("border-bottom: 2px solid white;")
 
         # Get all actions for the layer.
         actions = self.key_bindings_strs[layer_str]
@@ -226,9 +223,7 @@ class ShortcutEditor(QWidget):
                 self._shortcut_col2, ShortcutDelegate(self._table)
             )
             self._table.setHorizontalHeaderLabels(header_strs)
-            self._table.horizontalHeader().setDefaultAlignment(
-                Qt.AlignmentFlag.AlignLeft
-            )
+            self._table.horizontalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignLeft)
             self._table.verticalHeader().setVisible(False)
 
             # Hide the column with action names.  These are kept here for reference when needed.
@@ -242,7 +237,7 @@ class ShortcutEditor(QWidget):
             self._table.setWordWrap(True)
 
             # Add some padding to rows
-            self._table.setStyleSheet('QTableView::item { padding: 6px; }')
+            self._table.setStyleSheet("QTableView::item { padding: 6px; }")
 
             # Go through all the actions in the layer and add them to the table.
             for row, (action_name, action) in enumerate(actions.items()):
@@ -256,22 +251,18 @@ class ShortcutEditor(QWidget):
 
                 # Create empty item in order to make sure this column is not
                 # selectable/editable.
-                item = QTableWidgetItem('')
+                item = QTableWidgetItem("")
                 item.setFlags(Qt.ItemFlag.NoItemFlags)
                 self._table.setItem(row, self._icon_col, item)
 
                 # Set the shortcuts in table.
                 item_shortcut = QTableWidgetItem(
-                    Shortcut(next(iter(shortcuts))).platform
-                    if shortcuts
-                    else ''
+                    Shortcut(next(iter(shortcuts))).platform if shortcuts else ""
                 )
                 self._table.setItem(row, self._shortcut_col, item_shortcut)
 
                 item_shortcut2 = QTableWidgetItem(
-                    Shortcut(list(shortcuts)[1]).platform
-                    if len(shortcuts) > 1
-                    else ''
+                    Shortcut(list(shortcuts)[1]).platform if len(shortcuts) > 1 else ""
                 )
                 self._table.setItem(row, self._shortcut_col2, item_shortcut2)
 
@@ -289,7 +280,7 @@ class ShortcutEditor(QWidget):
             self._table.verticalHeader().setVisible(False)
 
             self._table.setColumnHidden(self._action_col, True)
-            item = QTableWidgetItem(trans._('No key bindings'))
+            item = QTableWidgetItem(trans._("No key bindings"))
             item.setFlags(Qt.ItemFlag.NoItemFlags)
             self._table.setItem(0, 0, item)
 
@@ -318,9 +309,7 @@ class ShortcutEditor(QWidget):
 
         if current_layer_text != self.VIEWER_KEYBINDINGS:
             actions_all = list(self._get_group_actions(current_layer_text))
-            actions_all.extend(
-                self._get_group_actions(self.VIEWER_KEYBINDINGS)
-            )
+            actions_all.extend(self._get_group_actions(self.VIEWER_KEYBINDINGS))
         else:
             actions_all = []
             for group in self.key_bindings_strs:
@@ -336,35 +325,33 @@ class ShortcutEditor(QWidget):
         shortcuts = action_manager._shortcuts.get(action_name, [])
         with lock_keybind_update(self):
             self._table.item(row, self._shortcut_col).setText(
-                Shortcut(next(iter(shortcuts))).platform if shortcuts else ''
+                Shortcut(next(iter(shortcuts))).platform if shortcuts else ""
             )
             self._table.item(row, self._shortcut_col2).setText(
-                Shortcut(list(shortcuts)[1]).platform
-                if len(shortcuts) > 1
-                else ''
+                Shortcut(list(shortcuts)[1]).platform if len(shortcuts) > 1 else ""
             )
 
     def _show_conflicts_warning(
         self, new_shortcut, conflicting_actions, conflicting_rows
     ):
         # create string listing info of all the conflicts found
-        conflicting_actions_string = '<ul>'
+        conflicting_actions_string = "<ul>"
         for group, action_description in conflicting_actions:
             conflicting_actions_string += trans._(
-                '<li><b>{action_description}</b> in the <b>{group}</b> group</li>',
+                "<li><b>{action_description}</b> in the <b>{group}</b> group</li>",
                 action_description=action_description,
                 group=group,
             )
-        conflicting_actions_string += '</ul>'
+        conflicting_actions_string += "</ul>"
 
         # show warning symbols
         self._show_warning_icons(conflicting_rows)
 
         # show warning message
         message = trans._(
-            'The keybinding <b>{new_shortcut}</b> is already assigned to:'
-            '{conflicting_actions_string}'
-            'Change or clear conflicting shortcuts before assigning <b>{new_shortcut}</b> to this one.',
+            "The keybinding <b>{new_shortcut}</b> is already assigned to:"
+            "{conflicting_actions_string}"
+            "Change or clear conflicting shortcuts before assigning <b>{new_shortcut}</b> to this one.",
             new_shortcut=new_shortcut,
             conflicting_actions_string=conflicting_actions_string,
         )
@@ -381,9 +368,7 @@ class ShortcutEditor(QWidget):
         current_item = self._table.currentItem()
         conflicting_rows = [row]
         conflicting_actions = []
-        for conflicting_row, (group, (action_name, action)) in enumerate(
-            actions_all
-        ):
+        for conflicting_row, (group, (action_name, action)) in enumerate(actions_all):
             shortcuts = action_manager._shortcuts.get(action_name, [])
 
             if Shortcut(new_shortcut).qt not in [
@@ -427,7 +412,7 @@ class ShortcutEditor(QWidget):
         self._show_warning_icons([row])
 
         message = trans._(
-            '<b>{new_shortcut}</b> is not a valid keybinding.',
+            "<b>{new_shortcut}</b> is not a valid keybinding.",
             new_shortcut=Shortcut(new_shortcut).platform,
         )
         self._show_warning(row, message)
@@ -462,12 +447,10 @@ class ShortcutEditor(QWidget):
             current_action = self._table.item(row, self._action_col).text()
 
             # get the original shortcuts
-            current_shortcuts = list(
-                action_manager._shortcuts.get(current_action, [])
-            )
-            for mod in {'Shift', 'Ctrl', 'Alt', 'Cmd', 'Super', 'Meta'}:
+            current_shortcuts = list(action_manager._shortcuts.get(current_action, []))
+            for mod in {"Shift", "Ctrl", "Alt", "Cmd", "Super", "Meta"}:
                 # we want to prevent multiple modifiers but still allow single modifiers.
-                if new_shortcut.endswith('-' + mod):
+                if new_shortcut.endswith("-" + mod):
                     self._show_bind_shortcut_error(
                         current_action,
                         current_shortcuts,
@@ -486,7 +469,7 @@ class ShortcutEditor(QWidget):
                 action_manager.unbind_shortcut(current_action)
                 shortcuts_list = list(current_shortcuts)
                 ind = col - self._shortcut_col
-                if new_shortcut != '':
+                if new_shortcut != "":
                     if ind < len(shortcuts_list):
                         shortcuts_list[ind] = new_shortcut
                     else:
@@ -528,11 +511,9 @@ class ShortcutEditor(QWidget):
 
         for row in rows:
             self.warning_indicator = QLabel(self)
-            self.warning_indicator.setObjectName('error_label')
+            self.warning_indicator.setObjectName("error_label")
 
-            self._table.setCellWidget(
-                row, self._icon_col, self.warning_indicator
-            )
+            self._table.setCellWidget(row, self._icon_col, self.warning_indicator)
 
     def _cleanup_warning_icons(self, rows):
         """Remove the warning icons from the shortcut table.
@@ -544,7 +525,7 @@ class ShortcutEditor(QWidget):
 
         """
         for row in rows:
-            self._table.setCellWidget(row, self._icon_col, QLabel(''))
+            self._table.setCellWidget(row, self._icon_col, QLabel(""))
 
     def _show_warning(self, row: int, message: str) -> None:
         """Creates and displays warning message when shortcut is already assigned.
@@ -562,8 +543,7 @@ class ShortcutEditor(QWidget):
         delta_x = 10
         global_point = self.mapToGlobal(
             QPoint(
-                self._table.columnViewportPosition(self._shortcut_col)
-                + delta_x,
+                self._table.columnViewportPosition(self._shortcut_col) + delta_x,
                 self._table.rowViewportPosition(row) + delta_y,
             )
         )
@@ -610,16 +590,14 @@ class ShortcutDelegate(QItemDelegate):
 
     def setEditorData(self, widget, model_index):
         text = model_index.model().data(model_index, Qt.ItemDataRole.EditRole)
-        widget.setText(str(text) if text else '')
+        widget.setText(str(text) if text else "")
 
     def updateEditorGeometry(self, widget, style_option, model_index):
         widget.setGeometry(style_option.rect)
 
     def setModelData(self, widget, abstract_item_model, model_index):
         text = widget.text()
-        abstract_item_model.setData(
-            model_index, text, Qt.ItemDataRole.EditRole
-        )
+        abstract_item_model.setData(model_index, text, Qt.ItemDataRole.EditRole)
 
 
 class EditorWidget(QLineEdit):
@@ -665,24 +643,24 @@ class EditorWidget(QLineEdit):
             Qt.Key.Key_Meta,
         ):
             return
-        if sys.platform == 'darwin':
+        if sys.platform == "darwin":
             # On macOS, the modifiers are not the same as on other platforms.
             # we also use pairs instead of a dict to keep the order.
             modmap = (
-                (Qt.ControlModifier, 'Meta+'),
-                (Qt.AltModifier, 'Alt+'),
-                (Qt.ShiftModifier, 'Shift+'),
-                (Qt.MetaModifier, 'Ctrl+'),
+                (Qt.ControlModifier, "Meta+"),
+                (Qt.AltModifier, "Alt+"),
+                (Qt.ShiftModifier, "Shift+"),
+                (Qt.MetaModifier, "Ctrl+"),
             )
         else:
             modmap = (
-                (Qt.ControlModifier, 'Ctrl+'),
-                (Qt.AltModifier, 'Alt+'),
-                (Qt.ShiftModifier, 'Shift+'),
-                (Qt.MetaModifier, 'Meta+'),
+                (Qt.ControlModifier, "Ctrl+"),
+                (Qt.AltModifier, "Alt+"),
+                (Qt.ShiftModifier, "Shift+"),
+                (Qt.MetaModifier, "Meta+"),
             )
         modifiers = event.modifiers()
-        seq = ''
+        seq = ""
         for mod, s in modmap:
             if modifiers & mod:
                 seq += s
@@ -704,11 +682,11 @@ class EditorWidget(QLineEdit):
 
         if (
             event_key in {Qt.Key.Key_Delete, Qt.Key.Key_Backspace}
-            and self.text() != ''
+            and self.text() != ""
             and self.hasSelectedText()
         ):
             # Allow user to delete shortcut.
-            self.setText('')
+            self.setText("")
             return
 
         if event_key in (

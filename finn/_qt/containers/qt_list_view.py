@@ -8,13 +8,11 @@ from finn._qt.containers._base_item_view import _BaseEventedItemView
 from finn._qt.containers.qt_list_model import QtListModel
 
 if TYPE_CHECKING:
-    from typing import Optional
-
     from qtpy.QtWidgets import QWidget  # type: ignore[attr-defined]
 
     from finn.utils.events.containers import SelectableEventedList
 
-ItemType = TypeVar('ItemType')
+ItemType = TypeVar("ItemType")
 
 
 class QtListView(_BaseEventedItemView[ItemType], QListView):
@@ -38,7 +36,7 @@ class QtListView(_BaseEventedItemView[ItemType], QListView):
     def __init__(
         self,
         root: SelectableEventedList[ItemType],
-        parent: Optional[QWidget] = None,
+        parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
         self.setDragDropMode(QListView.InternalMove)

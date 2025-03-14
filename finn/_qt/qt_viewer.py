@@ -11,8 +11,6 @@ from types import FrameType
 from typing import (
     TYPE_CHECKING,
     Any,
-    Optional,
-    Union,
 )
 from weakref import WeakSet, ref
 
@@ -70,7 +68,7 @@ if TYPE_CHECKING:
 
 def _npe2_decode_selected_filter(
     ext_str: str, selected_filter: str, writers: Sequence[WriterContribution]
-) -> Optional[WriterContribution]:
+) -> WriterContribution | None:
     """Determine the writer that should be invoked to save data.
 
     When npe2 can be imported, resolves a selected file extension
@@ -80,8 +78,9 @@ def _npe2_decode_selected_filter(
     # `[]`. This function will return None.
 
     for entry, writer in zip(
-        ext_str.split(';;'),
+        ext_str.split(";;"),
         writers,
+        strict=False,
     ):
         if entry.startswith(selected_filter):
             return writer
@@ -110,27 +109,27 @@ def _extension_string_for_layers(
     if len(layers) == 1:
         selected_layer = layers[0]
         # single selected layer.
-        if selected_layer._type_string == 'image':
+        if selected_layer._type_string == "image":
             ext = imsave_extensions()
 
-            ext_list = [f'*{val}' for val in ext]
-            ext_str = ';;'.join(ext_list)
+            ext_list = [f"*{val}" for val in ext]
+            ext_str = ";;".join(ext_list)
 
             ext_str = trans._(
-                'All Files (*);; Image file types:;;{ext_str}',
+                "All Files (*);; Image file types:;;{ext_str}",
                 ext_str=ext_str,
             )
 
-        elif selected_layer._type_string == 'points':
-            ext_str = trans._('All Files (*);; *.csv;;')
+        elif selected_layer._type_string == "points":
+            ext_str = trans._("All Files (*);; *.csv;;")
 
         else:
             # layer other than image or points
-            ext_str = trans._('All Files (*);;')
+            ext_str = trans._("All Files (*);;")
 
     else:
         # multiple layers.
-        ext_str = trans._('All Files (*);;')
+        ext_str = trans._("All Files (*);;")
     return ext_str, []
 
 
@@ -183,9 +182,7 @@ class QtViewer(QSplitter):
 
         self._show_welcome_screen = show_welcome_screen
 
-        QCoreApplication.setAttribute(
-            Qt.AA_UseStyleSheetPropagationInWidgetStyles, True
-        )
+        QCoreApplication.setAttribute(Qt.AA_UseStyleSheetPropagationInWidgetStyles, True)
 
         self.viewer = viewer
         self.dims = QtDims(self.viewer.dims)
@@ -238,9 +235,7 @@ class QtViewer(QSplitter):
         self.viewer.dims.events.ndisplay.connect(self._update_camera_depth)
         self.viewer.layers.events.inserted.connect(self._update_welcome_screen)
         self.viewer.layers.events.removed.connect(self._update_welcome_screen)
-        self.viewer.layers.selection.events.active.connect(
-            self._on_active_change
-        )
+        self.viewer.layers.selection.events.active.connect(self._on_active_change)
 
         self.viewer.layers.events.inserted.connect(self._on_add_layer_change)
 
@@ -250,9 +245,7 @@ class QtViewer(QSplitter):
         self._qt_poll = _create_qt_poll(self, self.viewer.camera)
 
         # Create the experimental RemoteManager for the monitor.
-        self._remote_manager = _create_remote_manager(
-            self.viewer.layers, self._qt_poll
-        )
+        self._remote_manager = _create_remote_manager(self.viewer.layers, self._qt_poll)
 
         # bind shortcuts stored in settings last.
         self._bind_shortcuts()
@@ -260,9 +253,7 @@ class QtViewer(QSplitter):
         settings = get_settings()
         self._update_dask_cache_settings(settings.application.dask)
 
-        settings.application.dask.events.connect(
-            self._update_dask_cache_settings
-        )
+        settings.application.dask.events.connect(self._update_dask_cache_settings)
 
         for layer in self.viewer.layers:
             self._add_layer(layer)
@@ -275,7 +266,7 @@ class QtViewer(QSplitter):
         """
         warnings.warn(
             trans._(
-                'Access to QtViewer.view is deprecated since 0.5.0 and will be removed in the napari 0.6.0. Change to QtViewer.canvas.view instead.'
+                "Access to QtViewer.view is deprecated since 0.5.0 and will be removed in the napari 0.6.0. Change to QtViewer.canvas.view instead."
             ),
             FutureWarning,
             stacklevel=2,
@@ -290,7 +281,7 @@ class QtViewer(QSplitter):
         """
         warnings.warn(
             trans._(
-                'Access to QtViewer.camera will become deprecated in the 0.6.0. Change to QtViewer.canvas.camera instead.'
+                "Access to QtViewer.camera will become deprecated in the 0.6.0. Change to QtViewer.canvas.camera instead."
             ),
             FutureWarning,
             stacklevel=2,
@@ -301,16 +292,16 @@ class QtViewer(QSplitter):
     def chunk_receiver(self) -> None:
         warnings.warn(
             trans._(
-                'QtViewer.chunk_receiver is deprecated in version 0.5 and will be removed in a later version. '
-                'More generally the old approach to async loading was removed in version 0.5 so this value is always None. '
-                'If you need to specifically use the old approach, continue to use the latest 0.4 release.'
+                "QtViewer.chunk_receiver is deprecated in version 0.5 and will be removed in a later version. "
+                "More generally the old approach to async loading was removed in version 0.5 so this value is always None. "
+                "If you need to specifically use the old approach, continue to use the latest 0.4 release."
             ),
             DeprecationWarning,
         )
 
     @staticmethod
     def _update_dask_cache_settings(
-        dask_setting: Union[DaskSettings, Event] = None,
+        dask_setting: DaskSettings | Event = None,
     ):
         """Update dask cache to match settings."""
         if not dask_setting:
@@ -358,7 +349,7 @@ class QtViewer(QSplitter):
         """QWidget wrapped in a QDockWidget with forwarded viewer events."""
         if self._dockLayerList is None:
             layerList = QWidget()
-            layerList.setObjectName('layerList')
+            layerList.setObjectName("layerList")
             layerListLayout = QVBoxLayout()
             layerListLayout.addWidget(self.layerButtons)
             layerListLayout.addWidget(self.layers)
@@ -368,10 +359,10 @@ class QtViewer(QSplitter):
             self._dockLayerList = QtViewerDockWidget(
                 self,
                 layerList,
-                name=trans._('layer list'),
-                area='left',
-                allowed_areas=['left', 'right'],
-                object_name='layer list',
+                name=trans._("layer list"),
+                area="left",
+                allowed_areas=["left", "right"],
+                object_name="layer list",
                 close_btn=False,
             )
         return self._dockLayerList
@@ -383,10 +374,10 @@ class QtViewer(QSplitter):
             self._dockLayerControls = QtViewerDockWidget(
                 self,
                 self.controls,
-                name=trans._('layer controls'),
-                area='left',
-                allowed_areas=['left', 'right'],
-                object_name='layer controls',
+                name=trans._("layer controls"),
+                area="left",
+                allowed_areas=["left", "right"],
+                object_name="layer controls",
                 close_btn=False,
             )
         return self._dockLayerControls
@@ -398,10 +389,10 @@ class QtViewer(QSplitter):
             self._dockConsole = QtViewerDockWidget(
                 self,
                 QWidget(),
-                name=trans._('console'),
-                area='bottom',
-                allowed_areas=['top', 'bottom'],
-                object_name='console',
+                name=trans._("console"),
+                area="bottom",
+                allowed_areas=["top", "bottom"],
+                object_name="console",
                 close_btn=False,
             )
             self._dockConsole.setVisible(False)
@@ -421,12 +412,12 @@ class QtViewer(QSplitter):
 
     def _leave_canvas(self):
         """disable status on canvas leave"""
-        self.viewer.status = ''
+        self.viewer.status = ""
         self.viewer.mouse_over_canvas = False
 
     def _enter_canvas(self):
         """enable status on canvas enter"""
-        self.viewer.status = 'Ready'
+        self.viewer.status = "Ready"
         self.viewer.mouse_over_canvas = True
 
     def _ensure_connect(self):
@@ -446,8 +437,8 @@ class QtViewer(QSplitter):
             return QtViewerDockWidget(
                 self,
                 QtPerformance(),
-                name=trans._('performance'),
-                area='bottom',
+                name=trans._("performance"),
+                area="bottom",
             )
         return None
 
@@ -510,10 +501,7 @@ class QtViewer(QSplitter):
             callers frame.
         """
         if isinstance(variables, (str, list, tuple)):
-            if isinstance(variables, str):
-                vlist = variables.split()
-            else:
-                vlist = variables
+            vlist = variables.split() if isinstance(variables, str) else variables
             vdict = {}
             cf = sys._getframe(2)
             for name in vlist:
@@ -521,14 +509,14 @@ class QtViewer(QSplitter):
                     vdict[name] = eval(name, cf.f_globals, cf.f_locals)
                 except NameError:
                     logging.warning(
-                        'Could not get variable %s from %s',
+                        "Could not get variable %s from %s",
                         name,
                         cf.f_code.co_name,
                     )
         elif isinstance(variables, dict):
             vdict = variables
         else:
-            raise TypeError('variables must be a dict/str/list/tuple')
+            raise TypeError("variables must be a dict/str/list/tuple")
         # weakly reference values if possible
         new_dict = {k: self._weakref_if_possible(v) for k, v in vdict.items()}
         self.console_backlog.append(new_dict)
@@ -538,7 +526,7 @@ class QtViewer(QSplitter):
         """List: items to push to console when instantiated."""
         return self._console_backlog
 
-    def _get_console(self) -> Optional[QtConsole]:
+    def _get_console(self) -> QtConsole | None:
         """Function to setup console.
 
         Returns
@@ -565,14 +553,12 @@ class QtViewer(QSplitter):
             import finn
 
             with warnings.catch_warnings():
-                warnings.filterwarnings('ignore')
+                warnings.filterwarnings("ignore")
                 console = QtConsole(self.viewer, style_sheet=self.styleSheet())
-                console.push(
-                    {'napari': napari, 'action_manager': action_manager}
-                )
+                console.push({"napari": finn, "action_manager": action_manager})
                 with CallerFrame(_in_napari) as c:
-                    if c.frame.f_globals.get('__name__', '') == '__main__':
-                        console.push({'np': np})
+                    if c.frame.f_globals.get("__name__", "") == "__main__":
+                        console.push({"np": np})
                 for i in self.console_backlog:
                     # recover weak refs
                     console.push(
@@ -586,7 +572,7 @@ class QtViewer(QSplitter):
         except ModuleNotFoundError:
             warnings.warn(
                 trans._(
-                    'napari-console not found. It can be installed with'
+                    "napari-console not found. It can be installed with"
                     ' "pip install napari_console"'
                 ),
                 stacklevel=1,
@@ -595,9 +581,7 @@ class QtViewer(QSplitter):
         except ImportError:
             traceback.print_exc()
             warnings.warn(
-                trans._(
-                    'error importing napari-console. See console for full error.'
-                ),
+                trans._("error importing napari-console. See console for full error."),
                 stacklevel=1,
             )
             return None
@@ -625,7 +609,7 @@ class QtViewer(QSplitter):
         This only gets triggered on the async slicing path.
         """
         responses: dict[weakref.ReferenceType[Layer], Any] = event.value
-        logging.debug('QtViewer._on_slice_ready: %s', responses)
+        logging.debug("QtViewer._on_slice_ready: %s", responses)
         for weak_layer, response in responses.items():
             if layer := weak_layer():
                 # Update the layer slice state to temporarily support behavior
@@ -733,39 +717,39 @@ class QtViewer(QSplitter):
             Suggested name from input selected layer name, without invalid characters.
         """
         unprintable_ascii_chars = (
-            '\x00',
-            '\x01',
-            '\x02',
-            '\x03',
-            '\x04',
-            '\x05',
-            '\x06',
-            '\x07',
-            '\x08',
-            '\x0e',
-            '\x0f',
-            '\x10',
-            '\x11',
-            '\x12',
-            '\x13',
-            '\x14',
-            '\x15',
-            '\x16',
-            '\x17',
-            '\x18',
-            '\x19',
-            '\x1a',
-            '\x1b',
-            '\x1c',
-            '\x1d',
-            '\x1e',
-            '\x1f',
-            '\x7f',
+            "\x00",
+            "\x01",
+            "\x02",
+            "\x03",
+            "\x04",
+            "\x05",
+            "\x06",
+            "\x07",
+            "\x08",
+            "\x0e",
+            "\x0f",
+            "\x10",
+            "\x11",
+            "\x12",
+            "\x13",
+            "\x14",
+            "\x15",
+            "\x16",
+            "\x17",
+            "\x18",
+            "\x19",
+            "\x1a",
+            "\x1b",
+            "\x1c",
+            "\x1d",
+            "\x1e",
+            "\x1f",
+            "\x7f",
         )
         invalid_characters = (
-            ''.join(unprintable_ascii_chars)
-            + '/'
-            + '\\'  # invalid Windows filename character
+            "".join(unprintable_ascii_chars)
+            + "/"
+            + "\\"  # invalid Windows filename character
             + ':*?"<>|\t\n\r\x0b\x0c'  # invalid Windows path characters
         )
         translation_table = dict.fromkeys(map(ord, invalid_characters), None)
@@ -782,73 +766,61 @@ class QtViewer(QSplitter):
             If True, only layers that are selected in the viewer will be saved.
             By default, all layers are saved.
         """
-        msg = ''
+        msg = ""
         if not len(self.viewer.layers):
-            msg = trans._('There are no layers in the viewer to save')
+            msg = trans._("There are no layers in the viewer to save")
         elif selected and not len(self.viewer.layers.selection):
             msg = trans._(
-                'Please select one or more layers to save,'
-                '\nor use "Save all layers..."'
+                'Please select one or more layers to save,\nor use "Save all layers..."'
             )
         if msg:
-            raise OSError(trans._('Nothing to save'))
+            raise OSError(trans._("Nothing to save"))
 
         # prepare list of extensions for drop down menu.
         ext_str, writers = _extension_string_for_layers(
-            list(self.viewer.layers.selection)
-            if selected
-            else self.viewer.layers
+            list(self.viewer.layers.selection) if selected else self.viewer.layers
         )
 
-        msg = trans._('selected') if selected else trans._('all')
+        msg = trans._("selected") if selected else trans._("all")
         dlg = QFileDialog()
         hist = get_save_history()
         dlg.setHistory(hist)
         # get the layer's name to use for a default name if only one layer is selected
-        selected_layer_name = ''
+        selected_layer_name = ""
         if self.viewer.layers.selection.active is not None:
             selected_layer_name = self.viewer.layers.selection.active.name
-            selected_layer_name = self._remove_invalid_chars(
-                selected_layer_name
-            )
+            selected_layer_name = self._remove_invalid_chars(selected_layer_name)
         filename, selected_filter = dlg.getSaveFileName(
             self,  # parent
-            trans._('Save {msg} layers', msg=msg),  # caption
+            trans._("Save {msg} layers", msg=msg),  # caption
             # home dir by default if selected all, home dir and file name if only 1 layer
-            str(
-                Path(hist[0]) / selected_layer_name
-            ),  # directory in PyQt, dir in PySide
+            str(Path(hist[0]) / selected_layer_name),  # directory in PyQt, dir in PySide
             filter=ext_str,
             options=(
-                QFileDialog.DontUseNativeDialog
-                if in_ipython()
-                else QFileDialog.Options()
+                QFileDialog.DontUseNativeDialog if in_ipython() else QFileDialog.Options()
             ),
         )
         logging.debug(
             trans._(
-                'QFileDialog - filename: {filename} '
-                'selected_filter: {selected_filter}',
+                "QFileDialog - filename: {filename} selected_filter: {selected_filter}",
                 filename=filename or None,
                 selected_filter=selected_filter or None,
             )
         )
 
         if filename:
-            writer = _npe2_decode_selected_filter(
-                ext_str, selected_filter, writers
-            )
+            writer = _npe2_decode_selected_filter(ext_str, selected_filter, writers)
             with warnings.catch_warnings(record=True) as wa:
                 saved = self.viewer.layers.save(
                     filename, selected=selected, _writer=writer
                 )
-                logging.debug('Saved %s', saved)
-                error_messages = '\n'.join(str(x.message.args[0]) for x in wa)
+                logging.debug("Saved %s", saved)
+                error_messages = "\n".join(str(x.message.args[0]) for x in wa)
 
             if not saved:
                 raise OSError(
                     trans._(
-                        'File {filename} save failed.\n{error_messages}',
+                        "File {filename} save failed.\n{error_messages}",
                         deferred=True,
                         filename=filename,
                         error_messages=error_messages,
@@ -934,23 +906,23 @@ class QtViewer(QSplitter):
         dlg.setHistory(hist)
 
         open_kwargs = {
-            'parent': self,
-            'caption': caption,
+            "parent": self,
+            "caption": caption,
         }
-        if 'pyside' in QFileDialog.__module__.lower():
+        if "pyside" in QFileDialog.__module__.lower():
             # PySide6
-            open_kwargs['dir'] = hist[0]
+            open_kwargs["dir"] = hist[0]
         else:
-            open_kwargs['directory'] = hist[0]
+            open_kwargs["directory"] = hist[0]
 
         if in_ipython():
-            open_kwargs['options'] = QFileDialog.DontUseNativeDialog
+            open_kwargs["options"] = QFileDialog.DontUseNativeDialog
 
         return dlg.getOpenFileNames(**open_kwargs)[0]
 
     def _open_files_dialog(self, choose_plugin=False, stack=False):
         """Add files from the menubar."""
-        filenames = self._open_file_dialog_uni(trans._('Select file(s)...'))
+        filenames = self._open_file_dialog_uni(trans._("Select file(s)..."))
 
         if filenames:
             self._qt_open(filenames, choose_plugin=choose_plugin, stack=stack)
@@ -968,26 +940,22 @@ class QtViewer(QSplitter):
 
         folder = dlg.getExistingDirectory(
             self,
-            trans._('Select folder...'),
+            trans._("Select folder..."),
             hist[0],  # home dir by default
-            (
-                QFileDialog.DontUseNativeDialog
-                if in_ipython()
-                else QFileDialog.Options()
-            ),
+            (QFileDialog.DontUseNativeDialog if in_ipython() else QFileDialog.Options()),
         )
 
-        if folder not in {'', None}:
+        if folder not in {"", None}:
             self._qt_open([folder], stack=False, choose_plugin=choose_plugin)
             update_open_history(folder)
 
     def _qt_open(
         self,
         filenames: list[str],
-        stack: Union[bool, list[list[str]]],
+        stack: bool | list[list[str]],
         choose_plugin: bool = False,
-        plugin: Optional[str] = None,
-        layer_type: Optional[str] = None,
+        plugin: str | None = None,
+        layer_type: str | None = None,
         **kwargs,
     ):
         """Open files, potentially popping reader dialog for plugin selection.
@@ -1058,14 +1026,12 @@ class QtViewer(QSplitter):
             self.dockConsole.setFocus()
 
         self.viewerButtons.consoleButton.setProperty(
-            'expanded', self.dockConsole.isVisible()
+            "expanded", self.dockConsole.isVisible()
         )
         self.viewerButtons.consoleButton.style().unpolish(
             self.viewerButtons.consoleButton
         )
-        self.viewerButtons.consoleButton.style().polish(
-            self.viewerButtons.consoleButton
-        )
+        self.viewerButtons.consoleButton.style().polish(self.viewerButtons.consoleButton)
 
     def set_welcome_visible(self, visible):
         """Show welcome screen widget."""
@@ -1119,7 +1085,7 @@ class QtViewer(QSplitter):
     def _set_drag_status(self):
         """Set dedicated status message when dragging files into viewer"""
         self.viewer.status = trans._(
-            'Hold <Alt> key to open plugin selection. Hold <Shift> to open files as stack.'
+            "Hold <Alt> key to open plugin selection. Hold <Shift> to open files as stack."
         )
 
     def _image_from_clipboard(self):
@@ -1133,22 +1099,22 @@ class QtViewer(QSplitter):
             self.viewer.add_image(arr)
             return
         if cb.mimeData().hasUrls():
-            show_info('No image in clipboard, trying to open link instead.')
+            show_info("No image in clipboard, trying to open link instead.")
             self._open_from_list_of_urls_data(
                 cb.mimeData().urls(), stack=False, choose_plugin=False
             )
             return
         if cb.mimeData().hasText():
             show_info(
-                'No image in clipboard, trying to parse text in clipboard as a link.'
+                "No image in clipboard, trying to parse text in clipboard as a link."
             )
             url_list = []
-            for line in cb.mimeData().text().split('\n'):
+            for line in cb.mimeData().text().split("\n"):
                 url = QUrl(line.strip())
                 if url.isEmpty():
                     continue
-                if url.scheme() == '':
-                    url.setScheme('file')
+                if url.scheme() == "":
+                    url.setScheme("file")
                 if url.isLocalFile() and not Path(url.toLocalFile()).exists():
                     break
                 url_list.append(url)
@@ -1157,7 +1123,7 @@ class QtViewer(QSplitter):
                     url_list, stack=False, choose_plugin=False
                 )
                 return
-        show_info('No image or link in clipboard.')
+        show_info("No image or link in clipboard.")
 
     def dropEvent(self, event):
         """Add local files and web URLS with drag and drop.
@@ -1174,13 +1140,9 @@ class QtViewer(QSplitter):
             Event from the Qt context.
         """
         shift_down = (
-            QGuiApplication.keyboardModifiers()
-            & Qt.KeyboardModifier.ShiftModifier
+            QGuiApplication.keyboardModifiers() & Qt.KeyboardModifier.ShiftModifier
         )
-        alt_down = (
-            QGuiApplication.keyboardModifiers()
-            & Qt.KeyboardModifier.AltModifier
-        )
+        alt_down = QGuiApplication.keyboardModifiers() & Qt.KeyboardModifier.AltModifier
         self._open_from_list_of_urls_data(
             event.mimeData().urls(),
             stack=bool(shift_down),
@@ -1233,7 +1195,7 @@ if TYPE_CHECKING:
     from finn.components.experimental.remote import RemoteManager
 
 
-def _create_qt_poll(parent: QObject, camera: Camera) -> Optional[QtPoll]:
+def _create_qt_poll(parent: QObject, camera: Camera) -> QtPoll | None:
     """Create and return a QtPoll instance, if needed.
 
     Create a QtPoll instance for the monitor.
@@ -1264,9 +1226,7 @@ def _create_qt_poll(parent: QObject, camera: Camera) -> Optional[QtPoll]:
     return qt_poll
 
 
-def _create_remote_manager(
-    layers: LayerList, qt_poll
-) -> Optional[RemoteManager]:
+def _create_remote_manager(layers: LayerList, qt_poll) -> RemoteManager | None:
     """Create and return a RemoteManager instance, if we need one.
 
     Parameters
@@ -1312,7 +1272,7 @@ def _in_napari(n: int, frame: FrameType):
     if n < 2:
         return True
     # in-n-out is used in napari for dependency injection.
-    for pref in {'finn.', 'in_n_out.'}:
-        if frame.f_globals.get('__name__', '').startswith(pref):
+    for pref in {"finn.", "in_n_out."}:
+        if frame.f_globals.get("__name__", "").startswith(pref):
             return True
     return False

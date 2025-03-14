@@ -38,10 +38,10 @@ class QtTracksControls(QtLayerControls):
 
     """
 
-    layer: 'finn.layers.Tracks'
+    layer: "finn.layers.Tracks"
     MODE = Mode
-    PAN_ZOOM_ACTION_NAME = 'activate_tracks_pan_zoom_mode'
-    TRANSFORM_ACTION_NAME = 'activate_tracks_transform_mode'
+    PAN_ZOOM_ACTION_NAME = "activate_tracks_pan_zoom_mode"
+    TRANSFORM_ACTION_NAME = "activate_tracks_transform_mode"
 
     def __init__(self, layer) -> None:
         super().__init__(layer)
@@ -103,15 +103,15 @@ class QtTracksControls(QtLayerControls):
 
         self.layout().addRow(self.button_grid)
         self.layout().addRow(self.opacityLabel, self.opacitySlider)
-        self.layout().addRow(trans._('blending:'), self.blendComboBox)
-        self.layout().addRow(trans._('color by:'), self.color_by_combobox)
-        self.layout().addRow(trans._('colormap:'), self.colormap_combobox)
-        self.layout().addRow(trans._('tail width:'), self.tail_width_slider)
-        self.layout().addRow(trans._('tail length:'), self.tail_length_slider)
-        self.layout().addRow(trans._('head length:'), self.head_length_slider)
-        self.layout().addRow(trans._('tail:'), self.tail_checkbox)
-        self.layout().addRow(trans._('show ID:'), self.id_checkbox)
-        self.layout().addRow(trans._('graph:'), self.graph_checkbox)
+        self.layout().addRow(trans._("blending:"), self.blendComboBox)
+        self.layout().addRow(trans._("color by:"), self.color_by_combobox)
+        self.layout().addRow(trans._("colormap:"), self.colormap_combobox)
+        self.layout().addRow(trans._("tail width:"), self.tail_width_slider)
+        self.layout().addRow(trans._("tail length:"), self.tail_length_slider)
+        self.layout().addRow(trans._("head length:"), self.head_length_slider)
+        self.layout().addRow(trans._("tail:"), self.tail_checkbox)
+        self.layout().addRow(trans._("show ID:"), self.id_checkbox)
+        self.layout().addRow(trans._("graph:"), self.graph_checkbox)
 
         self._on_tail_length_change()
         self._on_tail_width_change()
@@ -155,9 +155,7 @@ class QtTracksControls(QtLayerControls):
         with self.layer.events.color_by.blocker():
             color_by = self.layer.color_by
 
-            idx = self.color_by_combobox.findText(
-                color_by, Qt.MatchFlag.MatchFixedString
-            )
+            idx = self.color_by_combobox.findText(color_by, Qt.MatchFlag.MatchFixedString)
             self.color_by_combobox.setCurrentIndex(idx)
 
     def change_tail_width(self, value):

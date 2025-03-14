@@ -1,5 +1,3 @@
-from typing import Optional
-
 from qtpy import QtCore
 from qtpy.QtWidgets import (
     QApplication,
@@ -20,9 +18,7 @@ from finn.utils.translations import trans
 class QtLabeledProgressBar(QWidget):
     """QProgressBar with QLabels for description and ETA."""
 
-    def __init__(
-        self, parent: Optional[QWidget] = None, prog: progress = None
-    ) -> None:
+    def __init__(self, parent: QWidget | None = None, prog: progress = None) -> None:
         super().__init__(parent)
         self.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose)
 
@@ -31,7 +27,7 @@ class QtLabeledProgressBar(QWidget):
         self.qt_progress_bar = QProgressBar()
         self.description_label = QLabel()
         self.eta_label = QLabel()
-        self.cancel_button = QPushButton(trans._('Cancel'))
+        self.cancel_button = QPushButton(trans._("Cancel"))
         self.cancel_button.clicked.connect(self._cancel)
         self.cancel_button.setVisible(isinstance(prog, cancelable_progress))
         base_layout = QVBoxLayout()
@@ -44,23 +40,23 @@ class QtLabeledProgressBar(QWidget):
         base_layout.addLayout(pbar_layout)
 
         line = QFrame(self)
-        line.setObjectName('QtCustomTitleBarLine')
+        line.setObjectName("QtCustomTitleBarLine")
         line.setFixedHeight(1)
         base_layout.addWidget(line)
 
         self.setLayout(base_layout)
 
     @rename_argument(
-        from_name='min',
-        to_name='min_val',
-        version='0.6.0',
-        since_version='0.4.18',
+        from_name="min",
+        to_name="min_val",
+        version="0.6.0",
+        since_version="0.4.18",
     )
     @rename_argument(
-        from_name='max',
-        to_name='max_val',
-        version='0.6.0',
-        since_version='0.4.18',
+        from_name="max",
+        to_name="max_val",
+        version="0.6.0",
+        since_version="0.4.18",
     )
     def setRange(self, min_val, max_val):
         self.qt_progress_bar.setRange(min_val, max_val)
@@ -70,8 +66,8 @@ class QtLabeledProgressBar(QWidget):
         QApplication.processEvents()
 
     def setDescription(self, value):
-        if not value.endswith(': '):
-            value = f'{value}: '
+        if not value.endswith(": "):
+            value = f"{value}: "
         self.description_label.setText(value)
         QApplication.processEvents()
 
@@ -94,9 +90,9 @@ class QtLabeledProgressBar(QWidget):
         self.setRange(0, event.value)
 
     def _cancel(self):
-        self.cancel_button.setText(trans._('Cancelling...'))
+        self.cancel_button.setText(trans._("Cancelling..."))
         self.progress.cancel()
-        self.cancel_button.setText(trans._('Canceled'))
+        self.cancel_button.setText(trans._("Canceled"))
 
 
 class QtProgressBarGroup(QWidget):
@@ -105,7 +101,7 @@ class QtProgressBarGroup(QWidget):
     def __init__(
         self,
         qt_progress_bar: QtLabeledProgressBar,
-        parent: Optional[QWidget] = None,
+        parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
         self.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose)
@@ -115,7 +111,7 @@ class QtProgressBarGroup(QWidget):
         pbr_group_layout.setContentsMargins(0, 0, 0, 0)
 
         line = QFrame(self)
-        line.setObjectName('QtCustomTitleBarLine')
+        line.setObjectName("QtCustomTitleBarLine")
         line.setFixedHeight(1)
         pbr_group_layout.addWidget(line)
 

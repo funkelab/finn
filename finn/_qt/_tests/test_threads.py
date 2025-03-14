@@ -6,20 +6,20 @@ from finn._qt.threads.status_checker import StatusChecker
 from finn.components import ViewerModel
 
 
-@pytest.mark.usefixtures('qapp')
+@pytest.mark.usefixtures("qapp")
 def test_create():
     StatusChecker(ViewerModel())
 
 
-@pytest.mark.usefixtures('qapp')
+@pytest.mark.usefixtures("qapp")
 def test_no_emmit_no_ref(monkeypatch):
     """Calling calculate_status should not emit after viewer is deleted."""
     model = ViewerModel()
     status_checker = StatusChecker(model)
     monkeypatch.setattr(
         status_checker,
-        'status_and_tooltip_changed',
-        MagicMock(side_effect=RuntimeError('Should not emit')),
+        "status_and_tooltip_changed",
+        MagicMock(side_effect=RuntimeError("Should not emit")),
     )
     del model
     status_checker.calculate_status()
@@ -36,7 +36,7 @@ def test_terminate_no_ref(monkeypatch):
 
 def test_waiting_on_no_request(monkeypatch, qtbot):
     def _check_status(value):
-        return value == ('Ready', '')
+        return value == ("Ready", "")
 
     model = ViewerModel()
     model.mouse_over_canvas = True

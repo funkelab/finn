@@ -70,37 +70,29 @@ class QtImageControls(QtBaseImageControls):
         Label for the rendering mode dropdown menu.
     """
 
-    layer: 'finn.layers.Image'
-    PAN_ZOOM_ACTION_NAME = 'activate_image_pan_zoom_mode'
-    TRANSFORM_ACTION_NAME = 'activate_image_transform_mode'
+    layer: "finn.layers.Image"
+    PAN_ZOOM_ACTION_NAME = "activate_image_pan_zoom_mode"
+    TRANSFORM_ACTION_NAME = "activate_image_transform_mode"
 
     def __init__(self, layer) -> None:
         super().__init__(layer)
 
-        self.layer.events.interpolation2d.connect(
-            self._on_interpolation_change
-        )
-        self.layer.events.interpolation3d.connect(
-            self._on_interpolation_change
-        )
+        self.layer.events.interpolation2d.connect(self._on_interpolation_change)
+        self.layer.events.interpolation3d.connect(self._on_interpolation_change)
         self.layer.events.rendering.connect(self._on_rendering_change)
         self.layer.events.iso_threshold.connect(self._on_iso_threshold_change)
         self.layer.events.attenuation.connect(self._on_attenuation_change)
         self.layer.events.depiction.connect(self._on_depiction_change)
-        self.layer.plane.events.thickness.connect(
-            self._on_plane_thickness_change
-        )
+        self.layer.plane.events.thickness.connect(self._on_plane_thickness_change)
 
         self.interpComboBox = QComboBox(self)
-        self.interpComboBox.currentTextChanged.connect(
-            self.changeInterpolation
-        )
+        self.interpComboBox.currentTextChanged.connect(self.changeInterpolation)
         self.interpComboBox.setToolTip(
             trans._(
-                'Texture interpolation for display.\nnearest and linear are most performant.'
+                "Texture interpolation for display.\nnearest and linear are most performant."
             )
         )
-        self.interpLabel = QLabel(trans._('interpolation:'))
+        self.interpLabel = QLabel(trans._("interpolation:"))
 
         renderComboBox = QComboBox(self)
         rendering_options = [i.value for i in ImageRendering]
@@ -111,7 +103,7 @@ class QtImageControls(QtBaseImageControls):
         renderComboBox.setCurrentIndex(index)
         renderComboBox.currentTextChanged.connect(self.changeRendering)
         self.renderComboBox = renderComboBox
-        self.renderLabel = QLabel(trans._('rendering:'))
+        self.renderLabel = QLabel(trans._("rendering:"))
 
         self.depictionComboBox = QComboBox(self)
         depiction_options = [d.value for d in VolumeDepiction]
@@ -121,39 +113,35 @@ class QtImageControls(QtBaseImageControls):
         )
         self.depictionComboBox.setCurrentIndex(index)
         self.depictionComboBox.currentTextChanged.connect(self.changeDepiction)
-        self.depictionLabel = QLabel(trans._('depiction:'))
+        self.depictionLabel = QLabel(trans._("depiction:"))
 
         # plane controls
         self.planeNormalButtons = PlaneNormalButtons(self)
-        self.planeNormalLabel = QLabel(trans._('plane normal:'))
+        self.planeNormalLabel = QLabel(trans._("plane normal:"))
         action_manager.bind_button(
-            'napari:orient_plane_normal_along_z',
+            "napari:orient_plane_normal_along_z",
             self.planeNormalButtons.zButton,
         )
         action_manager.bind_button(
-            'napari:orient_plane_normal_along_y',
+            "napari:orient_plane_normal_along_y",
             self.planeNormalButtons.yButton,
         )
         action_manager.bind_button(
-            'napari:orient_plane_normal_along_x',
+            "napari:orient_plane_normal_along_x",
             self.planeNormalButtons.xButton,
         )
         action_manager.bind_button(
-            'napari:orient_plane_normal_along_view_direction_no_gen',
+            "napari:orient_plane_normal_along_view_direction_no_gen",
             self.planeNormalButtons.obliqueButton,
         )
 
-        self.planeThicknessSlider = QLabeledDoubleSlider(
-            Qt.Orientation.Horizontal, self
-        )
-        self.planeThicknessLabel = QLabel(trans._('plane thickness:'))
+        self.planeThicknessSlider = QLabeledDoubleSlider(Qt.Orientation.Horizontal, self)
+        self.planeThicknessLabel = QLabel(trans._("plane thickness:"))
         self.planeThicknessSlider.setFocusPolicy(Qt.NoFocus)
         self.planeThicknessSlider.setMinimum(1)
         self.planeThicknessSlider.setMaximum(50)
         self.planeThicknessSlider.setValue(self.layer.plane.thickness)
-        self.planeThicknessSlider.valueChanged.connect(
-            self.changePlaneThickness
-        )
+        self.planeThicknessSlider.valueChanged.connect(self.changePlaneThickness)
 
         sld = QLabeledDoubleSlider(Qt.Orientation.Horizontal, parent=self)
         sld.setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -163,7 +151,7 @@ class QtImageControls(QtBaseImageControls):
         sld.setValue(self.layer.iso_threshold)
         sld.valueChanged.connect(self.changeIsoThreshold)
         self.isoThresholdSlider = sld
-        self.isoThresholdLabel = QLabel(trans._('iso threshold:'))
+        self.isoThresholdLabel = QLabel(trans._("iso threshold:"))
 
         sld = QLabeledDoubleSlider(Qt.Orientation.Horizontal, parent=self)
         sld.setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -174,13 +162,13 @@ class QtImageControls(QtBaseImageControls):
         sld.setDecimals(3)
         sld.valueChanged.connect(self.changeAttenuation)
         self.attenuationSlider = sld
-        self.attenuationLabel = QLabel(trans._('attenuation:'))
+        self.attenuationLabel = QLabel(trans._("attenuation:"))
 
         self._on_ndisplay_changed()
 
         colormap_layout = QHBoxLayout()
-        if hasattr(self.layer, 'rgb') and self.layer.rgb:
-            colormap_layout.addWidget(QLabel('RGB'))
+        if hasattr(self.layer, "rgb") and self.layer.rgb:
+            colormap_layout.addWidget(QLabel("RGB"))
             self.colormapComboBox.setVisible(False)
             self.colorbarLabel.setVisible(False)
         else:
@@ -190,19 +178,15 @@ class QtImageControls(QtBaseImageControls):
 
         self.layout().addRow(self.button_grid)
         self.layout().addRow(self.opacityLabel, self.opacitySlider)
-        self.layout().addRow(trans._('blending:'), self.blendComboBox)
-        self.layout().addRow(
-            trans._('contrast limits:'), self.contrastLimitsSlider
-        )
-        self.layout().addRow(trans._('auto-contrast:'), self.autoScaleBar)
-        self.layout().addRow(trans._('gamma:'), self.gammaSlider)
-        self.layout().addRow(trans._('colormap:'), colormap_layout)
+        self.layout().addRow(trans._("blending:"), self.blendComboBox)
+        self.layout().addRow(trans._("contrast limits:"), self.contrastLimitsSlider)
+        self.layout().addRow(trans._("auto-contrast:"), self.autoScaleBar)
+        self.layout().addRow(trans._("gamma:"), self.gammaSlider)
+        self.layout().addRow(trans._("colormap:"), colormap_layout)
         self.layout().addRow(self.interpLabel, self.interpComboBox)
         self.layout().addRow(self.depictionLabel, self.depictionComboBox)
         self.layout().addRow(self.planeNormalLabel, self.planeNormalButtons)
-        self.layout().addRow(
-            self.planeThicknessLabel, self.planeThicknessSlider
-        )
+        self.layout().addRow(self.planeThicknessLabel, self.planeThicknessSlider)
         self.layout().addRow(self.renderLabel, self.renderComboBox)
         self.layout().addRow(self.isoThresholdLabel, self.isoThresholdSlider)
         self.layout().addRow(self.attenuationLabel, self.attenuationSlider)
@@ -415,10 +399,10 @@ class PlaneNormalButtons(QWidget):
         self.layout().setSpacing(2)
         self.layout().setContentsMargins(0, 0, 0, 0)
 
-        self.xButton = QPushButton('x')
-        self.yButton = QPushButton('y')
-        self.zButton = QPushButton('z')
-        self.obliqueButton = QPushButton(trans._('oblique'))
+        self.xButton = QPushButton("x")
+        self.yButton = QPushButton("y")
+        self.zButton = QPushButton("z")
+        self.obliqueButton = QPushButton(trans._("oblique"))
 
         self.layout().addWidget(self.xButton)
         self.layout().addWidget(self.yButton)

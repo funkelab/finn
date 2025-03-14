@@ -8,10 +8,10 @@ from finn._tests.utils import skip_local_popups
 @skip_local_popups
 @pytest.mark.parametrize(
     (
-        'action_id',
-        'action_text',
-        'action_dockwidget_name',
-        'action_status_tooltip',
+        "action_id",
+        "action_text",
+        "action_dockwidget_name",
+        "action_status_tooltip",
     ),
     toggle_action_details,
 )

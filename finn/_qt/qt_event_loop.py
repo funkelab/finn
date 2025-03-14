@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import sys
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Optional, cast
+from typing import TYPE_CHECKING, cast
 from warnings import warn
 
 from qtpy import PYQT5, PYSIDE2
@@ -33,35 +33,33 @@ from finn.utils.translations import trans
 if TYPE_CHECKING:
     from IPython import InteractiveShell
 
-NAPARI_ICON_PATH = os.path.join(
-    os.path.dirname(__file__), '..', 'resources', 'logo.svg'
-)
-NAPARI_APP_ID = f'finn.finn.viewer.{__version__}'
+NAPARI_ICON_PATH = os.path.join(os.path.dirname(__file__), "..", "resources", "logo.svg")
+NAPARI_APP_ID = f"finn.finn.viewer.{__version__}"
 
 
 def set_app_id(app_id):
-    if os.name == 'nt' and app_id and not getattr(sys, 'frozen', False):
+    if os.name == "nt" and app_id and not getattr(sys, "frozen", False):
         import ctypes
 
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
 
 
 _defaults = {
-    'app_name': 'Motile Tracker',
-    'app_version': __version__,
-    'icon': NAPARI_ICON_PATH,
-    'org_name': 'motile',
-    'org_domain': 'motile.org',
-    'app_id': NAPARI_APP_ID,
+    "app_name": "Motile Tracker",
+    "app_version": __version__,
+    "icon": NAPARI_ICON_PATH,
+    "org_name": "motile",
+    "org_domain": "motile.org",
+    "app_id": NAPARI_APP_ID,
 }
 
 
 # store reference to QApplication to prevent garbage collection
 _app_ref = None
-_IPYTHON_WAS_HERE_FIRST = 'IPython' in sys.modules
+_IPYTHON_WAS_HERE_FIRST = "IPython" in sys.modules
 
 
-def _focus_changed(old: Optional[QWidget], new: Optional[QWidget]):
+def _focus_changed(old: QWidget | None, new: QWidget | None):
     if old is not None and new is not None:
         return  # ignore focus changes between two widgets
     if old is None and new is None:
@@ -94,8 +92,8 @@ def get_app(*args, **kwargs) -> QApplication:
     """Get or create the Qt QApplication. Now deprecated, use `get_qapp`."""
     warn(
         trans._(
-            '`QApplication` instance access through `get_app` is deprecated and will be removed in 0.6.0.\n'
-            'Please use `get_qapp` instead.\n',
+            "`QApplication` instance access through `get_app` is deprecated and will be removed in 0.6.0.\n"
+            "Please use `get_qapp` instead.\n",
             deferred=True,
         ),
         category=FutureWarning,
@@ -106,13 +104,13 @@ def get_app(*args, **kwargs) -> QApplication:
 
 def get_qapp(
     *,
-    app_name: Optional[str] = None,
-    app_version: Optional[str] = None,
-    icon: Optional[str] = None,
-    org_name: Optional[str] = None,
-    org_domain: Optional[str] = None,
-    app_id: Optional[str] = None,
-    ipy_interactive: Optional[bool] = None,
+    app_name: str | None = None,
+    app_version: str | None = None,
+    icon: str | None = None,
+    org_name: str | None = None,
+    org_domain: str | None = None,
+    app_id: str | None = None,
+    ipy_interactive: bool | None = None,
 ) -> QApplication:
     """Get or create the Qt QApplication.
 
@@ -161,7 +159,7 @@ def get_qapp(
 
     app = QApplication.instance()
     if app:
-        set_values.discard('ipy_interactive')
+        set_values.discard("ipy_interactive")
         if set_values:
             warn(
                 trans._(
@@ -174,7 +172,7 @@ def get_qapp(
         if perf_config and perf_config.trace_qt_events:
             warn(
                 trans._(
-                    'Using NAPARI_PERFMON with an already-running QtApp (--gui qt?) is not supported.',
+                    "Using NAPARI_PERFMON with an already-running QtApp (--gui qt?) is not supported.",
                     deferred=True,
                 ),
                 stacklevel=2,
@@ -188,19 +186,15 @@ def get_qapp(
         # they are deprecated and activated by default. For more info see:
         # https://doc.qt.io/qtforpython-6/gettingstarted/porting_from2.html#class-function-deprecations
         if PYQT5 or PYSIDE2:
-            QApplication.setAttribute(
-                Qt.ApplicationAttribute.AA_EnableHighDpiScaling
-            )
-            QApplication.setAttribute(
-                Qt.ApplicationAttribute.AA_UseHighDpiPixmaps
-            )
+            QApplication.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling)
+            QApplication.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps)
 
         argv = sys.argv.copy()
-        if sys.platform == 'darwin' and not argv[0].endswith('napari'):
+        if sys.platform == "darwin" and not argv[0].endswith("napari"):
             # Make sure the app name in the Application menu is `napari`
             # which is taken from the basename of sys.argv[0]; we use
             # a copy so the original value is still available at sys.argv
-            argv[0] = 'napari'
+            argv[0] = "napari"
 
         if perf_config and perf_config.trace_qt_events:
             from finn._qt.perf.qt_event_tracing import (
@@ -213,23 +207,23 @@ def get_qapp(
 
         # if this is the first time the Qt app is being instantiated, we set
         # the name and metadata
-        app.setApplicationName(kwargs.get('app_name'))
-        app.setApplicationVersion(kwargs.get('app_version'))
-        app.setOrganizationName(kwargs.get('org_name'))
-        app.setOrganizationDomain(kwargs.get('org_domain'))
-        set_app_id(kwargs.get('app_id'))
+        app.setApplicationName(kwargs.get("app_name"))
+        app.setApplicationVersion(kwargs.get("app_version"))
+        app.setOrganizationName(kwargs.get("org_name"))
+        app.setOrganizationDomain(kwargs.get("org_domain"))
+        set_app_id(kwargs.get("app_id"))
 
         # Intercept tooltip events in order to convert all text to rich text
         # to allow for text wrapping of tooltips
         app.installEventFilter(QtToolTipEventFilter())
 
     if app.windowIcon().isNull():
-        app.setWindowIcon(QIcon(kwargs.get('icon')))
+        app.setWindowIcon(QIcon(kwargs.get("icon")))
 
     if ipy_interactive is None:
         ipy_interactive = get_settings().application.ipy_interactive
     if _IPYTHON_WAS_HERE_FIRST:
-        _try_enable_ipython_gui('qt' if ipy_interactive else None)
+        _try_enable_ipython_gui("qt" if ipy_interactive else None)
 
     if perf_config and not perf_config.patched:
         # Will patch based on config file.
@@ -242,23 +236,21 @@ def get_qapp(
 
         # Setup search paths for currently installed themes.
         for name in _themes:
-            QDir.addSearchPath(f'theme_{name}', str(_theme_path(name)))
+            QDir.addSearchPath(f"theme_{name}", str(_theme_path(name)))
 
         # When a new theme is added, at it to the search path.
         @_themes.events.changed.connect
         @_themes.events.added.connect
         def _(event):
             name = event.key
-            QDir.addSearchPath(f'theme_{name}', str(_theme_path(name)))
+            QDir.addSearchPath(f"theme_{name}", str(_theme_path(name)))
 
         register_threadworker_processors()
 
         notification_manager.notification_ready.connect(
             NapariQtNotification.show_notification
         )
-        notification_manager.notification_ready.connect(
-            show_console_notification
-        )
+        notification_manager.notification_ready.connect(show_console_notification)
 
         app.focusChanged.connect(_focus_changed)
 
@@ -276,10 +268,7 @@ def quit_app():
         v.close()
     QApplication.closeAllWindows()
     # if we started the application then the app will be named 'napari'.
-    if (
-        QApplication.applicationName() == 'napari'
-        and not _ipython_has_eventloop()
-    ):
+    if QApplication.applicationName() == "napari" and not _ipython_has_eventloop():
         QApplication.quit()
 
     # otherwise, something else created the QApp before us (such as
@@ -337,7 +326,7 @@ def gui_qt(*, startup_logo=False, gui_exceptions=False, force=False):
 
     app = get_app()
     splash = None
-    if startup_logo and app.applicationName() == 'napari':
+    if startup_logo and app.applicationName() == "napari":
         from finn._qt.widgets.qt_splash_screen import NapariSplashScreen
 
         splash = NapariSplashScreen()
@@ -346,7 +335,7 @@ def gui_qt(*, startup_logo=False, gui_exceptions=False, force=False):
         yield app
     except Exception:  # noqa: BLE001
         notification_manager.receive_error(*sys.exc_info())
-    run(force=force, gui_exceptions=gui_exceptions, _func_name='gui_qt')
+    run(force=force, gui_exceptions=gui_exceptions, _func_name="gui_qt")
 
 
 def _ipython_has_eventloop() -> bool:
@@ -357,7 +346,7 @@ def _ipython_has_eventloop() -> bool:
     at the prompt.  So it will likely "appear" like there is no event loop
     running, but we still don't need to start one.
     """
-    ipy_module = sys.modules.get('IPython')
+    ipy_module = sys.modules.get("IPython")
     if not ipy_module:
         return False
 
@@ -365,7 +354,7 @@ def _ipython_has_eventloop() -> bool:
     if not shell:
         return False
 
-    return shell.active_eventloop == 'qt'
+    return shell.active_eventloop == "qt"
 
 
 def _pycharm_has_eventloop(app: QApplication) -> bool:
@@ -375,14 +364,14 @@ def _pycharm_has_eventloop(app: QApplication) -> bool:
     shell which overrides `InteractiveShell.enable_gui()`, breaking some
     superclass behaviour.
     """
-    in_pycharm = 'PYCHARM_HOSTED' in os.environ
-    in_event_loop = getattr(app, '_in_event_loop', False)
+    in_pycharm = "PYCHARM_HOSTED" in os.environ
+    in_event_loop = getattr(app, "_in_event_loop", False)
     return in_pycharm and in_event_loop
 
 
-def _try_enable_ipython_gui(gui='qt'):
+def _try_enable_ipython_gui(gui="qt"):
     """Start %gui qt the eventloop."""
-    ipy_module = sys.modules.get('IPython')
+    ipy_module = sys.modules.get("IPython")
     if not ipy_module:
         return
 
@@ -393,9 +382,7 @@ def _try_enable_ipython_gui(gui='qt'):
         shell.enable_gui(gui)
 
 
-def run(
-    *, force=False, gui_exceptions=False, max_loop_level=1, _func_name='run'
-):
+def run(*, force=False, gui_exceptions=False, max_loop_level=1, _func_name="run"):
     """Start the Qt Event Loop
 
     Parameters
@@ -436,14 +423,14 @@ def run(
     if not app:
         raise RuntimeError(
             trans._(
-                'No Qt app has been created. One can be created by calling `get_app()` or `qtpy.QtWidgets.QApplication([])`',
+                "No Qt app has been created. One can be created by calling `get_app()` or `qtpy.QtWidgets.QApplication([])`",
                 deferred=True,
             )
         )
     if not app.topLevelWidgets() and not force:
         warn(
             trans._(
-                'Refusing to run a QApplication with no topLevelWidgets. To run the app anyway, use `{_func_name}(force=True)`',
+                "Refusing to run a QApplication with no topLevelWidgets. To run the app anyway, use `{_func_name}(force=True)`",
                 deferred=True,
                 _func_name=_func_name,
             ),
@@ -455,8 +442,8 @@ def run(
         loops = app.thread().loopLevel()
         warn(
             trans._n(
-                'A QApplication is already running with 1 event loop. To enter *another* event loop, use `{_func_name}(max_loop_level={max_loop_level})`',
-                'A QApplication is already running with {n} event loops. To enter *another* event loop, use `{_func_name}(max_loop_level={max_loop_level})`',
+                "A QApplication is already running with 1 event loop. To enter *another* event loop, use `{_func_name}(max_loop_level={max_loop_level})`",
+                "A QApplication is already running with {n} event loops. To enter *another* event loop, use `{_func_name}(max_loop_level={max_loop_level})`",
                 n=loops,
                 deferred=True,
                 _func_name=_func_name,

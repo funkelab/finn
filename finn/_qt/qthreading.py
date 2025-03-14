@@ -1,13 +1,10 @@
 import inspect
 import warnings
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from functools import partial, wraps
 from types import FunctionType, GeneratorType
 from typing import (
-    Callable,
-    Optional,
     TypeVar,
-    Union,
 )
 
 from superqt.utils import _qthreading
@@ -16,11 +13,11 @@ from finn.utils.progress import progress
 from finn.utils.translations import trans
 
 __all__ = [
-    'FunctionWorker',
-    'GeneratorWorker',
-    'create_worker',
-    'register_threadworker_processors',
-    'thread_worker',
+    "FunctionWorker",
+    "GeneratorWorker",
+    "create_worker",
+    "register_threadworker_processors",
+    "thread_worker",
 ]
 
 wait_for_workers_to_quit = _qthreading.WorkerBase.await_workers
@@ -43,34 +40,30 @@ class _NotifyingMixin:
         notification_manager.receive_warning(*show_warn_args)
 
 
-_Y = TypeVar('_Y')
-_S = TypeVar('_S')
-_R = TypeVar('_R')
+_Y = TypeVar("_Y")
+_S = TypeVar("_S")
+_R = TypeVar("_R")
 
 
 class FunctionWorker(_qthreading.FunctionWorker[_R], _NotifyingMixin): ...
 
 
-class GeneratorWorker(
-    _qthreading.GeneratorWorker[_Y, _S, _R], _NotifyingMixin
-): ...
+class GeneratorWorker(_qthreading.GeneratorWorker[_Y, _S, _R], _NotifyingMixin): ...
 
 
 # these are re-implemented from superqt just to provide progress
 
 
 def create_worker(
-    func: Union[FunctionType, GeneratorType],
+    func: FunctionType | GeneratorType,
     *args,
-    _start_thread: Optional[bool] = None,
-    _connect: Optional[dict[str, Union[Callable, Sequence[Callable]]]] = None,
-    _progress: Optional[Union[bool, dict[str, Union[int, bool, str]]]] = None,
-    _worker_class: Union[
-        type[GeneratorWorker], type[FunctionWorker], None
-    ] = None,
+    _start_thread: bool | None = None,
+    _connect: dict[str, Callable | Sequence[Callable]] | None = None,
+    _progress: bool | dict[str, int | bool | str] | None = None,
+    _worker_class: type[GeneratorWorker] | type[FunctionWorker] | None = None,
     _ignore_errors: bool = False,
     **kwargs,
-) -> Union[FunctionWorker, GeneratorWorker]:
+) -> FunctionWorker | GeneratorWorker:
     """Convenience function to start a function in another thread.
 
     By default, uses :class:`Worker`, but a custom ``WorkerBase`` subclass may
@@ -157,12 +150,12 @@ def create_worker(
         if isinstance(_progress, bool):
             _progress = {}
 
-        desc = _progress.get('desc', None)
-        total = int(_progress.get('total', 0))
+        desc = _progress.get("desc", None)
+        total = int(_progress.get("total", 0))
         if isinstance(worker, FunctionWorker) and total != 0:
             warnings.warn(
                 trans._(
-                    '_progress total != 0 but worker is FunctionWorker and will not yield. Returning indeterminate progress bar...',
+                    "_progress total != 0 but worker is FunctionWorker and will not yield. Returning indeterminate progress bar...",
                     deferred=True,
                 ),
                 RuntimeWarning,
@@ -195,13 +188,11 @@ def create_worker(
 
 
 def thread_worker(
-    function: Optional[Callable] = None,
-    start_thread: Optional[bool] = None,
-    connect: Optional[dict[str, Union[Callable, Sequence[Callable]]]] = None,
-    progress: Optional[Union[bool, dict[str, Union[int, bool, str]]]] = None,
-    worker_class: Union[
-        type[FunctionWorker], type[GeneratorWorker], None
-    ] = None,
+    function: Callable | None = None,
+    start_thread: bool | None = None,
+    connect: dict[str, Callable | Sequence[Callable]] | None = None,
+    progress: bool | dict[str, int | bool | str] | None = None,
+    worker_class: type[FunctionWorker] | type[GeneratorWorker] | None = None,
     ignore_errors: bool = False,
 ):
     """Decorator that runs a function in a separate thread when called.
@@ -299,13 +290,11 @@ def thread_worker(
         def worker_function(*args, **kwargs):
             # decorator kwargs can be overridden at call time by using the
             # underscore-prefixed version of the kwarg.
-            kwargs['_start_thread'] = kwargs.get('_start_thread', start_thread)
-            kwargs['_connect'] = kwargs.get('_connect', connect)
-            kwargs['_progress'] = kwargs.get('_progress', progress)
-            kwargs['_worker_class'] = kwargs.get('_worker_class', worker_class)
-            kwargs['_ignore_errors'] = kwargs.get(
-                '_ignore_errors', ignore_errors
-            )
+            kwargs["_start_thread"] = kwargs.get("_start_thread", start_thread)
+            kwargs["_connect"] = kwargs.get("_connect", connect)
+            kwargs["_progress"] = kwargs.get("_progress", progress)
+            kwargs["_worker_class"] = kwargs.get("_worker_class", worker_class)
+            kwargs["_ignore_errors"] = kwargs.get("_ignore_errors", ignore_errors)
             return create_worker(
                 func,
                 *args,
@@ -326,22 +315,16 @@ def _add_worker_data(worker: FunctionWorker, return_type, source=None):
     )
 
     cb = _add_layer_data_to_viewer
-    worker.signals.returned.connect(
-        partial(cb, return_type=return_type, source=source)
-    )
+    worker.signals.returned.connect(partial(cb, return_type=return_type, source=source))
 
 
-def _add_worker_data_from_tuple(
-    worker: FunctionWorker, return_type, source=None
-):
+def _add_worker_data_from_tuple(worker: FunctionWorker, return_type, source=None):
     from finn._qt._qapp_model.injection._qprocessors import (
         _add_layer_data_tuples_to_viewer,
     )
 
     cb = _add_layer_data_tuples_to_viewer
-    worker.signals.returned.connect(
-        partial(cb, return_type=return_type, source=source)
-    )
+    worker.signals.returned.connect(partial(cb, return_type=return_type, source=source))
 
 
 def register_threadworker_processors():
@@ -359,11 +342,9 @@ def register_threadworker_processors():
     for _type in (LayerDataTuple, list[LayerDataTuple]):
         t = FunctionWorker[_type]
         magicgui.register_type(t, return_callback=_mgui.add_worker_data)
-        app.injection_store.register(
-            processors={t: _add_worker_data_from_tuple}
-        )
+        app.injection_store.register(processors={t: _add_worker_data_from_tuple})
     for layer_name in layers.NAMES:
-        _type = getattr(types, f'{layer_name.title()}Data')
+        _type = getattr(types, f"{layer_name.title()}Data")
         t = FunctionWorker[_type]
         magicgui.register_type(
             t,

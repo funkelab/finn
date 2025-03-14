@@ -2,7 +2,7 @@ import warnings
 from functools import reduce
 from itertools import count
 from operator import ior
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Union
 from weakref import ReferenceType, ref
 
 from qtpy.QtCore import Qt
@@ -30,15 +30,15 @@ counter = count()
 _sentinel = object()
 
 _SHORTCUT_DEPRECATION_STRING = trans._(
-    'The shortcut parameter is deprecated since version 0.4.8, please use the action and shortcut manager APIs. The new action manager and shortcut API allow user configuration and localisation. (got {shortcut})',
-    shortcut='{shortcut}',
+    "The shortcut parameter is deprecated since version 0.4.8, please use the action and shortcut manager APIs. The new action manager and shortcut API allow user configuration and localisation. (got {shortcut})",
+    shortcut="{shortcut}",
 )
 
 dock_area_to_str = {
-    Qt.DockWidgetArea.LeftDockWidgetArea: 'left',
-    Qt.DockWidgetArea.RightDockWidgetArea: 'right',
-    Qt.DockWidgetArea.TopDockWidgetArea: 'top',
-    Qt.DockWidgetArea.BottomDockWidgetArea: 'bottom',
+    Qt.DockWidgetArea.LeftDockWidgetArea: "left",
+    Qt.DockWidgetArea.RightDockWidgetArea: "right",
+    Qt.DockWidgetArea.TopDockWidgetArea: "top",
+    Qt.DockWidgetArea.BottomDockWidgetArea: "bottom",
 }
 
 
@@ -76,13 +76,13 @@ class QtViewerDockWidget(QDockWidget):
     def __init__(
         self,
         qt_viewer,
-        widget: Union[QWidget, 'Widget'],
+        widget: Union[QWidget, "Widget"],
         *,
-        name: str = '',
-        area: str = 'right',
-        allowed_areas: Optional[list[str]] = None,
+        name: str = "",
+        area: str = "right",
+        allowed_areas: list[str] | None = None,
         shortcut=_sentinel,
-        object_name: str = '',
+        object_name: str = "",
         add_vertical_stretch=True,
         close_btn=True,
     ) -> None:
@@ -93,15 +93,15 @@ class QtViewerDockWidget(QDockWidget):
         self._close_btn = close_btn
 
         areas = {
-            'left': Qt.DockWidgetArea.LeftDockWidgetArea,
-            'right': Qt.DockWidgetArea.RightDockWidgetArea,
-            'top': Qt.DockWidgetArea.TopDockWidgetArea,
-            'bottom': Qt.DockWidgetArea.BottomDockWidgetArea,
+            "left": Qt.DockWidgetArea.LeftDockWidgetArea,
+            "right": Qt.DockWidgetArea.RightDockWidgetArea,
+            "top": Qt.DockWidgetArea.TopDockWidgetArea,
+            "bottom": Qt.DockWidgetArea.BottomDockWidgetArea,
         }
         if area not in areas:
             raise ValueError(
                 trans._(
-                    'area argument must be in {areas}',
+                    "area argument must be in {areas}",
                     deferred=True,
                     areas=list(areas.keys()),
                 )
@@ -122,7 +122,7 @@ class QtViewerDockWidget(QDockWidget):
             if not isinstance(allowed_areas, (list, tuple)):
                 raise TypeError(
                     trans._(
-                        '`allowed_areas` must be a list or tuple',
+                        "`allowed_areas` must be a list or tuple",
                         deferred=True,
                     )
                 )
@@ -130,7 +130,7 @@ class QtViewerDockWidget(QDockWidget):
             if any(area not in areas for area in allowed_areas):
                 raise ValueError(
                     trans._(
-                        'all allowed_areas argument must be in {areas}',
+                        "all allowed_areas argument must be in {areas}",
                         deferred=True,
                         areas=list(areas.keys()),
                     )
@@ -144,7 +144,7 @@ class QtViewerDockWidget(QDockWidget):
         # FIXME:
         self.setObjectName(object_name or name)
 
-        is_vertical = area in {'left', 'right'}
+        is_vertical = area in {"left", "right"}
         widget = combine_widgets(widget, vertical=is_vertical)
         self.setWidget(widget)
         if is_vertical and add_vertical_stretch:
@@ -154,9 +154,7 @@ class QtViewerDockWidget(QDockWidget):
         self.dockLocationChanged.connect(self._set_title_orientation)
 
         # custom title bar
-        self.title = QtCustomTitleBar(
-            self, title=self.name, close_btn=close_btn
-        )
+        self.title = QtCustomTitleBar(self, title=self.name, close_btn=close_btn)
         self.setTitleBarWidget(self.title)
         self.visibilityChanged.connect(self._on_visibility_changed)
 
@@ -166,9 +164,7 @@ class QtViewerDockWidget(QDockWidget):
         if value not in dock_area_to_str:
             return
         settings = get_settings()
-        settings.application.plugin_widget_positions[self.name] = (
-            dock_area_to_str[value]
-        )
+        settings.application.plugin_widget_positions[self.name] = dock_area_to_str[value]
         settings._maybe_save()
 
     @property
@@ -218,14 +214,11 @@ class QtViewerDockWidget(QDockWidget):
 
         for i in range(wlayout.count()):
             wdg = wlayout.itemAt(i).widget()
-            if (
-                wdg is not None
-                and wdg.sizePolicy().verticalPolicy() in exempt_policies
-            ):
+            if wdg is not None and wdg.sizePolicy().verticalPolicy() in exempt_policies:
                 return
 
         # not all widgets have addStretch...
-        if hasattr(wlayout, 'addStretch'):
+        if hasattr(wlayout, "addStretch"):
             wlayout.addStretch(next(counter))
 
     @property
@@ -260,22 +253,16 @@ class QtViewerDockWidget(QDockWidget):
         ):
             features = self._features
             if features & self.DockWidgetFeature.DockWidgetVerticalTitleBar:
-                features = (
-                    features
-                    ^ self.DockWidgetFeature.DockWidgetVerticalTitleBar
-                )
+                features = features ^ self.DockWidgetFeature.DockWidgetVerticalTitleBar
         else:
-            features = (
-                self._features
-                | self.DockWidgetFeature.DockWidgetVerticalTitleBar
-            )
+            features = self._features | self.DockWidgetFeature.DockWidgetVerticalTitleBar
         self.setFeatures(features)
 
     @property
     def is_vertical(self):
         if not self.isFloating():
             par = self.parent()
-            if par and hasattr(par, 'dockWidgetArea'):
+            if par and hasattr(par, "dockWidgetArea"):
                 return par.dockWidgetArea(self) in (
                     Qt.DockWidgetArea.LeftDockWidgetArea,
                     Qt.DockWidgetArea.RightDockWidgetArea,
@@ -318,27 +305,25 @@ class QtCustomTitleBar(QLabel):
         Whether this titlebar is oriented vertically or not.
     """
 
-    def __init__(
-        self, parent, title: str = '', vertical=False, close_btn=True
-    ) -> None:
+    def __init__(self, parent, title: str = "", vertical=False, close_btn=True) -> None:
         super().__init__(parent)
-        self.setObjectName('QtCustomTitleBar')
-        self.setProperty('vertical', str(vertical))
+        self.setObjectName("QtCustomTitleBar")
+        self.setProperty("vertical", str(vertical))
         self.vertical = vertical
-        self.setToolTip(trans._('drag to move. double-click to float'))
+        self.setToolTip(trans._("drag to move. double-click to float"))
 
         line = QFrame(self)
-        line.setObjectName('QtCustomTitleBarLine')
+        line.setObjectName("QtCustomTitleBarLine")
 
         self.hide_button = QPushButton(self)
-        self.hide_button.setToolTip(trans._('hide this panel'))
-        self.hide_button.setObjectName('QTitleBarHideButton')
+        self.hide_button.setToolTip(trans._("hide this panel"))
+        self.hide_button.setObjectName("QTitleBarHideButton")
         self.hide_button.setCursor(Qt.CursorShape.ArrowCursor)
         self.hide_button.clicked.connect(lambda: self.parent().close())
 
         self.float_button = QPushButton(self)
-        self.float_button.setToolTip(trans._('float this panel'))
-        self.float_button.setObjectName('QTitleBarFloatButton')
+        self.float_button.setToolTip(trans._("float this panel"))
+        self.float_button.setObjectName("QTitleBarFloatButton")
         self.float_button.setCursor(Qt.CursorShape.ArrowCursor)
         self.float_button.clicked.connect(
             lambda: self.parent().setFloating(not self.parent().isFloating())
@@ -350,12 +335,10 @@ class QtCustomTitleBar(QLabel):
 
         if close_btn:
             self.close_button = QPushButton(self)
-            self.close_button.setToolTip(trans._('close this panel'))
-            self.close_button.setObjectName('QTitleBarCloseButton')
+            self.close_button.setToolTip(trans._("close this panel"))
+            self.close_button.setObjectName("QTitleBarCloseButton")
             self.close_button.setCursor(Qt.CursorShape.ArrowCursor)
-            self.close_button.clicked.connect(
-                lambda: self.parent().destroyOnClose()
-            )
+            self.close_button.clicked.connect(lambda: self.parent().destroyOnClose())
 
         if vertical:
             layout = QVBoxLayout()
@@ -363,15 +346,9 @@ class QtCustomTitleBar(QLabel):
             layout.setContentsMargins(0, 8, 0, 8)
             line.setFixedWidth(1)
             if close_btn:
-                layout.addWidget(
-                    self.close_button, 0, Qt.AlignmentFlag.AlignHCenter
-                )
-            layout.addWidget(
-                self.hide_button, 0, Qt.AlignmentFlag.AlignHCenter
-            )
-            layout.addWidget(
-                self.float_button, 0, Qt.AlignmentFlag.AlignHCenter
-            )
+                layout.addWidget(self.close_button, 0, Qt.AlignmentFlag.AlignHCenter)
+            layout.addWidget(self.hide_button, 0, Qt.AlignmentFlag.AlignHCenter)
+            layout.addWidget(self.float_button, 0, Qt.AlignmentFlag.AlignHCenter)
             layout.addWidget(line, 0, Qt.AlignmentFlag.AlignHCenter)
             self.title.hide()
 

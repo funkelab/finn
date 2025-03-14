@@ -61,53 +61,53 @@ officia deserunt mollit anim id est laborum.</p>
 class TabDemo(QTabWidget):
     def __init__(self, parent=None, emphasized=False) -> None:
         super().__init__(parent)
-        self.setProperty('emphasized', emphasized)
+        self.setProperty("emphasized", emphasized)
         self.tab1 = QWidget()
-        self.tab1.setProperty('emphasized', emphasized)
+        self.tab1.setProperty("emphasized", emphasized)
         self.tab2 = QWidget()
-        self.tab2.setProperty('emphasized', emphasized)
+        self.tab2.setProperty("emphasized", emphasized)
 
-        self.addTab(self.tab1, 'Tab 1')
-        self.addTab(self.tab2, 'Tab 2')
+        self.addTab(self.tab1, "Tab 1")
+        self.addTab(self.tab2, "Tab 2")
         layout = QFormLayout()
-        layout.addRow('Height', QSpinBox())
-        layout.addRow('Weight', QDoubleSpinBox())
-        self.setTabText(0, 'Tab 1')
+        layout.addRow("Height", QSpinBox())
+        layout.addRow("Weight", QDoubleSpinBox())
+        self.setTabText(0, "Tab 1")
         self.tab1.setLayout(layout)
 
         layout2 = QFormLayout()
         sex = QHBoxLayout()
-        sex.addWidget(QRadioButton('Male'))
-        sex.addWidget(QRadioButton('Female'))
-        layout2.addRow(QLabel('Sex'), sex)
-        layout2.addRow('Date of Birth', QLineEdit())
-        self.setTabText(1, 'Tab 2')
+        sex.addWidget(QRadioButton("Male"))
+        sex.addWidget(QRadioButton("Female"))
+        layout2.addRow(QLabel("Sex"), sex)
+        layout2.addRow("Date of Birth", QLineEdit())
+        self.setTabText(1, "Tab 2")
         self.tab2.setLayout(layout2)
 
-        self.setWindowTitle('tab demo')
+        self.setWindowTitle("tab demo")
 
 
 class SampleWidget(QWidget):
-    def __init__(self, theme='dark', emphasized=False) -> None:
+    def __init__(self, theme="dark", emphasized=False) -> None:
         super().__init__(None)
-        self.setProperty('emphasized', emphasized)
+        self.setProperty("emphasized", emphasized)
         self.setStyleSheet(get_stylesheet(theme))
         lay = QVBoxLayout()
         self.setLayout(lay)
-        lay.addWidget(QPushButton('push button'))
+        lay.addWidget(QPushButton("push button"))
         box = QComboBox()
-        box.addItems(['a', 'b', 'c', 'cd'])
+        box.addItems(["a", "b", "c", "cd"])
         lay.addWidget(box)
         lay.addWidget(QFontComboBox())
 
         hbox = QHBoxLayout()
-        chk = QCheckBox('tristate')
-        chk.setToolTip('I am a tooltip')
+        chk = QCheckBox("tristate")
+        chk.setToolTip("I am a tooltip")
         chk.setTristate(True)
         chk.setCheckState(Qt.CheckState.PartiallyChecked)
-        chk3 = QCheckBox('checked')
+        chk3 = QCheckBox("checked")
         chk3.setChecked(True)
-        hbox.addWidget(QCheckBox('unchecked'))
+        hbox.addWidget(QCheckBox("unchecked"))
         hbox.addWidget(chk)
         hbox.addWidget(chk3)
         lay.addLayout(hbox)
@@ -127,16 +127,16 @@ class SampleWidget(QWidget):
         lay.addWidget(text)
         lay.addWidget(QTimeEdit())
         edit = QLineEdit()
-        edit.setPlaceholderText('LineEdit placeholder...')
+        edit.setPlaceholderText("LineEdit placeholder...")
         lay.addWidget(edit)
-        lay.addWidget(QLabel('label'))
+        lay.addWidget(QLabel("label"))
         prog = QProgressBar()
         prog.setValue(50)
         lay.addWidget(prog)
-        group_box = QGroupBox('Exclusive Radio Buttons')
-        radio1 = QRadioButton('&Radio button 1')
-        radio2 = QRadioButton('R&adio button 2')
-        radio3 = QRadioButton('Ra&dio button 3')
+        group_box = QGroupBox("Exclusive Radio Buttons")
+        radio1 = QRadioButton("&Radio button 1")
+        radio2 = QRadioButton("R&adio button 2")
+        radio3 = QRadioButton("Ra&dio button 3")
         radio1.setChecked(True)
         hbox = QHBoxLayout()
         hbox.addWidget(radio1)
@@ -153,7 +153,7 @@ class SampleWidget(QWidget):
         return QImg2array(img)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import logging
     import sys
 
@@ -167,7 +167,7 @@ if __name__ == '__main__':
         try:
             w = SampleWidget(theme)
         except KeyError:
-            logging.warning('%s is not a recognized theme', theme)
+            logging.warning("%s is not a recognized theme", theme)
             continue
         w.setGeometry(10 + 430 * n, 0, 425, 600)
         w.show()

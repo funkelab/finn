@@ -3,12 +3,12 @@
 Non-Qt processors can be found in `napari/_app_model/injection/_processors.py`.
 """
 
+from collections.abc import Callable
 from concurrent.futures import Future
 from contextlib import nullcontext, suppress
 from functools import partial
 from typing import (
     Any,
-    Callable,
     Optional,
     Union,
     get_origin,
@@ -26,22 +26,22 @@ from finn.layers._source import layer_source
 
 
 def _add_plugin_dock_widget(
-    widget_name_tuple: tuple[Union[FunctionGui, QWidget, Widget], str],
-    viewer: Optional[viewer.Viewer] = None,
+    widget_name_tuple: tuple[FunctionGui | QWidget | Widget, str],
+    viewer: viewer.Viewer | None = None,
 ) -> None:
     if viewer is None:
         viewer = _provide_viewer_or_raise(
-            msg='Widgets cannot be opened in headless mode.',
+            msg="Widgets cannot be opened in headless mode.",
         )
     widget, full_name = widget_name_tuple
     viewer.window.add_dock_widget(widget, name=full_name)
 
 
 def _add_layer_data_tuples_to_viewer(
-    data: Union[tuple, list[tuple]],
-    return_type: Optional[Any] = None,
-    viewer: Optional[viewer.Viewer] = None,
-    source: Optional[dict] = None,
+    data: tuple | list[tuple],
+    return_type: Any | None = None,
+    viewer: viewer.Viewer | None = None,
+    source: dict | None = None,
 ) -> None:
     from finn.utils.misc import ensure_list_of_layer_data_tuple
 
@@ -51,7 +51,7 @@ def _add_layer_data_tuples_to_viewer(
         data = data if isinstance(data, list) else [data]
         for datum in ensure_list_of_layer_data_tuple(data):
             # then try to update a viewer layer with the same name.
-            if len(datum) > 1 and (name := datum[1].get('name')):
+            if len(datum) > 1 and (name := datum[1].get("name")):
                 with suppress(KeyError):
                     layer = viewer.layers[name]
                     layer.data = datum[0]
@@ -66,9 +66,9 @@ def _add_layer_data_tuples_to_viewer(
 def _add_layer_data_to_viewer(
     data: Any,
     return_type: Any,
-    viewer: Optional[viewer.Viewer] = None,
-    layer_name: Optional[str] = None,
-    source: Optional[dict] = None,
+    viewer: viewer.Viewer | None = None,
+    layer_name: str | None = None,
+    source: dict | None = None,
 ) -> None:
     """Show a result in the viewer.
 
@@ -102,23 +102,23 @@ def _add_layer_data_to_viewer(
                 viewer.layers[layer_name].data = data
                 return
         if get_origin(return_type) is Union:
-            if len(return_type.__args__) != 2 or return_type.__args__[
-                1
-            ] is not type(None):
+            if len(return_type.__args__) != 2 or return_type.__args__[1] is not type(
+                None
+            ):
                 # this case should be impossible, but we'll check anyway.
                 raise TypeError(
-                    f'napari supports only Optional[<layer_data_type>], not {return_type}'
+                    f"napari supports only Optional[<layer_data_type>], not {return_type}"
                 )
             return_type = return_type.__args__[0]
-        layer_type = return_type.__name__.replace('Data', '').lower()
+        layer_type = return_type.__name__.replace("Data", "").lower()
         with layer_source(**source) if source else nullcontext():
-            getattr(viewer, f'add_{layer_type}')(data=data, name=layer_name)
+            getattr(viewer, f"add_{layer_type}")(data=data, name=layer_name)
 
 
 def _add_layer_to_viewer(
     layer: layers.Layer,
-    viewer: Optional[viewer.Viewer] = None,
-    source: Optional[dict] = None,
+    viewer: viewer.Viewer | None = None,
+    source: dict | None = None,
 ) -> None:
     if layer is not None and (viewer := viewer or _provide_viewer()):
         layer._source = layer.source.copy(update=source or {})
@@ -133,8 +133,8 @@ def _add_future_data(
     future: Future,
     return_type: Any,
     _from_tuple: bool = True,
-    viewer: Optional[viewer.Viewer] = None,
-    source: Optional[dict] = None,
+    viewer: viewer.Viewer | None = None,
+    source: dict | None = None,
 ) -> None:
     """Process a Future object.
 
@@ -161,9 +161,9 @@ def _add_future_data(
     # to the appropriate method based on the Future data type.
 
     add_kwargs = {
-        'return_type': return_type,
-        'viewer': viewer,
-        'source': source,
+        "return_type": return_type,
+        "viewer": viewer,
+        "source": source,
     }
 
     def _on_future_ready(f: Future) -> None:
@@ -187,9 +187,7 @@ def _add_future_data(
 
 
 QPROCESSORS: dict[object, Callable] = {
-    Optional[
-        tuple[Union[FunctionGui, QWidget, Widget], str]
-    ]: _add_plugin_dock_widget,
+    Optional[tuple[FunctionGui | QWidget | Widget, str]]: _add_plugin_dock_widget,
     types.LayerDataTuple: _add_layer_data_tuples_to_viewer,
     list[types.LayerDataTuple]: _add_layer_data_tuples_to_viewer,
     layers.Layer: _add_layer_to_viewer,

@@ -12,15 +12,15 @@ from finn._qt.containers.qt_tree_model import QtNodeTreeModel
 from finn._qt.containers.qt_tree_view import QtNodeTreeView
 
 __all__ = [
-    'AxisList',
-    'AxisModel',
-    'QtAxisListModel',
-    'QtLayerList',
-    'QtLayerListModel',
-    'QtListModel',
-    'QtListView',
-    'QtNodeTreeModel',
-    'QtNodeTreeView',
-    'create_model',
-    'create_view',
+    "AxisList",
+    "AxisModel",
+    "QtAxisListModel",
+    "QtLayerList",
+    "QtLayerListModel",
+    "QtListModel",
+    "QtListView",
+    "QtNodeTreeModel",
+    "QtNodeTreeView",
+    "create_model",
+    "create_view",
 ]

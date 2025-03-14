@@ -57,14 +57,14 @@ class QtDimsSorter(QWidget):
         self.setLayout(layout)
 
         widget_tooltip = QtToolTipLabel(self)
-        widget_tooltip.setObjectName('help_label')
+        widget_tooltip.setObjectName("help_label")
         widget_tooltip.setToolTip(
             trans._(
-                'Drag dimensions to reorder, click lock icon to lock dimension in place.'
+                "Drag dimensions to reorder, click lock icon to lock dimension in place."
             )
         )
 
-        widget_title = QLabel(trans._('Dims. Ordering'), self)
+        widget_title = QLabel(trans._("Dims. Ordering"), self)
 
         self.layout().addWidget(widget_title, 0, 0)
         self.layout().addWidget(widget_tooltip, 0, 1)

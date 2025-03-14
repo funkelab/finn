@@ -31,9 +31,7 @@ class Extension2ReaderTable(QWidget):
 
     valueChanged = Signal(int)
 
-    def __init__(
-        self, parent=None, npe2_readers=None, npe1_readers=None
-    ) -> None:
+    def __init__(self, parent=None, npe2_readers=None, npe1_readers=None) -> None:
         super().__init__(parent=parent)
 
         npe2, npe1 = get_all_readers()
@@ -60,9 +58,7 @@ class Extension2ReaderTable(QWidget):
         instructions.setOpenExternalLinks(True)
 
         layout = QVBoxLayout()
-        instructions.setSizePolicy(
-            QSizePolicy.MinimumExpanding, QSizePolicy.Expanding
-        )
+        instructions.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Expanding)
         layout.addWidget(instructions)
         layout.addWidget(self._edit_row)
         layout.addWidget(self._table)
@@ -73,16 +69,14 @@ class Extension2ReaderTable(QWidget):
         self._fn_pattern_col = 0
         self._reader_col = 1
 
-        header_strs = [trans._('Filename Pattern'), trans._('Reader Plugin')]
+        header_strs = [trans._("Filename Pattern"), trans._("Reader Plugin")]
 
         self._table.setColumnCount(2)
         self._table.setColumnWidth(self._fn_pattern_col, 200)
         self._table.setColumnWidth(self._reader_col, 200)
         self._table.verticalHeader().setVisible(False)
         self._table.setMinimumHeight(120)
-        self._table.horizontalHeader().setStyleSheet(
-            'border-bottom: 2px solid white;'
-        )
+        self._table.horizontalHeader().setStyleSheet("border-bottom: 2px solid white;")
         self._table.setHorizontalHeaderLabels(header_strs)
         self._table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
@@ -105,11 +99,9 @@ class Extension2ReaderTable(QWidget):
 
         self._fn_pattern_edit = QLineEdit()
         self._fn_pattern_edit.setPlaceholderText(
-            trans._('Start typing filename pattern...')
+            trans._("Start typing filename pattern...")
         )
-        self._fn_pattern_edit.textChanged.connect(
-            self._filter_compatible_readers
-        )
+        self._fn_pattern_edit.textChanged.connect(self._filter_compatible_readers)
 
         add_reader_widg = QWidget()
         add_reader_widg.setLayout(QHBoxLayout())
@@ -121,8 +113,8 @@ class Extension2ReaderTable(QWidget):
         ):
             self._add_reader_choice(i, plugin_name, display_name)
 
-        add_btn = QPushButton(trans._('Add'))
-        add_btn.setToolTip(trans._('Save reader preference for pattern'))
+        add_btn = QPushButton(trans._("Add"))
+        add_btn.setToolTip(trans._("Save reader preference for pattern"))
         add_btn.clicked.connect(self._save_new_preference)
 
         add_reader_widg.layout().addWidget(self._new_reader_dropdown)
@@ -139,7 +131,7 @@ class Extension2ReaderTable(QWidget):
 
     def _display_no_preferences_found(self):
         self._table.setRowCount(1)
-        item = QTableWidgetItem(trans._('No filename preferences found.'))
+        item = QTableWidgetItem(trans._("No filename preferences found."))
         item.setFlags(Qt.ItemFlag.NoItemFlags)
         self._table.setItem(self._fn_pattern_col, 0, item)
 
@@ -152,12 +144,12 @@ class Extension2ReaderTable(QWidget):
             return
 
         self._new_reader_dropdown.addItem(display_name, plugin_name)
-        if '*' in reader_patterns:
-            tooltip_text = trans._('Accepts all')
+        if "*" in reader_patterns:
+            tooltip_text = trans._("Accepts all")
         else:
-            reader_patterns_formatted = ', '.join(sorted(reader_patterns))
+            reader_patterns_formatted = ", ".join(sorted(reader_patterns))
             tooltip_text = trans._(
-                'Accepts: {reader_patterns_formatted}',
+                "Accepts: {reader_patterns_formatted}",
                 reader_patterns_formatted=reader_patterns_formatted,
             )
         self._new_reader_dropdown.setItemData(
@@ -173,7 +165,7 @@ class Extension2ReaderTable(QWidget):
         try:
             compatible_readers = get_potential_readers(new_pattern)
         except ValueError as e:
-            if 'empty name' not in str(e):
+            if "empty name" not in str(e):
                 raise
             compatible_readers = {}
         for plugin_name in readers:
@@ -185,12 +177,10 @@ class Extension2ReaderTable(QWidget):
 
         readers.update(self._npe1_readers)
 
-        for i, (plugin_name, display_name) in enumerate(
-            sorted(readers.items())
-        ):
+        for i, (plugin_name, display_name) in enumerate(sorted(readers.items())):
             self._add_reader_choice(i, plugin_name, display_name)
         if self._new_reader_dropdown.count() == 0:
-            self._new_reader_dropdown.addItem(trans._('None available'))
+            self._new_reader_dropdown.addItem(trans._("None available"))
 
     def _save_new_preference(self, event):
         """Save current preference to settings and show in table"""
@@ -201,8 +191,8 @@ class Extension2ReaderTable(QWidget):
             return
 
         # if user types pattern that starts with a . it's probably a file extension so prepend the *
-        if fn_pattern.startswith('.'):
-            fn_pattern = f'*{fn_pattern}'
+        if fn_pattern.startswith("."):
+            fn_pattern = f"*{fn_pattern}"
 
         if fn_pattern in get_settings().plugins.extension2reader:
             self._edit_existing_preference(fn_pattern, reader)
@@ -226,8 +216,7 @@ class Extension2ReaderTable(QWidget):
 
         if (
             last_row == 1
-            and 'No filename preferences found'
-            in self._table.item(0, 0).text()
+            and "No filename preferences found" in self._table.item(0, 0).text()
         ):
             self._table.removeRow(0)
             last_row = 0
@@ -241,7 +230,7 @@ class Extension2ReaderTable(QWidget):
 
         plugin_widg = QWidget()
         # need object name to easily find row
-        plugin_widg.setObjectName(f'{fn_pattern}')
+        plugin_widg.setObjectName(f"{fn_pattern}")
         plugin_widg.setLayout(QHBoxLayout())
         plugin_widg.layout().setContentsMargins(0, 0, 0, 0)
 
@@ -249,11 +238,11 @@ class Extension2ReaderTable(QWidget):
             reader = self._npe2_readers[reader]
         plugin_label = QLabel(reader, objectName=fn_pattern)
         # need object name to easily work out which button was clicked
-        remove_btn = QPushButton('X', objectName=fn_pattern)
+        remove_btn = QPushButton("X", objectName=fn_pattern)
         remove_btn.setFixedWidth(30)
-        remove_btn.setStyleSheet('margin: 4px;')
+        remove_btn.setStyleSheet("margin: 4px;")
         remove_btn.setToolTip(
-            trans._('Remove this filename pattern to reader association')
+            trans._("Remove this filename pattern to reader association")
         )
         remove_btn.clicked.connect(self.remove_existing_preference)
 
@@ -271,9 +260,7 @@ class Extension2ReaderTable(QWidget):
         }
 
         for i in range(self._table.rowCount()):
-            row_widg_name = self._table.cellWidget(
-                i, self._reader_col
-            ).objectName()
+            row_widg_name = self._table.cellWidget(i, self._reader_col).objectName()
             if row_widg_name == pattern_to_remove:
                 self._table.removeRow(i)
                 break

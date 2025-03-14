@@ -18,7 +18,7 @@ from finn.layers import Layer
 from finn.utils.notifications import show_warning
 from finn.utils.translations import trans
 
-__all__ = ('Q_LAYERLIST_CONTEXT_ACTIONS', 'is_valid_spatial_in_clipboard')
+__all__ = ("Q_LAYERLIST_CONTEXT_ACTIONS", "is_valid_spatial_in_clipboard")
 
 
 def _numpy_to_list(d: dict) -> dict:
@@ -32,14 +32,14 @@ def _set_data_in_clipboard(data: dict) -> None:
     data = _numpy_to_list(data)
     clip = QApplication.clipboard()
     if clip is None:
-        show_warning('Cannot access clipboard')
+        show_warning("Cannot access clipboard")
         return
 
     d = json.dumps(data)
     p = pickle.dumps(data)
     mime_data = QMimeData()
     mime_data.setText(d)
-    mime_data.setData('application/octet-stream', p)
+    mime_data.setData("application/octet-stream", p)
 
     clip.setMimeData(mime_data)
 
@@ -47,33 +47,33 @@ def _set_data_in_clipboard(data: dict) -> None:
 def _copy_spatial_to_clipboard(layer: Layer) -> None:
     _set_data_in_clipboard(
         {
-            'affine': layer.affine.affine_matrix,
-            'rotate': layer.rotate,
-            'scale': layer.scale,
-            'shear': layer.shear,
-            'translate': layer.translate,
+            "affine": layer.affine.affine_matrix,
+            "rotate": layer.rotate,
+            "scale": layer.scale,
+            "shear": layer.shear,
+            "translate": layer.translate,
         }
     )
 
 
 def _copy_affine_to_clipboard(layer: Layer) -> None:
-    _set_data_in_clipboard({'affine': layer.affine.affine_matrix})
+    _set_data_in_clipboard({"affine": layer.affine.affine_matrix})
 
 
 def _copy_rotate_to_clipboard(layer: Layer) -> None:
-    _set_data_in_clipboard({'rotate': layer.rotate})
+    _set_data_in_clipboard({"rotate": layer.rotate})
 
 
 def _copy_shear_to_clipboard(layer: Layer) -> None:
-    _set_data_in_clipboard({'shear': layer.shear})
+    _set_data_in_clipboard({"shear": layer.shear})
 
 
 def _copy_scale_to_clipboard(layer: Layer) -> None:
-    _set_data_in_clipboard({'scale': layer.scale})
+    _set_data_in_clipboard({"scale": layer.scale})
 
 
 def _copy_translate_to_clipboard(layer: Layer) -> None:
-    _set_data_in_clipboard({'translate': layer.translate})
+    _set_data_in_clipboard({"translate": layer.translate})
 
 
 def _get_spatial_from_clipboard() -> dict | None:
@@ -85,8 +85,8 @@ def _get_spatial_from_clipboard() -> dict | None:
     if mime_data is None:  # pragma: no cover
         # we should never get here, but just in case
         return None
-    if mime_data.data('application/octet-stream'):
-        return pickle.loads(mime_data.data('application/octet-stream'))  # type: ignore[arg-type]
+    if mime_data.data("application/octet-stream"):
+        return pickle.loads(mime_data.data("application/octet-stream"))  # type: ignore[arg-type]
 
     return json.loads(mime_data.text())
 
@@ -95,10 +95,10 @@ def _paste_spatial_from_clipboard(ll: LayerList) -> None:
     try:
         loaded = _get_spatial_from_clipboard()
     except (json.JSONDecodeError, pickle.UnpicklingError):
-        show_warning('Cannot parse clipboard data')
+        show_warning("Cannot parse clipboard data")
         return
     if loaded is None:
-        show_warning('Cannot access clipboard')
+        show_warning("Cannot access clipboard")
         return
 
     for layer in ll.selection:
@@ -106,11 +106,11 @@ def _paste_spatial_from_clipboard(ll: LayerList) -> None:
             loaded_attr_value = loaded[key]
             if isinstance(loaded_attr_value, list):
                 loaded_attr_value = np.array(loaded_attr_value)
-            if key == 'shear':
+            if key == "shear":
                 loaded_attr_value = loaded_attr_value[
                     -(layer.ndim * (layer.ndim - 1)) // 2 :
                 ]
-            elif key == 'affine':
+            elif key == "affine":
                 loaded_attr_value = loaded_attr_value[
                     -(layer.ndim + 1) :, -(layer.ndim + 1) :
                 ]
@@ -118,9 +118,7 @@ def _paste_spatial_from_clipboard(ll: LayerList) -> None:
                 if loaded_attr_value.ndim == 1:
                     loaded_attr_value = loaded_attr_value[-layer.ndim :]
                 elif loaded_attr_value.ndim == 2:
-                    loaded_attr_value = loaded_attr_value[
-                        -layer.ndim :, -layer.ndim :
-                    ]
+                    loaded_attr_value = loaded_attr_value[-layer.ndim :, -layer.ndim :]
 
             setattr(layer, key, loaded_attr_value)
 
@@ -133,64 +131,62 @@ def is_valid_spatial_in_clipboard() -> bool:
     if not isinstance(loaded, dict):
         return False
 
-    return set(loaded).issubset(
-        {'affine', 'rotate', 'scale', 'shear', 'translate'}
-    )
+    return set(loaded).issubset({"affine", "rotate", "scale", "shear", "translate"})
 
 
 Q_LAYERLIST_CONTEXT_ACTIONS = [
     Action(
-        id='finn.layer.copy_all_to_clipboard',
-        title=trans._('Copy all to clipboard'),
+        id="finn.layer.copy_all_to_clipboard",
+        title=trans._("Copy all to clipboard"),
         callback=_copy_spatial_to_clipboard,
-        menus=[{'id': MenuId.LAYERS_CONTEXT_COPY_SPATIAL}],
+        menus=[{"id": MenuId.LAYERS_CONTEXT_COPY_SPATIAL}],
         enablement=(LLSCK.num_selected_layers == 1),
     ),
     Action(
-        id='finn.layer.copy_affine_to_clipboard',
-        title=trans._('Copy affine to clipboard'),
+        id="finn.layer.copy_affine_to_clipboard",
+        title=trans._("Copy affine to clipboard"),
         callback=_copy_affine_to_clipboard,
-        menus=[{'id': MenuId.LAYERS_CONTEXT_COPY_SPATIAL}],
+        menus=[{"id": MenuId.LAYERS_CONTEXT_COPY_SPATIAL}],
         enablement=(LLSCK.num_selected_layers == 1),
     ),
     Action(
-        id='finn.layer.copy_rotate_to_clipboard',
-        title=trans._('Copy rotate to clipboard'),
+        id="finn.layer.copy_rotate_to_clipboard",
+        title=trans._("Copy rotate to clipboard"),
         callback=_copy_rotate_to_clipboard,
-        menus=[{'id': MenuId.LAYERS_CONTEXT_COPY_SPATIAL}],
+        menus=[{"id": MenuId.LAYERS_CONTEXT_COPY_SPATIAL}],
         enablement=(LLSCK.num_selected_layers == 1),
     ),
     Action(
-        id='finn.layer.copy_scale_to_clipboard',
-        title=trans._('Copy scale to clipboard'),
+        id="finn.layer.copy_scale_to_clipboard",
+        title=trans._("Copy scale to clipboard"),
         callback=_copy_scale_to_clipboard,
-        menus=[{'id': MenuId.LAYERS_CONTEXT_COPY_SPATIAL}],
+        menus=[{"id": MenuId.LAYERS_CONTEXT_COPY_SPATIAL}],
         enablement=(LLSCK.num_selected_layers == 1),
     ),
     Action(
-        id='finn.layer.copy_shear_to_clipboard',
-        title=trans._('Copy shear to clipboard'),
+        id="finn.layer.copy_shear_to_clipboard",
+        title=trans._("Copy shear to clipboard"),
         callback=_copy_shear_to_clipboard,
-        menus=[{'id': MenuId.LAYERS_CONTEXT_COPY_SPATIAL}],
+        menus=[{"id": MenuId.LAYERS_CONTEXT_COPY_SPATIAL}],
         enablement=(LLSCK.num_selected_layers == 1),
     ),
     Action(
-        id='finn.layer.copy_translate_to_clipboard',
-        title=trans._('Copy translate to clipboard'),
+        id="finn.layer.copy_translate_to_clipboard",
+        title=trans._("Copy translate to clipboard"),
         callback=_copy_translate_to_clipboard,
-        menus=[{'id': MenuId.LAYERS_CONTEXT_COPY_SPATIAL}],
+        menus=[{"id": MenuId.LAYERS_CONTEXT_COPY_SPATIAL}],
         enablement=(LLSCK.num_selected_layers == 1),
     ),
     Action(
-        id='finn.layer.paste_spatial_from_clipboard',
-        title=trans._('Apply scale/transforms from Clipboard'),
+        id="finn.layer.paste_spatial_from_clipboard",
+        title=trans._("Apply scale/transforms from Clipboard"),
         callback=_paste_spatial_from_clipboard,
         menus=[
             {
-                'id': MenuId.LAYERLIST_CONTEXT,
-                'group': MenuGroup.LAYERLIST_CONTEXT.COPY_SPATIAL,
+                "id": MenuId.LAYERLIST_CONTEXT,
+                "group": MenuGroup.LAYERLIST_CONTEXT.COPY_SPATIAL,
             }
         ],
-        enablement=parse_expression('valid_spatial_json_clipboard'),
+        enablement=parse_expression("valid_spatial_json_clipboard"),
     ),
 ]

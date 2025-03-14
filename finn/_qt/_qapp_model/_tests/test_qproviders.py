@@ -44,22 +44,22 @@ def test_publicproxy_provide_viewer(capsys, make_napari_viewer):
         print(type(viewer))  # noqa: T201
 
     action = Action(
-        id='some.command.id',
-        title='some title',
+        id="some.command.id",
+        title="some title",
         callback=my_viewer,
     )
     app = get_app_model()
     app.register_action(action)
-    app.commands.execute_command('some.command.id')
+    app.commands.execute_command("some.command.id")
     captured = capsys.readouterr()
-    assert 'finn.utils._proxies.PublicOnlyProxy' in captured.out
+    assert "finn.utils._proxies.PublicOnlyProxy" in captured.out
 
 
 def test_provide_viewer_or_raise(make_napari_viewer):
     """Check `_provide_viewer_or_raise` raises or returns correct `Viewer`."""
     # raises when no viewer
-    with pytest.raises(RuntimeError, match='No current `Viewer` found. test'):
-        _provide_viewer_or_raise(msg='test')
+    with pytest.raises(RuntimeError, match="No current `Viewer` found. test"):
+        _provide_viewer_or_raise(msg="test")
 
     # create viewer
     make_napari_viewer()
@@ -73,10 +73,8 @@ def test_provide_viewer_or_raise(make_napari_viewer):
 def test_provide_qt_viewer_or_raise(make_napari_viewer):
     """Check `_provide_qt_viewer_or_raise` raises or returns `QtViewer`."""
     # raises when no QtViewer
-    with pytest.raises(
-        RuntimeError, match='No current `QtViewer` found. test'
-    ):
-        _provide_qt_viewer_or_raise(msg='test')
+    with pytest.raises(RuntimeError, match="No current `QtViewer` found. test"):
+        _provide_qt_viewer_or_raise(msg="test")
 
     # create QtViewer
     make_napari_viewer()
@@ -87,8 +85,8 @@ def test_provide_qt_viewer_or_raise(make_napari_viewer):
 def test_provide_window_or_raise(make_napari_viewer):
     """Check `_provide_window_or_raise` raises or returns `Window`."""
     # raises when no Window
-    with pytest.raises(RuntimeError, match='No current `Window` found. test'):
-        _provide_window_or_raise(msg='test')
+    with pytest.raises(RuntimeError, match="No current `Window` found. test"):
+        _provide_window_or_raise(msg="test")
 
     # create viewer (and Window)
     make_napari_viewer()

@@ -34,11 +34,7 @@ def get_submenu_action(qmodel_menu, submenu_text, action_text):
         # (after 6.3.1 - if we do not want to support this test on older PyQt6)
         # https://www.riverbankcomputing.com/pipermail/pyqt/2022-July/044817.html
         # because both PyQt6 and PySide6 will have working menu method of action
-        return (
-            QMenu.menuInAction(act)
-            if getattr(qtpy, 'PYQT6', False)
-            else act.menu()
-        )
+        return QMenu.menuInAction(act) if getattr(qtpy, "PYQT6", False) else act.menu()
 
     actions = qmodel_menu.actions()
     for action1 in actions:

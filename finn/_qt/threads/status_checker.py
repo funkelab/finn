@@ -125,7 +125,7 @@ class StatusChecker(QThread):
         self.status_and_tooltip_changed.emit(res)
 
 
-if os.environ.get('ASV') == 'true':
+if os.environ.get("ASV") == "true":
     # This is a hack to make sure that the StatusChecker thread is not
     # running when the benchmark is running. This is because the
     # StatusChecker thread may introduce some noise in the benchmark

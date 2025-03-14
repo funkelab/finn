@@ -1,5 +1,4 @@
 import warnings
-from typing import Optional
 
 import numpy as np
 from qtpy.QtCore import Slot
@@ -80,7 +79,7 @@ class QtDims(QWidget):
         """Sets the style of the last used slider."""
         for i, widget in enumerate(self.slider_widgets):
             sld = widget.slider
-            sld.setProperty('last_used', i == self.dims.last_used)
+            sld.setProperty("last_used", i == self.dims.last_used)
             sld.style().unpolish(sld)
             sld.style().polish(sld)
 
@@ -147,10 +146,7 @@ class QtDims(QWidget):
             maxwidth = int(self.slider_widgets[0].width() * 0.2)
             # set new width to the width of the longest label being displayed
             newwidth = max(
-                [
-                    int(fm.boundingRect(dlab.text()).width())
-                    for dlab in displayed_labels
-                ]
+                [int(fm.boundingRect(dlab.text()).width()) for dlab in displayed_labels]
             )
 
             for slider in self.slider_widgets:
@@ -176,9 +172,9 @@ class QtDims(QWidget):
                 if length > width:
                     width = length
         # gui width of a string of length `width`
-        fm = QFontMetrics(QFont('', 0))
-        width = fm.boundingRect('8' * width).width()
-        for labl in self.findChildren(QWidget, 'slice_label'):
+        fm = QFontMetrics(QFont("", 0))
+        width = fm.boundingRect("8" * width).width()
+        for labl in self.findChildren(QWidget, "slice_label"):
             labl.setFixedWidth(width + 6)
 
     def _create_sliders(self, number_of_sliders: int):
@@ -194,9 +190,7 @@ class QtDims(QWidget):
         for slider_num in range(self.nsliders, number_of_sliders):
             dim_axis = number_of_sliders - slider_num - 1
             slider_widget = QtDimSliderWidget(self, dim_axis)
-            slider_widget.axis_label.textChanged.connect(
-                self._resize_axis_labels
-            )
+            slider_widget.axis_label.textChanged.connect(self._resize_axis_labels)
             slider_widget.size_changed.connect(self._resize_axis_labels)
             slider_widget.play_button.play_requested.connect(self.play)
             self.layout().addWidget(slider_widget)
@@ -243,9 +237,9 @@ class QtDims(QWidget):
     def play(
         self,
         axis: int = 0,
-        fps: Optional[float] = None,
-        loop_mode: Optional[str] = None,
-        frame_range: Optional[tuple[int, int]] = None,
+        fps: float | None = None,
+        loop_mode: str | None = None,
+        frame_range: tuple[int, int] | None = None,
     ):
         """Animate (play) axis.
 
@@ -285,7 +279,7 @@ class QtDims(QWidget):
             if loop_mode not in _modes:
                 raise ValueError(
                     trans._(
-                        'loop_mode must be one of {_modes}. Got: {loop_mode}',
+                        "loop_mode must be one of {_modes}. Got: {loop_mode}",
                         _modes=_modes,
                         loop_mode=loop_mode,
                     )
@@ -293,12 +287,10 @@ class QtDims(QWidget):
             loop_mode = LoopMode(loop_mode)
 
         if axis >= self.dims.ndim:
-            raise IndexError(trans._('axis argument out of range'))
+            raise IndexError(trans._("axis argument out of range"))
 
         if self.is_playing and self._animation_thread.axis == axis:
-            self.slider_widgets[axis]._update_play_settings(
-                fps, loop_mode, frame_range
-            )
+            self.slider_widgets[axis]._update_play_settings(fps, loop_mode, frame_range)
             return
 
         # we want to avoid playing a dimension that does not have a slider
@@ -306,9 +298,7 @@ class QtDims(QWidget):
         if self._displayed_sliders[axis]:
             if self._animation_thread.isRunning():
                 self._animation_thread.slider.play_button._handle_stop()
-            self.slider_widgets[axis]._update_play_settings(
-                fps, loop_mode, frame_range
-            )
+            self.slider_widgets[axis]._update_play_settings(fps, loop_mode, frame_range)
             self._animation_thread.set_slider(self.slider_widgets[axis])
             self._animation_thread.frame_requested.connect(self._set_frame)
             if not self._animation_thread.isRunning():
@@ -319,7 +309,7 @@ class QtDims(QWidget):
         else:
             warnings.warn(
                 trans._(
-                    'Refusing to play a hidden axis',
+                    "Refusing to play a hidden axis",
                     deferred=True,
                 )
             )
@@ -336,8 +326,8 @@ class QtDims(QWidget):
             return not self._animation_thread._waiter.is_set()
         except RuntimeError as e:  # pragma: no cover
             if (
-                'wrapped C/C++ object of type' not in e.args[0]
-                and 'Internal C++ object' not in e.args[0]
+                "wrapped C/C++ object of type" not in e.args[0]
+                and "Internal C++ object" not in e.args[0]
             ):
                 # checking if threat is partially deleted. Otherwise
                 # reraise exception. For more details see:

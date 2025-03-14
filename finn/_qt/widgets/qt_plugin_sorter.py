@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
 from napari_plugin_engine import HookCaller, HookImplementation
 from qtpy.QtCore import QEvent, Qt, Signal, Slot
@@ -37,20 +37,20 @@ if TYPE_CHECKING:
 def rst2html(text):
     def ref(match):
         _text = match.groups()[0].split()[0]
-        if _text.startswith('~'):
-            _text = _text.split('.')[-1]
-        return f'``{_text}``'
+        if _text.startswith("~"):
+            _text = _text.split(".")[-1]
+        return f"``{_text}``"
 
     def link(match):
-        _text, _link = match.groups()[0].split('<')
+        _text, _link = match.groups()[0].split("<")
         return f'<a href="{_link.rstrip(">")}">{_text.strip()}</a>'
 
-    text = re.sub(r'\*\*([^*]+)\*\*', '<strong>\\1</strong>', text)
-    text = re.sub(r'\*([^*]+)\*', '<em>\\1</em>', text)
-    text = re.sub(r':[a-z]+:`([^`]+)`', ref, text, flags=re.DOTALL)
-    text = re.sub(r'`([^`]+)`_', link, text, flags=re.DOTALL)
-    text = re.sub(r'``([^`]+)``', '<code>\\1</code>', text)
-    return text.replace('\n', '<br>')
+    text = re.sub(r"\*\*([^*]+)\*\*", "<strong>\\1</strong>", text)
+    text = re.sub(r"\*([^*]+)\*", "<em>\\1</em>", text)
+    text = re.sub(r":[a-z]+:`([^`]+)`", ref, text, flags=re.DOTALL)
+    text = re.sub(r"`([^`]+)`_", link, text, flags=re.DOTALL)
+    text = re.sub(r"``([^`]+)``", "<code>\\1</code>", text)
+    return text.replace("\n", "<br>")
 
 
 class ImplementationListItem(QFrame):
@@ -89,9 +89,9 @@ class ImplementationListItem(QFrame):
         self.position_label = QLabel()
         self.update_position_label()
 
-        self.setToolTip(trans._('Click and drag to change call order'))
+        self.setToolTip(trans._("Click and drag to change call order"))
         self.plugin_name_label = QElidingLabel()
-        self.plugin_name_label.setObjectName('small_text')
+        self.plugin_name_label.setObjectName("small_text")
         self.plugin_name_label.setText(item.hook_implementation.plugin_name)
         plugin_name_size_policy = QSizePolicy(
             QSizePolicy.MinimumExpanding, QSizePolicy.Preferred
@@ -99,17 +99,13 @@ class ImplementationListItem(QFrame):
         plugin_name_size_policy.setHorizontalStretch(2)
         self.plugin_name_label.setSizePolicy(plugin_name_size_policy)
 
-        self.function_name_label = QLabel(
-            item.hook_implementation.function.__name__
-        )
+        self.function_name_label = QLabel(item.hook_implementation.function.__name__)
 
         self.enabled_checkbox = QCheckBox(self)
-        self.enabled_checkbox.setToolTip(
-            trans._('Uncheck to disable this plugin')
-        )
+        self.enabled_checkbox.setToolTip(trans._("Uncheck to disable this plugin"))
         self.enabled_checkbox.stateChanged.connect(self._set_enabled)
         self.enabled_checkbox.setChecked(
-            getattr(item.hook_implementation, 'enabled', True)
+            getattr(item.hook_implementation, "enabled", True)
         )
         layout.addWidget(self.position_label)
         layout.addWidget(self.enabled_checkbox)
@@ -118,7 +114,7 @@ class ImplementationListItem(QFrame):
         layout.setStretch(2, 1)
         layout.setContentsMargins(0, 0, 0, 0)
 
-    def _set_enabled(self, state: Union[bool, int]):
+    def _set_enabled(self, state: bool | int):
         """Set the enabled state of this hook implementation to ``state``."""
         self.item.hook_implementation.enabled = bool(state)
         self.opacity.setOpacity(1 if state else 0.5)
@@ -163,8 +159,8 @@ class QtHookImplementationListWidget(QListWidget):
 
     def __init__(
         self,
-        parent: Optional[QWidget] = None,
-        hook_caller: Optional[HookCaller] = None,
+        parent: QWidget | None = None,
+        hook_caller: HookCaller | None = None,
     ) -> None:
         super().__init__(parent)
         self.setDefaultDropAction(Qt.DropAction.MoveAction)
@@ -176,10 +172,10 @@ class QtHookImplementationListWidget(QListWidget):
         self.setMinimumHeight(1)
         self.setMaximumHeight(80)
         self.order_changed.connect(self.permute_hook)
-        self.hook_caller: Optional[HookCaller] = None
+        self.hook_caller: HookCaller | None = None
         self.set_hook_caller(hook_caller)
 
-    def set_hook_caller(self, hook_caller: Optional[HookCaller]):
+    def set_hook_caller(self, hook_caller: HookCaller | None):
         """Set the list widget to show hook implementations for ``hook_caller``.
 
         Parameters
@@ -199,9 +195,7 @@ class QtHookImplementationListWidget(QListWidget):
         for hook_implementation in reversed(hook_caller._nonwrappers):
             self.append_hook_implementation(hook_implementation)
 
-    def append_hook_implementation(
-        self, hook_implementation: HookImplementation
-    ):
+    def append_hook_implementation(self, hook_implementation: HookImplementation):
         """Add a list item for ``hook_implementation`` with a custom widget.
 
         Parameters
@@ -284,14 +278,14 @@ class QtPluginSorter(QWidget):
         implementations for the currently selected hook.
     """
 
-    NULL_OPTION = trans._('select hook... ')
+    NULL_OPTION = trans._("select hook... ")
 
     def __init__(
         self,
         plugin_manager: PluginManager = napari_plugin_manager,
         *,
-        parent: Optional[QWidget] = None,
-        initial_hook: Optional[str] = None,
+        parent: QWidget | None = None,
+        initial_hook: str | None = None,
         firstresult_only: bool = True,
     ) -> None:
         super().__init__(parent)
@@ -310,19 +304,15 @@ class QtPluginSorter(QWidget):
             # if the firstresult_only option is set
             # we only want to include hook_specifications that declare the
             # "firstresult" option as True.
-            if firstresult_only and not hook_caller.spec.opts.get(
-                'firstresult', False
-            ):
+            if firstresult_only and not hook_caller.spec.opts.get("firstresult", False):
                 continue
-            self.hook_combo_box.addItem(
-                name.replace('napari_', ''), hook_caller
-            )
+            self.hook_combo_box.addItem(name.replace("napari_", ""), hook_caller)
 
         self.plugin_manager.events.disabled.connect(self._on_disabled)
         self.plugin_manager.events.registered.connect(self.refresh)
 
         self.hook_combo_box.setToolTip(
-            trans._('select the hook specification to reorder')
+            trans._("select the hook specification to reorder")
         )
         self.hook_combo_box.currentIndexChanged.connect(self._on_hook_change)
         self.hook_list = QtHookImplementationListWidget(parent=self)
@@ -331,21 +321,21 @@ class QtPluginSorter(QWidget):
 
         instructions = QLabel(
             trans._(
-                'Select a hook to rearrange, then drag and drop plugins into the desired call order.\n\nDisable plugins for a specific hook by unchecking their checkbox.'
+                "Select a hook to rearrange, then drag and drop plugins into the desired call order.\n\nDisable plugins for a specific hook by unchecking their checkbox."
             )
         )
         instructions.setWordWrap(True)
 
         self.docstring = QLabel(self)
         self.info = QtToolTipLabel(self)
-        self.info.setObjectName('info_icon')
+        self.info.setObjectName("info_icon")
         doc_lay = QHBoxLayout()
         doc_lay.addWidget(self.docstring)
         doc_lay.setStretch(0, 1)
         doc_lay.addWidget(self.info)
 
         self.docstring.setWordWrap(True)
-        self.docstring.setObjectName('small_text')
+        self.docstring.setObjectName("small_text")
         self.info.hide()
         self.docstring.hide()
 
@@ -371,7 +361,7 @@ class QtPluginSorter(QWidget):
         hook : str
             Name of the new hook specification to show.
         """
-        self.hook_combo_box.setCurrentText(hook.replace('napari_', ''))
+        self.hook_combo_box.setCurrentText(hook.replace("napari_", ""))
 
     def _on_hook_change(self, index):
         hook_caller = self.hook_combo_box.currentData()
@@ -379,9 +369,9 @@ class QtPluginSorter(QWidget):
 
         if hook_caller:
             doc = hook_caller.spec.function.__doc__
-            html = rst2html(doc.split('Parameters')[0].strip())
-            summary, fulldoc = html.split('<br>', 1)
-            while fulldoc.startswith('<br>'):
+            html = rst2html(doc.split("Parameters")[0].strip())
+            summary, fulldoc = html.split("<br>", 1)
+            while fulldoc.startswith("<br>"):
                 fulldoc = fulldoc[4:]
             self.docstring.setText(summary.strip())
             self.docstring.show()
@@ -390,7 +380,7 @@ class QtPluginSorter(QWidget):
         else:
             self.docstring.hide()
             self.info.hide()
-            self.docstring.setToolTip('')
+            self.docstring.setToolTip("")
 
     def refresh(self):
         self._on_hook_change(self.hook_combo_box.currentIndex())

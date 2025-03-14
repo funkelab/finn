@@ -16,11 +16,11 @@ logger = getLogger(__name__)
 def _plugin_manager_dialog_avail() -> bool:
     """Returns whether the plugin manager class is available."""
 
-    plugin_dlg = find_spec('napari_plugin_manager')
+    plugin_dlg = find_spec("napari_plugin_manager")
     if plugin_dlg:
         return True
     # not available
-    logger.debug('QtPluginDialog not available')
+    logger.debug("QtPluginDialog not available")
     return False
 
 
@@ -42,31 +42,31 @@ def _show_plugin_err_reporter(window: Window) -> None:
 
 Q_PLUGINS_ACTIONS: list[Action] = [
     Action(
-        id='finn.window.plugins.plugin_install_dialog',
-        title=trans._('Install/Uninstall Plugins...'),
+        id="finn.window.plugins.plugin_install_dialog",
+        title=trans._("Install/Uninstall Plugins..."),
         menus=[
             {
-                'id': MenuId.MENUBAR_PLUGINS,
-                'group': MenuGroup.PLUGINS,
-                'order': 1,
-                'when': _plugin_manager_dialog_avail(),
+                "id": MenuId.MENUBAR_PLUGINS,
+                "group": MenuGroup.PLUGINS,
+                "order": 1,
+                "when": _plugin_manager_dialog_avail(),
             }
         ],
         callback=_show_plugin_install_dialog,
     ),
     Action(
-        id='finn.window.plugins.plugin_err_reporter',
-        title=trans._('Plugin Errors...'),
+        id="finn.window.plugins.plugin_err_reporter",
+        title=trans._("Plugin Errors..."),
         menus=[
             {
-                'id': MenuId.MENUBAR_PLUGINS,
-                'group': MenuGroup.PLUGINS,
-                'order': 2,
+                "id": MenuId.MENUBAR_PLUGINS,
+                "group": MenuGroup.PLUGINS,
+                "order": 2,
             }
         ],
         callback=_show_plugin_err_reporter,
         status_tip=trans._(
-            'Review stack traces for plugin exceptions and notify developers'
+            "Review stack traces for plugin exceptions and notify developers"
         ),
     ),
 ]

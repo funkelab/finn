@@ -41,9 +41,9 @@ class QtSurfaceControls(QtBaseImageControls):
 
     """
 
-    layer: 'finn.layers.Surface'
-    PAN_ZOOM_ACTION_NAME = 'activate_surface_pan_zoom_mode'
-    TRANSFORM_ACTION_NAME = 'activate_surface_transform_mode'
+    layer: "finn.layers.Surface"
+    PAN_ZOOM_ACTION_NAME = "activate_surface_pan_zoom_mode"
+    TRANSFORM_ACTION_NAME = "activate_surface_transform_mode"
 
     def __init__(self, layer) -> None:
         super().__init__(layer)
@@ -58,23 +58,19 @@ class QtSurfaceControls(QtBaseImageControls):
         shading_comboBox = QComboBox(self)
         for display_name, shading in SHADING_TRANSLATION.items():
             shading_comboBox.addItem(display_name, shading)
-        index = shading_comboBox.findData(
-            SHADING_TRANSLATION[self.layer.shading]
-        )
+        index = shading_comboBox.findData(SHADING_TRANSLATION[self.layer.shading])
         shading_comboBox.setCurrentIndex(index)
         shading_comboBox.currentTextChanged.connect(self.changeShading)
         self.shadingComboBox = shading_comboBox
 
         self.layout().addRow(self.button_grid)
         self.layout().addRow(self.opacityLabel, self.opacitySlider)
-        self.layout().addRow(trans._('blending:'), self.blendComboBox)
-        self.layout().addRow(
-            trans._('contrast limits:'), self.contrastLimitsSlider
-        )
-        self.layout().addRow(trans._('auto-contrast:'), self.autoScaleBar)
-        self.layout().addRow(trans._('gamma:'), self.gammaSlider)
-        self.layout().addRow(trans._('colormap:'), colormap_layout)
-        self.layout().addRow(trans._('shading:'), self.shadingComboBox)
+        self.layout().addRow(trans._("blending:"), self.blendComboBox)
+        self.layout().addRow(trans._("contrast limits:"), self.contrastLimitsSlider)
+        self.layout().addRow(trans._("auto-contrast:"), self.autoScaleBar)
+        self.layout().addRow(trans._("gamma:"), self.gammaSlider)
+        self.layout().addRow(trans._("colormap:"), colormap_layout)
+        self.layout().addRow(trans._("shading:"), self.shadingComboBox)
 
     def changeShading(self, text):
         """Change shading value on the surface layer.
@@ -89,7 +85,5 @@ class QtSurfaceControls(QtBaseImageControls):
         """Receive layer model shading change event and update combobox."""
         with self.layer.events.shading.blocker():
             self.shadingComboBox.setCurrentIndex(
-                self.shadingComboBox.findData(
-                    SHADING_TRANSLATION[self.layer.shading]
-                )
+                self.shadingComboBox.findData(SHADING_TRANSLATION[self.layer.shading])
             )

@@ -1,5 +1,4 @@
 import re
-from typing import Optional
 
 from qtpy.QtCore import QSize, Slot
 from qtpy.QtGui import QFont
@@ -7,10 +6,10 @@ from qtpy.QtWidgets import QTableWidget, QTableWidgetItem
 
 from finn.utils.translations import trans
 
-email_pattern = re.compile(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
+email_pattern = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
 url_pattern = re.compile(
-    r'https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}'
-    r'\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)'
+    r"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}"
+    r"\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)"
 )
 
 
@@ -47,10 +46,10 @@ class QtDictTable(QTableWidget):
     def __init__(
         self,
         parent=None,
-        source: Optional[list[dict]] = None,
+        source: list[dict] | None = None,
         *,
-        headers: Optional[list[str]] = None,
-        min_section_width: Optional[int] = None,
+        headers: list[str] | None = None,
+        min_section_width: int | None = None,
         max_section_width: int = 480,
     ) -> None:
         super().__init__(parent=parent)
@@ -63,7 +62,7 @@ class QtDictTable(QTableWidget):
         self.cellClicked.connect(self._go_to_links)
         self.setMouseTracking(True)
 
-    def set_data(self, data: list[dict], headers: Optional[list[str]] = None):
+    def set_data(self, data: list[dict], headers: list[str] | None = None):
         """Set the data in the table, given a list of dicts.
 
         Parameters
@@ -78,13 +77,9 @@ class QtDictTable(QTableWidget):
             by default headers will be the set of all keys in all dicts in
             ``source``
         """
-        if not isinstance(data, list) or any(
-            not isinstance(i, dict) for i in data
-        ):
+        if not isinstance(data, list) or any(not isinstance(i, dict) for i in data):
             raise ValueError(
-                trans._(
-                    "'data' argument must be a list of dicts", deferred=True
-                )
+                trans._("'data' argument must be a list of dicts", deferred=True)
             )
         nrows = len(data)
         _headers = sorted(set().union(*data))
@@ -103,7 +98,7 @@ class QtDictTable(QTableWidget):
         self.setColumnCount(len(_headers))
         for row, elem in enumerate(data):
             for key, value in elem.items():
-                value = value or ''
+                value = value or ""
                 try:
                     col = _headers.index(key)
                 except ValueError:
@@ -127,7 +122,7 @@ class QtDictTable(QTableWidget):
         item = self.item(row, col)
         text = item.text().strip()
         if email_pattern.match(text):
-            webbrowser.open(f'mailto:{text}', new=1)
+            webbrowser.open(f"mailto:{text}", new=1)
             return
         if url_pattern.match(text):
             webbrowser.open(text, new=1)

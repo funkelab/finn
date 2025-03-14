@@ -35,16 +35,14 @@ class ActivityToggleItem(QWidget):
         self.setLayout(QHBoxLayout())
 
         self._activityBtn = QToolButton()
-        self._activityBtn.setObjectName('QtActivityButton')
-        self._activityBtn.setToolButtonStyle(
-            Qt.ToolButtonStyle.ToolButtonTextBesideIcon
-        )
+        self._activityBtn.setObjectName("QtActivityButton")
+        self._activityBtn.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         self._activityBtn.setArrowType(Qt.ArrowType.UpArrow)
         self._activityBtn.setIconSize(QSize(11, 11))
-        self._activityBtn.setText(trans._('activity'))
+        self._activityBtn.setText(trans._("activity"))
         self._activityBtn.setCheckable(True)
 
-        self._inProgressIndicator = QLabel(trans._('in progress...'), self)
+        self._inProgressIndicator = QLabel(trans._("in progress..."), self)
         sp = self._inProgressIndicator.sizePolicy()
         sp.setRetainSizeWhenHidden(True)
         self._inProgressIndicator.setSizePolicy(sp)
@@ -68,14 +66,12 @@ class QtActivityDialog(QDialog):
         super().__init__(parent)
         self._toggleButton = toggle_button
 
-        self.setObjectName('Activity')
+        self.setObjectName("Activity")
         self.setMinimumWidth(self.MIN_WIDTH)
         self.setMinimumHeight(self.MIN_HEIGHT)
         self.setMaximumHeight(self.MIN_HEIGHT)
         self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
-        self.setWindowFlags(
-            Qt.WindowType.SubWindow | Qt.WindowType.WindowStaysOnTopHint
-        )
+        self.setWindowFlags(Qt.WindowType.SubWindow | Qt.WindowType.WindowStaysOnTopHint)
         self.setModal(False)
 
         opacityEffect = QGraphicsOpacityEffect(self)
@@ -95,13 +91,13 @@ class QtActivityDialog(QDialog):
 
         self._titleBar = QLabel()
 
-        title = QLabel('activity', self)
-        title.setObjectName('QtCustomTitleLabel')
+        title = QLabel("activity", self)
+        title.setObjectName("QtCustomTitleLabel")
         title.setSizePolicy(
             QSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
         )
         line = QFrame(self)
-        line.setObjectName('QtCustomTitleBarLine')
+        line.setObjectName("QtCustomTitleBarLine")
         titleLayout = QHBoxLayout()
         titleLayout.setSpacing(4)
         titleLayout.setContentsMargins(8, 1, 8, 0)
@@ -119,9 +115,7 @@ class QtActivityDialog(QDialog):
 
         # TODO: what do we do with any existing progress objects in action?
         # connect callback to handle new progress objects being added/removed
-        progress._all_instances.events.changed.connect(
-            self.handle_progress_change
-        )
+        progress._all_instances.events.changed.connect(self.handle_progress_change)
 
     def handle_progress_change(self, event):
         """Handle addition and/or removal of new progress objects
@@ -269,9 +263,7 @@ class QtActivityDialog(QDialog):
         pbar_groups = self._baseWidget.findChildren(QtProgressBarGroup)
 
         progress_visible = any(pbar.isVisible() for pbar in pbars)
-        progress_group_visible = any(
-            pbar_group.isVisible() for pbar_group in pbar_groups
-        )
+        progress_group_visible = any(pbar_group.isVisible() for pbar_group in pbar_groups)
         if not progress_visible and not progress_group_visible:
             self._toggleButton._inProgressIndicator.movie().stop()
             self._toggleButton._inProgressIndicator.hide()
@@ -287,7 +279,7 @@ def remove_separators(current_pbars):
         parent and new progress bar to remove separators from
     """
     for current_pbar in current_pbars:
-        if line_widg := current_pbar.findChild(QFrame, 'QtCustomTitleBarLine'):
+        if line_widg := current_pbar.findChild(QFrame, "QtCustomTitleBarLine"):
             current_pbar.layout().removeWidget(line_widg)
             line_widg.hide()
             line_widg.deleteLater()

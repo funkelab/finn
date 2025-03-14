@@ -11,7 +11,7 @@ from finn._qt._qapp_model._tests.utils import get_submenu_action
 def perfmon_activation(monkeypatch, request):
     if request.param:
         # If perfmon needs to be active add env var and reload modules
-        monkeypatch.setenv('NAPARI_PERFMON', '1')
+        monkeypatch.setenv("NAPARI_PERFMON", "1")
         from finn.utils import perf
 
         importlib.reload(perf._config)
@@ -24,7 +24,7 @@ def perfmon_activation(monkeypatch, request):
         assert perf.USE_PERFMON
     else:
         # If perfmon doesn't need to be active remove env var and reload modules
-        monkeypatch.delenv('NAPARI_PERFMON', raising=False)
+        monkeypatch.delenv("NAPARI_PERFMON", raising=False)
         from finn.utils import perf
 
         importlib.reload(perf._config)
@@ -39,7 +39,7 @@ def perfmon_activation(monkeypatch, request):
     yield request.param
 
     # On teardown always try to remove env var and reload `perf` module
-    monkeypatch.delenv('NAPARI_PERFMON', raising=False)
+    monkeypatch.delenv("NAPARI_PERFMON", raising=False)
     from finn.utils import perf
 
     importlib.reload(perf._config)
@@ -53,7 +53,7 @@ def perfmon_activation(monkeypatch, request):
 
 
 @pytest.mark.filterwarnings(
-    'ignore:Using NAPARI_PERFMON with an already-running QtApp'
+    "ignore:Using NAPARI_PERFMON with an already-running QtApp"
 )  # TODO: remove once napari/napari#6957 resolved
 def test_debug_menu_exists(perfmon_activation, make_napari_viewer, qtbot):
     """Test debug menu existence following performance monitor usage."""
@@ -63,7 +63,7 @@ def test_debug_menu_exists(perfmon_activation, make_napari_viewer, qtbot):
     # Check the menu exists following `NAPARI_PERFMON` value
     #   * `NAPARI_PERFMON=1` -> `perf.USE_PERFMON==True` -> Debug menu available
     #   * `NAPARI_PERFMON=` -> `perf.USE_PERFMON==False` -> Debug menu shouldn't exist
-    assert bool(getattr(viewer.window, '_debug_menu', None)) == use_perfmon
+    assert bool(getattr(viewer.window, "_debug_menu", None)) == use_perfmon
 
     # Stop perf widget timer to prevent test failure on teardown when needed
     if use_perfmon:
@@ -71,7 +71,7 @@ def test_debug_menu_exists(perfmon_activation, make_napari_viewer, qtbot):
 
 
 @pytest.mark.filterwarnings(
-    'ignore:Using NAPARI_PERFMON with an already-running QtApp'
+    "ignore:Using NAPARI_PERFMON with an already-running QtApp"
 )  # TODO: remove once napari/napari#6957 resolved
 def test_start_stop_trace_actions(
     perfmon_activation, make_napari_viewer, tmp_path, qtbot
@@ -79,20 +79,20 @@ def test_start_stop_trace_actions(
     """Test start and stop recording trace actions."""
     use_perfmon = perfmon_activation
     if use_perfmon:
-        trace_file = tmp_path / 'trace.json'
+        trace_file = tmp_path / "trace.json"
         app = get_app_model()
         viewer = make_napari_viewer()
 
         # Check Debug menu exists and actions state
-        assert getattr(viewer.window, '_debug_menu', None) is not None
+        assert getattr(viewer.window, "_debug_menu", None) is not None
 
         start_action, menu = get_submenu_action(
             viewer.window._debug_menu,
-            'Performance Trace',
-            'Start Recording...',
+            "Performance Trace",
+            "Start Recording...",
         )
         stop_action, menu = get_submenu_action(
-            viewer.window._debug_menu, 'Performance Trace', 'Stop Recording...'
+            viewer.window._debug_menu, "Performance Trace", "Stop Recording..."
         )
 
         # Check initial actions state
@@ -107,14 +107,12 @@ def test_start_stop_trace_actions(
             assert stop_action.isEnabled()
 
         with mock.patch(
-            'finn._qt._qapp_model.qactions._debug.QFileDialog'
+            "finn._qt._qapp_model.qactions._debug.QFileDialog"
         ) as mock_dialog:
             mock_dialog_instance = mock_dialog.return_value
             mock_save = mock_dialog_instance.getSaveFileName
             mock_save.return_value = (str(trace_file), None)
-            app.commands.execute_command(
-                'finn.window.debug.start_trace_dialog'
-            )
+            app.commands.execute_command("finn.window.debug.start_trace_dialog")
         mock_dialog.assert_called_once()
         mock_save.assert_called_once()
         assert not trace_file.exists()
@@ -127,7 +125,7 @@ def test_start_stop_trace_actions(
             assert not stop_action.isEnabled()
             assert trace_file.exists()
 
-        app.commands.execute_command('finn.window.debug.stop_trace')
+        app.commands.execute_command("finn.window.debug.stop_trace")
         qtbot.waitUntil(assert_stop_recording)
 
         # Stop perf widget timer to prevent test failure on teardown
@@ -137,4 +135,4 @@ def test_start_stop_trace_actions(
         )
     else:
         # Nothing to test
-        pytest.skip('Perfmon is disabled')
+        pytest.skip("Perfmon is disabled")

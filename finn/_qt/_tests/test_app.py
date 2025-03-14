@@ -18,34 +18,32 @@ def test_qapp(qapp):
     qapp = get_qapp()
     with pytest.warns(
         FutureWarning,
-        match='`QApplication` instance access through `get_app` is deprecated and will be removed in 0.6.0.\nPlease use `get_qapp` instead.\n',
+        match="`QApplication` instance access through `get_app` is deprecated and will be removed in 0.6.0.\nPlease use `get_qapp` instead.\n",
     ):
         deprecated_qapp = get_app()
     assert qapp == deprecated_qapp
 
 
-@pytest.mark.skipif(os.name != 'nt', reason='Windows specific')
+@pytest.mark.skipif(os.name != "nt", reason="Windows specific")
 def test_windows_grouping_overwrite(qapp):
     import ctypes
 
     def get_app_id():
         mem = ctypes.POINTER(ctypes.c_wchar)()
-        ctypes.windll.shell32.GetCurrentProcessExplicitAppUserModelID(
-            ctypes.byref(mem)
-        )
+        ctypes.windll.shell32.GetCurrentProcessExplicitAppUserModelID(ctypes.byref(mem))
         res = ctypes.wstring_at(mem)
         ctypes.windll.Ole32.CoTaskMemFree(mem)
         return res
 
-    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('test_text')
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("test_text")
 
-    assert get_app_id() == 'test_text'
-    set_app_id('custom_string')
-    assert get_app_id() == 'custom_string'
-    set_app_id('')  # app id can't be an empty string
-    assert get_app_id() == 'custom_string'
-    set_app_id(' ')
-    assert get_app_id() == ' '
+    assert get_app_id() == "test_text"
+    set_app_id("custom_string")
+    assert get_app_id() == "custom_string"
+    set_app_id("")  # app id can't be an empty string
+    assert get_app_id() == "custom_string"
+    set_app_id(" ")
+    assert get_app_id() == " "
 
 
 def test_run_outside_ipython(make_napari_viewer, qapp, monkeypatch):
@@ -58,7 +56,7 @@ def test_run_outside_ipython(make_napari_viewer, qapp, monkeypatch):
 
     with monkeypatch.context() as m:
         mock_exec = Mock()
-        m.setattr(qapp, 'exec_', mock_exec)
+        m.setattr(qapp, "exec_", mock_exec)
         run()
         mock_exec.assert_called_once()
 
@@ -73,7 +71,7 @@ def test_shortcut_collision(qtbot, make_napari_viewer):
     shortcuts = viewer.window._qt_window.findChildren(QShortcut)
     for shortcut in shortcuts:
         key = shortcut.key().toString()
-        if key == 'Ctrl+M':
+        if key == "Ctrl+M":
             # menubar toggle support
             # https://github.com/napari/napari/pull/3204
             continue

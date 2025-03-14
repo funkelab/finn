@@ -7,7 +7,6 @@ import weakref
 from collections.abc import Iterable, Sequence
 from contextlib import contextmanager
 from functools import partial
-from typing import Union
 
 import numpy as np
 import qtpy
@@ -34,8 +33,8 @@ from finn.utils.events.custom_types import Array
 from finn.utils.misc import is_sequence
 from finn.utils.translations import trans
 
-QBYTE_FLAG = '!QBYTE_'
-RICH_TEXT_PATTERN = re.compile('<[^\n]+>')
+QBYTE_FLAG = "!QBYTE_"
+RICH_TEXT_PATTERN = re.compile("<[^\n]+>")
 
 
 def is_qbyte(string: str) -> bool:
@@ -106,7 +105,7 @@ def QImg2array(img) -> np.ndarray:
     # As vispy doesn't use qtpy we need to reconcile the differences
     # between the `QImage` API for `PySide2` and `PyQt5` on how to convert
     # a QImage to a numpy array.
-    if qtpy.API_NAME.startswith('PySide'):
+    if qtpy.API_NAME.startswith("PySide"):
         arr = np.array(b).reshape(h, w, c)
     else:
         b.setsize(h * w * c)
@@ -133,12 +132,12 @@ def event_hook_removed():
     """Context manager to temporarily remove the PyQt5 input hook"""
     from qtpy import QtCore
 
-    if hasattr(QtCore, 'pyqtRemoveInputHook'):
+    if hasattr(QtCore, "pyqtRemoveInputHook"):
         QtCore.pyqtRemoveInputHook()
     try:
         yield
     finally:
-        if hasattr(QtCore, 'pyqtRestoreInputHook'):
+        if hasattr(QtCore, "pyqtRestoreInputHook"):
             QtCore.pyqtRestoreInputHook()
 
 
@@ -201,7 +200,7 @@ def drag_with_pixmap(list_widget: QListWidget) -> QDrag:
 
 
 def combine_widgets(
-    widgets: Union[QWidget, Sequence[QWidget]], vertical: bool = False
+    widgets: QWidget | Sequence[QWidget], vertical: bool = False
 ) -> QWidget:
     """Combine a list of widgets into a single QWidget with Layout.
 
@@ -224,7 +223,7 @@ def combine_widgets(
     TypeError
         If ``widgets`` is neither a ``QWidget`` or a sequence of ``QWidgets``.
     """
-    if isinstance(getattr(widgets, 'native', None), QWidget):
+    if isinstance(getattr(widgets, "native", None), QWidget):
         # compatibility with magicgui v0.2.0 which no longer uses QWidgets
         # directly. Like vispy, the backend widget is at widget.native
         return widgets.native  # type: ignore
@@ -233,7 +232,7 @@ def combine_widgets(
     if is_sequence(widgets):
         # the same as above, compatibility with magicgui v0.2.0
         widgets = [
-            i.native if isinstance(getattr(i, 'native', None), QWidget) else i
+            i.native if isinstance(getattr(i, "native", None), QWidget) else i
             for i in widgets
         ]
         if all(isinstance(i, QWidget) for i in widgets):
@@ -244,8 +243,7 @@ def combine_widgets(
             return container
     raise TypeError(
         trans._(
-            '"widgets" must be a QWidget, a magicgui Widget or a sequence of '
-            'such types'
+            '"widgets" must be a QWidget, a magicgui Widget or a sequence of such types'
         )
     )
 
@@ -265,12 +263,12 @@ def add_flash_animation(
         Color of the flash animation. By default, we use light gray.
     """
     color = transform_color(color)[0]
-    color = (255 * color).astype('int')
+    color = (255 * color).astype("int")
 
     effect = QGraphicsColorizeEffect(widget)
     widget.setGraphicsEffect(effect)
 
-    widget._flash_animation = QPropertyAnimation(effect, b'color')
+    widget._flash_animation = QPropertyAnimation(effect, b"color")
     widget._flash_animation.setStartValue(QColor(0, 0, 0, 0))
     widget._flash_animation.setEndValue(QColor(0, 0, 0, 0))
     widget._flash_animation.setLoopCount(1)

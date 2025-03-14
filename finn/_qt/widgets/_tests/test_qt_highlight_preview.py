@@ -124,7 +124,7 @@ def test_qt_highlight_preview_widget_defaults(
 def test_qt_highlight_preview_widget_description(
     highlight_preview_widget,
 ):
-    description = 'Some text'
+    description = "Some text"
     widget = highlight_preview_widget(description=description)
     assert widget.description() == description
 
@@ -134,7 +134,7 @@ def test_qt_highlight_preview_widget_description(
 
 
 def test_qt_highlight_preview_widget_unit(highlight_preview_widget):
-    unit = 'CM'
+    unit = "CM"
     widget = highlight_preview_widget(unit=unit)
     assert widget.unit() == unit
 
@@ -150,17 +150,17 @@ def test_qt_highlight_preview_widget_minimum(
     widget = highlight_preview_widget(min_value=minimum)
     assert widget.minimum() == minimum
     assert widget._thickness_value >= minimum
-    assert widget.value()['highlight_thickness'] >= minimum
+    assert widget.value()["highlight_thickness"] >= minimum
 
     widget = highlight_preview_widget()
     widget.setMinimum(3)
     assert widget.minimum() == 3
     assert widget._thickness_value == 3
-    assert widget.value()['highlight_thickness'] == 3
+    assert widget.value()["highlight_thickness"] == 3
     assert widget._slider.minimum() == 3
-    assert widget._slider_min_label.text() == '3'
+    assert widget._slider_min_label.text() == "3"
     assert widget._triangle.minimum() == 3
-    assert widget._lineedit.text() == '3'
+    assert widget._lineedit.text() == "3"
 
 
 def test_qt_highlight_preview_widget_minimum_invalid(
@@ -168,7 +168,7 @@ def test_qt_highlight_preview_widget_minimum_invalid(
 ):
     widget = highlight_preview_widget()
 
-    with pytest.raises(ValueError, match='must be smaller than'):
+    with pytest.raises(ValueError, match="must be smaller than"):
         widget.setMinimum(60)
 
 
@@ -180,30 +180,30 @@ def test_qt_highlight_preview_widget_maximum(
 
     assert widget.maximum() == maximum
     assert widget._thickness_value <= maximum
-    assert widget.value()['highlight_thickness'] <= maximum
+    assert widget.value()["highlight_thickness"] <= maximum
 
     widget = highlight_preview_widget(
         value={
-            'highlight_thickness': 6,
-            'highlight_color': [0.0, 0.6, 1.0, 1.0],
+            "highlight_thickness": 6,
+            "highlight_color": [0.0, 0.6, 1.0, 1.0],
         }
     )
     widget.setMaximum(20)
     assert widget.maximum() == 20
     assert widget._slider.maximum() == 20
     assert widget._triangle.maximum() == 20
-    assert widget._slider_max_label.text() == '20'
+    assert widget._slider_max_label.text() == "20"
 
     assert widget._thickness_value == 6
-    assert widget.value()['highlight_thickness'] == 6
+    assert widget.value()["highlight_thickness"] == 6
     widget.setMaximum(5)
     assert widget.maximum() == 5
     assert widget._thickness_value == 5
-    assert widget.value()['highlight_thickness'] == 5
+    assert widget.value()["highlight_thickness"] == 5
     assert widget._slider.maximum() == 5
     assert widget._triangle.maximum() == 5
-    assert widget._lineedit.text() == '5'
-    assert widget._slider_max_label.text() == '5'
+    assert widget._lineedit.text() == "5"
+    assert widget._slider_max_label.text() == "5"
 
 
 def test_qt_highlight_preview_widget_maximum_invalid(
@@ -211,55 +211,47 @@ def test_qt_highlight_preview_widget_maximum_invalid(
 ):
     widget = highlight_preview_widget()
 
-    with pytest.raises(ValueError, match='must be larger than'):
+    with pytest.raises(ValueError, match="must be larger than"):
         widget.setMaximum(-5)
 
 
 def test_qt_highlight_preview_widget_value(highlight_preview_widget):
     widget = highlight_preview_widget(
         value={
-            'highlight_thickness': 5,
-            'highlight_color': [0.0, 0.6, 1.0, 1.0],
+            "highlight_thickness": 5,
+            "highlight_color": [0.0, 0.6, 1.0, 1.0],
         }
     )
     assert widget._thickness_value <= 5
-    assert widget.value()['highlight_thickness'] <= 5
+    assert widget.value()["highlight_thickness"] <= 5
     assert widget._color_value == [0.0, 0.6, 1.0, 1.0]
-    assert widget.value()['highlight_color'] == [0.0, 0.6, 1.0, 1.0]
+    assert widget.value()["highlight_color"] == [0.0, 0.6, 1.0, 1.0]
 
     widget = highlight_preview_widget()
-    widget.setValue(
-        {'highlight_thickness': 5, 'highlight_color': [0.6, 0.6, 1.0, 1.0]}
-    )
+    widget.setValue({"highlight_thickness": 5, "highlight_color": [0.6, 0.6, 1.0, 1.0]})
     assert widget._thickness_value == 5
-    assert widget.value()['highlight_thickness'] == 5
+    assert widget.value()["highlight_thickness"] == 5
     assert np.array_equal(
         np.array(widget._color_value, dtype=np.float32),
         np.array([0.6, 0.6, 1.0, 1.0], dtype=np.float32),
     )
     assert np.array_equal(
-        np.array(widget.value()['highlight_color'], dtype=np.float32),
+        np.array(widget.value()["highlight_color"], dtype=np.float32),
         np.array([0.6, 0.6, 1.0, 1.0], dtype=np.float32),
     )
 
 
-def test_qt_highlight_preview_widget_value_invalid(
-    qtbot, highlight_preview_widget
-):
+def test_qt_highlight_preview_widget_value_invalid(qtbot, highlight_preview_widget):
     widget = highlight_preview_widget()
     widget.setMaximum(50)
-    widget.setValue(
-        {'highlight_thickness': 51, 'highlight_color': [0.0, 0.6, 1.0, 1.0]}
-    )
-    assert widget.value()['highlight_thickness'] == 50
-    assert widget._lineedit.text() == '50'
+    widget.setValue({"highlight_thickness": 51, "highlight_color": [0.0, 0.6, 1.0, 1.0]})
+    assert widget.value()["highlight_thickness"] == 50
+    assert widget._lineedit.text() == "50"
 
     widget.setMinimum(5)
-    widget.setValue(
-        {'highlight_thickness': 1, 'highlight_color': [0.0, 0.6, 1.0, 1.0]}
-    )
-    assert widget.value()['highlight_thickness'] == 5
-    assert widget._lineedit.text() == '5'
+    widget.setValue({"highlight_thickness": 1, "highlight_color": [0.0, 0.6, 1.0, 1.0]})
+    assert widget.value()["highlight_thickness"] == 5
+    assert widget._lineedit.text() == "5"
 
 
 def test_qt_highlight_preview_widget_signal(qtbot, highlight_preview_widget):
@@ -267,13 +259,13 @@ def test_qt_highlight_preview_widget_signal(qtbot, highlight_preview_widget):
 
     with qtbot.waitSignal(widget.valueChanged, timeout=500):
         widget.setValue(
-            {'highlight_thickness': 7, 'highlight_color': [0.0, 0.6, 1.0, 1.0]}
+            {"highlight_thickness": 7, "highlight_color": [0.0, 0.6, 1.0, 1.0]}
         )
 
     with qtbot.waitSignal(widget.valueChanged, timeout=500):
         widget.setValue(
             {
-                'highlight_thickness': -5,
-                'highlight_color': [0.0, 0.6, 1.0, 1.0],
+                "highlight_thickness": -5,
+                "highlight_color": [0.0, 0.6, 1.0, 1.0],
             }
         )

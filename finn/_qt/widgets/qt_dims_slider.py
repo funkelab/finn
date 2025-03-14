@@ -1,5 +1,5 @@
 import threading
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 from weakref import ref
 
 import numpy as np
@@ -55,7 +55,7 @@ class QtDimSliderWidget(QWidget):
         self.play_button = None
         self.curslice_label = QLineEdit(self)
         self.curslice_label.setToolTip(
-            trans._('Current slice for axis {axis}', axis=axis)
+            trans._("Current slice for axis {axis}", axis=axis)
         )
         # if we set the QIntValidator to actually reflect the range of the data
         # then an invalid (i.e. too large) index doesn't actually trigger the
@@ -67,26 +67,22 @@ class QtDimSliderWidget(QWidget):
 
         self.curslice_label.editingFinished.connect(self._set_slice_from_label)
         self.totslice_label = QLabel(self)
-        self.totslice_label.setToolTip(
-            trans._('Total slices for axis {axis}', axis=axis)
-        )
-        self.curslice_label.setObjectName('slice_label')
-        self.totslice_label.setObjectName('slice_label')
+        self.totslice_label.setToolTip(trans._("Total slices for axis {axis}", axis=axis))
+        self.curslice_label.setObjectName("slice_label")
+        self.totslice_label.setObjectName("slice_label")
         sep = QFrame(self)
         sep.setFixedSize(1, 14)
-        sep.setObjectName('slice_label_sep')
+        sep.setObjectName("slice_label_sep")
 
         settings = get_settings()
         self._fps = settings.application.playback_fps
-        connect_setattr_value(
-            settings.application.events.playback_fps, self, 'fps'
-        )
+        connect_setattr_value(settings.application.events.playback_fps, self, "fps")
 
         self._minframe = None
         self._maxframe = None
         self._loop_mode = settings.application.playback_mode
         connect_setattr_value(
-            settings.application.events.playback_mode, self, 'loop_mode'
+            settings.application.events.playback_mode, self, "loop_mode"
         )
 
         layout = QHBoxLayout()
@@ -126,12 +122,12 @@ class QtDimSliderWidget(QWidget):
     def _create_axis_label_widget(self):
         """Create the axis label widget which accompanies its slider."""
         label = QElidingLineEdit(self)
-        label.setObjectName('axis_label')  # needed for _update_label
+        label.setObjectName("axis_label")  # needed for _update_label
         fm = label.fontMetrics()
         label.setEllipsesWidth(int(fm.averageCharWidth() * 3))
         label.setText(self.dims.axis_labels[self.axis])
         label.home(False)
-        label.setToolTip(trans._('Edit to change axis label'))
+        label.setToolTip(trans._("Edit to change axis label"))
         label.setAcceptDrops(False)
         label.setEnabled(True)
         label.setAlignment(Qt.AlignmentFlag.AlignRight)
@@ -176,12 +172,10 @@ class QtDimSliderWidget(QWidget):
             self.qt_dims, self.axis, fps=self._fps, mode=self._loop_mode
         )
         self.play_button.setToolTip(
-            trans._('Right click on button for playback setting options.')
+            trans._("Right click on button for playback setting options.")
         )
         self.play_button.mode_combo.currentTextChanged.connect(
-            lambda x: self.__class__.loop_mode.fset(
-                self, LoopMode(x.replace(' ', '_'))
-            )
+            lambda x: self.__class__.loop_mode.fset(self, LoopMode(x.replace(" ", "_")))
         )
 
         def fps_listener(*args):
@@ -218,10 +212,7 @@ class QtDimSliderWidget(QWidget):
             self.qt_dims.last_used = 0
             self.hide()
         else:
-            if (
-                not displayed_sliders[self.axis]
-                and self.axis not in self.dims.displayed
-            ):
+            if not displayed_sliders[self.axis] and self.axis not in self.dims.displayed:
                 displayed_sliders[self.axis] = True
                 self.last_used = self.axis
                 self.show()
@@ -306,9 +297,7 @@ class QtDimSliderWidget(QWidget):
         """
         value = LoopMode(value)
         self._loop_mode = value
-        self.play_button.mode_combo.setCurrentText(
-            str(value).replace('_', ' ')
-        )
+        self.play_button.mode_combo.setCurrentText(str(value).replace("_", " "))
         self.mode_changed.emit(str(value))
 
     @property
@@ -328,12 +317,10 @@ class QtDimSliderWidget(QWidget):
             Frame range as tuple/list with range (minimum_frame, maximum_frame)
         """
         if not isinstance(value, (tuple, list, type(None))):
-            raise TypeError(
-                trans._('frame_range value must be a list or tuple')
-            )
+            raise TypeError(trans._("frame_range value must be a list or tuple"))
 
         if value and len(value) != 2:
-            raise ValueError(trans._('frame_range must have a length of 2'))
+            raise ValueError(trans._("frame_range must have a length of 2"))
 
         if value is None:
             value = (None, None)
@@ -445,17 +432,15 @@ class QtPlayButton(QPushButton):
 
     play_requested = Signal(int)  # axis, fps
 
-    def __init__(
-        self, qt_dims, axis, reverse=False, fps=10, mode=LoopMode.LOOP
-    ) -> None:
+    def __init__(self, qt_dims, axis, reverse=False, fps=10, mode=LoopMode.LOOP) -> None:
         super().__init__()
         self.qt_dims_ref = ref(qt_dims)
         self.axis = axis
         self.reverse = reverse
         self.fps = fps
         self.mode = mode
-        self.setProperty('reverse', str(reverse))  # for styling
-        self.setProperty('playing', 'False')  # for styling
+        self.setProperty("reverse", str(reverse))  # for styling
+        self.setProperty("playing", "False")  # for styling
 
         # build popup modal form
 
@@ -464,34 +449,34 @@ class QtPlayButton(QPushButton):
         self.popup.frame.setLayout(form_layout)
 
         fpsspin = QtCustomDoubleSpinBox(self.popup)
-        fpsspin.setObjectName('fpsSpinBox')
+        fpsspin.setObjectName("fpsSpinBox")
         fpsspin.setAlignment(Qt.AlignmentFlag.AlignCenter)
         fpsspin.setValue(self.fps)
-        if hasattr(fpsspin, 'setStepType'):
+        if hasattr(fpsspin, "setStepType"):
             # this was introduced in Qt 5.12.  Totally optional, just nice.
             fpsspin.setStepType(QDoubleSpinBox.AdaptiveDecimalStepType)
         fpsspin.setMaximum(500)
         fpsspin.setMinimum(0)
         form_layout.insertRow(
             0,
-            QLabel(trans._('frames per second:'), parent=self.popup),
+            QLabel(trans._("frames per second:"), parent=self.popup),
             fpsspin,
         )
         self.fpsspin = fpsspin
 
         revcheck = QCheckBox(self.popup)
-        revcheck.setObjectName('playDirectionCheckBox')
+        revcheck.setObjectName("playDirectionCheckBox")
         form_layout.insertRow(
-            1, QLabel(trans._('play direction:'), parent=self.popup), revcheck
+            1, QLabel(trans._("play direction:"), parent=self.popup), revcheck
         )
         self.reverse_check = revcheck
 
         mode_combo = QComboBox(self.popup)
-        mode_combo.addItems([str(i).replace('_', ' ') for i in LoopMode])
+        mode_combo.addItems([str(i).replace("_", " ") for i in LoopMode])
         form_layout.insertRow(
-            2, QLabel(trans._('play mode:'), parent=self.popup), mode_combo
+            2, QLabel(trans._("play mode:"), parent=self.popup), mode_combo
         )
-        mode_combo.setCurrentText(str(self.mode).replace('_', ' '))
+        mode_combo.setCurrentText(str(self.mode).replace("_", " "))
         self.mode_combo = mode_combo
 
     def mouseReleaseEvent(self, event):
@@ -515,20 +500,20 @@ class QtPlayButton(QPushButton):
         qt_dims = self.qt_dims_ref()
         if not qt_dims:  # pragma: no cover
             return None
-        if self.property('playing') == 'True':
+        if self.property("playing") == "True":
             return qt_dims.stop()
         self.play_requested.emit(self.axis)
         return None
 
     def _handle_start(self):
         """On animation start, set playing property to True & update style."""
-        self.setProperty('playing', 'True')
+        self.setProperty("playing", "True")
         self.style().unpolish(self)
         self.style().polish(self)
 
     def _handle_stop(self):
         """On animation stop, set playing property to False & update style."""
-        self.setProperty('playing', 'False')
+        self.setProperty("playing", "False")
         self.style().unpolish(self)
         self.style().polish(self)
 
@@ -542,7 +527,7 @@ class AnimationThread(QThread):
 
     frame_requested = Signal(int, int)  # axis, point
 
-    def __init__(self, parent: Optional[QObject] = None) -> None:
+    def __init__(self, parent: QObject | None = None) -> None:
         # FIXME there are attributes defined outside of __init__.
         super().__init__(parent=parent)
         self._interval = 1
@@ -560,9 +545,7 @@ class AnimationThread(QThread):
         if prev_slider is not None:
             prev_slider.fps_changed.disconnect(self.set_fps)
             prev_slider.range_changed.disconnect(self.set_frame_range)
-            prev_slider.dims.events.current_step.disconnect(
-                self._on_axis_changed
-            )
+            prev_slider.dims.events.current_step.disconnect(self._on_axis_changed)
             self.finished.disconnect(prev_slider.play_button._handle_stop)
             self.started.disconnect(prev_slider.play_button._handle_start)
         slider.fps_changed.connect(self.set_fps)
@@ -570,9 +553,7 @@ class AnimationThread(QThread):
         slider.dims.events.current_step.connect(self._on_axis_changed)
         self.finished.connect(slider.play_button._handle_stop)
         self.started.connect(slider.play_button._handle_start)
-        self.current = max(
-            slider.dims.current_step[slider.axis], self.min_point
-        )
+        self.current = max(slider.dims.current_step[slider.axis], self.min_point)
         self.current = min(self.current, self.max_point)
 
     @property
@@ -634,22 +615,18 @@ class AnimationThread(QThread):
 
         if frame_range is not None:
             if frame_range[0] >= frame_range[1]:
-                raise ValueError(
-                    trans._('frame_range[0] must be <= frame_range[1]')
-                )
+                raise ValueError(trans._("frame_range[0] must be <= frame_range[1]"))
             if frame_range[0] < self.dimsrange[0]:
-                raise IndexError(trans._('frame_range[0] out of range'))
+                raise IndexError(trans._("frame_range[0] out of range"))
             if frame_range[1] * self.dimsrange[2] >= self.dimsrange[1]:
-                raise IndexError(trans._('frame_range[1] out of range'))
+                raise IndexError(trans._("frame_range[1] out of range"))
         self.frame_range = frame_range
 
         if self.frame_range is not None:
             self.min_point, self.max_point = self.frame_range
         else:
             self.min_point = 0
-            self.max_point = int(
-                np.floor(self.dimsrange[1] - self.dimsrange[2])
-            )
+            self.max_point = int(np.floor(self.dimsrange[1] - self.dimsrange[2]))
         self.max_point += 1  # range is inclusive
 
     @Slot()
@@ -661,9 +638,7 @@ class AnimationThread(QThread):
         """
         self.current += self.step * self.dimsrange[2]
         if self.current < self.min_point:
-            if (
-                self.loop_mode == LoopMode.BACK_AND_FORTH
-            ):  # 'loop_back_and_forth'
+            if self.loop_mode == LoopMode.BACK_AND_FORTH:  # 'loop_back_and_forth'
                 self.step *= -1
                 self.current = self.min_point + self.step * self.dimsrange[2]
             elif self.loop_mode == LoopMode.LOOP:  # 'loop'
@@ -671,13 +646,9 @@ class AnimationThread(QThread):
             else:  # loop_mode == 'once'
                 return self.finish()
         elif self.current >= self.max_point:
-            if (
-                self.loop_mode == LoopMode.BACK_AND_FORTH
-            ):  # 'loop_back_and_forth'
+            if self.loop_mode == LoopMode.BACK_AND_FORTH:  # 'loop_back_and_forth'
                 self.step *= -1
-                self.current = (
-                    self.max_point + 2 * self.step * self.dimsrange[2]
-                )
+                self.current = self.max_point + 2 * self.step * self.dimsrange[2]
             elif self.loop_mode == LoopMode.LOOP:  # 'loop'
                 self.current = self.min_point + self.current - self.max_point
             else:  # loop_mode == 'once'

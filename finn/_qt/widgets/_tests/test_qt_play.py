@@ -11,9 +11,7 @@ from finn.settings._constants import LoopMode
 
 
 @contextmanager
-def make_worker(
-    qtbot, nframes=8, fps=20, frame_range=None, loop_mode=LoopMode.LOOP
-):
+def make_worker(qtbot, nframes=8, fps=20, frame_range=None, loop_mode=LoopMode.LOOP):
     # sets up an AnimationWorker ready for testing, and breaks down when done
     dims = Dims(ndim=4)
     qtdims = QtDims(dims)
@@ -71,9 +69,7 @@ CONDITIONS = [
 
 
 @pytest.mark.slow
-@pytest.mark.parametrize(
-    ('nframes', 'fps', 'mode', 'rng', 'result'), CONDITIONS
-)
+@pytest.mark.parametrize(("nframes", "fps", "mode", "rng", "result"), CONDITIONS)
 def test_animation_thread_variants(qtbot, nframes, fps, mode, rng, result):
     """This is mostly testing that AnimationWorker.advance works as expected"""
     with make_worker(
@@ -93,9 +89,7 @@ def test_animation_thread_variants(qtbot, nframes, fps, mode, rng, result):
 def test_animation_thread_once(qtbot):
     """Single shot animation should stop when it reaches the last frame"""
     nframes = 13
-    with make_worker(
-        qtbot, nframes=nframes, loop_mode=LoopMode.ONCE
-    ) as worker:
+    with make_worker(qtbot, nframes=nframes, loop_mode=LoopMode.ONCE) as worker:
         with qtbot.waitSignal(worker.finished, timeout=8000):
             worker.start()
     assert worker.current == worker.nz
@@ -134,10 +128,10 @@ def test_play_raises_index_errors(qtbot, ref_view):
 
 def test_play_raises_value_errors(qtbot, ref_view):
     view = ref_view()
-    with pytest.raises(ValueError, match='must be <='):
+    with pytest.raises(ValueError, match="must be <="):
         view.dims.play(0, 20, frame_range=[2, 2])
 
-    with pytest.raises(ValueError, match='loop_mode must be one of'):
+    with pytest.raises(ValueError, match="loop_mode must be one of"):
         view.dims.play(0, 20, loop_mode=5)
 
 

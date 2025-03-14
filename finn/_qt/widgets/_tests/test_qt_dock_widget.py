@@ -14,50 +14,42 @@ from finn._qt.utils import combine_widgets
 def test_add_dock_widget(make_napari_viewer):
     """Test basic add_dock_widget functionality"""
     viewer = make_napari_viewer()
-    widg = QPushButton('button')
-    dwidg = viewer.window.add_dock_widget(widg, name='test', area='bottom')
+    widg = QPushButton("button")
+    dwidg = viewer.window.add_dock_widget(widg, name="test", area="bottom")
     assert not dwidg.is_vertical
-    assert viewer.window._qt_window.findChild(QDockWidget, 'test')
+    assert viewer.window._qt_window.findChild(QDockWidget, "test")
     assert dwidg.widget() == widg
     dwidg._on_visibility_changed(True)  # smoke test
 
-    widg2 = QPushButton('button')
-    dwidg2 = viewer.window.add_dock_widget(widg2, name='test2', area='right')
+    widg2 = QPushButton("button")
+    dwidg2 = viewer.window.add_dock_widget(widg2, name="test2", area="right")
     assert dwidg2.is_vertical
-    assert viewer.window._qt_window.findChild(QDockWidget, 'test2')
+    assert viewer.window._qt_window.findChild(QDockWidget, "test2")
     assert dwidg2.widget() == widg2
     dwidg2._on_visibility_changed(True)  # smoke test
 
-    with pytest.raises(ValueError, match='area argument must be'):
-        viewer.window.add_dock_widget(widg2, name='test2', area='under')
+    with pytest.raises(ValueError, match="area argument must be"):
+        viewer.window.add_dock_widget(widg2, name="test2", area="under")
 
-    with pytest.raises(ValueError, match='all allowed_areas argument must be'):
-        viewer.window.add_dock_widget(
-            widg2, name='test2', allowed_areas=['under']
-        )
+    with pytest.raises(ValueError, match="all allowed_areas argument must be"):
+        viewer.window.add_dock_widget(widg2, name="test2", allowed_areas=["under"])
 
-    with pytest.raises(TypeError, match='`allowed_areas` must be a list'):
-        viewer.window.add_dock_widget(
-            widg2, name='test2', allowed_areas='under'
-        )
+    with pytest.raises(TypeError, match="`allowed_areas` must be a list"):
+        viewer.window.add_dock_widget(widg2, name="test2", allowed_areas="under")
 
 
 def test_add_dock_widget_from_list(make_napari_viewer):
     """Test that we can add a list of widgets and they will be combined"""
     viewer = make_napari_viewer()
-    widg = QPushButton('button')
-    widg2 = QPushButton('button')
+    widg = QPushButton("button")
+    widg2 = QPushButton("button")
 
-    dwidg = viewer.window.add_dock_widget(
-        [widg, widg2], name='test', area='right'
-    )
-    assert viewer.window._qt_window.findChild(QDockWidget, 'test')
+    dwidg = viewer.window.add_dock_widget([widg, widg2], name="test", area="right")
+    assert viewer.window._qt_window.findChild(QDockWidget, "test")
     assert isinstance(dwidg.widget().layout(), QVBoxLayout)
 
-    dwidg = viewer.window.add_dock_widget(
-        [widg, widg2], name='test2', area='bottom'
-    )
-    assert viewer.window._qt_window.findChild(QDockWidget, 'test2')
+    dwidg = viewer.window.add_dock_widget([widg, widg2], name="test2", area="bottom")
+    assert viewer.window._qt_window.findChild(QDockWidget, "test2")
     assert isinstance(dwidg.widget().layout(), QHBoxLayout)
 
 
@@ -67,18 +59,16 @@ def test_add_dock_widget_raises(make_napari_viewer):
     widg = object()
 
     with pytest.raises(TypeError):
-        viewer.window.add_dock_widget(widg, name='test')
+        viewer.window.add_dock_widget(widg, name="test")
 
 
 def test_remove_dock_widget_orphans_widget(make_napari_viewer, qtbot):
     viewer = make_napari_viewer()
-    widg = QPushButton('button')
+    widg = QPushButton("button")
     qtbot.addWidget(widg)
 
     assert not widg.parent()
-    dw = viewer.window.add_dock_widget(
-        widg, name='test', menu=viewer.window.window_menu
-    )
+    dw = viewer.window.add_dock_widget(widg, name="test", menu=viewer.window.window_menu)
     assert widg.parent() is dw
     assert dw.toggleViewAction() in viewer.window.window_menu.actions()
     viewer.window.remove_dock_widget(dw, menu=viewer.window.window_menu)
@@ -90,10 +80,10 @@ def test_remove_dock_widget_orphans_widget(make_napari_viewer, qtbot):
 
 def test_remove_dock_widget_by_widget_reference(make_napari_viewer, qtbot):
     viewer = make_napari_viewer()
-    widg = QPushButton('button')
+    widg = QPushButton("button")
     qtbot.addWidget(widg)
 
-    dw = viewer.window.add_dock_widget(widg, name='test')
+    dw = viewer.window.add_dock_widget(widg, name="test")
     assert widg.parent() is dw
     assert dw in viewer.window._qt_window.findChildren(QDockWidget)
     viewer.window.remove_dock_widget(widg)
@@ -109,7 +99,7 @@ def test_adding_modified_widget(make_napari_viewer):
     # not uncommon to see people shadow the builtin layout()
     # which breaks our ability to add vertical stretch... but shouldn't crash
     widg.layout = None
-    dw = viewer.window.add_dock_widget(widg, name='test', area='right')
+    dw = viewer.window.add_dock_widget(widg, name="test", area="right")
     assert dw.widget() is widg
 
 
@@ -122,7 +112,7 @@ def test_adding_stretch(make_napari_viewer):
     widg.setLayout(QVBoxLayout())
     widg.layout().addWidget(QPushButton())
     assert widg.layout().count() == 1
-    dw = viewer.window.add_dock_widget(widg, area='right')
+    dw = viewer.window.add_dock_widget(widg, area="right")
     assert widg.layout().count() == 2
     dw.close()
 
@@ -131,7 +121,7 @@ def test_adding_stretch(make_napari_viewer):
     widg.setLayout(QVBoxLayout())
     widg.layout().addWidget(QTextEdit())
     assert widg.layout().count() == 1
-    dw = viewer.window.add_dock_widget(widg, area='right')
+    dw = viewer.window.add_dock_widget(widg, area="right")
     assert widg.layout().count() == 1
     dw.close()
 
@@ -140,14 +130,12 @@ def test_adding_stretch(make_napari_viewer):
     widg.setLayout(QHBoxLayout())
     widg.layout().addWidget(QPushButton())
     assert widg.layout().count() == 1
-    dw = viewer.window.add_dock_widget(widg, area='bottom')
+    dw = viewer.window.add_dock_widget(widg, area="bottom")
     assert widg.layout().count() == 1
     dw.close()
 
 
 def test_combine_widgets_error():
     """Check error raised when combining widgets with invalid types."""
-    with pytest.raises(
-        TypeError, match='"widgets" must be a QWidget, a magicgui'
-    ):
-        combine_widgets(['string'])
+    with pytest.raises(TypeError, match='"widgets" must be a QWidget, a magicgui'):
+        combine_widgets(["string"])

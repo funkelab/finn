@@ -20,7 +20,7 @@ DEBUG_SUBMENUS = [
         MenuId.MENUBAR_DEBUG,
         SubmenuItem(
             submenu=MenuId.DEBUG_PERFORMANCE,
-            title=trans._('Performance Trace'),
+            title=trans._("Performance Trace"),
         ),
     ),
 ]
@@ -33,13 +33,13 @@ def _start_trace_dialog(qt_viewer: QtViewer) -> None:
     dlg.setHistory(hist)
     filename, _ = dlg.getSaveFileName(
         qt_viewer,  # parent
-        trans._('Record performance trace file'),  # caption
+        trans._("Record performance trace file"),  # caption
         hist[0],  # directory in PyQt, dir in PySide
-        filter=trans._('Trace Files (*.json)'),
+        filter=trans._("Trace Files (*.json)"),
     )
     if filename:
-        if not filename.endswith('.json'):
-            filename += '.json'
+        if not filename.endswith(".json"):
+            filename += ".json"
 
         # Schedule this to avoid bogus "MetaCall" event for the entire
         # time the file dialog was up.
@@ -65,25 +65,21 @@ def _is_set_trace_active() -> bool:
 
 Q_DEBUG_ACTIONS: list[Action] = [
     Action(
-        id='finn.window.debug.start_trace_dialog',
-        title=trans._('Start Recording...'),
+        id="finn.window.debug.start_trace_dialog",
+        title=trans._("Start Recording..."),
         callback=_start_trace_dialog,
-        menus=[
-            {'id': MenuId.DEBUG_PERFORMANCE, 'group': MenuGroup.NAVIGATION}
-        ],
-        keybindings=[{'primary': KeyMod.Alt | KeyCode.KeyT}],
-        enablement='not is_set_trace_active',
-        status_tip=trans._('Start recording a trace file'),
+        menus=[{"id": MenuId.DEBUG_PERFORMANCE, "group": MenuGroup.NAVIGATION}],
+        keybindings=[{"primary": KeyMod.Alt | KeyCode.KeyT}],
+        enablement="not is_set_trace_active",
+        status_tip=trans._("Start recording a trace file"),
     ),
     Action(
-        id='finn.window.debug.stop_trace',
-        title=trans._('Stop Recording...'),
+        id="finn.window.debug.stop_trace",
+        title=trans._("Stop Recording..."),
         callback=_stop_trace,
-        menus=[
-            {'id': MenuId.DEBUG_PERFORMANCE, 'group': MenuGroup.NAVIGATION}
-        ],
-        keybindings=[{'primary': KeyMod.Alt | KeyMod.Shift | KeyCode.KeyT}],
-        enablement='is_set_trace_active',
-        status_tip=trans._('Stop recording a trace file'),
+        menus=[{"id": MenuId.DEBUG_PERFORMANCE, "group": MenuGroup.NAVIGATION}],
+        keybindings=[{"primary": KeyMod.Alt | KeyMod.Shift | KeyCode.KeyT}],
+        enablement="is_set_trace_active",
+        status_tip=trans._("Stop recording a trace file"),
     ),
 ]

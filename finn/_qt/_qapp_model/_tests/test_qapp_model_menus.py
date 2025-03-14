@@ -10,7 +10,7 @@ from finn.layers import Image
 
 
 # `builtins` required so there are samples registered, so samples menu exists
-@pytest.mark.parametrize('menu_id', list(MenuId))
+@pytest.mark.parametrize("menu_id", list(MenuId))
 def test_build_qmodel_menu(builtins, make_napari_viewer, qtbot, menu_id):
     """Test that we can build qmenus for all registered menu IDs."""
     app = get_app_model()
@@ -33,17 +33,17 @@ def test_update_menu_state_context(make_napari_viewer):
     viewer = make_napari_viewer()
 
     action = Action(
-        id='dummy_id',
-        title='dummy title',
+        id="dummy_id",
+        title="dummy title",
         callback=lambda: None,
-        menus=[{'id': MenuId.MENUBAR_FILE, 'when': (LLCK.num_layers > 0)}],
+        menus=[{"id": MenuId.MENUBAR_FILE, "when": (LLCK.num_layers > 0)}],
         enablement=(LLCK.num_layers == 2),
     )
     app.register_action(action)
 
-    dummy_action = viewer.window.file_menu.findAction('dummy_id')
+    dummy_action = viewer.window.file_menu.findAction("dummy_id")
 
-    assert 'dummy_id' in app.commands
+    assert "dummy_id" in app.commands
     assert len(viewer.layers) == 0
     # `dummy_action` should be disabled & not visible as num layers == 0
     viewer.window._update_file_menu_state()

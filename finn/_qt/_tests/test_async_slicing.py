@@ -35,10 +35,8 @@ def _enable_async(_fresh_settings, make_napari_viewer):
     settings.get_settings().experimental.async_ = True
 
 
-@pytest.mark.usefixtures('_enable_async')
-def test_async_slice_image_on_current_step_change(
-    make_napari_viewer, qtbot, rng
-):
+@pytest.mark.usefixtures("_enable_async")
+def test_async_slice_image_on_current_step_change(make_napari_viewer, qtbot, rng):
     viewer = make_napari_viewer()
     data = rng.random((3, 4, 5))
     image = Image(data)
@@ -50,7 +48,7 @@ def test_async_slice_image_on_current_step_change(
     wait_until_vispy_image_data_equal(qtbot, vispy_image, data[2, :, :])
 
 
-@pytest.mark.usefixtures('_enable_async')
+@pytest.mark.usefixtures("_enable_async")
 def test_async_out_of_bounds_layer_loaded(make_napari_viewer, qtbot):
     """Check that images that are out of bounds when slicing appear loaded.
 
@@ -70,7 +68,7 @@ def test_async_out_of_bounds_layer_loaded(make_napari_viewer, qtbot):
         qtbot.waitUntil(partial(layer_loaded, l1), timeout=500)
 
 
-@pytest.mark.usefixtures('_enable_async')
+@pytest.mark.usefixtures("_enable_async")
 def test_async_slice_image_on_order_change(make_napari_viewer, qtbot, rng):
     viewer = make_napari_viewer()
     data = rng.random((3, 5, 7))
@@ -83,7 +81,7 @@ def test_async_slice_image_on_order_change(make_napari_viewer, qtbot, rng):
     wait_until_vispy_image_data_equal(qtbot, vispy_image, data[:, 2, :])
 
 
-@pytest.mark.usefixtures('_enable_async')
+@pytest.mark.usefixtures("_enable_async")
 def test_async_slice_image_on_ndisplay_change(make_napari_viewer, qtbot, rng):
     viewer = make_napari_viewer()
     data = rng.random((3, 4, 5))
@@ -96,7 +94,7 @@ def test_async_slice_image_on_ndisplay_change(make_napari_viewer, qtbot, rng):
     wait_until_vispy_image_data_equal(qtbot, vispy_image, data)
 
 
-@pytest.mark.usefixtures('_enable_async')
+@pytest.mark.usefixtures("_enable_async")
 def test_async_slice_multiscale_image_on_pan(make_napari_viewer, qtbot, rng):
     viewer = make_napari_viewer()
     data = [rng.random((4, 8, 10)), rng.random((2, 4, 5))]
@@ -113,12 +111,12 @@ def test_async_slice_multiscale_image_on_pan(make_napari_viewer, qtbot, rng):
     # Simulate panning to the left by changing the corner pixels in the last
     # dimension, which corresponds to x/columns, then triggering a reload.
     image.corner_pixels = np.array([[0, 0, 0], [0, 3, 2]])
-    image.events.reload(Event('reload', layer=image))
+    image.events.reload(Event("reload", layer=image))
 
     wait_until_vispy_image_data_equal(qtbot, vispy_image, data[1][0, 0:4, 0:3])
 
 
-@pytest.mark.usefixtures('_enable_async')
+@pytest.mark.usefixtures("_enable_async")
 def test_async_slice_multiscale_image_on_zoom(qtbot, make_napari_viewer, rng):
     viewer = make_napari_viewer()
     data = [rng.random((4, 8, 10)), rng.random((2, 4, 5))]
@@ -135,12 +133,12 @@ def test_async_slice_multiscale_image_on_zoom(qtbot, make_napari_viewer, rng):
     # Simulate zooming into the middle of the higher resolution image.
     image._data_level = 0
     image.corner_pixels = np.array([[0, 2, 3], [0, 5, 6]])
-    image.events.reload(Event('reload', layer=image))
+    image.events.reload(Event("reload", layer=image))
 
     wait_until_vispy_image_data_equal(qtbot, vispy_image, data[0][1, 2:6, 3:7])
 
 
-@pytest.mark.usefixtures('_enable_async')
+@pytest.mark.usefixtures("_enable_async")
 def test_async_slice_points_on_current_step_change(make_napari_viewer, qtbot):
     viewer = make_napari_viewer()
     data = np.array(
@@ -161,7 +159,7 @@ def test_async_slice_points_on_current_step_change(make_napari_viewer, qtbot):
     wait_until_vispy_points_data_equal(qtbot, vispy_points, np.array([[5, 6]]))
 
 
-@pytest.mark.usefixtures('_enable_async')
+@pytest.mark.usefixtures("_enable_async")
 def test_async_slice_points_on_point_change(make_napari_viewer, qtbot):
     viewer = make_napari_viewer()
     # Define data so that slicing at 1.6 in the first dimension should match the
@@ -185,7 +183,7 @@ def test_async_slice_points_on_point_change(make_napari_viewer, qtbot):
     wait_until_vispy_points_data_equal(qtbot, vispy_points, np.array([[3, 4]]))
 
 
-@pytest.mark.usefixtures('_enable_async')
+@pytest.mark.usefixtures("_enable_async")
 def test_async_slice_image_loaded(make_napari_viewer, qtbot, rng):
     viewer = make_napari_viewer()
     data = rng.random((3, 4, 5))
@@ -205,7 +203,7 @@ def test_async_slice_image_loaded(make_napari_viewer, qtbot, rng):
     np.testing.assert_allclose(vispy_layer.node._data, data[2, :, :])
 
 
-@pytest.mark.usefixtures('_enable_async')
+@pytest.mark.usefixtures("_enable_async")
 def test_async_slice_vectors_on_current_step_change(make_napari_viewer, qtbot):
     viewer = make_napari_viewer()
     data = np.array(
@@ -226,7 +224,7 @@ def test_async_slice_vectors_on_current_step_change(make_napari_viewer, qtbot):
     )
 
 
-@pytest.mark.usefixtures('_enable_async')
+@pytest.mark.usefixtures("_enable_async")
 def test_async_slice_two_layers_shutdown(make_napari_viewer):
     """See https://github.com/napari/napari/issues/6685"""
     viewer = make_napari_viewer()
@@ -258,9 +256,7 @@ def wait_until_vispy_image_data_equal(
 ) -> None:
     def assert_vispy_image_data_equal() -> None:
         node = vispy_layer.node
-        data = (
-            node._last_data if isinstance(node, VolumeVisual) else node._data
-        )
+        data = node._last_data if isinstance(node, VolumeVisual) else node._data
         # Vispy node data may have been post-processed (e.g. through a colormap),
         # so check that values are close rather than exactly equal.
         np.testing.assert_allclose(data, expected_data)
@@ -272,7 +268,7 @@ def wait_until_vispy_points_data_equal(
     qtbot, vispy_layer: VispyPointsLayer, expected_data: np.ndarray
 ) -> None:
     def assert_vispy_points_data_equal() -> None:
-        positions = vispy_layer.node._subvisuals[0]._data['a_position']
+        positions = vispy_layer.node._subvisuals[0]._data["a_position"]
         # Flip the coordinates because vispy uses xy instead of rc ordering.
         # Also only take the number of dimensions expected since vispy points
         # are always 3D even when displaying 2D slices.
@@ -287,9 +283,7 @@ def wait_until_vispy_vectors_data_equal(
 ) -> None:
     def assert_vispy_vectors_data_equal() -> None:
         displayed = expected_data[..., -2:]
-        exp_vertices, exp_faces = generate_vector_meshes_2D(
-            displayed, 1, 1, 'triangle'
-        )
+        exp_vertices, exp_faces = generate_vector_meshes_2D(displayed, 1, 1, "triangle")
         meshdata = vispy_layer.node._meshdata
         vertices = meshdata.get_vertices()
         faces = meshdata.get_faces()

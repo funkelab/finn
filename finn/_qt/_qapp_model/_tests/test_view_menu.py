@@ -15,7 +15,7 @@ from finn._tests.utils import skip_local_focus, skip_local_popups
 
 
 def check_windows_style(viewer):
-    if os.name != 'nt':
+    if os.name != "nt":
         return
     import win32con
     import win32gui
@@ -31,16 +31,14 @@ def check_view_menu_visibility(viewer, qtbot):
         return
 
     assert not viewer.window.view_menu.isVisible()
-    qtbot.keyClick(
-        viewer.window._qt_window.menuBar(), Qt.Key_V, modifier=Qt.AltModifier
-    )
+    qtbot.keyClick(viewer.window._qt_window.menuBar(), Qt.Key_V, modifier=Qt.AltModifier)
     qtbot.waitUntil(viewer.window.view_menu.isVisible)
     viewer.window.view_menu.close()
     assert not viewer.window.view_menu.isVisible()
 
 
 @pytest.mark.parametrize(
-    ('action_id', 'action_title', 'viewer_attr', 'sub_attr'),
+    ("action_id", "action_title", "viewer_attr", "sub_attr"),
     toggle_action_details,
 )
 def test_toggle_axes_scale_bar_attr(
@@ -76,7 +74,7 @@ def test_toggle_axes_scale_bar_attr(
 
 
 @skip_local_popups
-@pytest.mark.qt_log_level_fail('WARNING')
+@pytest.mark.qt_log_level_fail("WARNING")
 def test_toggle_fullscreen_from_normal(make_napari_viewer, qtbot):
     """
     Test toggle fullscreen action from normal window state.
@@ -85,7 +83,7 @@ def test_toggle_fullscreen_from_normal(make_napari_viewer, qtbot):
     generating any type of warning and menu bar elements are visible in any
     window state.
     """
-    action_id = 'finn.window.view.toggle_fullscreen'
+    action_id = "finn.window.view.toggle_fullscreen"
     app = get_app_model()
     viewer = make_napari_viewer(show=True)
 
@@ -97,7 +95,7 @@ def test_toggle_fullscreen_from_normal(make_napari_viewer, qtbot):
 
     # Check fullscreen state change
     app.commands.execute_command(action_id)
-    if sys.platform == 'darwin':
+    if sys.platform == "darwin":
         # On macOS, wait for the animation to complete
         qtbot.wait(250)
     assert viewer.window._qt_window.isFullScreen()
@@ -108,7 +106,7 @@ def test_toggle_fullscreen_from_normal(make_napari_viewer, qtbot):
 
     # Check return to non fullscreen state
     app.commands.execute_command(action_id)
-    if sys.platform == 'darwin':
+    if sys.platform == "darwin":
         # On macOS, wait for the animation to complete
         qtbot.wait(250)
     assert not viewer.window._qt_window.isFullScreen()
@@ -119,7 +117,7 @@ def test_toggle_fullscreen_from_normal(make_napari_viewer, qtbot):
 
 
 @skip_local_popups
-@pytest.mark.qt_log_level_fail('WARNING')
+@pytest.mark.qt_log_level_fail("WARNING")
 def test_toggle_fullscreen_from_maximized(make_napari_viewer, qtbot):
     """
     Test toggle fullscreen action from maximized window state.
@@ -128,7 +126,7 @@ def test_toggle_fullscreen_from_maximized(make_napari_viewer, qtbot):
     generating any type of warning and menu bar elements are visible in any
     window state.
     """
-    action_id = 'finn.window.view.toggle_fullscreen'
+    action_id = "finn.window.view.toggle_fullscreen"
     app = get_app_model()
     viewer = make_napari_viewer(show=True)
 
@@ -141,7 +139,7 @@ def test_toggle_fullscreen_from_maximized(make_napari_viewer, qtbot):
 
     # Check fullscreen state change
     app.commands.execute_command(action_id)
-    if sys.platform == 'darwin':
+    if sys.platform == "darwin":
         # On macOS, wait for the animation to complete
         qtbot.wait(250)
     assert viewer.window._qt_window.isFullScreen()
@@ -152,7 +150,7 @@ def test_toggle_fullscreen_from_maximized(make_napari_viewer, qtbot):
 
     # Check return to non fullscreen state
     app.commands.execute_command(action_id)
-    if sys.platform == 'darwin':
+    if sys.platform == "darwin":
         # On macOS, wait for the animation to complete
         qtbot.wait(250)
 
@@ -168,8 +166,8 @@ def test_toggle_fullscreen_from_maximized(make_napari_viewer, qtbot):
 
 @skip_local_focus
 @pytest.mark.skipif(
-    sys.platform == 'darwin',
-    reason='Toggle menubar action not enabled on macOS',
+    sys.platform == "darwin",
+    reason="Toggle menubar action not enabled on macOS",
 )
 def test_toggle_menubar(make_napari_viewer, qtbot):
     """
@@ -178,7 +176,7 @@ def test_toggle_menubar(make_napari_viewer, qtbot):
     Skipped on macOS since the menubar is the system one so the menubar
     toggle action doesn't exist/isn't enabled there.
     """
-    action_id = 'finn.window.view.toggle_menubar'
+    action_id = "finn.window.view.toggle_menubar"
     app = get_app_model()
     viewer = make_napari_viewer(show=True)
 
@@ -208,13 +206,13 @@ def test_toggle_menubar(make_napari_viewer, qtbot):
 
 def test_toggle_play(make_napari_viewer, qtbot):
     """Test toggle play action."""
-    action_id = 'finn.window.view.toggle_play'
+    action_id = "finn.window.view.toggle_play"
     app = get_app_model()
     viewer = make_napari_viewer()
 
     # Check action on empty viewer
     with pytest.warns(
-        expected_warning=UserWarning, match='Refusing to play a hidden axis'
+        expected_warning=UserWarning, match="Refusing to play a hidden axis"
     ):
         app.commands.execute_command(action_id)
 
@@ -226,9 +224,7 @@ def test_toggle_play(make_napari_viewer, qtbot):
     app.commands.execute_command(action_id)
     qtbot.waitUntil(lambda: viewer.window._qt_viewer.dims.is_playing)
     # Assert action stops play
-    with qtbot.waitSignal(
-        viewer.window._qt_viewer.dims._animation_thread.finished
-    ):
+    with qtbot.waitSignal(viewer.window._qt_viewer.dims._animation_thread.finished):
         app.commands.execute_command(action_id)
         QApplication.processEvents()
     qtbot.waitUntil(lambda: not viewer.window._qt_viewer.dims.is_playing)
@@ -237,7 +233,7 @@ def test_toggle_play(make_napari_viewer, qtbot):
 @skip_local_popups
 def test_toggle_activity_dock(make_napari_viewer):
     """Test toggle activity dock"""
-    action_id = 'finn.window.view.toggle_activity_dock'
+    action_id = "finn.window.view.toggle_activity_dock"
     app = get_app_model()
     viewer = make_napari_viewer(show=True)
 
@@ -268,7 +264,7 @@ def test_toggle_activity_dock(make_napari_viewer):
 def test_toggle_layer_tooltips(make_napari_viewer, qtbot):
     """Test toggle layer tooltips"""
     make_napari_viewer()
-    action_id = 'finn.window.view.toggle_layer_tooltips'
+    action_id = "finn.window.view.toggle_layer_tooltips"
     app = get_app_model()
 
     # Check initial layer tooltip visibility settings state (False)
@@ -294,23 +290,23 @@ def test_zoom_actions(make_napari_viewer):
     initial_zoom = viewer.camera.zoom
 
     # Check zoom in action
-    app.commands.execute_command('finn.viewer.camera.zoom_in')
+    app.commands.execute_command("finn.viewer.camera.zoom_in")
     assert viewer.camera.zoom == pytest.approx(1.5 * initial_zoom)
 
     # Check zoom out action
-    app.commands.execute_command('finn.viewer.camera.zoom_out')
+    app.commands.execute_command("finn.viewer.camera.zoom_out")
     assert viewer.camera.zoom == pytest.approx(initial_zoom)
 
     viewer.camera.zoom = 2
     # Check reset zoom action
-    app.commands.execute_command('finn.viewer.fit_to_view')
+    app.commands.execute_command("finn.viewer.fit_to_view")
     assert viewer.camera.zoom == pytest.approx(initial_zoom)
 
     # Check that angle is preserved
     viewer.dims.ndisplay = 3
     viewer.camera.angles = (90, 0, 0)
     viewer.camera.zoom = 2
-    app.commands.execute_command('finn.viewer.fit_to_view')
+    app.commands.execute_command("finn.viewer.fit_to_view")
     # Zoom should be reset, but angle unchanged
     assert viewer.camera.zoom == pytest.approx(initial_zoom)
     assert viewer.camera.angles == (90, 0, 0)

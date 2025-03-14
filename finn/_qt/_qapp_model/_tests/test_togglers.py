@@ -11,10 +11,10 @@ from finn.components import ViewerModel
 def test_viewer_toggler(mock_app_model):
     viewer = ViewerModel()
     action = ViewerToggleAction(
-        id='some.command.id',
-        title='Toggle Axis Visibility',
-        viewer_attribute='axes',
-        sub_attribute='visible',
+        id="some.command.id",
+        title="Toggle Axis Visibility",
+        viewer_attribute="axes",
+        sub_attribute="visible",
     )
     app = get_app_model()
     app.register_action(action)
@@ -27,9 +27,9 @@ def test_viewer_toggler(mock_app_model):
         ]
     ):
         assert viewer.axes.visible is False
-        app.commands.execute_command('some.command.id')
+        app.commands.execute_command("some.command.id")
         assert viewer.axes.visible is True
-        app.commands.execute_command('some.command.id')
+        app.commands.execute_command("some.command.id")
         assert viewer.axes.visible is False
 
 
@@ -37,18 +37,16 @@ def test_dock_widget_toggler(make_napari_viewer):
     """Tests `DockWidgetToggleAction` toggling works."""
     viewer = make_napari_viewer(show=True)
     action = DockWidgetToggleAction(
-        id='some.command.id',
-        title='Toggle Dock Widget',
-        dock_widget='dockConsole',
+        id="some.command.id",
+        title="Toggle Dock Widget",
+        dock_widget="dockConsole",
     )
     app = get_app_model()
     app.register_action(action)
 
-    with app.injection_store.register(
-        providers={Window: lambda: viewer.window}
-    ):
+    with app.injection_store.register(providers={Window: lambda: viewer.window}):
         assert viewer.window._qt_viewer.dockConsole.isVisible() is False
-        app.commands.execute_command('some.command.id')
+        app.commands.execute_command("some.command.id")
         assert viewer.window._qt_viewer.dockConsole.isVisible() is True
-        app.commands.execute_command('some.command.id')
+        app.commands.execute_command("some.command.id")
         assert viewer.window._qt_viewer.dockConsole.isVisible() is False

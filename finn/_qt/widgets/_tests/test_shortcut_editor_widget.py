@@ -15,7 +15,7 @@ from finn.utils.interactions import KEY_SYMBOLS
 from finn.utils.key_bindings import KeyBinding
 
 META_CONTROL_KEY = Qt.KeyboardModifier.ControlModifier
-if sys.platform == 'darwin':
+if sys.platform == "darwin":
     META_CONTROL_KEY = Qt.KeyboardModifier.MetaModifier
 
 
@@ -55,16 +55,14 @@ def test_potentially_conflicting_actions(shortcut_editor_widget):
     actions1 = widget._get_potential_conflicting_actions()
     expected_actions1 = []
     for group, keybindings in widget.key_bindings_strs.items():
-        expected_actions1.extend(
-            zip(itertools.repeat(group), keybindings.items())
-        )
+        expected_actions1.extend(zip(itertools.repeat(group), keybindings.items()))
     assert actions1 == expected_actions1
-    widget.layer_combo_box.setCurrentText('Labels layer')
+    widget.layer_combo_box.setCurrentText("Labels layer")
     actions2 = widget._get_potential_conflicting_actions()
     expected_actions2 = list(
         zip(
-            itertools.repeat('Labels layer'),
-            widget.key_bindings_strs['Labels layer'].items(),
+            itertools.repeat("Labels layer"),
+            widget.key_bindings_strs["Labels layer"].items(),
         )
     )
     expected_actions2.extend(
@@ -79,8 +77,8 @@ def test_potentially_conflicting_actions(shortcut_editor_widget):
 @pytest.mark.key_bindings
 def test_mark_conflicts(shortcut_editor_widget, qtbot):
     widget = shortcut_editor_widget()
-    ctrl_keybinding = KeyBinding.from_str('Ctrl')
-    u_keybinding = KeyBinding.from_str('U')
+    ctrl_keybinding = KeyBinding.from_str("Ctrl")
+    u_keybinding = KeyBinding.from_str("U")
     act = widget._table.item(0, widget._action_col).text()
 
     # Add check for initial/default keybinding (first shortcuts column) and
@@ -91,27 +89,27 @@ def test_mark_conflicts(shortcut_editor_widget, qtbot):
 
     # Check conflicts detection using `KeyBindingLike` params
     # (`KeyBinding`, `str` and `int` representations of a shortcut)
-    with patch.object(WarnPopup, 'exec_') as mock:
+    with patch.object(WarnPopup, "exec_") as mock:
         assert not widget._mark_conflicts(ctrl_keybinding, 1)
         assert mock.called
-    with patch.object(WarnPopup, 'exec_') as mock:
+    with patch.object(WarnPopup, "exec_") as mock:
         assert not widget._mark_conflicts(str(ctrl_keybinding), 1)
         assert mock.called
-    with patch.object(WarnPopup, 'exec_') as mock:
+    with patch.object(WarnPopup, "exec_") as mock:
         assert not widget._mark_conflicts(int(ctrl_keybinding), 1)
         assert mock.called
 
-    with patch.object(WarnPopup, 'exec_') as mock:
+    with patch.object(WarnPopup, "exec_") as mock:
         assert not widget._mark_conflicts(u_keybinding, 1)
         assert mock.called
-    with patch.object(WarnPopup, 'exec_') as mock:
+    with patch.object(WarnPopup, "exec_") as mock:
         assert not widget._mark_conflicts(str(u_keybinding), 1)
         assert mock.called
 
     # Check no conflicts are found using `KeyBindingLike` params
     # (`KeyBinding`, `str` and `int` representations of a shortcut)
     # "H" is arbitrary chosen and on conflict with existing shortcut should be changed
-    h_keybinding = KeyBinding.from_str('H')
+    h_keybinding = KeyBinding.from_str("H")
     assert widget._mark_conflicts(h_keybinding, 1)
     assert widget._mark_conflicts(str(h_keybinding), 1)
     assert widget._mark_conflicts(int(h_keybinding), 1)
@@ -121,52 +119,50 @@ def test_mark_conflicts(shortcut_editor_widget, qtbot):
 def test_restore_defaults(shortcut_editor_widget):
     widget = shortcut_editor_widget()
     shortcut = widget._table.item(0, widget._shortcut_col).text()
-    assert shortcut == KEY_SYMBOLS['Ctrl']
-    widget._table.item(0, widget._shortcut_col).setText('H')
+    assert shortcut == KEY_SYMBOLS["Ctrl"]
+    widget._table.item(0, widget._shortcut_col).setText("H")
     shortcut = widget._table.item(0, widget._shortcut_col).text()
-    assert shortcut == 'H'
-    with patch(
-        'finn._qt.widgets.qt_keyboard_settings.QMessageBox.question'
-    ) as mock:
+    assert shortcut == "H"
+    with patch("finn._qt.widgets.qt_keyboard_settings.QMessageBox.question") as mock:
         mock.return_value = QMessageBox.RestoreDefaults
         widget._restore_button.click()
         assert mock.called
     shortcut = widget._table.item(0, widget._shortcut_col).text()
-    assert shortcut == KEY_SYMBOLS['Ctrl']
+    assert shortcut == KEY_SYMBOLS["Ctrl"]
 
 
 @pytest.mark.key_bindings
 @skip_local_focus
 @pytest.mark.parametrize(
-    ('key', 'modifier', 'key_symbols'),
+    ("key", "modifier", "key_symbols"),
     [
         (
             Qt.Key.Key_U,
             META_CONTROL_KEY,
-            [KEY_SYMBOLS['Ctrl'], 'U'],
+            [KEY_SYMBOLS["Ctrl"], "U"],
         ),
         (
             Qt.Key.Key_Y,
             META_CONTROL_KEY | Qt.KeyboardModifier.ShiftModifier,
-            [KEY_SYMBOLS['Ctrl'], KEY_SYMBOLS['Shift'], 'Y'],
+            [KEY_SYMBOLS["Ctrl"], KEY_SYMBOLS["Shift"], "Y"],
         ),
         (
             Qt.Key.Key_Escape,
             META_CONTROL_KEY,
-            [KEY_SYMBOLS['Ctrl'], KEY_SYMBOLS['Escape']],
+            [KEY_SYMBOLS["Ctrl"], KEY_SYMBOLS["Escape"]],
         ),
         (
             Qt.Key.Key_Delete,
             META_CONTROL_KEY | Qt.KeyboardModifier.ShiftModifier,
-            [KEY_SYMBOLS['Ctrl'], KEY_SYMBOLS['Shift'], KEY_SYMBOLS['Delete']],
+            [KEY_SYMBOLS["Ctrl"], KEY_SYMBOLS["Shift"], KEY_SYMBOLS["Delete"]],
         ),
         (
             Qt.Key.Key_Backspace,
             META_CONTROL_KEY | Qt.KeyboardModifier.ShiftModifier,
             [
-                KEY_SYMBOLS['Ctrl'],
-                KEY_SYMBOLS['Shift'],
-                KEY_SYMBOLS['Backspace'],
+                KEY_SYMBOLS["Ctrl"],
+                KEY_SYMBOLS["Shift"],
+                KEY_SYMBOLS["Backspace"],
             ],
         ),
     ],
@@ -176,7 +172,7 @@ def test_keybinding_with_modifiers(
 ):
     widget = shortcut_editor_widget()
     shortcut = widget._table.item(0, widget._shortcut_col).text()
-    assert shortcut == KEY_SYMBOLS['Ctrl']
+    assert shortcut == KEY_SYMBOLS["Ctrl"]
 
     x = widget._table.columnViewportPosition(widget._shortcut_col)
     y = widget._table.rowViewportPosition(0)
@@ -199,17 +195,16 @@ def test_keybinding_with_modifiers(
 
 @skip_local_focus
 @pytest.mark.parametrize(
-    ('modifiers', 'key_symbols', 'valid'),
+    ("modifiers", "key_symbols", "valid"),
     [
         (
             Qt.KeyboardModifier.ShiftModifier,
-            [KEY_SYMBOLS['Shift']],
+            [KEY_SYMBOLS["Shift"]],
             True,
         ),
         (
-            Qt.KeyboardModifier.AltModifier
-            | Qt.KeyboardModifier.ShiftModifier,
-            [KEY_SYMBOLS['Ctrl']],
+            Qt.KeyboardModifier.AltModifier | Qt.KeyboardModifier.ShiftModifier,
+            [KEY_SYMBOLS["Ctrl"]],
             False,
         ),
     ],
@@ -219,7 +214,7 @@ def test_keybinding_with_only_modifiers(
 ):
     widget = shortcut_editor_widget()
     shortcut = widget._table.item(0, widget._shortcut_col).text()
-    assert shortcut == KEY_SYMBOLS['Ctrl']
+    assert shortcut == KEY_SYMBOLS["Ctrl"]
 
     x = widget._table.columnViewportPosition(widget._shortcut_col)
     y = widget._table.rowViewportPosition(0)
@@ -230,7 +225,7 @@ def test_keybinding_with_only_modifiers(
     qtbot.waitUntil(lambda: widget._table.focusWidget() is not None)
     editor = widget._table.focusWidget()
 
-    with patch.object(WarnPopup, 'exec_') as mock:
+    with patch.object(WarnPopup, "exec_") as mock:
         qtbot.keyPress(editor, Qt.Key_Enter, modifier=modifiers)
         widget._table.commitData(editor)
         widget._table.closeEditor(editor, QAbstractItemDelegate.NoHint)
@@ -248,22 +243,20 @@ def test_keybinding_with_only_modifiers(
 
 @skip_local_focus
 @pytest.mark.parametrize(
-    'removal_trigger_key',
+    "removal_trigger_key",
     [
         Qt.Key.Key_Delete,
         Qt.Key.Key_Backspace,
     ],
 )
 @pytest.mark.parametrize(
-    'confirm_key',
+    "confirm_key",
     [Qt.Key.Key_Enter, Qt.Key.Key_Return, Qt.Key.Key_Tab],
 )
-def test_remove_shortcut(
-    shortcut_editor_widget, qtbot, removal_trigger_key, confirm_key
-):
+def test_remove_shortcut(shortcut_editor_widget, qtbot, removal_trigger_key, confirm_key):
     widget = shortcut_editor_widget()
     shortcut = widget._table.item(0, widget._shortcut_col).text()
-    assert shortcut == KEY_SYMBOLS['Ctrl']
+    assert shortcut == KEY_SYMBOLS["Ctrl"]
 
     x = widget._table.columnViewportPosition(widget._shortcut_col)
     y = widget._table.rowViewportPosition(0)
@@ -279,23 +272,23 @@ def test_remove_shortcut(
     widget._table.closeEditor(editor, QAbstractItemDelegate.NoHint)
 
     shortcut = widget._table.item(0, widget._shortcut_col).text()
-    assert shortcut == ''
+    assert shortcut == ""
 
 
 @skip_local_focus
 @skip_on_mac_ci
 @pytest.mark.parametrize(
-    ('modifier_key', 'modifiers', 'key_symbols'),
+    ("modifier_key", "modifiers", "key_symbols"),
     [
         (
-            'shift',
+            "shift",
             None,
-            [KEY_SYMBOLS['Shift']],
+            [KEY_SYMBOLS["Shift"]],
         ),
         (
-            'ctrl',
-            'shift',
-            [KEY_SYMBOLS['Ctrl'], KEY_SYMBOLS['Shift']],
+            "ctrl",
+            "shift",
+            [KEY_SYMBOLS["Ctrl"], KEY_SYMBOLS["Shift"]],
         ),
     ],
 )
@@ -323,17 +316,13 @@ def test_keybinding_editor_modifier_key_detection(
     """
     widget = shortcut_editor_widget()
     shortcut = widget._table.item(0, widget._shortcut_col).text()
-    assert shortcut == KEY_SYMBOLS['Ctrl']
+    assert shortcut == KEY_SYMBOLS["Ctrl"]
 
     x = widget._table.columnViewportPosition(widget._shortcut_col)
     y = widget._table.rowViewportPosition(0)
     item_pos = QPoint(x, y)
-    qtbot.mouseClick(
-        widget._table.viewport(), Qt.MouseButton.LeftButton, pos=item_pos
-    )
-    qtbot.mouseDClick(
-        widget._table.viewport(), Qt.MouseButton.LeftButton, pos=item_pos
-    )
+    qtbot.mouseClick(widget._table.viewport(), Qt.MouseButton.LeftButton, pos=item_pos)
+    qtbot.mouseDClick(widget._table.viewport(), Qt.MouseButton.LeftButton, pos=item_pos)
     qtbot.waitUntil(lambda: QApplication.focusWidget() is not None)
 
     line_edit = QApplication.focusWidget()
@@ -357,10 +346,10 @@ def test_keybinding_editor_modifier_key_detection(
     def release_check():
         line_edit.selectAll()
         shortcut = line_edit.selectedText()
-        return shortcut == ''
+        return shortcut == ""
 
     qtbot.waitUntil(lambda: release_check())
 
     qtbot.keyClick(line_edit, Qt.Key_Escape)
     shortcut = widget._table.item(0, widget._shortcut_col).text()
-    assert shortcut == KEY_SYMBOLS['Ctrl']
+    assert shortcut == KEY_SYMBOLS["Ctrl"]

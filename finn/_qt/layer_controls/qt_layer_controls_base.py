@@ -76,8 +76,8 @@ class QtLayerControls(QFrame):
     """
 
     MODE = Mode
-    PAN_ZOOM_ACTION_NAME = ''
-    TRANSFORM_ACTION_NAME = ''
+    PAN_ZOOM_ACTION_NAME = ""
+    TRANSFORM_ACTION_NAME = ""
 
     def __init__(self, layer: Layer) -> None:
         super().__init__()
@@ -93,7 +93,7 @@ class QtLayerControls(QFrame):
         self.layer.events.blending.connect(self._on_blending_change)
         self.layer.events.opacity.connect(self._on_opacity_change)
 
-        self.setObjectName('layer')
+        self.setObjectName("layer")
         self.setMouseTracking(True)
 
         self.setLayout(LayerFormLayout(self))
@@ -102,21 +102,21 @@ class QtLayerControls(QFrame):
         self.button_group = QButtonGroup(self)
         self.panzoom_button = self._radio_button(
             layer,
-            'pan',
+            "pan",
             self.MODE.PAN_ZOOM,
             False,
             self.PAN_ZOOM_ACTION_NAME,
-            extra_tooltip_text=trans._('(or hold Space)'),
+            extra_tooltip_text=trans._("(or hold Space)"),
             checked=True,
         )
         self.transform_button = self._radio_button(
             layer,
-            'transform',
+            "transform",
             self.MODE.TRANSFORM,
             True,
             self.TRANSFORM_ACTION_NAME,
             extra_tooltip_text=trans._(
-                '\nAlt + Left mouse click over this button to reset'
+                "\nAlt + Left mouse click over this button to reset"
             ),
         )
         self.transform_button.installEventFilter(self)
@@ -137,7 +137,7 @@ class QtLayerControls(QFrame):
         sld.setSingleStep(0.01)
         sld.valueChanged.connect(self.changeOpacity)
         self.opacitySlider = sld
-        self.opacityLabel = QLabel(trans._('opacity:'))
+        self.opacityLabel = QLabel(trans._("opacity:"))
 
         self._on_opacity_change()
 
@@ -154,9 +154,7 @@ class QtLayerControls(QFrame):
         self.opacitySlider.setEnabled(
             self.layer.blending not in NO_OPACITY_BLENDING_MODES
         )
-        self.opacityLabel.setEnabled(
-            self.layer.blending not in NO_OPACITY_BLENDING_MODES
-        )
+        self.opacityLabel.setEnabled(self.layer.blending not in NO_OPACITY_BLENDING_MODES)
         if self.__class__ == QtLayerControls:
             # This base class is only instantiated in tests. When it's not a
             # concrete subclass, we need to parent the button_grid to the
@@ -189,14 +187,12 @@ class QtLayerControls(QFrame):
         self.opacitySlider.setEnabled(
             self.layer.blending not in NO_OPACITY_BLENDING_MODES
         )
-        self.opacityLabel.setEnabled(
-            self.layer.blending not in NO_OPACITY_BLENDING_MODES
-        )
+        self.opacityLabel.setEnabled(self.layer.blending not in NO_OPACITY_BLENDING_MODES)
 
-        blending_tooltip = ''
+        blending_tooltip = ""
         if self.layer.blending == str(Blending.MINIMUM):
             blending_tooltip = trans._(
-                '`minimum` blending mode works best with inverted colormaps with a white background.',
+                "`minimum` blending mode works best with inverted colormaps with a white background.",
             )
         self.blendComboBox.setToolTip(blending_tooltip)
         self.layer.help = blending_tooltip
@@ -208,7 +204,7 @@ class QtLayerControls(QFrame):
         mode,
         edit_button,
         action_name,
-        extra_tooltip_text='',
+        extra_tooltip_text="",
         **kwargs,
     ):
         """
@@ -243,7 +239,7 @@ class QtLayerControls(QFrame):
         When shortcuts are modifed/added/removed via the action manager, the
         tooltip will be updated to reflect the new shortcut.
         """
-        action_name = f'napari:{action_name}'
+        action_name = f"napari:{action_name}"
         btn = QtModeRadioButton(layer, btn_name, mode, **kwargs)
         action_manager.bind_button(
             action_name,
@@ -277,9 +273,7 @@ class QtLayerControls(QFrame):
         if event.mode in self._MODE_BUTTONS:
             self._MODE_BUTTONS[event.mode].setChecked(True)
         else:
-            raise ValueError(
-                trans._("Mode '{mode}' not recognized", mode=event.mode)
-            )
+            raise ValueError(trans._("Mode '{mode}' not recognized", mode=event.mode))
 
     def _on_editable_or_visible_change(self):
         """Receive layer model editable/visible change event & enable/disable buttons."""
@@ -349,8 +343,8 @@ class QtLayerControls(QFrame):
         ):
             result = QMessageBox.warning(
                 self,
-                trans._('Reset transform'),
-                trans._('Are you sure you want to reset transforms?'),
+                trans._("Reset transform"),
+                trans._("Are you sure you want to reset transforms?"),
                 QMessageBox.Yes | QMessageBox.No,
             )
             if result == QMessageBox.Yes:
@@ -366,7 +360,7 @@ class QtLayerControls(QFrame):
         """Disconnect events when widget is closing."""
         disconnect_events(self.layer.events, self)
         for child in self.children():
-            close_method = getattr(child, 'close', None)
+            close_method = getattr(child, "close", None)
             if close_method is not None:
                 close_method()
         return super().close()

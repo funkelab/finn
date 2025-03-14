@@ -6,10 +6,8 @@ from finn._app_model.actions._layerlist_context_actions import (
 )
 
 
-@pytest.mark.parametrize('layer_action', LAYERLIST_CONTEXT_ACTIONS)
-def test_layer_actions_ctx_menu_execute_command(
-    layer_action, make_napari_viewer
-):
+@pytest.mark.parametrize("layer_action", LAYERLIST_CONTEXT_ACTIONS)
+def test_layer_actions_ctx_menu_execute_command(layer_action, make_napari_viewer):
     """
     Test layer context menu actions via app-model `execute_command`.
 
@@ -24,19 +22,17 @@ def test_layer_actions_ctx_menu_execute_command(
     make_napari_viewer()
     command_id = layer_action.id
 
-    if command_id == 'finn.layer.merge_stack':
-        with pytest.raises(IndexError, match=r'images list is empty'):
+    if command_id == "finn.layer.merge_stack":
+        with pytest.raises(IndexError, match=r"images list is empty"):
             app.commands.execute_command(command_id)
-    elif command_id == 'finn.layer.merge_rgb':
-        with pytest.raises(
-            ValueError, match='Merging to RGB requires exactly 3 Image'
-        ):
+    elif command_id == "finn.layer.merge_rgb":
+        with pytest.raises(ValueError, match="Merging to RGB requires exactly 3 Image"):
             app.commands.execute_command(command_id)
     elif command_id in [
-        'finn.layer.link_selected_layers',
-        'finn.layer.unlink_selected_layers',
+        "finn.layer.link_selected_layers",
+        "finn.layer.unlink_selected_layers",
     ]:
-        with pytest.raises(ValueError, match=r'at least one'):
+        with pytest.raises(ValueError, match=r"at least one"):
             app.commands.execute_command(command_id)
     else:
         app.commands.execute_command(command_id)

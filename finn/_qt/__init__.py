@@ -8,12 +8,10 @@ from finn.utils.translations import trans
 try:
     from qtpy import API_NAME, QT_VERSION, QtCore
 except Exception as e:
-    if 'No Qt bindings could be found' in str(e):
+    if "No Qt bindings could be found" in str(e):
         from inspect import cleandoc
 
-        installed_with_conda = list(
-            Path(sys.prefix, 'conda-meta').glob('napari-*.json')
-        )
+        installed_with_conda = list(Path(sys.prefix, "conda-meta").glob("napari-*.json"))
 
         raise ImportError(
             trans._(
@@ -36,37 +34,35 @@ except Exception as e:
                 """
                 ),
                 deferred=True,
-                tool='conda' if installed_with_conda else 'pip',
+                tool="conda" if installed_with_conda else "pip",
             )
         ) from e
     raise
 
 
-if API_NAME == 'PySide2':
+if API_NAME == "PySide2":
     # Set plugin path appropriately if using PySide2. This is a bug fix
     # for when both PyQt5 and Pyside2 are installed
     import PySide2
 
-    os.environ['QT_PLUGIN_PATH'] = str(
-        Path(PySide2.__file__).parent / 'Qt' / 'plugins'
-    )
+    os.environ["QT_PLUGIN_PATH"] = str(Path(PySide2.__file__).parent / "Qt" / "plugins")
 
-if API_NAME == 'PySide6' and sys.version_info[:2] < (3, 10):
+if API_NAME == "PySide6" and sys.version_info[:2] < (3, 10):
     from packaging import version
 
     assert isinstance(QT_VERSION, str)
 
-    if version.parse(QT_VERSION) > version.parse('6.3.1'):
+    if version.parse(QT_VERSION) > version.parse("6.3.1"):
         raise RuntimeError(
             trans._(
-                'Napari is not expected to work with PySide6 >= 6.3.2 on Python < 3.10',
+                "Napari is not expected to work with PySide6 >= 6.3.2 on Python < 3.10",
                 deferred=True,
             )
         )
 
 
 # When QT is not the specific version, we raise a warning:
-if tuple(int(x) for x in QtCore.__version__.split('.')[:3]) < (5, 12, 3):
+if tuple(int(x) for x in QtCore.__version__.split(".")[:3]) < (5, 12, 3):
     import importlib.metadata
 
     try:
@@ -80,7 +76,7 @@ if tuple(int(x) for x in QtCore.__version__.split('.')[:3]) < (5, 12, 3):
             )
     except ModuleNotFoundError:
         warn_message = trans._(
-            '\n\nnapari was tested with QT library `>=5.12.3`.\nThe version installed is {version}. Please report any issues with\nthis specific QT version at https://github.com/Napari/napari/issues.',
+            "\n\nnapari was tested with QT library `>=5.12.3`.\nThe version installed is {version}. Please report any issues with\nthis specific QT version at https://github.com/Napari/napari/issues.",
             deferred=True,
             version=QtCore.__version__,
         )
@@ -90,4 +86,4 @@ if tuple(int(x) for x in QtCore.__version__.split('.')[:3]) < (5, 12, 3):
 from finn._qt.qt_event_loop import get_app, get_qapp, gui_qt, quit_app, run
 from finn._qt.qt_main_window import Window
 
-__all__ = ['Window', 'get_app', 'get_qapp', 'gui_qt', 'quit_app', 'run']
+__all__ = ["Window", "get_app", "get_qapp", "gui_qt", "quit_app", "run"]

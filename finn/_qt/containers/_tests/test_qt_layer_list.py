@@ -161,25 +161,17 @@ def test_contextual_menu_updates_selection_ctx_keys(monkeypatch, qtbot):
     assert layer_list._selection_ctx_keys.num_selected_shapes_layers == 1
     assert layer_list._selection_ctx_keys.selected_empty_shapes_layer
 
-    monkeypatch.setattr(
-        'app_model.backends.qt.QModelMenu.exec_', lambda self, x: x
-    )
+    monkeypatch.setattr("app_model.backends.qt.QModelMenu.exec_", lambda self, x: x)
 
-    delegate.show_context_menu(
-        index, view.model(), QPoint(10, 10), parent=view
-    )
+    delegate.show_context_menu(index, view.model(), QPoint(10, 10), parent=view)
     assert not delegate._context_menu.findAction(
-        'finn.layer.convert_to_labels'
+        "finn.layer.convert_to_labels"
     ).isEnabled()
 
     layer_list[0].add(np.array(([0, 0], [0, 10], [10, 10], [10, 0])))
     assert layer_list[0].data
-    delegate.show_context_menu(
-        index, view.model(), QPoint(10, 10), parent=view
-    )
-    assert delegate._context_menu.findAction(
-        'finn.layer.convert_to_labels'
-    ).isEnabled()
+    delegate.show_context_menu(index, view.model(), QPoint(10, 10), parent=view)
+    assert delegate._context_menu.findAction("finn.layer.convert_to_labels").isEnabled()
 
 
 def make_qt_layer_list_with_delegate(qtbot):
@@ -214,9 +206,7 @@ def test_drag_and_drop_layers(qtbot):
         view.show()
 
     # check initial element is the one expected (last element in the layerlist)
-    name = view.model().data(
-        layer_to_model_index(view, 0), Qt.ItemDataRole.DisplayRole
-    )
+    name = view.model().data(layer_to_model_index(view, 0), Qt.ItemDataRole.DisplayRole)
     assert name == images[-1].name
 
     # drag and drop event simulation
@@ -262,8 +252,8 @@ def make_qt_layer_list_with_layer(qtbot) -> tuple[QtLayerList, Image]:
 
 
 def make_qt_layer_list_with_layers(qtbot) -> tuple[QtLayerList, list[Image]]:
-    image1 = Image(np.zeros((4, 3)), name='image1')
-    image2 = Image(np.zeros((4, 3)), name='image2')
+    image1 = Image(np.zeros((4, 3)), name="image1")
+    image2 = Image(np.zeros((4, 3)), name="image2")
     layers = LayerList([image1, image2])
     view = QtLayerList(layers)
     qtbot.addWidget(view)
@@ -274,9 +264,7 @@ def layer_to_model_index(view: QtLayerList, layer_index: int) -> QModelIndex:
     return view.model().index(layer_index, 0, view.rootIndex())
 
 
-def check_state_at_layer_index(
-    view: QtLayerList, layer_index: int
-) -> Qt.CheckState:
+def check_state_at_layer_index(view: QtLayerList, layer_index: int) -> Qt.CheckState:
     model_index = layer_to_model_index(view, layer_index)
     value = view.model().data(model_index, Qt.ItemDataRole.CheckStateRole)
     # The data method returns integer value of the enum in some cases, so

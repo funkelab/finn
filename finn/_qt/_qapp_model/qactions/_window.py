@@ -12,22 +12,22 @@ Q_WINDOW_ACTIONS: list[Action] = []
 
 toggle_action_details = [
     (
-        'napari:window:window:toggle_window_console',
-        trans._('Console'),
-        'dockConsole',
-        trans._('Toggle console panel'),
+        "napari:window:window:toggle_window_console",
+        trans._("Console"),
+        "dockConsole",
+        trans._("Toggle console panel"),
     ),
     (
-        'napari:window:window:toggle_layer_controls',
-        trans._('Layer Controls'),
-        'dockLayerControls',
-        trans._('Toggle layer controls panel'),
+        "napari:window:window:toggle_layer_controls",
+        trans._("Layer Controls"),
+        "dockLayerControls",
+        trans._("Toggle layer controls panel"),
     ),
     (
-        'napari:window:window:toggle_layer_list',
-        trans._('Layer List'),
-        'dockLayerList',
-        trans._('Toggle layer list panel'),
+        "napari:window:window:toggle_layer_list",
+        trans._("Layer List"),
+        "dockLayerList",
+        trans._("Toggle layer list panel"),
     ),
 ]
 for cmd_id, cmd_title, dock_widget, status_tip in toggle_action_details:
@@ -38,8 +38,8 @@ for cmd_id, cmd_title, dock_widget, status_tip in toggle_action_details:
             dock_widget=dock_widget,
             menus=[
                 {
-                    'id': MenuId.MENUBAR_WINDOW,
-                    'group': MenuGroup.NAVIGATION,
+                    "id": MenuId.MENUBAR_WINDOW,
+                    "group": MenuGroup.NAVIGATION,
                 }
             ],
             status_tip=status_tip,

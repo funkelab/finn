@@ -9,7 +9,7 @@ from qtpy.QtWidgets import QAbstractItemView
 from finn._qt.containers._base_item_model import ItemRole
 from finn._qt.containers._factory import create_model
 
-ItemType = TypeVar('ItemType')
+ItemType = TypeVar("ItemType")
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QAbstractItemModel
