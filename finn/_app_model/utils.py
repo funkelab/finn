@@ -22,7 +22,7 @@ def to_id_key(menu_path: str) -> str:
     str
         final part of the menu path
     """
-    return menu_path.split('/')[-1]
+    return menu_path.split("/")[-1]
 
 
 def to_action_id(id_key: str) -> str:
@@ -38,7 +38,7 @@ def to_action_id(id_key: str) -> str:
     str
         dummy action ID
     """
-    return f'finn.{id_key}.empty_dummy'
+    return f"finn.{id_key}.empty_dummy"
 
 
 def contains_dummy_action(menu_items: list[MenuOrSubmenu]) -> bool:
@@ -55,7 +55,7 @@ def contains_dummy_action(menu_items: list[MenuOrSubmenu]) -> bool:
         True if menu_items contains dummy item otherwise false
     """
     for item in menu_items:
-        if hasattr(item, 'command') and 'empty_dummy' in item.command.id:
+        if hasattr(item, "command") and "empty_dummy" in item.command.id:
             return True
     return False
 
@@ -112,13 +112,13 @@ def get_dummy_action(menu_id: MenuId) -> tuple[Action, str]:
     id_key = to_id_key(menu_id)
     action = Action(
         id=to_action_id(id_key),
-        title='Empty',
+        title="Empty",
         callback=no_op,
         menus=[
             {
-                'id': menu_id,
-                'group': MenuGroup.NAVIGATION,
-                'when': parse_expression(context_key := f'{id_key}_empty'),
+                "id": menu_id,
+                "group": MenuGroup.NAVIGATION,
+                "when": parse_expression(context_key := f"{id_key}_empty"),
             }
         ],
         enablement=False,

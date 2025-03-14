@@ -302,6 +302,10 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+"finn/_app_model/*" = [
+    "E501", # line too long
+    "UP007", # update type annotations to native symbols after 3.10
+]
 "finn/_vispy/__init__.py" = ["E402"]
 "**/_tests/*.py" = ["B011", "INP001", "TRY301", "B018", "RUF012"]
 "finn/utils/_testsupport.py" = ["B011"]

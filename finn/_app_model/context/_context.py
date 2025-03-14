@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import collections.abc
-from typing import TYPE_CHECKING, Any, Final, Optional
+from typing import TYPE_CHECKING, Any, Final
 
 from app_model.expressions import (
     Context,
@@ -14,7 +14,7 @@ from finn.utils.translations import trans
 if TYPE_CHECKING:
     from finn.utils.events import Event
 
-__all__ = ['Context', 'SettingsAwareContext', 'create_context', 'get_context']
+__all__ = ["Context", "SettingsAwareContext", "create_context", "get_context"]
 
 
 class ContextMapping(collections.abc.Mapping):
@@ -39,7 +39,7 @@ class ContextMapping(collections.abc.Mapping):
         if key in self._evaluated_context_mapping:
             return self._evaluated_context_mapping[key]
         if key not in self._initial_context_mapping:
-            raise KeyError(f'Key {key!r} not found')
+            raise KeyError(f"Key {key!r} not found")
         value = self._initial_context_mapping[key]
         if callable(value):
             value = value()
@@ -62,7 +62,7 @@ class SettingsAwareContext(Context):
     This takes no parents, and will always be a root context.
     """
 
-    _PREFIX: Final[str] = 'settings.'
+    _PREFIX: Final[str] = "settings."
 
     def __init__(self) -> None:
         super().__init__()
@@ -72,24 +72,24 @@ class SettingsAwareContext(Context):
         self._settings.events.changed.connect(self._update_key)
 
     def _update_key(self, event: Event):
-        self.changed.emit({f'{self._PREFIX}{event.key}'})
+        self.changed.emit({f"{self._PREFIX}{event.key}"})
 
     def __del__(self):
         self._settings.events.changed.disconnect(self._update_key)
 
     def __missing__(self, key: str) -> Any:
         if key.startswith(self._PREFIX):
-            splits = [k for k in key.split('.')[1:] if k]
+            splits = [k for k in key.split(".")[1:] if k]
             val: Any = self._settings
             if splits:
                 while splits:
                     val = getattr(val, splits.pop(0))
-                if hasattr(val, 'dict'):
+                if hasattr(val, "dict"):
                     val = val.dict()
                 return val
         return super().__missing__(key)
 
-    def new_child(self, m: Optional[dict] = None) -> Context:  # type: ignore
+    def new_child(self, m: dict | None = None) -> Context:  # type: ignore
         """New ChainMap with a new map followed by all previous maps.
 
         If no map is provided, an empty dict is used.
@@ -101,7 +101,7 @@ class SettingsAwareContext(Context):
         if k.startswith(self._PREFIX):
             raise ValueError(
                 trans._(
-                    'Cannot set key starting with {prefix!r}',
+                    "Cannot set key starting with {prefix!r}",
                     deferred=True,
                     prefix=self._PREFIX,
                 )
@@ -118,7 +118,7 @@ def create_context(
     obj: object,
     max_depth: int = 20,
     start: int = 2,
-    root: Optional[Context] = None,
+    root: Context | None = None,
 ) -> Context:
     return _create_context(
         obj=obj,

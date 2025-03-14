@@ -11,7 +11,7 @@ from finn._app_model.actions._layerlist_context_actions import (
 )
 from finn.utils.translations import trans
 
-APP_NAME = 'finn'
+APP_NAME = "finn"
 
 
 class NapariApplication(Application):
@@ -45,13 +45,13 @@ def _napari_names() -> dict[str, object]:
         return {
             name: val
             for name, val in vars(module).items()
-            if not name.startswith('_')
+            if not name.startswith("_")
             and isinstance(val, type)
-            and getattr(val, '__module__', '_').startswith('finn')
+            and getattr(val, "__module__", "_").startswith("finn")
         }
 
     return {
-        'finn': finn,
+        "finn": finn,
         **_public_types(components),
         **_public_types(layers),
         **_public_types(viewer),
@@ -63,8 +63,8 @@ def get_app() -> NapariApplication:
     """Get the Napari Application singleton. Now deprecated, use `get_app_model`."""
     warn(
         trans._(
-            '`NapariApplication` instance access through `get_app` is deprecated and will be removed in 0.6.0.\n'
-            'Please use `get_app_model` instead.\n',
+            "`NapariApplication` instance access through `get_app` is deprecated and will be removed in 0.6.0.\n"
+            "Please use `get_app_model` instead.\n",
             deferred=True,
         ),
         category=FutureWarning,
