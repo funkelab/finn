@@ -46,7 +46,6 @@ def init_qactions() -> None:
         LAYERS_ACTIONS,
         LAYERS_SUBMENUS,
     )
-    from finn._qt._qapp_model.qactions._plugins import Q_PLUGINS_ACTIONS
     from finn._qt._qapp_model.qactions._view import (
         Q_VIEW_ACTIONS,
         VIEW_SUBMENUS,
@@ -76,7 +75,6 @@ def init_qactions() -> None:
             Q_DEBUG_ACTIONS,
             Q_FILE_ACTIONS,
             Q_HELP_ACTIONS,
-            Q_PLUGINS_ACTIONS,
             Q_VIEW_ACTIONS,
             LAYERS_ACTIONS,
             Q_LAYERLIST_CONTEXT_ACTIONS,
