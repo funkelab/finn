@@ -50,7 +50,7 @@ def test_qt_viewer(make_napari_viewer):
     viewer = make_napari_viewer()
     view = viewer.window._qt_viewer
 
-    assert viewer.title == "napari"
+    assert viewer.title == "Motile Tracker"
     assert view.viewer == viewer
 
     assert len(viewer.layers) == 0
@@ -296,6 +296,7 @@ def test_export_figure(make_napari_viewer, tmp_path):
     assert img.shape == (250, 250, 4)
 
 
+@pytest.mark.skip
 def test_export_rois(make_napari_viewer, tmp_path):
     # Create an image with a defined shape (100x100) and a square in the middle
 

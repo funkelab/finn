@@ -80,7 +80,6 @@ from finn.plugins import (
 from finn.plugins._npe2 import index_npe1_adapters
 from finn.settings import get_settings
 from finn.utils import perf
-from finn.utils._proxies import PublicOnlyProxy
 from finn.utils.events import Event
 from finn.utils.geometry import get_center_bbox
 from finn.utils.io import imsave
@@ -1895,11 +1894,11 @@ def _instantiate_dock_widget(wdg_cls, viewer: "Viewer"):
         pass
     else:
         for param in sig.parameters.values():
-            if param.name == "napari_viewer":
-                kwargs["napari_viewer"] = PublicOnlyProxy(viewer)
+            if param.name == "finn_viewer":
+                kwargs["finn_viewer"] = viewer
                 break
             if param.annotation in ("finn.viewer.Viewer", Viewer):
-                kwargs[param.name] = PublicOnlyProxy(viewer)
+                kwargs[param.name] = viewer
                 break
             # cannot look for param.kind == param.VAR_KEYWORD because
             # QWidget allows **kwargs but errs on unknown keyword arguments
