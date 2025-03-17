@@ -46,7 +46,7 @@ def test_sequence_of_iterables(input_data, expected):
     zipped = zip(
         range(3),
         ensure_sequence_of_iterables(input_data, repeat_empty=True),
-        expected,
+        expected, strict=False,
     )
     for _i, result, expectation in zipped:
         assert result == expectation
@@ -54,9 +54,7 @@ def test_sequence_of_iterables(input_data, expected):
 
 def test_sequence_of_iterables_allow_none():
     input_data = [(1, 2), None]
-    assert (
-        ensure_sequence_of_iterables(input_data, allow_none=True) == input_data
-    )
+    assert ensure_sequence_of_iterables(input_data, allow_none=True) == input_data
 
 
 def test_sequence_of_iterables_no_repeat_empty():
@@ -89,7 +87,7 @@ def test_sequence_of_iterables_raises():
 )
 def test_ensure_iterable(input_data, expected):
     """Test test_ensure_iterable returns an iterable."""
-    zipped = zip(range(3), ensure_iterable(input_data), expected)
+    zipped = zip(range(3), ensure_iterable(input_data), expected, strict=False)
     for _i, result, expectation in zipped:
         assert result == expectation
 
@@ -199,13 +197,8 @@ def test_equality_operator():
     assert pick_equality_operator(MyNPArray([1, 1])) == _quiet_array_equal
     assert pick_equality_operator(da.ones((1, 1))) == operator.is_
     assert pick_equality_operator(zarr.ones((1, 1))) == operator.is_
-    assert (
-        pick_equality_operator(xr.DataArray(np.ones((1, 1))))
-        == _quiet_array_equal
-    )
-    assert pick_equality_operator(
-        pd.DataFrame({'A': [1]}) == _pandas_dataframe_equal
-    )
+    assert pick_equality_operator(xr.DataArray(np.ones((1, 1)))) == _quiet_array_equal
+    assert pick_equality_operator(pd.DataFrame({'A': [1]}) == _pandas_dataframe_equal)
 
 
 @pytest.mark.skipif(
@@ -226,9 +219,7 @@ def test_is_array_type_with_xarray():
 
     assert _is_array_type(xr.DataArray(), 'xarray.DataArray')
     assert not _is_array_type(xr.DataArray(), 'xr.DataArray')
-    assert not _is_array_type(
-        xr.DataArray(), 'xarray.core.dataarray.DataArray'
-    )
+    assert not _is_array_type(xr.DataArray(), 'xarray.core.dataarray.DataArray')
     assert not _is_array_type([], 'xarray.DataArray')
     assert not _is_array_type(np.array([]), 'xarray.DataArray')
 

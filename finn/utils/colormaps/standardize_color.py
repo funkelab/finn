@@ -21,8 +21,8 @@ session due to mis-represented colors.
 import functools
 import types
 import warnings
-from collections.abc import Sequence
-from typing import Any, Callable, Optional, Union
+from collections.abc import Callable, Sequence
+from typing import Any
 
 import numpy as np
 from vispy.color import ColorArray, get_color_dict, get_color_names
@@ -102,7 +102,7 @@ def _handle_str(color: str) -> np.ndarray:
     return colorarray
 
 
-def _handle_list_like(colors: Sequence) -> Optional[np.ndarray]:
+def _handle_list_like(colors: Sequence) -> np.ndarray | None:
     """Parse a list-like container of colors into a numpy Nx4 array.
 
     Handles all list-like containers of colors using recursion (if necessary).
@@ -153,7 +153,7 @@ def _handle_list_like(colors: Sequence) -> Optional[np.ndarray]:
     return None
 
 
-def _handle_generator(colors) -> Optional[np.ndarray]:
+def _handle_generator(colors) -> np.ndarray | None:
     """Generators are converted to lists since we need to know their
     length to instantiate a proper array.
     """
@@ -284,9 +284,7 @@ def _convert_array_to_correct_format(colors: np.ndarray) -> np.ndarray:
         Nx4, float32 color array with values in the range [0, 1]
     """
     if colors.shape[1] == 3:
-        colors = np.column_stack(
-            [colors, np.ones(len(colors), dtype=np.float32)]
-        )
+        colors = np.column_stack([colors, np.ones(len(colors), dtype=np.float32)])
 
     if colors.min() < 0:
         raise ValueError(
@@ -307,7 +305,7 @@ def _convert_array_to_correct_format(colors: np.ndarray) -> np.ndarray:
     return np.atleast_2d(np.asarray(colors, dtype=np.float32))
 
 
-def _handle_str_list_like(colors: Union[Sequence, np.ndarray]) -> np.ndarray:
+def _handle_str_list_like(colors: Sequence | np.ndarray) -> np.ndarray:
     """Converts lists or arrays filled with strings to the proper color array
     format.
 
@@ -471,9 +469,6 @@ def rgb_to_hex(rgbs: Sequence) -> np.ndarray:
     """
     rgbs = _check_color_dim(rgbs)
     return np.array(
-        [
-            f'#{"%02x" * 4}' % tuple((255 * rgb).astype(np.uint8))
-            for rgb in rgbs
-        ],
+        [f'#{"%02x" * 4}' % tuple((255 * rgb).astype(np.uint8)) for rgb in rgbs],
         '|U9',
     )

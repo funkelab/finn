@@ -1,5 +1,4 @@
 import re
-from typing import Optional
 
 from qtpy.QtCore import QSize, Slot
 from qtpy.QtGui import QFont
@@ -47,10 +46,10 @@ class QtDictTable(QTableWidget):
     def __init__(
         self,
         parent=None,
-        source: Optional[list[dict]] = None,
+        source: list[dict] | None = None,
         *,
-        headers: Optional[list[str]] = None,
-        min_section_width: Optional[int] = None,
+        headers: list[str] | None = None,
+        min_section_width: int | None = None,
         max_section_width: int = 480,
     ) -> None:
         super().__init__(parent=parent)
@@ -63,7 +62,7 @@ class QtDictTable(QTableWidget):
         self.cellClicked.connect(self._go_to_links)
         self.setMouseTracking(True)
 
-    def set_data(self, data: list[dict], headers: Optional[list[str]] = None):
+    def set_data(self, data: list[dict], headers: list[str] | None = None):
         """Set the data in the table, given a list of dicts.
 
         Parameters
@@ -78,13 +77,9 @@ class QtDictTable(QTableWidget):
             by default headers will be the set of all keys in all dicts in
             ``source``
         """
-        if not isinstance(data, list) or any(
-            not isinstance(i, dict) for i in data
-        ):
+        if not isinstance(data, list) or any(not isinstance(i, dict) for i in data):
             raise ValueError(
-                trans._(
-                    "'data' argument must be a list of dicts", deferred=True
-                )
+                trans._("'data' argument must be a list of dicts", deferred=True)
             )
         nrows = len(data)
         _headers = sorted(set().union(*data))

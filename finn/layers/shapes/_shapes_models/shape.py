@@ -293,9 +293,7 @@ class Shape(ABC):
 
         # otherwise, we make individual calls to specialized functions
         if edge:
-            centers, offsets, triangles = triangulate_path_edge_numpy(
-                data, closed=closed
-            )
+            centers, offsets, triangles = triangulate_path_edge_numpy(data, closed=closed)
             self._edge_vertices = centers
             self._edge_offsets = offsets
             self._edge_triangles = triangles
@@ -351,9 +349,7 @@ class Shape(ABC):
             self._edge_triangles = np.empty((0, 3), dtype=np.uint32)
 
         if face:
-            idx = np.concatenate(
-                [[True], ~np.all(data[1:] == data[:-1], axis=-1)]
-            )
+            idx = np.concatenate([[True], ~np.all(data[1:] == data[:-1], axis=-1)])
             clean_data = data[idx].copy()
 
             if not is_collinear(clean_data[:, -2:]):
@@ -413,9 +409,7 @@ class Shape(ABC):
         self.__dict__.pop('data_displayed', None)  # clear cache
         points = self.data_displayed
         points = remove_path_duplicates(points, closed=self._closed)
-        centers, offsets, triangles = triangulate_edge(
-            points, closed=self._closed
-        )
+        centers, offsets, triangles = triangulate_edge(points, closed=self._closed)
         self._edge_vertices = centers
         self._edge_offsets = offsets
         self._edge_triangles = triangles
@@ -545,9 +539,7 @@ class Shape(ABC):
             Boolean array with `True` for points inside the shape
         """
         if mask_shape is None:
-            mask_shape = np.round(self.data_displayed.max(axis=0)).astype(
-                'int'
-            )
+            mask_shape = np.round(self.data_displayed.max(axis=0)).astype('int')
 
         if len(mask_shape) == 2:
             embedded = False
@@ -586,13 +578,9 @@ class Shape(ABC):
                 if i in self.dims_displayed:
                     slice_key[i] = slice(None)
                 elif self.slice_key is not None:
-                    slice_key[i] = slice(
-                        self.slice_key[0, i], self.slice_key[1, i] + 1
-                    )
+                    slice_key[i] = slice(self.slice_key[0, i], self.slice_key[1, i] + 1)
                 else:
-                    raise RuntimeError(
-                        'Internal error: self.slice_key is None'
-                    )
+                    raise RuntimeError('Internal error: self.slice_key is None')
             displayed_order = argsort(self.dims_displayed)
             mask[tuple(slice_key)] = mask_p.transpose(displayed_order)
         else:

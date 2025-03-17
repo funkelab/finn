@@ -39,14 +39,8 @@ class QtLayerListModel(QtListModel[Layer]):
             if layer_loaded:
                 return layer_source_info
             return trans._('{source} (loading)', source=layer_source_info)
-        if (
-            role == Qt.ItemDataRole.CheckStateRole
-        ):  # the "checked" state of this item
-            return (
-                Qt.CheckState.Checked
-                if layer.visible
-                else Qt.CheckState.Unchecked
-            )
+        if role == Qt.ItemDataRole.CheckStateRole:  # the "checked" state of this item
+            return Qt.CheckState.Checked if layer.visible else Qt.CheckState.Unchecked
         if role == Qt.ItemDataRole.SizeHintRole:  # determines size of item
             return QSize(200, 34)
         if role == ThumbnailRole:  # return the thumbnail
@@ -76,9 +70,7 @@ class QtLayerListModel(QtListModel[Layer]):
             # partially checked, but we only use the unchecked and checked
             # to correspond to the layer's visibility.
             # https://doc.qt.io/qt-5/qt.html#CheckState-enum
-            self.getItem(index).visible = (
-                Qt.CheckState(value) == Qt.CheckState.Checked
-            )
+            self.getItem(index).visible = Qt.CheckState(value) == Qt.CheckState.Checked
         elif role == Qt.ItemDataRole.EditRole:
             self.getItem(index).name = value
             role = Qt.ItemDataRole.DisplayRole
@@ -90,10 +82,7 @@ class QtLayerListModel(QtListModel[Layer]):
 
     def all_loaded(self):
         """Return if all the layers are loaded."""
-        return all(
-            self.index(row, 0).data(LoadedRole)
-            for row in range(self.rowCount())
-        )
+        return all(self.index(row, 0).data(LoadedRole) for row in range(self.rowCount()))
 
     def _process_event(self, event):
         # The model needs to emit `dataChanged` whenever data has changed

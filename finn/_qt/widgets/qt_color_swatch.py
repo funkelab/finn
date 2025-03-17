@@ -1,5 +1,5 @@
 import re
-from typing import Optional, Union
+from typing import Union
 
 import numpy as np
 from qtpy.QtCore import QEvent, Qt, Signal, Slot
@@ -27,9 +27,7 @@ from finn.utils.translations import trans
 # matches any 3- or 4-tuple of int or float, with or without parens
 # captures the numbers into groups.
 # this is used to allow users to enter colors as e.g.: "(1, 0.7, 0)"
-rgba_regex = re.compile(
-    r'\(?([\d.]+),\s*([\d.]+),\s*([\d.]+),?\s*([\d.]+)?\)?'
-)
+rgba_regex = re.compile(r'\(?([\d.]+),\s*([\d.]+),\s*([\d.]+),?\s*([\d.]+)?\)?')
 
 TRANSPARENT = np.array([0, 0, 0, 0], np.float32)
 AnyColorType = Union[ColorType, QColor]
@@ -74,10 +72,10 @@ class QColorSwatchEdit(QWidget):
 
     def __init__(
         self,
-        parent: Optional[QWidget] = None,
+        parent: QWidget | None = None,
         *,
-        initial_color: Optional[AnyColorType] = None,
-        tooltip: Optional[str] = None,
+        initial_color: AnyColorType | None = None,
+        tooltip: str | None = None,
     ) -> None:
         super().__init__(parent=parent)
         self.setObjectName('QColorSwatchEdit')
@@ -147,9 +145,9 @@ class QColorSwatch(QFrame):
 
     def __init__(
         self,
-        parent: Optional[QWidget] = None,
-        tooltip: Optional[str] = None,
-        initial_color: Optional[ColorType] = None,
+        parent: QWidget | None = None,
+        tooltip: str | None = None,
+        initial_color: ColorType | None = None,
     ) -> None:
         super().__init__(parent)
         self.setObjectName('colorSwatch')
@@ -285,9 +283,7 @@ class QColorPopup(QtPopup):
         self.frame.setLayout(layout)
         layout.addWidget(self.color_dialog)
 
-        self.color_dialog.currentColorChanged.connect(
-            self.currentColorChanged.emit
-        )
+        self.color_dialog.currentColorChanged.connect(self.currentColorChanged.emit)
         self.color_dialog.colorSelected.connect(self._on_color_selected)
         self.color_dialog.rejected.connect(self._on_rejected)
         self.color_dialog.setCurrentColor(QColor(initial_color))

@@ -1,6 +1,7 @@
 import os
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from qtpy.QtWidgets import QFileDialog, QMessageBox
 
@@ -35,9 +36,7 @@ class ScreenshotDialog(QFileDialog):
         super().__init__(parent, trans._('Save screenshot'))
         self.setAcceptMode(QFileDialog.AcceptSave)
         self.setFileMode(QFileDialog.AnyFile)
-        self.setNameFilter(
-            trans._('Image files (*.png *.bmp *.gif *.tif *.tiff)')
-        )
+        self.setNameFilter(trans._('Image files (*.png *.bmp *.gif *.tif *.tiff)'))
         self.setDirectory(directory)
         self.setHistory(history)
 

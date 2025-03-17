@@ -31,9 +31,7 @@ def check_view_menu_visibility(viewer, qtbot):
         return
 
     assert not viewer.window.view_menu.isVisible()
-    qtbot.keyClick(
-        viewer.window._qt_window.menuBar(), Qt.Key_V, modifier=Qt.AltModifier
-    )
+    qtbot.keyClick(viewer.window._qt_window.menuBar(), Qt.Key_V, modifier=Qt.AltModifier)
     qtbot.waitUntil(viewer.window.view_menu.isVisible)
     viewer.window.view_menu.close()
     assert not viewer.window.view_menu.isVisible()
@@ -226,9 +224,7 @@ def test_toggle_play(make_napari_viewer, qtbot):
     app.commands.execute_command(action_id)
     qtbot.waitUntil(lambda: viewer.window._qt_viewer.dims.is_playing)
     # Assert action stops play
-    with qtbot.waitSignal(
-        viewer.window._qt_viewer.dims._animation_thread.finished
-    ):
+    with qtbot.waitSignal(viewer.window._qt_viewer.dims._animation_thread.finished):
         app.commands.execute_command(action_id)
         QApplication.processEvents()
     qtbot.waitUntil(lambda: not viewer.window._qt_viewer.dims.is_playing)

@@ -12,7 +12,7 @@ from finn.utils.translations import trans
 if sys.version_info < (3, 10):
     # Once 3.12+ there is a new syntax, type Foo = Bar[...], but
     # we are not there yet.
-    from typing_extensions import TypeAlias
+    from typing import TypeAlias
 else:
     from typing import TypeAlias
 
@@ -41,20 +41,18 @@ class Plane(EventedModel):
 
     @validator('normal', allow_reuse=True)
     def _normalise_vector(cls, v: npt.NDArray) -> Point3D:
-        return cast(Point3D, tuple(v / np.linalg.norm(v)))
+        return cast('Point3D', tuple(v / np.linalg.norm(v)))
 
     @validator('normal', 'position', pre=True, allow_reuse=True)
     def _ensure_tuple(cls, v: Any) -> Point3D:
-        return cast(Point3D, tuple(v))
+        return cast('Point3D', tuple(v))
 
     def shift_along_normal_vector(self, distance: float) -> None:
         """Shift the plane along its normal vector by a given distance."""
         assert len(self.position) == len(self.normal) == 3
         self.position = cast(
-            Point3D,
-            tuple(
-                p + (distance * n) for p, n in zip(self.position, self.normal)
-            ),
+            'Point3D',
+            tuple(p + (distance * n) for p, n in zip(self.position, self.normal, strict=False)),
         )
 
     def intersect_with_line(
@@ -97,9 +95,7 @@ class Plane(EventedModel):
 
         plane_normal = np.cross(ab, ac)
         plane_position = np.mean(abc, axis=0)
-        return cls(
-            position=plane_position, normal=plane_normal, enabled=enabled
-        )
+        return cls(position=plane_position, normal=plane_normal, enabled=enabled)
 
     def as_array(self) -> npt.NDArray:
         """Return a (2, 3) array representing the plane.
@@ -180,9 +176,7 @@ class ClippingPlaneList(SelectableEventedList):
         return np.stack(arrays)
 
     @classmethod
-    def from_array(
-        cls, array: npt.NDArray, enabled: bool = True
-    ) -> 'ClippingPlaneList':
+    def from_array(cls, array: npt.NDArray, enabled: bool = True) -> 'ClippingPlaneList':
         """Construct the PlaneList from an (N, 2, 3) array.
 
         [i, 0, :] : ith plane position
@@ -196,10 +190,7 @@ class ClippingPlaneList(SelectableEventedList):
                     shape=array.shape,
                 )
             )
-        planes = [
-            ClippingPlane.from_array(sub_arr, enabled=enabled)
-            for sub_arr in array
-        ]
+        planes = [ClippingPlane.from_array(sub_arr, enabled=enabled) for sub_arr in array]
         return cls(planes)
 
     @classmethod
@@ -231,9 +222,7 @@ class ClippingPlaneList(SelectableEventedList):
                 normal[axis] = -direction
 
                 planes.append(
-                    ClippingPlane(
-                        position=position, normal=normal, enabled=enabled
-                    )
+                    ClippingPlane(position=position, normal=normal, enabled=enabled)
                 )
         return cls(planes)
 

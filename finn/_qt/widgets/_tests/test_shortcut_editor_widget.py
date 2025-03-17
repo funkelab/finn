@@ -55,9 +55,7 @@ def test_potentially_conflicting_actions(shortcut_editor_widget):
     actions1 = widget._get_potential_conflicting_actions()
     expected_actions1 = []
     for group, keybindings in widget.key_bindings_strs.items():
-        expected_actions1.extend(
-            zip(itertools.repeat(group), keybindings.items())
-        )
+        expected_actions1.extend(zip(itertools.repeat(group), keybindings.items()))
     assert actions1 == expected_actions1
     widget.layer_combo_box.setCurrentText('Labels layer')
     actions2 = widget._get_potential_conflicting_actions()
@@ -125,9 +123,7 @@ def test_restore_defaults(shortcut_editor_widget):
     widget._table.item(0, widget._shortcut_col).setText('H')
     shortcut = widget._table.item(0, widget._shortcut_col).text()
     assert shortcut == 'H'
-    with patch(
-        'finn._qt.widgets.qt_keyboard_settings.QMessageBox.question'
-    ) as mock:
+    with patch('finn._qt.widgets.qt_keyboard_settings.QMessageBox.question') as mock:
         mock.return_value = QMessageBox.RestoreDefaults
         widget._restore_button.click()
         assert mock.called
@@ -207,8 +203,7 @@ def test_keybinding_with_modifiers(
             True,
         ),
         (
-            Qt.KeyboardModifier.AltModifier
-            | Qt.KeyboardModifier.ShiftModifier,
+            Qt.KeyboardModifier.AltModifier | Qt.KeyboardModifier.ShiftModifier,
             [KEY_SYMBOLS['Ctrl']],
             False,
         ),
@@ -258,9 +253,7 @@ def test_keybinding_with_only_modifiers(
     'confirm_key',
     [Qt.Key.Key_Enter, Qt.Key.Key_Return, Qt.Key.Key_Tab],
 )
-def test_remove_shortcut(
-    shortcut_editor_widget, qtbot, removal_trigger_key, confirm_key
-):
+def test_remove_shortcut(shortcut_editor_widget, qtbot, removal_trigger_key, confirm_key):
     widget = shortcut_editor_widget()
     shortcut = widget._table.item(0, widget._shortcut_col).text()
     assert shortcut == KEY_SYMBOLS['Ctrl']
@@ -328,12 +321,8 @@ def test_keybinding_editor_modifier_key_detection(
     x = widget._table.columnViewportPosition(widget._shortcut_col)
     y = widget._table.rowViewportPosition(0)
     item_pos = QPoint(x, y)
-    qtbot.mouseClick(
-        widget._table.viewport(), Qt.MouseButton.LeftButton, pos=item_pos
-    )
-    qtbot.mouseDClick(
-        widget._table.viewport(), Qt.MouseButton.LeftButton, pos=item_pos
-    )
+    qtbot.mouseClick(widget._table.viewport(), Qt.MouseButton.LeftButton, pos=item_pos)
+    qtbot.mouseDClick(widget._table.viewport(), Qt.MouseButton.LeftButton, pos=item_pos)
     qtbot.waitUntil(lambda: QApplication.focusWidget() is not None)
 
     line_edit = QApplication.focusWidget()

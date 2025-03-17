@@ -38,9 +38,7 @@ def test_sample_data_triggers_reader_dialog(
     app = get_app_model()
     # Configures `app`, registers actions and initializes plugins
     make_napari_viewer()
-    with mock.patch(
-        'finn._qt.dialogs.qt_reader_dialog.handle_gui_reading'
-    ) as mock_read:
+    with mock.patch('finn._qt.dialogs.qt_reader_dialog.handle_gui_reading') as mock_read:
         app.commands.execute_command('tmp_plugin:tmp-sample')
 
     # assert that handle gui reading was called
@@ -194,9 +192,7 @@ def test_image_from_clipboard(make_napari_viewer):
 
     # Check action command execution
     with mock.patch('finn._qt.qt_viewer.show_info') as mock_show_info:
-        app.commands.execute_command(
-            'finn.window.file._image_from_clipboard'
-        )
+        app.commands.execute_command('finn.window.file._image_from_clipboard')
     mock_show_info.assert_called_once_with('No image or link in clipboard.')
 
 
@@ -249,9 +245,7 @@ def test_open(
         mock_file_instance = mock_file.return_value
         getattr(mock_file_instance, dialog_method).return_value = dialog_return
         app.commands.execute_command(action_id)
-    mock_read.assert_called_once_with(
-        filename_call, stack=stack, choose_plugin=False
-    )
+    mock_read.assert_called_once_with(filename_call, stack=stack, choose_plugin=False)
 
 
 @pytest.mark.parametrize(
@@ -295,9 +289,7 @@ def test_open_with_plugin(
     stack,
 ):
     viewer = make_napari_viewer()
-    action, _a = get_submenu_action(
-        viewer.window.file_menu, 'Open with Plugin', menu_str
-    )
+    action, _a = get_submenu_action(viewer.window.file_menu, 'Open with Plugin', menu_str)
     with (
         mock.patch('finn._qt.qt_viewer.QFileDialog') as mock_file,
         mock.patch('finn._qt.qt_viewer.QtViewer._qt_open') as mock_read,
@@ -305,9 +297,7 @@ def test_open_with_plugin(
         mock_file_instance = mock_file.return_value
         getattr(mock_file_instance, dialog_method).return_value = dialog_return
         action.trigger()
-    mock_read.assert_called_once_with(
-        filename_call, stack=stack, choose_plugin=True
-    )
+    mock_read.assert_called_once_with(filename_call, stack=stack, choose_plugin=True)
 
 
 def test_preference_dialog(make_napari_viewer):
@@ -321,9 +311,7 @@ def test_preference_dialog(make_napari_viewer):
             'finn._qt.qt_main_window.PreferencesDialog.show'
         ) as mock_pref_dialog_show,
     ):
-        app.commands.execute_command(
-            'finn.window.file.show_preferences_dialog'
-        )
+        app.commands.execute_command('finn.window.file.show_preferences_dialog')
     mock_pref_dialog_show.assert_called_once()
 
 
@@ -377,9 +365,7 @@ def test_save_layers_enablement_updated_context(make_napari_viewer, builtins):
         ),
     ],
 )
-def test_save_layers(
-    make_napari_viewer, action_id, dialog_method, dialog_return
-):
+def test_save_layers(make_napari_viewer, action_id, dialog_method, dialog_return):
     """Test save layer selected/all actions can be triggered."""
     viewer = make_napari_viewer()
     app = get_app_model()
@@ -409,9 +395,7 @@ def test_save_layers(
         ),
     ],
 )
-def test_screenshot(
-    make_napari_viewer, action_id, patch_method, dialog_return
-):
+def test_screenshot(make_napari_viewer, action_id, patch_method, dialog_return):
     """Test screenshot actions can be triggered."""
     make_napari_viewer()
     app = get_app_model()
@@ -505,6 +489,4 @@ def test_close(make_napari_viewer, action_id, patch_method, method_params):
     # Check action command execution
     with mock.patch(patch_method) as mock_close:
         app.commands.execute_command(action_id)
-    mock_close.assert_called_once_with(
-        quit_app=quit_app, confirm_need=confirm_need
-    )
+    mock_close.assert_called_once_with(quit_app=quit_app, confirm_need=confirm_need)

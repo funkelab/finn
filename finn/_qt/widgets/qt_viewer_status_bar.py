@@ -1,6 +1,6 @@
 """Status bar widget on the viewer MainWindow"""
 
-from typing import TYPE_CHECKING, Optional, cast
+from typing import TYPE_CHECKING, cast
 
 from qtpy.QtCore import QEvent, Qt
 from qtpy.QtGui import QFontMetrics, QResizeEvent
@@ -59,9 +59,7 @@ class ViewerStatusBar(QStatusBar):
         self.addWidget(main_widget, 1)
 
         self._activity_item = ActivityToggleItem()
-        self._activity_item._activityBtn.clicked.connect(
-            self._toggle_activity_dock
-        )
+        self._activity_item._activityBtn.clicked.connect(self._toggle_activity_dock)
         # FIXME: feels weird to set this here.
         parent._activity_dialog._toggleButton = self._activity_item
         self.addPermanentWidget(self._activity_item)
@@ -95,16 +93,14 @@ class ViewerStatusBar(QStatusBar):
         self._coordinates.setVisible(bool(coordinates))
         self._coordinates.setText(coordinates)
 
-    def _toggle_activity_dock(self, visible: Optional[bool] = None):
+    def _toggle_activity_dock(self, visible: bool | None = None):
         par = cast('_QtMainWindow', self.parent())
         if visible is None:
             visible = not par._activity_dialog.isVisible()
         if visible:
             par._activity_dialog.show()
             par._activity_dialog.raise_()
-            self._activity_item._activityBtn.setArrowType(
-                Qt.ArrowType.DownArrow
-            )
+            self._activity_item._activityBtn.setArrowType(Qt.ArrowType.DownArrow)
         else:
             par._activity_dialog.hide()
             self._activity_item._activityBtn.setArrowType(Qt.ArrowType.UpArrow)
@@ -152,12 +148,7 @@ class StatusBarWidget(QWidget):
         # Adding this values is required to avoid the text to be elided
         # if there is enough space to show it.
         return (
-            (
-                fm.boundingRect(label.text()).width()
-                + label.margin() * 2
-                + 2
-                + 12
-            )
+            (fm.boundingRect(label.text()).width() + label.margin() * 2 + 2 + 12)
             if label.isVisible()
             else 0
         )
@@ -175,11 +166,7 @@ class StatusBarWidget(QWidget):
         coordinates_width = self._calc_width(fm, self._coordinates_label)
 
         base_width = (
-            status_width
-            + layer_width
-            + source_width
-            + plugin_width
-            + coordinates_width
+            status_width + layer_width + source_width + plugin_width + coordinates_width
         )
 
         help_width = max(0, width - base_width)
@@ -202,11 +189,7 @@ class StatusBarWidget(QWidget):
                 min(self._plugin_label.minimumWidth(), plugin_width),
             )
             coordinates_width = (
-                base_width
-                - status_width
-                - layer_width
-                - source_width
-                - plugin_width
+                base_width - status_width - layer_width - source_width - plugin_width
             )
 
         else:
@@ -220,8 +203,6 @@ class StatusBarWidget(QWidget):
         shift += source_width
         self._plugin_label.setGeometry(shift, 0, plugin_width, height)
         shift += plugin_width
-        self._coordinates_label.setGeometry(
-            shift, 0, coordinates_width, height
-        )
+        self._coordinates_label.setGeometry(shift, 0, coordinates_width, height)
         shift += coordinates_width
         self._help_label.setGeometry(shift, 0, help_width, height)

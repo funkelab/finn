@@ -14,9 +14,7 @@ from finn.layers.image._image_utils import guess_multiscale, guess_rgb
 from finn.layers.image._slice import _ImageSliceRequest
 from finn.layers.utils._slice_input import _ThickNDSlice
 
-data_dask = da.random.random(
-    size=(100_000, 1000, 1000), chunks=(1, 1000, 1000)
-)
+data_dask = da.random.random(size=(100_000, 1000, 1000), chunks=(1, 1000, 1000))
 
 
 def test_guess_rgb():
@@ -54,9 +52,7 @@ def test_guess_rgb_property(shape):
     min_side_len = sig.parameters['min_side_len'].default
 
     assert guess_rgb(shape) == (
-        shape[-1] in (3, 4)
-        and shape[-2] > min_side_len
-        and shape[-3] > min_side_len
+        shape[-1] in (3, 4) and shape[-2] > min_side_len and shape[-3] > min_side_len
     )
 
 
@@ -84,9 +80,7 @@ def test_guess_multiscale():
     else:
         pyramid_kwargs = {'multichannel': False}
 
-    data = tuple(
-        pyramid_gaussian(np.random.random((10, 15)), **pyramid_kwargs)
-    )
+    data = tuple(pyramid_gaussian(np.random.random((10, 15)), **pyramid_kwargs))
     assert guess_multiscale(data)[0]
 
     data = np.asarray(
@@ -103,9 +97,7 @@ def test_guess_multiscale():
     # Test for overflow in calculating array sizes
     s = 17179869184
     data = [
-        da.from_delayed(
-            dask.delayed(lambda: None), shape=(s,) * 2, dtype=np.float64
-        ),
+        da.from_delayed(dask.delayed(lambda: None), shape=(s,) * 2, dtype=np.float64),
         da.from_delayed(
             dask.delayed(lambda: None), shape=(s // 2,) * 2, dtype=np.float64
         ),
@@ -153,9 +145,7 @@ def test_create_data_indexing():
         margin_left=(np.nan, 0, 1.6, 0.3, 1),
         margin_right=(np.nan, 0.1, 0.3, 0.5, 0.6),
     )
-    idx = _ImageSliceRequest._data_slice_to_slices(
-        data_slice, dims_displayed=(0,)
-    )
+    idx = _ImageSliceRequest._data_slice_to_slices(data_slice, dims_displayed=(0,))
     expected = (
         slice(None),
         slice(10, 11),

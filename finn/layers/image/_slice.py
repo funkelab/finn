@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Optional, Union
+from typing import Any
 
 import numpy as np
 
@@ -87,7 +88,7 @@ class _ImageSliceResponse:
         *,
         slice_input: _SliceInput,
         rgb: bool,
-        request_id: Optional[int] = None,
+        request_id: int | None = None,
     ) -> '_ImageSliceResponse':
         """Returns an empty image slice response.
 
@@ -115,9 +116,7 @@ class _ImageSliceResponse:
         data = np.zeros(shape, dtype=np.uint8)
         image = _ImageView.from_view(data)
         ndim = slice_input.ndim
-        tile_to_data = Affine(
-            name='tile2data', linear_matrix=np.eye(ndim), ndim=ndim
-        )
+        tile_to_data = Affine(name='tile2data', linear_matrix=np.eye(ndim), ndim=ndim)
         if request_id is None:
             request_id = _next_request_id()
         return _ImageSliceResponse(
@@ -149,9 +148,7 @@ class _ImageSliceResponse:
         image = _ImageView.from_raw(raw=self.image.raw, converter=converter)
         thumbnail = image
         if self.thumbnail is not self.image:
-            thumbnail = _ImageView.from_raw(
-                raw=self.thumbnail.raw, converter=converter
-            )
+            thumbnail = _ImageView.from_raw(raw=self.thumbnail.raw, converter=converter)
         return _ImageSliceResponse(
             image=image,
             thumbnail=thumbnail,
@@ -207,9 +204,7 @@ class _ImageSliceRequest:
             )
         with self.dask_indexer():
             return (
-                self._call_multi_scale()
-                if self.multiscale
-                else self._call_single_scale()
+                self._call_multi_scale() if self.multiscale else self._call_single_scale()
             )
 
     def _call_single_scale(self) -> _ImageSliceResponse:
@@ -220,9 +215,7 @@ class _ImageSliceRequest:
         # `Layer.multiscale` is mutable so we need to pass back the identity
         # transform to ensure `tile2data` is properly set on the layer.
         ndim = self.slice_input.ndim
-        tile_to_data = Affine(
-            name='tile2data', linear_matrix=np.eye(ndim), ndim=ndim
-        )
+        tile_to_data = Affine(name='tile2data', linear_matrix=np.eye(ndim), ndim=ndim)
         return _ImageSliceResponse(
             image=image,
             thumbnail=image,
@@ -315,9 +308,7 @@ class _ImageSliceRequest:
             slices = self._point_to_slices(data_slice.point)
             return np.asarray(data[slices])
 
-        slices = self._data_slice_to_slices(
-            data_slice, self.slice_input.displayed
-        )
+        slices = self._data_slice_to_slices(data_slice, self.slice_input.displayed)
 
         return project_slice(
             data=np.asarray(data[slices]),
@@ -355,16 +346,14 @@ class _ImageSliceRequest:
     @staticmethod
     def _point_to_slices(
         point: tuple[float, ...],
-    ) -> tuple[Union[slice, int], ...]:
+    ) -> tuple[slice | int, ...]:
         # no need to check out of bounds here cause it's guaranteed
 
         # values in point and margins are np.nan if no slicing should happen along that dimension
         # which is always the case for displayed dims, so that becomes `slice(None)` for actually
         # indexing the layer.
         # For the rest, indices are rounded to the closest integer
-        return tuple(
-            slice(None) if np.isnan(p) else int(np.round(p)) for p in point
-        )
+        return tuple(slice(None) if np.isnan(p) else int(np.round(p)) for p in point)
 
     @staticmethod
     def _data_slice_to_slices(

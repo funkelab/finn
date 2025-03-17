@@ -11,11 +11,7 @@ from finn.utils.translations import trans
 try:
     from rich import print  # noqa: A004
 except ModuleNotFoundError:
-    print(
-        trans._(
-            'TIP: run `pip install rich` for much nicer event debug printout.'
-        )
-    )
+    print(trans._('TIP: run `pip install rich` for much nicer event debug printout.'))
 try:
     import dotenv
 except ModuleNotFoundError:
@@ -41,9 +37,7 @@ class EventDebugSettings(BaseSettings):
     exclude_emitters: set[str] = Field(
         default_factory=lambda: {'TransformChain', 'Context'}
     )
-    exclude_events: set[str] = Field(
-        default_factory=lambda: {'status', 'position'}
-    )
+    exclude_events: set[str] = Field(default_factory=lambda: {'status', 'position'})
     # stack depth to show
     stack_depth: int = 20
     # how many sub-emit nesting levels to show

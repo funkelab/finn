@@ -1,4 +1,3 @@
-from typing import Optional
 
 import numpy as np
 from qtpy.QtCore import QSize, Qt, Signal
@@ -31,7 +30,7 @@ class QtStar(QFrame):
     def __init__(
         self,
         parent: QWidget = None,
-        value: Optional[int] = None,
+        value: int | None = None,
     ) -> None:
         super().__init__(parent)
         self._value = value
@@ -167,9 +166,7 @@ class QtTriangle(QFrame):
         qp = QPainter()
         qp.begin(self)
         self.drawTriangle(qp)
-        perc = (self._value - self._min_value) / (
-            self._max_value - self._min_value
-        )
+        perc = (self._value - self._min_value) / (self._max_value - self._min_value)
         self.drawLine(qp, self.rect().width() * perc)
         qp.end()
 
@@ -316,7 +313,7 @@ class QtHighlightPreviewWidget(QWidget):
         self,
         parent: QWidget = None,
         description: str = '',
-        value: Optional[dict] = None,
+        value: dict | None = None,
         min_value: int = 1,
         max_value: int = 10,
         unit: str = 'px',
@@ -338,9 +335,7 @@ class QtHighlightPreviewWidget(QWidget):
         self._max_value = max_value
 
         # Widget
-        self._color_swatch_edit = QColorSwatchEdit(
-            self, initial_color=self._color_value
-        )
+        self._color_swatch_edit = QColorSwatchEdit(self, initial_color=self._color_value)
         self._lineedit = QLineEdit()
         self._description = QLabel(self)
         self._unit = QLabel(self)
@@ -437,9 +432,7 @@ class QtHighlightPreviewWidget(QWidget):
         if thickness_value == '':
             return
         thickness_value = int(thickness_value)
-        thickness_value = max(
-            min(thickness_value, self._max_value), self._min_value
-        )
+        thickness_value = max(min(thickness_value, self._max_value), self._min_value)
         if thickness_value == self._thickness_value:
             return
         self._thickness_value = thickness_value
@@ -563,9 +556,7 @@ class QtHighlightPreviewWidget(QWidget):
         self._slider_min_label.setText(str(value))
         self._slider.setMinimum(value)
         self._triangle.setMinimum(value)
-        self._thickness_value = max(
-            self._value['highlight_thickness'], self._min_value
-        )
+        self._thickness_value = max(self._value['highlight_thickness'], self._min_value)
         self._value['highlight_thickness'] = self._thickness_value
         self._refresh()
 
@@ -600,9 +591,7 @@ class QtHighlightPreviewWidget(QWidget):
         self._slider_max_label.setText(str(value))
         self._slider.setMaximum(value)
         self._triangle.setMaximum(value)
-        self._thickness_value = min(
-            self._value['highlight_thickness'], self._max_value
-        )
+        self._thickness_value = min(self._value['highlight_thickness'], self._max_value)
         self._value['highlight_thickness'] = self._thickness_value
         self._refresh()
 

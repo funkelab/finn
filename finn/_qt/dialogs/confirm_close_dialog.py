@@ -27,9 +27,7 @@ class ConfirmCloseDialog(QDialog):
             self.setWindowTitle(trans._('Close Application?'))
             text = trans._(
                 "Do you want to close the application? ('{shortcut}' to confirm). This will close all Qt Windows in this process",
-                shortcut=QKeySequence('Ctrl+Q').toString(
-                    QKeySequence.NativeText
-                ),
+                shortcut=QKeySequence('Ctrl+Q').toString(QKeySequence.NativeText),
             )
             close_btn.setObjectName('error_icon_btn')
             close_btn.setShortcut(QKeySequence('Ctrl+Q'))
@@ -38,9 +36,7 @@ class ConfirmCloseDialog(QDialog):
             self.setWindowTitle(trans._('Close Window?'))
             text = trans._(
                 "Confirm to close window (or press '{shortcut}')",
-                shortcut=QKeySequence('Ctrl+W').toString(
-                    QKeySequence.NativeText
-                ),
+                shortcut=QKeySequence('Ctrl+W').toString(QKeySequence.NativeText),
             )
             close_btn.setObjectName('warning_icon_btn')
             close_btn.setShortcut(QKeySequence('Ctrl+W'))

@@ -38,9 +38,7 @@ class QtWelcomeWidget(QWidget):
         self._image.setObjectName('logo_silhouette')
         self._image.setMinimumSize(300, 300)
         self._label = QtWelcomeLabel(
-            trans._(
-                'Drag image(s) here to open\nor\nUse the menu shortcuts below:'
-            )
+            trans._('Drag image(s) here to open\nor\nUse the menu shortcuts below:')
         )
 
         # Widget setup
@@ -86,9 +84,7 @@ class QtWelcomeWidget(QWidget):
 
         self.setLayout(layout)
         self._show_shortcuts_updated()
-        action_manager.events.shorcut_changed.connect(
-            self._show_shortcuts_updated
-        )
+        action_manager.events.shorcut_changed.connect(self._show_shortcuts_updated)
 
     def minimumSizeHint(self):
         """
@@ -97,9 +93,7 @@ class QtWelcomeWidget(QWidget):
         return QSize(100, 100)
 
     def _show_shortcuts_updated(self):
-        shortcut_list = list(
-            action_manager._shortcuts['napari:show_shortcuts']
-        )
+        shortcut_list = list(action_manager._shortcuts['napari:show_shortcuts'])
         if not shortcut_list:
             return
         self._shortcut_label.setText(Shortcut(shortcut_list[0]).platform)

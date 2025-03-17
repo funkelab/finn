@@ -91,9 +91,7 @@ def trans(tmp_path):
         '[finn.languagepack]\nes_CO = napari_language_pack_es_CO\n'
     )
     (distinfo / 'METADATA').write_text(
-        'Metadata-Version: 2.1\n'
-        'Name: napari-language-pack-es-CO\n'
-        'Version: 0.1.0\n'
+        'Metadata-Version: 2.1\nName: napari-language-pack-es-CO\nVersion: 0.1.0\n'
     )
     pkgdir = tmp_path / 'napari_language_pack_es_CO'
     msgs = pkgdir / 'locale' / 'es_CO' / 'LC_MESSAGES'
@@ -112,9 +110,7 @@ def trans(tmp_path):
 
 def test_get_language_packs(trans):
     result = get_language_packs()
-    assert result == {
-        'en': {'displayName': 'English', 'nativeName': 'English'}
-    }
+    assert result == {'en': {'displayName': 'English', 'nativeName': 'English'}}
 
 
 def test_get_display_name_valid():
@@ -281,9 +277,7 @@ def test_locale_plural_deferred_with_format(trans):
 
     n = 2
     original_result_plural = plural.format(n=n, variable=variable)
-    result_plural = trans._n(
-        singular, plural, n=n, deferred=True, variable=variable
-    )
+    result_plural = trans._n(singular, plural, n=n, deferred=True, variable=variable)
     expected_result_plural = f'Tengo {n} naparis con {variable}'
     assert isinstance(result, TranslationString)
     assert result_plural.translation() == expected_result_plural
@@ -316,9 +310,7 @@ def test_locale_plural_context_with_format(trans):
     assert result == f'Tengo {n} napari con {variable} y contexto'
 
     n = 2
-    result_plural = trans._np(
-        context, singular, plural, n=n, variable=variable
-    )
+    result_plural = trans._np(context, singular, plural, n=n, variable=variable)
     assert result_plural == f'Tengo {n} naparis con {variable} y contexto'
 
 
@@ -330,9 +322,7 @@ def test_locale_plural_context_deferred_with_format(trans):
 
     n = 1
     original_result = singular.format(n=n, variable=variable)
-    result = trans._np(
-        context, singular, plural, n=n, deferred=True, variable=variable
-    )
+    result = trans._np(context, singular, plural, n=n, deferred=True, variable=variable)
     expected_result = f'Tengo {n} napari con {variable} y contexto'
 
     assert isinstance(result, TranslationString)

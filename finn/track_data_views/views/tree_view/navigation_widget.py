@@ -39,17 +39,17 @@ class NavigationWidget(QWidget):
         self.selected_nodes = selected_nodes
         self.feature = feature
 
-        navigation_box = QGroupBox("Navigation [\u2b05 \u27a1 \u2b06 \u2b07]")
+        navigation_box = QGroupBox('Navigation [\u2b05 \u27a1 \u2b06 \u2b07]')
         navigation_layout = QHBoxLayout()
-        left_button = QPushButton("\u2b05")
-        right_button = QPushButton("\u27a1")
-        up_button = QPushButton("\u2b06")
-        down_button = QPushButton("\u2b07")
+        left_button = QPushButton('\u2b05')
+        right_button = QPushButton('\u27a1')
+        up_button = QPushButton('\u2b06')
+        down_button = QPushButton('\u2b07')
 
-        left_button.clicked.connect(lambda: self.move("left"))
-        right_button.clicked.connect(lambda: self.move("right"))
-        up_button.clicked.connect(lambda: self.move("up"))
-        down_button.clicked.connect(lambda: self.move("down"))
+        left_button.clicked.connect(lambda: self.move('left'))
+        right_button.clicked.connect(lambda: self.move('right'))
+        up_button.clicked.connect(lambda: self.move('up'))
+        down_button.clicked.connect(lambda: self.move('down'))
 
         navigation_layout.addWidget(left_button)
         navigation_layout.addWidget(right_button)
@@ -76,27 +76,27 @@ class NavigationWidget(QWidget):
             return
         node_id = self.selected_nodes[0]
 
-        if direction == "left":
-            if self.view_direction == "horizontal":
+        if direction == 'left':
+            if self.view_direction == 'horizontal':
                 next_node = self.get_predecessor(node_id)
             else:
                 next_node = self.get_next_track_node(
                     self.track_df, node_id, forward=False
                 )
-        elif direction == "right":
-            if self.view_direction == "horizontal":
+        elif direction == 'right':
+            if self.view_direction == 'horizontal':
                 next_node = self.get_successor(node_id)
             else:
                 next_node = self.get_next_track_node(self.track_df, node_id)
-        elif direction == "up":
-            if self.view_direction == "horizontal":
+        elif direction == 'up':
+            if self.view_direction == 'horizontal':
                 next_node = self.get_next_track_node(self.lineage_df, node_id)
                 if next_node is None:
                     next_node = self.get_next_track_node(self.track_df, node_id)
             else:
                 next_node = self.get_predecessor(node_id)
-        elif direction == "down":
-            if self.view_direction == "horizontal":
+        elif direction == 'down':
+            if self.view_direction == 'horizontal':
                 # try navigation within the current lineage_df first
                 next_node = self.get_next_track_node(
                     self.lineage_df, node_id, forward=False
@@ -128,28 +128,28 @@ class NavigationWidget(QWidget):
                 Otherwise, pick the previous track (left/up). Defaults to True.
         """
         # Determine which axis to use for finding neighbors
-        axis_label = "area" if self.feature == "area" else "x_axis_pos"
+        axis_label = 'area' if self.feature == 'area' else 'x_axis_pos'
 
         if df.empty:
             return None
-        node_data = df.loc[df["node_id"] == node_id]
+        node_data = df.loc[df['node_id'] == node_id]
         if node_data.empty:
             return None
 
         # Fetch the axis value for the given node ID
         axis_label_value = node_data[axis_label].iloc[0]
-        t = node_data["t"].iloc[0]
+        t = node_data['t'].iloc[0]
 
         if forward:
-            neighbors = df.loc[(df[axis_label] > axis_label_value) & (df["t"] == t)]
+            neighbors = df.loc[(df[axis_label] > axis_label_value) & (df['t'] == t)]
         else:
-            neighbors = df.loc[(df[axis_label] < axis_label_value) & (df["t"] == t)]
+            neighbors = df.loc[(df[axis_label] < axis_label_value) & (df['t'] == t)]
         if not neighbors.empty:
             # Find the closest index label
             closest_index_label = (
                 (neighbors[axis_label] - axis_label_value).abs().idxmin()
             )
-            neighbor = neighbors.loc[closest_index_label, "node_id"]
+            neighbor = neighbors.loc[closest_index_label, 'node_id']
             return neighbor
 
     def get_predecessor(self, node_id: str) -> str | None:
@@ -163,11 +163,11 @@ class NavigationWidget(QWidget):
             is found
         """
         parent_id = self.track_df.loc[
-            self.track_df["node_id"] == node_id, "parent_id"
+            self.track_df['node_id'] == node_id, 'parent_id'
         ].values[0]
-        parent_row = self.track_df.loc[self.track_df["node_id"] == parent_id]
+        parent_row = self.track_df.loc[self.track_df['node_id'] == parent_id]
         if not parent_row.empty:
-            return parent_row["node_id"].values[0]
+            return parent_row['node_id'].values[0]
 
     def get_successor(self, node_id: str) -> str | None:
         """Get the successor node of the given node_id. If there are two children,
@@ -180,7 +180,7 @@ class NavigationWidget(QWidget):
             str | None: THe node id of the successor, or none if no successor
             is found
         """
-        children = self.track_df.loc[self.track_df["parent_id"] == node_id]
+        children = self.track_df.loc[self.track_df['parent_id'] == node_id]
         if not children.empty:
-            child = children.to_dict("records")[0]
-            return child["node_id"]
+            child = children.to_dict('records')[0]
+            return child['node_id']

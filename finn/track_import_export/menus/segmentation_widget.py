@@ -32,19 +32,19 @@ class SegmentationWidget(QWidget):
         layout = QVBoxLayout()
         self.image_path_line = QLineEdit(self)
         self.image_path_line.editingFinished.connect(self.update_buttons.emit)
-        self.image_browse_button = QPushButton("Browse Segmentation", self)
+        self.image_browse_button = QPushButton('Browse Segmentation', self)
         self.image_browse_button.setAutoDefault(0)
         self.image_browse_button.clicked.connect(self._browse_segmentation)
 
         image_widget = QWidget()
         image_layout = QVBoxLayout()
         image_sublayout = QHBoxLayout()
-        image_sublayout.addWidget(QLabel("Segmentation File Path:"))
+        image_sublayout.addWidget(QLabel('Segmentation File Path:'))
         image_sublayout.addWidget(self.image_path_line)
         image_sublayout.addWidget(self.image_browse_button)
 
         label = QLabel(
-            "Segmentation files can either be a single tiff stack, or a directory inside a zarr folder."
+            'Segmentation files can either be a single tiff stack, or a directory inside a zarr folder.'
         )
         font = label.font()
         font.setItalic(True)
@@ -60,16 +60,16 @@ class SegmentationWidget(QWidget):
         layout.addWidget(image_widget)
 
         # Spinboxes for scaling in x, y, and z (optional)
-        layout.addWidget(QLabel("Specify scaling"))
+        layout.addWidget(QLabel('Specify scaling'))
         scale_form_layout = QFormLayout()
         self.z_spin_box = self._scale_spin_box()
         self.y_spin_box = self._scale_spin_box()
         self.x_spin_box = self._scale_spin_box()
 
         if self.incl_z:
-            scale_form_layout.addRow(QLabel("z"), self.z_spin_box)
-        scale_form_layout.addRow(QLabel("y"), self.y_spin_box)
-        scale_form_layout.addRow(QLabel("x"), self.x_spin_box)
+            scale_form_layout.addRow(QLabel('z'), self.z_spin_box)
+        scale_form_layout.addRow(QLabel('y'), self.y_spin_box)
+        scale_form_layout.addRow(QLabel('x'), self.x_spin_box)
 
         layout.addLayout(scale_form_layout)
         layout.setAlignment(Qt.AlignTop)
@@ -120,17 +120,17 @@ class SegmentationWidget(QWidget):
 
         # Check if a valid path to a segmentation image file is provided and if so load it
         if os.path.exists(self.image_path_line.text()):
-            if self.image_path_line.text().endswith(".tif"):
+            if self.image_path_line.text().endswith('.tif'):
                 segmentation = tifffile.imread(
                     self.image_path_line.text()
                 )  # Assuming no segmentation is needed at this step
-            elif ".zarr" in self.image_path_line.text():
+            elif '.zarr' in self.image_path_line.text():
                 segmentation = zarr.open(self.image_path_line.text())
             else:
                 QMessageBox.warning(
                     self,
-                    "Invalid file type",
-                    "Please provide a tiff or zarr file for the segmentation image stack",
+                    'Invalid file type',
+                    'Please provide a tiff or zarr file for the segmentation image stack',
                 )
                 return
         else:
@@ -141,7 +141,7 @@ class SegmentationWidget(QWidget):
 class FileFolderDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Select Tif File or Zarr Folder")
+        self.setWindowTitle('Select Tif File or Zarr Folder')
 
         self.layout = QVBoxLayout(self)
 
@@ -150,14 +150,14 @@ class FileFolderDialog(QDialog):
 
         button_layout = QHBoxLayout()
 
-        self.file_button = QPushButton("Select tiff file", self)
+        self.file_button = QPushButton('Select tiff file', self)
         self.file_button.clicked.connect(self.select_file)
         self.file_button.setAutoDefault(False)
         self.file_button.setDefault(False)
 
         button_layout.addWidget(self.file_button)
 
-        self.folder_button = QPushButton("Select zarr folder", self)
+        self.folder_button = QPushButton('Select zarr folder', self)
         self.folder_button.clicked.connect(self.select_folder)
         self.folder_button.setAutoDefault(False)
         self.folder_button.setDefault(False)
@@ -165,16 +165,16 @@ class FileFolderDialog(QDialog):
 
         self.layout.addLayout(button_layout)
 
-        self.ok_button = QPushButton("OK", self)
+        self.ok_button = QPushButton('OK', self)
         self.ok_button.clicked.connect(self.accept)
         self.layout.addWidget(self.ok_button)
 
     def select_file(self):
         file, _ = QFileDialog.getOpenFileName(
             self,
-            "Select Segmentation File",
-            "",
-            "Segmentation Files (*.tiff *.zarr *.tif)",
+            'Select Segmentation File',
+            '',
+            'Segmentation Files (*.tiff *.zarr *.tif)',
         )
         if file:
             self.path_line_edit.setText(file)
@@ -182,8 +182,8 @@ class FileFolderDialog(QDialog):
     def select_folder(self):
         folder = QFileDialog.getExistingDirectory(
             self,
-            "Select Folder",
-            "",
+            'Select Folder',
+            '',
             QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks,
         )
         if folder:

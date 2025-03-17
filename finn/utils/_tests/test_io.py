@@ -9,9 +9,7 @@ from finn.utils.io import imsave
 
 
 @pytest.mark.slow
-@pytest.mark.parametrize(
-    'image_file', ['image', 'image.png', 'image.tif', 'image.bmp']
-)
+@pytest.mark.parametrize('image_file', ['image', 'image.png', 'image.tif', 'image.bmp'])
 def test_imsave(tmp_path, image_file):
     """Save data to image file."""
     # create image data
@@ -45,9 +43,7 @@ def test_imsave_bool_tiff(tmp_path):
     assert np.equal(data, img_to_array).all()
 
 
-@pytest.mark.parametrize(
-    'image_file', ['image', 'image.png', 'image.tif', 'image.bmp']
-)
+@pytest.mark.parametrize('image_file', ['image', 'image.png', 'image.tif', 'image.bmp'])
 def test_imsave_float(tmp_path, image_file):
     """Test saving float image data."""
     # create image data

@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from itertools import cycle
-from typing import Union
 
 import numpy as np
 
@@ -53,14 +52,12 @@ class ColorCycle:
 
 
 def _coerce_colorcycle_from_dict(
-    val: dict[str, Union[str, list, np.ndarray, cycle]],
+    val: dict[str, str | list | np.ndarray | cycle],
 ) -> ColorCycle:
     # validate values
     color_values = val.get('values')
     if color_values is None:
-        raise ValueError(
-            trans._('ColorCycle requires a values argument', deferred=True)
-        )
+        raise ValueError(trans._('ColorCycle requires a values argument', deferred=True))
 
     transformed_color_values = transform_color(color_values)
 
@@ -77,13 +74,11 @@ def _coerce_colorcycle_from_dict(
     else:
         raise TypeError(f'cycle entry must be type(cycle), got {type(cycle)}')
 
-    return ColorCycle(
-        values=transformed_color_values, cycle=transformed_color_cycle
-    )
+    return ColorCycle(values=transformed_color_values, cycle=transformed_color_cycle)
 
 
 def _coerce_colorcycle_from_colors(
-    val: Union[str, list, np.ndarray],
+    val: str | list | np.ndarray,
 ) -> ColorCycle:
     if isinstance(val, str):
         val = [val]
@@ -95,9 +90,7 @@ def _coerce_colorcycle_from_colors(
         elem_name='color_cycle',
         default='white',
     )
-    return ColorCycle(
-        values=transformed_color_values, cycle=transformed_color_cycle
-    )
+    return ColorCycle(values=transformed_color_values, cycle=transformed_color_cycle)
 
 
 def compare_colormap_dicts(cmap_1, cmap_2):

@@ -17,9 +17,7 @@ from finn.layers.utils.layer_utils import (
 )
 from finn.utils.key_bindings import KeymapHandler, KeymapProvider
 
-data_dask = da.random.random(
-    size=(100_000, 1000, 1000), chunks=(1, 1000, 1000)
-)
+data_dask = da.random.random(size=(100_000, 1000, 1000), chunks=(1, 1000, 1000))
 data_dask_8b = da.random.randint(
     0, 100, size=(1_000, 10, 10), chunks=(1, 10, 10), dtype=np.uint8
 )
@@ -27,9 +25,7 @@ data_dask_1d = da.random.random(size=(20_000_000,), chunks=(5000,))
 
 data_dask_1d_rgb = da.random.random(size=(5_000_000, 3), chunks=(50_000, 3))
 
-data_dask_plane = da.random.random(
-    size=(100_000, 100_000), chunks=(1000, 1000)
-)
+data_dask_plane = da.random.random(size=(100_000, 100_000), chunks=(1000, 1000))
 
 
 def test_calc_data_range():
@@ -195,9 +191,7 @@ def test_coerce_current_properties_invalid_values():
         ([1, 0], 2, 2, [1, 0]),
     ],
 )
-def test_dims_displayed_world_to_layer(
-    dims_displayed, ndim_world, ndim_layer, expected
-):
+def test_dims_displayed_world_to_layer(dims_displayed, ndim_world, ndim_layer, expected):
     dims_displayed_layer = dims_displayed_world_to_layer(
         dims_displayed, ndim_world=ndim_world, ndim_layer=ndim_layer
     )
@@ -216,9 +210,7 @@ def test_feature_table_from_layer_with_num_data_only():
 
 
 def test_feature_table_from_layer_with_empty_int_features():
-    feature_table = _FeatureTable.from_layer(
-        features={'a': np.empty(0, dtype=np.int64)}
-    )
+    feature_table = _FeatureTable.from_layer(features={'a': np.empty(0, dtype=np.int64)})
     assert feature_table.values['a'].dtype == np.int64
     assert len(feature_table.values['a']) == 0
     assert feature_table.defaults['a'].dtype == np.int64
@@ -229,9 +221,7 @@ def test_feature_table_from_layer_with_properties_and_num_data():
     properties = {
         'class': np.array(['sky', 'person', 'building', 'person']),
         'confidence': np.array([0.2, 0.5, 1, 0.8]),
-        'varying_length_prop': np.array(
-            [[0], [0, 0, 0], [0, 0], [0]], dtype=object
-        ),
+        'varying_length_prop': np.array([[0], [0, 0, 0], [0, 0], [0]], dtype=object),
     }
 
     feature_table = _FeatureTable.from_layer(properties=properties, num_data=4)
@@ -239,9 +229,7 @@ def test_feature_table_from_layer_with_properties_and_num_data():
     features = feature_table.values
     assert features.shape == (4, 3)
     np.testing.assert_array_equal(features['class'], properties['class'])
-    np.testing.assert_array_equal(
-        features['confidence'], properties['confidence']
-    )
+    np.testing.assert_array_equal(features['confidence'], properties['confidence'])
     np.testing.assert_array_equal(
         features['varying_length_prop'], properties['varying_length_prop']
     )
@@ -250,10 +238,7 @@ def test_feature_table_from_layer_with_properties_and_num_data():
     assert defaults.shape == (1, 3)
     assert defaults['class'][0] == properties['class'][-1]
     assert defaults['confidence'][0] == properties['confidence'][-1]
-    assert (
-        defaults['varying_length_prop'][0]
-        == properties['varying_length_prop'][-1]
-    )
+    assert defaults['varying_length_prop'][0] == properties['varying_length_prop'][-1]
 
 
 def test_feature_table_from_layer_with_properties_and_choices():
@@ -330,9 +315,7 @@ TEST_FEATURES = pd.DataFrame(
     {
         'class': pd.Series(
             ['sky', 'person', 'building', 'person'],
-            dtype=pd.CategoricalDtype(
-                categories=('building', 'person', 'sky')
-            ),
+            dtype=pd.CategoricalDtype(categories=('building', 'person', 'sky')),
         ),
         'confidence': pd.Series([0.2, 0.5, 1, 0.8]),
     }
@@ -455,18 +438,14 @@ def test_feature_table_set_defaults_with_same_columns(feature_table):
 def test_feature_table_set_defaults_with_extra_column(feature_table):
     defaults = {'class': 'building', 'confidence': 0, 'cat': 'kermit'}
     assert 'cat' not in feature_table.values.columns
-    with pytest.raises(
-        ValueError, match='extra columns not in feature values'
-    ):
+    with pytest.raises(ValueError, match='extra columns not in feature values'):
         feature_table.set_defaults(defaults)
 
 
 def test_feature_table_set_defaults_with_missing_column(feature_table):
     defaults = {'class': 'building'}
     assert len(feature_table.values.columns) > 1
-    with pytest.raises(
-        ValueError, match='missing some columns in feature values'
-    ):
+    with pytest.raises(ValueError, match='missing some columns in feature values'):
         feature_table.set_defaults(defaults)
 
 

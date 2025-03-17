@@ -14,7 +14,6 @@ from threading import RLock
 from typing import (
     TYPE_CHECKING,
     Any,
-    Optional,
     Protocol,
     runtime_checkable,
 )
@@ -111,9 +110,7 @@ class _LayerSlicer:
         self.events = EmitterGroup(source=self, ready=Event)
         self._executor: Executor = ThreadPoolExecutor(max_workers=1)
         self._force_sync = not get_settings().experimental.async_
-        self._layers_to_task: dict[
-            tuple[weakref.ReferenceType[Layer], ...], Future
-        ] = {}
+        self._layers_to_task: dict[tuple[weakref.ReferenceType[Layer], ...], Future] = {}
         self._lock_layers_to_task = RLock()
 
     @contextmanager
@@ -134,7 +131,7 @@ class _LayerSlicer:
         finally:
             self._force_sync = prev
 
-    def wait_until_idle(self, timeout: Optional[float] = None) -> None:
+    def wait_until_idle(self, timeout: float | None = None) -> None:
         """Wait for all slicing tasks to complete before returning.
 
         Attributes
@@ -162,7 +159,7 @@ class _LayerSlicer:
         layers: Iterable[Layer],
         dims: Dims,
         force: bool = False,
-    ) -> Optional[Future[dict]]:
+    ) -> Future[dict] | None:
         """Slices the given layers with the given dims.
 
         Submitting multiple layers at one generates multiple requests, but only ONE task.
@@ -309,9 +306,7 @@ class _LayerSlicer:
                     return True
         return False
 
-    def _find_existing_task(
-        self, layers: Iterable[Layer]
-    ) -> Optional[Future[dict]]:
+    def _find_existing_task(self, layers: Iterable[Layer]) -> Future[dict] | None:
         """Find the task associated with a list of layers. Returns the first
         task found for which the layers of the task are a subset of the input
         layers.

@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import finn.layers
 import networkx as nx
 import numpy as np
 import pandas as pd
-from finn.track_data_views.graph_attributes import NodeAttr
-
 from funtracks.data_model import NodeType, Tracks
+
+import finn.layers
+from finn.track_data_views.graph_attributes import NodeAttr
 
 
 def extract_sorted_tracks(
@@ -66,32 +66,32 @@ def extract_sorted_tracks(
         for node, pos in zip(sorted_nodes, positions, strict=False):
             if node in parent_nodes:
                 state = NodeType.SPLIT
-                symbol = "t1"
+                symbol = 't1'
             elif node in end_nodes:
                 state = NodeType.END
-                symbol = "x"
+                symbol = 'x'
             else:
                 state = NodeType.CONTINUE
-                symbol = "o"
+                symbol = 'o'
 
             track_dict = {
-                "t": tracks.get_time(node),
-                "node_id": node,
-                "track_id": track_id,
-                "color": color,
-                "x": pos[-1],
-                "y": pos[-2],
-                "parent_id": 0,
-                "parent_track_id": 0,
-                "state": state,
-                "symbol": symbol,
+                't': tracks.get_time(node),
+                'node_id': node,
+                'track_id': track_id,
+                'color': color,
+                'x': pos[-1],
+                'y': pos[-2],
+                'parent_id': 0,
+                'parent_track_id': 0,
+                'state': state,
+                'symbol': symbol,
             }
 
             if tracks.get_area(node) is not None:
-                track_dict["area"] = tracks.get_area(node)
+                track_dict['area'] = tracks.get_area(node)
 
             if len(pos) == 3:
-                track_dict["z"] = pos[0]
+                track_dict['z'] = pos[0]
 
             # Determine parent_id and parent_track_id
             predecessors = list(solution_nx_graph.predecessors(node))
@@ -99,33 +99,33 @@ def extract_sorted_tracks(
                 parent_id = predecessors[
                     0
                 ]  # There should be only one predecessor in a lineage tree
-                track_dict["parent_id"] = parent_id
+                track_dict['parent_id'] = parent_id
 
                 if parent_track_id is None:
                     parent_track_id = solution_nx_graph.nodes[parent_id][
                         NodeAttr.TRACK_ID.value
                     ]
-                track_dict["parent_track_id"] = parent_track_id
+                track_dict['parent_track_id'] = parent_track_id
 
             else:
                 parent_track_id = 0
-                track_dict["parent_id"] = 0
-                track_dict["parent_track_id"] = parent_track_id
+                track_dict['parent_id'] = 0
+                track_dict['parent_track_id'] = parent_track_id
 
             track_list.append(track_dict)
 
         parent_mapping.append(
-            {"track_id": track_id, "parent_track_id": parent_track_id, "node_id": node}
+            {'track_id': track_id, 'parent_track_id': parent_track_id, 'node_id': node}
         )
 
     x_axis_order = sort_track_ids(parent_mapping, prev_df)
 
     for node in track_list:
-        node["x_axis_pos"] = x_axis_order.index(node["track_id"])
+        node['x_axis_pos'] = x_axis_order.index(node['track_id'])
 
     df = pd.DataFrame(track_list)
-    if "area" in df.columns:
-        df["area"] = df["area"].fillna(0)
+    if 'area' in df.columns:
+        df['area'] = df['area'].fillna(0)
 
     return df
 
@@ -155,11 +155,11 @@ def sort_track_ids(
         list: Ordered list of track IDs for the x-axis.
     """
 
-    roots = [node["track_id"] for node in track_list if node["parent_track_id"] == 0]
+    roots = [node['track_id'] for node in track_list if node['parent_track_id'] == 0]
 
     if prev_df is not None and not prev_df.empty:
         prev_roots = (
-            prev_df.loc[prev_df["parent_track_id"] == 0, "track_id"].unique().tolist()
+            prev_df.loc[prev_df['parent_track_id'] == 0, 'track_id'].unique().tolist()
         )
         new_roots = set(roots) - set(
             prev_roots
@@ -167,13 +167,13 @@ def sort_track_ids(
 
         # Create mappings for fast lookup
         track_id_map = {
-            n["track_id"]: n["node_id"] for n in track_list
+            n['track_id']: n['node_id'] for n in track_list
         }  # track_id -> node_id
         parent_map = {
-            n["track_id"]: n["parent_track_id"] for n in track_list
+            n['track_id']: n['parent_track_id'] for n in track_list
         }  # track_id -> parent_track_id
-        position_map = prev_df.set_index("node_id")[
-            "x_axis_pos"
+        position_map = prev_df.set_index('node_id')[
+            'x_axis_pos'
         ].to_dict()  # node_id -> x_axis_pos
 
         # Iterate over each new root and place it based on previous positions (to the right of its previous left neighbor)
@@ -186,7 +186,7 @@ def sort_track_ids(
                 ]  # Get the previous position of the new root
                 # Find which track was on the left of this new root based on previous x_axis_pos
                 left_track = prev_df.loc[
-                    prev_df["x_axis_pos"] == prev_pos - 1, "track_id"
+                    prev_df['x_axis_pos'] == prev_pos - 1, 'track_id'
                 ].unique()
                 if len(left_track) > 0:
                     left_track_id = left_track[0]  # Get the track ID of the left track
@@ -215,9 +215,9 @@ def sort_track_ids(
         children_list = []
         for track_id in roots:
             children = [
-                node["track_id"]
+                node['track_id']
                 for node in track_list
-                if node["parent_track_id"] == track_id
+                if node['parent_track_id'] == track_id
             ]
             for i, child in enumerate(children):
                 [children_list.append(child)]

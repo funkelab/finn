@@ -101,9 +101,7 @@ class PreferencesDialog(QDialog):
             self._stack.removeWidget(self._stack.currentWidget())
 
         for field in self._settings.__fields__.values():
-            if isinstance(field.type_, type) and issubclass(
-                field.type_, BaseModel
-            ):
+            if isinstance(field.type_, type) and issubclass(field.type_, BaseModel):
                 self._add_page(field)
 
         self._list.setCurrentRow(0)
@@ -149,9 +147,7 @@ class PreferencesDialog(QDialog):
                     settings_category, name_
                 ).events.emitters.items():
                     subemitter.connect(
-                        update_widget_state(
-                            subname_, form.widget.widgets[name_]
-                        )
+                        update_widget_state(subname_, form.widget.widgets[name_])
                     )
 
         page_scrollarea = QScrollArea()
@@ -177,9 +173,7 @@ class PreferencesDialog(QDialog):
                 'type': 'object',
                 'properties': {
                     'shortcuts': {
-                        'title': field.type_.__fields__[
-                            'shortcuts'
-                        ].field_info.title,
+                        'title': field.type_.__fields__['shortcuts'].field_info.title,
                         'description': field.type_.__fields__[
                             'shortcuts'
                         ].field_info.description,
@@ -204,9 +198,7 @@ class PreferencesDialog(QDialog):
             if isinstance(subfield.type_, ModelMetaclass):
                 local_schema = json.loads(subfield.type_.schema_json())
                 schema['properties'][name]['type'] = 'object'
-                schema['properties'][name]['properties'] = local_schema[
-                    'properties'
-                ]
+                schema['properties'][name]['properties'] = local_schema['properties']
 
         # Need to remove certain properties that will not be displayed on the GUI
         setting = getattr(self._settings, field.name)
@@ -248,9 +240,7 @@ class PreferencesDialog(QDialog):
         QMessageBox.information(
             self,
             trans._('Restart required'),
-            trans._(
-                'A restart is required for some new settings to have an effect.'
-            ),
+            trans._('A restart is required for some new settings to have an effect.'),
         )
 
     def closeEvent(self, event: 'QCloseEvent') -> None:

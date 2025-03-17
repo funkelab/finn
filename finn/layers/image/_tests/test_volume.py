@@ -120,9 +120,7 @@ def test_changing_volume():
     layer.data = data_b
     np.testing.assert_array_equal(layer.data, data_b)
     assert layer.ndim == len(shape_b)
-    np.testing.assert_array_equal(
-        layer.extent.data[1], [s - 1 for s in shape_b]
-    )
+    np.testing.assert_array_equal(layer.extent.data[1], [s - 1 for s in shape_b])
     assert layer._data_view.shape == shape_b[-3:]
 
 

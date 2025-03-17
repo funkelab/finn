@@ -29,9 +29,7 @@ class Labels2DSuite:
 
     def setup(self, n, dtype):
         np.random.seed(0)
-        self.data = labeled_particles(
-            (n, n), dtype=dtype, n=int(np.log2(n) ** 2), seed=1
-        )
+        self.data = labeled_particles((n, n), dtype=dtype, n=int(np.log2(n) ** 2), seed=1)
         self.layer = Labels(self.data)
         self.layer._raw_to_displayed(self.data, (slice(0, n), slice(0, n)))
 
@@ -86,9 +84,7 @@ class LabelsDrawing2DSuite:
 
     param_names = ['n', 'brush_size', 'color_mode', 'contour']
     params = ([512, 3072], [8, 64, 256], ['auto', 'direct'], [0, 1])
-    skip_params = Skip(
-        if_in_pr=lambda n, brush_size, *_: n > 512 or brush_size > 64
-    )
+    skip_params = Skip(if_in_pr=lambda n, brush_size, *_: n > 512 or brush_size > 64)
 
     def setup(self, n, brush_size, color_mode, contour):
         np.random.seed(0)
@@ -128,17 +124,13 @@ class Labels2DColorDirectSuite(Labels2DSuite):
     def setup(self, n, dtype):
         np.random.seed(0)
         info = np.iinfo(dtype)
-        self.data = labeled_particles(
-            (n, n), dtype=dtype, n=int(np.log2(n) ** 2), seed=1
-        )
+        self.data = labeled_particles((n, n), dtype=dtype, n=int(np.log2(n) ** 2), seed=1)
         random_label_ids = np.random.randint(
             low=max(-10000, info.min), high=min(10000, info.max), size=20
         )
         colors = {i + 1: np.random.random(4) for i in random_label_ids}
         colors[None] = np.array([0, 0, 0, 0.3])
-        self.layer = Labels(
-            self.data, colormap=DirectLabelColormap(color_dict=colors)
-        )
+        self.layer = Labels(self.data, colormap=DirectLabelColormap(color_dict=colors))
         self.layer._raw_to_displayed(
             self.layer._slice.image.raw, (slice(0, n), slice(0, n))
         )

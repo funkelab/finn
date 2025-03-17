@@ -29,9 +29,7 @@ fwidget_args = {
 # napari_plugin_manager fixture from finn.conftest
 # request, recwarn fixtures are from pytest
 @pytest.mark.parametrize('arg', fwidget_args.values(), ids=fwidget_args.keys())
-def test_function_widget_registration(
-    arg, napari_plugin_manager, request, recwarn
-):
+def test_function_widget_registration(arg, napari_plugin_manager, request, recwarn):
     """Test that function widgets get validated and registerd correctly."""
 
     class Plugin:

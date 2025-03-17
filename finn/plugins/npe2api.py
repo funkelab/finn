@@ -8,7 +8,6 @@ from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 from typing import (
-    Optional,
     TypedDict,
     cast,
 )
@@ -75,7 +74,7 @@ def plugin_summaries() -> list[SummaryDict]:
 
 
 @lru_cache
-def conda_map() -> dict[PyPIname, Optional[str]]:
+def conda_map() -> dict[PyPIname, str | None]:
     """Return map of PyPI package name to conda_channel/package_name ()."""
     url = 'https://npe2api.vercel.app/api/conda'
     with urlopen(Request(url, headers={'User-Agent': _user_agent()})) as resp:
@@ -104,7 +103,7 @@ def iter_napari_plugin_info() -> Iterator[tuple[PackageMetadata, bool, dict]]:
         info_copy.pop('display_name', None)
         pypi_versions = info_copy.pop('pypi_versions')
         conda_versions = info_copy.pop('conda_versions')
-        info_ = cast(_ShortSummaryDict, info_copy)
+        info_ = cast('_ShortSummaryDict', info_copy)
 
         # TODO: use this better.
         # this would require changing the api that qt_plugin_dialog expects to

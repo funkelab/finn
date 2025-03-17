@@ -458,9 +458,7 @@ def test_world_extent():
     np.testing.assert_allclose(layers.extent.step, (1, 1))
 
     # Add one layer
-    layer_a = Image(
-        np.random.random((6, 10, 15)), scale=(3, 1, 1), translate=(10, 20, 5)
-    )
+    layer_a = Image(np.random.random((6, 10, 15)), scale=(3, 1, 1), translate=(10, 20, 5))
     layers.append(layer_a)
     np.testing.assert_allclose(layer_a.extent.world[0], (10, 20, 5))
     np.testing.assert_allclose(layer_a.extent.world[1], (25, 29, 19))
@@ -505,9 +503,7 @@ def test_world_extent_mixed_flipped():
     # calculation
     layers = LayerList()
 
-    layer = Image(
-        np.random.random((15, 15)), affine=[[0, 1, 0], [1, 0, 0], [0, 0, 1]]
-    )
+    layer = Image(np.random.random((15, 15)), affine=[[0, 1, 0], [1, 0, 0], [0, 0, 1]])
     layers.append(layer)
     np.testing.assert_allclose(layer._data_to_world.scale, (1, 1))
     np.testing.assert_allclose(layers.extent.step, (1, 1))

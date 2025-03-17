@@ -2,7 +2,7 @@ import inspect
 import operator
 from collections.abc import Sequence
 from enum import auto
-from typing import ClassVar, Protocol, Union, runtime_checkable
+from typing import ClassVar, Protocol, runtime_checkable
 from unittest.mock import Mock
 
 import dask.array as da
@@ -102,9 +102,7 @@ def test_evented_model_with_array():
     np.testing.assert_almost_equal(
         model.shaped3_values, np.array([[1.1, 2.0, 2.0, 3.0]]).T
     )
-    np.testing.assert_almost_equal(
-        model.shaped4_values, np.array([[1.1, 2.0, 2.0, 3.0]])
-    )
+    np.testing.assert_almost_equal(model.shaped4_values, np.array([[1.1, 2.0, 2.0, 3.0]]))
 
     # try changing shape to something impossible to correctly reshape
     with pytest.raises(ValidationError, match='cannot reshape'):
@@ -249,7 +247,7 @@ def test_update_with_inner_model_union():
 
     class Outer(EventedModel):
         y: int
-        z: Union[Inner, AltInner]
+        z: Inner | AltInner
 
     original = Outer(y=1, z=Inner(w='a'))
     updated = Outer(y=2, z=AltInner(x='b'))
@@ -550,9 +548,7 @@ def test_evented_model_with_provided_dependencies():
     t.events.b.assert_called_with(value=4)
 
     # should fail if property does not exist
-    with pytest.raises(
-        ValueError, match='Fields with dependencies must be properties'
-    ):
+    with pytest.raises(ValueError, match='Fields with dependencies must be properties'):
 
         class T(EventedModel):
             a: int = 1

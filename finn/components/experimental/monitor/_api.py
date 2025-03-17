@@ -117,16 +117,10 @@ class MonitorApi:
         # SharedMemoryManager. The client must do the same thing, but it
         # only needs to know the names. We allocate the shared memory.
         SharedMemoryManager.register('napari_data', callable=self._napari_data)
-        SharedMemoryManager.register(
-            'napari_messages', callable=self._napari_messages
-        )
-        SharedMemoryManager.register(
-            'napari_shutdown', callable=self._napari_shutdown
-        )
+        SharedMemoryManager.register('napari_messages', callable=self._napari_messages)
+        SharedMemoryManager.register('napari_shutdown', callable=self._napari_shutdown)
         SharedMemoryManager.register('client_data', callable=self._client_data)
-        SharedMemoryManager.register(
-            'client_messages', callable=self._client_messages
-        )
+        SharedMemoryManager.register('client_messages', callable=self._client_messages)
 
         # Start our shared memory server.
         self._manager = SharedMemoryManager(
@@ -184,9 +178,7 @@ class MonitorApi:
                 message = client_messages.get_nowait()
 
                 if not isinstance(message, dict):
-                    LOGGER.warning(
-                        'Ignore message that was not a dict: %s', message
-                    )
+                    LOGGER.warning('Ignore message that was not a dict: %s', message)
                     continue
 
                 # Assume every message is a command that napari should

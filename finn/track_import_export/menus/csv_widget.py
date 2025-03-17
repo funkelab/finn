@@ -1,7 +1,6 @@
 import os
 
 import pandas as pd
-from finn.track_data_views.graph_attributes import NodeAttr
 from psygnal import Signal
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import (
@@ -17,6 +16,8 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
+from finn.track_data_views.graph_attributes import NodeAttr
+
 
 class CSVFieldMapWidget(QWidget):
     """QWidget accepting a CSV file and displaying the different column names in QComboBoxes"""
@@ -28,22 +29,22 @@ class CSVFieldMapWidget(QWidget):
 
         self.standard_fields = [
             NodeAttr.TIME.value,
-            "y",
-            "x",
-            "id",
-            "parent_id",
+            'y',
+            'x',
+            'id',
+            'parent_id',
         ]
 
         self.csv_columns = csv_columns
         self.columns_left = []
 
         if incl_z:
-            self.standard_fields.insert(1, "z")
+            self.standard_fields.insert(1, 'z')
         if seg:
-            self.standard_fields.insert(-2, "seg_id")
+            self.standard_fields.insert(-2, 'seg_id')
 
         csv_column_layout = QVBoxLayout()
-        csv_column_layout.addWidget(QLabel("Choose columns from CSV file"))
+        csv_column_layout.addWidget(QLabel('Choose columns from CSV file'))
 
         # Field Mapping Layout
         self.mapping_layout = QFormLayout()
@@ -81,16 +82,16 @@ class CSVFieldMapWidget(QWidget):
         """Return the tooltip for the given attribute"""
 
         tooltips = {
-            NodeAttr.TIME.value: "The time point of the track. Must be an integer",
-            "y": "The world y-coordinate of the track.",
-            "x": "The world x-coordinate of the track.",
-            "id": "The unique identifier of the node (string or integer).",
-            "parent_id": "The unique identifier of the parent node (string or integer).",
-            "z": "The world z-coordinate of the track.",
-            "seg_id": "The integer label value in the segmentation file.",
+            NodeAttr.TIME.value: 'The time point of the track. Must be an integer',
+            'y': 'The world y-coordinate of the track.',
+            'x': 'The world x-coordinate of the track.',
+            'id': 'The unique identifier of the node (string or integer).',
+            'parent_id': 'The unique identifier of the parent node (string or integer).',
+            'z': 'The world z-coordinate of the track.',
+            'seg_id': 'The integer label value in the segmentation file.',
         }
 
-        return tooltips.get(attribute, "")
+        return tooltips.get(attribute, '')
 
     def _get_initial_mapping(self, csv_columns: list[str]) -> dict[str, str]:
         """Make an initial guess for mapping of csv columns to fields"""
@@ -143,12 +144,12 @@ class CSVWidget(QWidget):
         self.csv_path_line = QLineEdit(self)
         self.csv_path_line.setFocusPolicy(Qt.StrongFocus)
         self.csv_path_line.returnPressed.connect(self._on_csv_editing_finished)
-        self.csv_browse_button = QPushButton("Browse Tracks CSV file", self)
+        self.csv_browse_button = QPushButton('Browse Tracks CSV file', self)
         self.csv_browse_button.setAutoDefault(0)
         self.csv_browse_button.clicked.connect(self._browse_csv)
 
         csv_layout = QHBoxLayout()
-        csv_layout.addWidget(QLabel("CSV File Path:"))
+        csv_layout.addWidget(QLabel('CSV File Path:'))
         csv_layout.addWidget(self.csv_path_line)
         csv_layout.addWidget(self.csv_browse_button)
         csv_widget = QWidget()
@@ -169,21 +170,21 @@ class CSVWidget(QWidget):
         """Open File dialog to select CSV file"""
 
         csv_file, _ = QFileDialog.getOpenFileName(
-            self, "Select CSV File", "", "CSV Files (*.csv)"
+            self, 'Select CSV File', '', 'CSV Files (*.csv)'
         )
         if csv_file:
             self._load_csv(csv_file)
         else:
-            QMessageBox.warning(self, "Input Required", "Please select a CSV file.")
+            QMessageBox.warning(self, 'Input Required', 'Please select a CSV file.')
 
     def _load_csv(self, csv_file: str) -> None:
         """Load the csv file and display the CSVFieldMapWidget"""
 
-        if csv_file == "":
+        if csv_file == '':
             self.df = None
             return
         if not os.path.exists(csv_file):
-            QMessageBox.critical(self, "Error", "The specified file was not found.")
+            QMessageBox.critical(self, 'Error', 'The specified file was not found.')
             self.df = None
             return
 
@@ -202,12 +203,12 @@ class CSVWidget(QWidget):
             self.update_buttons.emit()
 
         except pd.errors.EmptyDataError:
-            QMessageBox.critical(self, "Error", "The file is empty or has no data.")
+            QMessageBox.critical(self, 'Error', 'The file is empty or has no data.')
             self.df = None
             return
         except pd.errors.ParserError:
             self.df = None
             QMessageBox.critical(
-                self, "Error", "The file could not be parsed as a valid CSV."
+                self, 'Error', 'The file could not be parsed as a valid CSV.'
             )
             return

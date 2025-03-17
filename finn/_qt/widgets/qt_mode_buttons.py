@@ -28,9 +28,7 @@ class QtModeRadioButton(QRadioButton):
         The layer instance that this button controls.
     """
 
-    def __init__(
-        self, layer, button_name, mode, *, tooltip=None, checked=False
-    ) -> None:
+    def __init__(self, layer, button_name, mode, *, tooltip=None, checked=False) -> None:
         super().__init__()
 
         self.layer_ref = weakref.ref(layer)

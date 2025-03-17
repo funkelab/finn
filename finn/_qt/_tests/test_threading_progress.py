@@ -3,9 +3,7 @@ import pytest
 from finn._qt import qthreading
 from finn._qt.widgets.qt_progress_bar import QtLabeledProgressBar
 
-pytest.importorskip(
-    'qtpy', reason='Cannot test threading progress without qtpy.'
-)
+pytest.importorskip('qtpy', reason='Cannot test threading progress without qtpy.')
 
 
 def test_worker_with_progress(qtbot):

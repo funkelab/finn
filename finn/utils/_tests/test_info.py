@@ -51,9 +51,7 @@ def _lsb_mock(*_args, **_kwargs):
 
 
 def _lsb_mock2(*_args, **_kwargs):
-    return _CompletedProcessMock(
-        stdout=b'Description:	Ubuntu Test\nRelease:	20.05'
-    )
+    return _CompletedProcessMock(stdout=b'Description:	Ubuntu Test\nRelease:	20.05')
 
 
 def test_linux_os_name_lsb(monkeypatch, tmp_path):

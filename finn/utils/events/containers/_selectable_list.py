@@ -150,7 +150,5 @@ class SelectableEventedList(Selectable[_T], EventedList[_T]):
         self.select_next(-1, shift=shift)
 
 
-class SelectableNestableEventedList(
-    SelectableEventedList[_T], NestableEventedList[_T]
-):
+class SelectableNestableEventedList(SelectableEventedList[_T], NestableEventedList[_T]):
     pass

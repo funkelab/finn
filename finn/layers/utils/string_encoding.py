@@ -174,7 +174,7 @@ class FormatStringEncoding(_DerivedStyleEncoding[StringValue, StringArray]):
             feature_names = ['index'] + feature_names
             with_index = True
         values = [
-            self.format.format(**dict(zip(feature_names, row)))
+            self.format.format(**dict(zip(feature_names, row, strict=False)))
             for row in features.itertuples(index=with_index, name=None)
         ]
         return np.array(values, dtype=str)
@@ -184,9 +184,7 @@ def _is_format_string(string: str) -> bool:
     """Returns True if a string is a valid format string with at least one field, False otherwise."""
     try:
         fields = tuple(
-            field
-            for _, field, _, _ in Formatter().parse(string)
-            if field is not None
+            field for _, field, _, _ in Formatter().parse(string) if field is not None
         )
     except ValueError:
         return False

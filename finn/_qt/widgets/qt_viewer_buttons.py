@@ -144,18 +144,12 @@ class QtViewerButtons(QFrame):
         self.transposeDimsButton = QtViewerPushButton(
             'transpose',
             action='napari:transpose_axes',
-            extra_tooltip_text=trans._(
-                '\nAlt/option-click to rotate visible axes'
-            ),
+            extra_tooltip_text=trans._('\nAlt/option-click to rotate visible axes'),
         )
         self.transposeDimsButton.installEventFilter(self)
 
-        self.resetViewButton = QtViewerPushButton(
-            'home', action='napari:reset_view'
-        )
-        gvb = QtViewerPushButton(
-            'grid_view_button', action='napari:toggle_grid'
-        )
+        self.resetViewButton = QtViewerPushButton('home', action='napari:reset_view')
+        gvb = QtViewerPushButton('grid_view_button', action='napari:toggle_grid')
         self.gridViewButton = gvb
         gvb.setCheckable(True)
         gvb.setChecked(viewer.grid.enabled)
@@ -166,9 +160,7 @@ class QtViewerButtons(QFrame):
         def _set_grid_mode_checkstate(event):
             gvb.setChecked(event.value)
 
-        ndb = QtViewerPushButton(
-            'ndisplay_button', action='napari:toggle_ndisplay'
-        )
+        ndb = QtViewerPushButton('ndisplay_button', action='napari:toggle_ndisplay')
         self.ndisplayButton = ndb
         ndb.setCheckable(True)
         ndb.setChecked(self.viewer.dims.ndisplay == 3)
@@ -211,9 +203,7 @@ class QtViewerButtons(QFrame):
         sld = QSlider(Qt.Orientation.Horizontal, self)
         sld.setRange(0, max(90, int(self.viewer.camera.perspective)))
         sld.setValue(int(self.viewer.camera.perspective))
-        sld.valueChanged.connect(
-            lambda v: setattr(self.viewer.camera, 'perspective', v)
-        )
+        sld.valueChanged.connect(lambda v: setattr(self.viewer.camera, 'perspective', v))
         self.perspective_slider = sld
 
         # make layout
@@ -288,12 +278,8 @@ class QtViewerButtons(QFrame):
         grid_width.valueChanged.connect(self._update_grid_width)
         self.grid_width_box = grid_width
 
-        height_min = (
-            self.viewer.grid.__fields__['shape'].sub_fields[0].type_.ge
-        )
-        height_not = (
-            self.viewer.grid.__fields__['shape'].sub_fields[0].type_.ne
-        )
+        height_min = self.viewer.grid.__fields__['shape'].sub_fields[0].type_.ge
+        height_not = self.viewer.grid.__fields__['shape'].sub_fields[0].type_.ne
         grid_height.setObjectName('gridStrideBox')
         grid_height.setAlignment(Qt.AlignmentFlag.AlignCenter)
         grid_height.setMinimum(height_min)

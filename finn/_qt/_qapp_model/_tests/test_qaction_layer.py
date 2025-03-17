@@ -159,9 +159,7 @@ def test_copy_spatial_to_clipboard_different_dim(layer_list_dim):
     _paste_spatial_from_clipboard(layer_list_dim)
     npt.assert_array_equal(layer_list_dim['l2'].scale, (3, 4))
     npt.assert_array_equal(layer_list_dim['l2'].translate, (1, 2))
-    npt.assert_array_almost_equal(
-        layer_list_dim['l2'].rotate, ([0, -1], [1, 0])
-    )
+    npt.assert_array_almost_equal(layer_list_dim['l2'].rotate, ([0, -1], [1, 0]))
     npt.assert_array_almost_equal(
         layer_list_dim['l2'].affine.affine_matrix,
         layer_list_dim['l1'].affine.affine_matrix[-3:, -3:],

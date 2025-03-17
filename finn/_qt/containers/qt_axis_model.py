@@ -104,11 +104,7 @@ class QtAxisListModel(QtListModel[AxisModel]):
         if role == Qt.ItemDataRole.TextAlignmentRole:
             return Qt.AlignCenter
         if role == Qt.ItemDataRole.CheckStateRole:
-            return (
-                Qt.CheckState.Checked
-                if axis.rollable
-                else Qt.CheckState.Unchecked
-            )
+            return Qt.CheckState.Checked if axis.rollable else Qt.CheckState.Unchecked
         return super().data(index, role)
 
     def setData(

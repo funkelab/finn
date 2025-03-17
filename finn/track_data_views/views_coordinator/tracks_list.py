@@ -2,9 +2,8 @@ from functools import partial
 from pathlib import Path
 from warnings import warn
 
-import finn
 from fonticon_fa6 import FA6S
-from finn._qt.qt_resources import QColoredSVGIcon
+from funtracks.data_model import SolutionTracks, Tracks
 from qtpy.QtCore import Signal
 from qtpy.QtWidgets import (
     QComboBox,
@@ -21,7 +20,8 @@ from qtpy.QtWidgets import (
 )
 from superqt.fonticon import icon as qticon
 
-from funtracks.data_model import SolutionTracks, Tracks
+import finn
+from finn._qt.qt_resources import QColoredSVGIcon
 from finn.track_import_export.menus.import_external_tracks_dialog import (
     ImportTracksDialog,
 )
@@ -57,18 +57,18 @@ class TracksButton(QWidget):
         self.tracks = tracks
         self.name = QLabel(name)
         self.name.setFixedHeight(20)
-        delete_icon = QColoredSVGIcon.from_resources("delete").colored("white")
+        delete_icon = QColoredSVGIcon.from_resources('delete').colored('white')
         self.delete = QPushButton(icon=delete_icon)
         self.delete.setFixedSize(20, 20)
-        self.delete.setToolTip("Remove track result")
-        save_icon = qticon(FA6S.floppy_disk, color="white")
+        self.delete.setToolTip('Remove track result')
+        save_icon = qticon(FA6S.floppy_disk, color='white')
         self.save = QPushButton(icon=save_icon)
-        self.save.setToolTip("Save tracks")
+        self.save.setToolTip('Save tracks')
         self.save.setFixedSize(20, 20)
-        export_icon = qticon(FA6S.file_export, color="white")
+        export_icon = qticon(FA6S.file_export, color='white')
         self.export = QPushButton(icon=export_icon)
         self.export.setFixedSize(20, 20)
-        self.export.setToolTip("Export tracks to CSV")
+        self.export.setToolTip('Export tracks to CSV')
         layout = QHBoxLayout()
         layout.setSpacing(10)
         layout.addWidget(self.name)
@@ -92,7 +92,7 @@ class TracksList(QGroupBox):
     view_tracks = Signal(Tracks, str)
 
     def __init__(self):
-        super().__init__(title="Results List")
+        super().__init__(title='Results List')
         self.file_dialog = QFileDialog()
         self.file_dialog.setFileMode(QFileDialog.Directory)
         self.file_dialog.setOption(QFileDialog.ShowDirsOnly, True)
@@ -104,8 +104,8 @@ class TracksList(QGroupBox):
         self.export_dialog = QFileDialog()
         self.export_dialog.setFileMode(QFileDialog.AnyFile)
         self.export_dialog.setAcceptMode(QFileDialog.AcceptSave)
-        self.export_dialog.setNameFilter("CSV files (*.csv)")
-        self.export_dialog.setDefaultSuffix("csv")
+        self.export_dialog.setNameFilter('CSV files (*.csv)')
+        self.export_dialog.setDefaultSuffix('csv')
 
         self.tracks_list = QListWidget()
         self.tracks_list.setSelectionMode(1)  # single selection
@@ -113,9 +113,9 @@ class TracksList(QGroupBox):
 
         load_menu = QHBoxLayout()
         self.dropdown_menu = QComboBox()
-        self.dropdown_menu.addItems(["Motile Run", "External tracks from CSV"])
+        self.dropdown_menu.addItems(['Motile Run', 'External tracks from CSV'])
 
-        load_button = QPushButton("Load")
+        load_button = QPushButton('Load')
         load_button.clicked.connect(self.load_tracks)
 
         load_menu.addWidget(self.dropdown_menu)
@@ -177,7 +177,7 @@ class TracksList(QGroupBox):
         widget: TracksButton = self.tracks_list.itemWidget(item)
         tracks: Tracks = widget.tracks
         default_name: str = widget.name.text()
-        default_name = f"{default_name}_tracks.csv"
+        default_name = f'{default_name}_tracks.csv'
         # use the same directory as the last time you opened the dialog
         base_path = Path(self.export_dialog.directory().path())
         self.export_dialog.selectFile(str(base_path / default_name))
@@ -214,9 +214,9 @@ class TracksList(QGroupBox):
         generated tracks (CSV file),  depending on the choice in the dropdown menu.
         """
 
-        if self.dropdown_menu.currentText() == "Motile Run":
+        if self.dropdown_menu.currentText() == 'Motile Run':
             self.load_motile_run()
-        elif self.dropdown_menu.currentText() == "External tracks from CSV":
+        elif self.dropdown_menu.currentText() == 'External tracks from CSV':
             self._load_external_tracks()
 
     def load_motile_run(self):
@@ -231,4 +231,4 @@ class TracksList(QGroupBox):
                 tracks = SolutionTracks.load(directory)
                 self.add_tracks(tracks, name, select=True)
             except (ValueError, FileNotFoundError) as e:
-                warn(f"Could not load tracks from {directory}: {e}", stacklevel=2)
+                warn(f'Could not load tracks from {directory}: {e}', stacklevel=2)

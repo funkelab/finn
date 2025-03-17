@@ -118,9 +118,7 @@ def _paste_spatial_from_clipboard(ll: LayerList) -> None:
                 if loaded_attr_value.ndim == 1:
                     loaded_attr_value = loaded_attr_value[-layer.ndim :]
                 elif loaded_attr_value.ndim == 2:
-                    loaded_attr_value = loaded_attr_value[
-                        -layer.ndim :, -layer.ndim :
-                    ]
+                    loaded_attr_value = loaded_attr_value[-layer.ndim :, -layer.ndim :]
 
             setattr(layer, key, loaded_attr_value)
 
@@ -133,9 +131,7 @@ def is_valid_spatial_in_clipboard() -> bool:
     if not isinstance(loaded, dict):
         return False
 
-    return set(loaded).issubset(
-        {'affine', 'rotate', 'scale', 'shear', 'translate'}
-    )
+    return set(loaded).issubset({'affine', 'rotate', 'scale', 'shear', 'translate'})
 
 
 Q_LAYERLIST_CONTEXT_ACTIONS = [

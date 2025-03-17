@@ -34,9 +34,7 @@ def test_plugin_manager_action(make_napari_viewer):
     with mock.patch(
         'napari_plugin_manager.qt_plugin_dialog.QtPluginDialog'
     ) as mock_plugin_dialog:
-        app.commands.execute_command(
-            'finn.window.plugins.plugin_install_dialog'
-        )
+        app.commands.execute_command('finn.window.plugins.plugin_install_dialog')
     mock_plugin_dialog.assert_called_once_with(viewer.window._qt_window)
 
 
@@ -48,9 +46,7 @@ def test_plugin_errors_action(make_napari_viewer):
     with mock.patch(
         'finn._qt._qapp_model.qactions._plugins.QtPluginErrReporter.exec_'
     ) as mock_plugin_dialog:
-        app.commands.execute_command(
-            'finn.window.plugins.plugin_err_reporter'
-        )
+        app.commands.execute_command('finn.window.plugins.plugin_err_reporter')
     mock_plugin_dialog.assert_called_once()
 
 
@@ -103,9 +99,7 @@ def test_toggle_or_get_widget(
     assert widget.isVisible()
 
 
-def test_plugin_single_widget_menu(
-    make_napari_viewer, tmp_plugin: DynamicPlugin
-):
+def test_plugin_single_widget_menu(make_napari_viewer, tmp_plugin: DynamicPlugin):
     """Test single plugin widgets get added to the window menu correctly."""
 
     @tmp_plugin.contribute.widget(display_name='Widget 1')
@@ -199,16 +193,12 @@ def test_plugin_menu_plugin_state_change(
 
     # Enable plugin
     pm.enable(tmp_plugin.name)
-    samples_sub_menu = app.menus.get_menu(
-        MenuId.MENUBAR_PLUGINS + '/tmp_plugin'
-    )
+    samples_sub_menu = app.menus.get_menu(MenuId.MENUBAR_PLUGINS + '/tmp_plugin')
     assert len(samples_sub_menu) == 2
     assert 'tmp_plugin:Widget 1' in app.commands
 
 
-def test_plugin_widget_checked(
-    make_napari_viewer, qtbot, tmp_plugin: DynamicPlugin
-):
+def test_plugin_widget_checked(make_napari_viewer, qtbot, tmp_plugin: DynamicPlugin):
     """Check widget toggling/hiding updates check mark correctly."""
 
     @tmp_plugin.contribute.widget(display_name='Widget')
@@ -285,12 +275,8 @@ def test_plugins_menu_sorted(
     from finn.plugins import _initialize_plugins
 
     # we make sure 'plugin-b' is registered first
-    tmp_plugin2 = tmp_plugin.spawn(
-        name='plugin-b', plugin_manager=mock_pm, register=True
-    )
-    tmp_plugin1 = tmp_plugin.spawn(
-        name='plugin-a', plugin_manager=mock_pm, register=True
-    )
+    tmp_plugin2 = tmp_plugin.spawn(name='plugin-b', plugin_manager=mock_pm, register=True)
+    tmp_plugin1 = tmp_plugin.spawn(name='plugin-a', plugin_manager=mock_pm, register=True)
 
     @tmp_plugin1.contribute.widget(display_name='Widget 1')
     def widget1(): ...

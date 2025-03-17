@@ -65,16 +65,12 @@ def test_generate_2D_edge_meshes(path, closed, bevel, expected):
             False,
         ),
         (
-            np.array(
-                [[0, 0], [1, 0], [1, 0], [1, 1], [0, 1]], dtype='float32'
-            ),
+            np.array([[0, 0], [1, 0], [1, 0], [1, 1], [0, 1]], dtype='float32'),
             np.array([[0, 0], [1, 0], [1, 1], [0, 1]], dtype='float32'),
             True,
         ),
         (
-            np.array(
-                [[0, 0], [1, 0], [1, 0], [1, 1], [0, 1]], dtype='float32'
-            ),
+            np.array([[0, 0], [1, 0], [1, 0], [1, 1], [0, 1]], dtype='float32'),
             np.array([[0, 0], [1, 0], [1, 1], [0, 1]], dtype='float32'),
             False,
         ),
@@ -87,9 +83,7 @@ def test_generate_2D_edge_meshes(path, closed, bevel, expected):
             False,
         ),
         (
-            np.array(
-                [[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]], dtype='float32'
-            ),
+            np.array([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]], dtype='float32'),
             np.array([[0, 0], [1, 0], [1, 1], [0, 1]], dtype='float32'),
             True,
         ),
@@ -108,9 +102,7 @@ def test_generate_2D_edge_meshes(path, closed, bevel, expected):
                 ],
                 dtype='float32',
             ),
-            np.array(
-                [[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]], dtype='float32'
-            ),
+            np.array([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]], dtype='float32'),
             True,
         ),
     ],

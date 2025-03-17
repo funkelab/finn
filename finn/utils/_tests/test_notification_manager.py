@@ -19,9 +19,7 @@ from finn.utils.notifications import (
 # https://docs.pytest.org/en/stable/logging.html#caplog-fixture
 def test_keyboard_interupt_handler(capsys):
     with pytest.raises(SystemExit):
-        notification_manager.receive_error(
-            KeyboardInterrupt, KeyboardInterrupt(), None
-        )
+        notification_manager.receive_error(KeyboardInterrupt, KeyboardInterrupt(), None)
 
 
 class PurposefulException(Exception):
@@ -29,9 +27,7 @@ class PurposefulException(Exception):
 
 
 def test_notification_repr_has_message():
-    assert "='this is the message'" in repr(
-        Notification('this is the message')
-    )
+    assert "='this is the message'" in repr(Notification('this is the message'))
 
 
 def test_notification_manager_no_gui(monkeypatch):
@@ -49,14 +45,10 @@ def test_notification_manager_no_gui(monkeypatch):
         notification_manager.notification_ready.connect(store.append)
 
         show_info('this is one way of showing an information message')
-        assert len(notification_manager.records) == 1, (
-            notification_manager.records
-        )
+        assert len(notification_manager.records) == 1, notification_manager.records
         assert store[-1].type == 'info'
 
-        notification_manager.receive_info(
-            'This is another information message'
-        )
+        notification_manager.receive_info('This is another information message')
         assert len(notification_manager.records) == 2
         assert len(store) == 2
         assert store[-1].type == 'info'
@@ -79,9 +71,7 @@ def test_notification_manager_no_gui(monkeypatch):
         # test that warnings that go through showwarning are catalogued
         # again, pytest intercepts this, so just manually trigger:
         assert warnings.showwarning == notification_manager.receive_warning
-        warnings.showwarning(
-            UserWarning('this is a warning'), UserWarning, __file__, 83
-        )
+        warnings.showwarning(UserWarning('this is a warning'), UserWarning, __file__, 83)
         assert len(notification_manager.records) == 4
         assert store[-1].type == 'warning'
 
@@ -112,9 +102,7 @@ def test_notification_manager_no_gui_with_threading():
     """
 
     def _warn():
-        warnings.showwarning(
-            UserWarning('this is a warning'), UserWarning, __file__, 116
-        )
+        warnings.showwarning(UserWarning('this is a warning'), UserWarning, __file__, 116)
 
     def _raise():
         with pytest.raises(PurposefulException):
@@ -129,9 +117,7 @@ def test_notification_manager_no_gui_with_threading():
         notification_manager.notification_ready.connect(store.append)
 
         # Test exception inside threads
-        assert (
-            threading.excepthook == notification_manager.receive_thread_error
-        )
+        assert threading.excepthook == notification_manager.receive_thread_error
 
         exception_thread = threading.Thread(target=_raise)
         exception_thread.start()

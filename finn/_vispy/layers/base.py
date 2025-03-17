@@ -137,7 +137,7 @@ class VispyBaseLayer(ABC, Generic[_L]):
 
     def _on_blending_change(self, event=None):
         blending = self.layer.blending
-        blending_kwargs = cast(dict, BLENDING_MODES[blending]).copy()
+        blending_kwargs = cast('dict', BLENDING_MODES[blending]).copy()
 
         if self.first_visible:
             # if the first layer, then we should blend differently
@@ -181,9 +181,7 @@ class VispyBaseLayer(ABC, Generic[_L]):
                 continue
 
             with self.layer.events._overlays.blocker():
-                overlay_visual = create_vispy_overlay(
-                    overlay, layer=self.layer
-                )
+                overlay_visual = create_vispy_overlay(overlay, layer=self.layer)
             self.overlays[overlay] = overlay_visual
             if isinstance(overlay, CanvasOverlay):
                 overlay_visual.node.parent = self.node.parent.parent  # viewbox

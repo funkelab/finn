@@ -37,9 +37,9 @@ import inspect
 import sys
 import time
 from collections import ChainMap
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from types import MethodType
-from typing import Callable, Union
+from typing import Union
 
 from app_model.types import KeyBinding, KeyCode, KeyMod
 from vispy.util import keys
@@ -52,9 +52,7 @@ else:
     EllipsisType = type(Ellipsis)
 
 KeyBindingLike = Union[KeyBinding, str, int]
-Keymap = Mapping[
-    Union[KeyBinding, EllipsisType], Union[Callable, EllipsisType]
-]
+Keymap = Mapping[KeyBinding | EllipsisType, Callable | EllipsisType]
 
 # global user keymap; to be made public later in refactoring process
 USER_KEYMAP: Mapping[str, Callable] = {}
@@ -136,7 +134,7 @@ def coerce_keybinding(key_bind: KeyBindingLike) -> KeyBinding:
 
 def bind_key(
     keymap: Keymap,
-    key_bind: Union[KeyBindingLike, EllipsisType],
+    key_bind: KeyBindingLike | EllipsisType,
     func=_UNDEFINED,
     *,
     overwrite=False,
@@ -246,9 +244,7 @@ def _get_user_keymap() -> Keymap:
     return USER_KEYMAP
 
 
-def _bind_user_key(
-    key_bind: KeyBindingLike, func=_UNDEFINED, *, overwrite=False
-):
+def _bind_user_key(key_bind: KeyBindingLike, func=_UNDEFINED, *, overwrite=False):
     """Bind a key combination to the user keymap.
 
     See ``bind_key`` docs for details.
@@ -399,9 +395,7 @@ class KeymapHandler:
                 break
 
         active_keymap_final = {
-            k: func
-            for k, func in active_keymap.items()
-            if func is not Ellipsis
+            k: func for k, func in active_keymap.items() if func is not Ellipsis
         }
 
         return active_keymap_final
@@ -470,10 +464,7 @@ class KeymapHandler:
             # additional step on key release
             if isinstance(val, tuple):
                 callback, start = val
-                if (
-                    time.time() - start
-                    > get_settings().application.hold_button_delay
-                ):
+                if time.time() - start > get_settings().application.hold_button_delay:
                     callback()
             else:
                 next(val)  # call function

@@ -98,9 +98,7 @@ class LabelVispyColormap(VispyColormap):
         view_dtype: np.dtype,
         raw_dtype: np.dtype,
     ):
-        super().__init__(
-            colors=['w', 'w'], controls=None, interpolation='zero'
-        )
+        super().__init__(colors=['w', 'w'], controls=None, interpolation='zero')
         if view_dtype.itemsize == 1:
             shader = auto_lookup_shader_uint8
         elif view_dtype.itemsize == 2:
@@ -206,9 +204,7 @@ class VispyLabelsLayer(VispyScalarFieldBaseLayer):
         self.layer.events.labels_update.connect(self._on_partial_labels_update)
         self.layer.events.selected_label.connect(self._on_colormap_change)
         self.layer.events.show_selected_label.connect(self._on_colormap_change)
-        self.layer.events.iso_gradient_mode.connect(
-            self._on_iso_gradient_mode_change
-        )
+        self.layer.events.iso_gradient_mode.connect(self._on_iso_gradient_mode_change)
         self.layer.events.data.connect(self._on_colormap_change)
         # as we generate colormap texture based on the data type, we need to
         # update it when the data type changes
@@ -218,9 +214,7 @@ class VispyLabelsLayer(VispyScalarFieldBaseLayer):
         if isinstance(self.node, VolumeNode):
             rendering = self.layer.rendering
             self.node.method = (
-                rendering
-                if rendering != 'translucent'
-                else 'translucent_categorical'
+                rendering if rendering != 'translucent' else 'translucent_categorical'
             )
 
     def _on_colormap_change(self, event=None):
@@ -248,12 +242,10 @@ class VispyLabelsLayer(VispyScalarFieldBaseLayer):
                 # The LabelColormap is EventedModel, so we need to make
                 # a copy instead of temporary overwrite the background_value
                 colormap = CyclicLabelColormap(**colormap.dict())
-                colormap.background_value = (
-                    colormap._background_as_minimum_dtype(raw_dtype)
+                colormap.background_value = colormap._background_as_minimum_dtype(
+                    raw_dtype
                 )
-            color_texture = _select_colormap_texture(
-                colormap, view_dtype, raw_dtype
-            )
+            color_texture = _select_colormap_texture(colormap, view_dtype, raw_dtype)
             self.node.cmap = LabelVispyColormap(
                 colormap, view_dtype=view_dtype, raw_dtype=raw_dtype
             )
@@ -310,9 +302,7 @@ class VispyLabelsLayer(VispyScalarFieldBaseLayer):
             self.layer.refresh()
             return
 
-        self.node._texture.scale_and_set_data(
-            event.data, copy=False, offset=event.offset
-        )
+        self.node._texture.scale_and_set_data(event.data, copy=False, offset=event.offset)
         self.node.update()
 
     def reset(self, event=None) -> None:

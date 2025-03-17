@@ -32,9 +32,7 @@ def test_screenshot_save(qtbot, tmp_path, filename):
                 break
 
     # setup dialog
-    dialog = ScreenshotDialog(
-        save_function, directory=str(tmp_path), history=[]
-    )
+    dialog = ScreenshotDialog(save_function, directory=str(tmp_path), history=[])
     qtbot.addWidget(dialog)
     dialog.setOptions(QFileDialog.DontUseNativeDialog)
     dialog.show()
@@ -77,9 +75,7 @@ def test_screenshot_overwrite_save(qtbot, tmp_path, monkeypatch):
     # monkeypath custom overwrite QMessageBox usage
     monkeypatch.setattr(QMessageBox, 'warning', overwrite_qmessagebox_warning)
 
-    dialog = ScreenshotDialog(
-        save_function, directory=str(tmp_path), history=[]
-    )
+    dialog = ScreenshotDialog(save_function, directory=str(tmp_path), history=[])
     qtbot.addWidget(dialog)
     dialog.setOptions(QFileDialog.DontUseNativeDialog)
     dialog.show()

@@ -112,9 +112,7 @@ def test_start_stop_trace_actions(
             mock_dialog_instance = mock_dialog.return_value
             mock_save = mock_dialog_instance.getSaveFileName
             mock_save.return_value = (str(trace_file), None)
-            app.commands.execute_command(
-                'finn.window.debug.start_trace_dialog'
-            )
+            app.commands.execute_command('finn.window.debug.start_trace_dialog')
         mock_dialog.assert_called_once()
         mock_save.assert_called_once()
         assert not trace_file.exists()

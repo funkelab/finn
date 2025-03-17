@@ -38,7 +38,7 @@ class QtListModel(_BaseEventedItemModel[ItemType]):
         """
         if not indices:
             return None
-        items, indices = zip(*[(self.getItem(i), i.row()) for i in indices])
+        items, indices = zip(*[(self.getItem(i), i.row()) for i in indices], strict=False)
         return ItemMimeData(items, indices)
 
     def dropMimeData(
@@ -84,9 +84,7 @@ class QtListModel(_BaseEventedItemModel[ItemType]):
 class ItemMimeData(QMimeData):
     """An object to store list indices data during a drag operation."""
 
-    def __init__(
-        self, items: Sequence[ItemType], indices: Sequence[int]
-    ) -> None:
+    def __init__(self, items: Sequence[ItemType], indices: Sequence[int]) -> None:
         super().__init__()
         self.items = items
         self.indices = tuple(sorted(indices))

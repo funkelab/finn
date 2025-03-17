@@ -26,9 +26,7 @@ def elements_in_slice(
     visible : array of bool
         A boolean array indicating which items are visible in the current view.
     """
-    queries = [
-        index[ax] == position for ax, position in position_in_axes.items()
-    ]
+    queries = [index[ax] == position for ax, position in position_in_axes.items()]
     return np.logical_and.reduce(queries, axis=0)
 
 
@@ -68,7 +66,5 @@ def index_in_slice(
     """
     index_in_slice = elements_in_slice(index, position_in_axes)
     return tuple(
-        index[i][index_in_slice]
-        for i in indices_order
-        if i not in position_in_axes
+        index[i][index_in_slice] for i in indices_order if i not in position_in_axes
     )

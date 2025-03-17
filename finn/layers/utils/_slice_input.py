@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import warnings
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Generic, TypeVar, Union
+from typing import TYPE_CHECKING, Generic, TypeVar
 
 import numpy as np
 
@@ -50,21 +50,15 @@ class _ThickNDSlice(Generic[_T]):
                 break
         else:
             if ndim is None:
-                raise ValueError(
-                    'ndim must be provided if no other value is given'
-                )
+                raise ValueError('ndim must be provided if no other value is given')
             val_ndim = ndim
 
         ndim = val_ndim if ndim is None else ndim
 
         # not provided arguments are just all zeros
         point = (0,) * ndim if point is None else tuple(point)
-        margin_left = (
-            (0,) * ndim if margin_left is None else tuple(margin_left)
-        )
-        margin_right = (
-            (0,) * ndim if margin_right is None else tuple(margin_right)
-        )
+        margin_left = (0,) * ndim if margin_left is None else tuple(margin_left)
+        margin_right = (0,) * ndim if margin_right is None else tuple(margin_right)
 
         # prepend zeros if ndim is bigger than the given values
         prepend = max(ndim - val_ndim, 0)
@@ -123,7 +117,7 @@ class _ThickNDSlice(Generic[_T]):
 
     def __iter__(self):
         # iterate all three fields dimension per dimension
-        yield from zip(self.point, self.margin_left, self.margin_right)
+        yield from zip(self.point, self.margin_left, self.margin_right, strict=False)
 
 
 @dataclass(frozen=True)
@@ -172,14 +166,12 @@ class _SliceInput:
         else:
             order = self.order
 
-        return _SliceInput(
-            ndisplay=self.ndisplay, world_slice=world_slice, order=order
-        )
+        return _SliceInput(ndisplay=self.ndisplay, world_slice=world_slice, order=order)
 
     def data_slice(
         self,
         world_to_data: Affine,
-    ) -> _ThickNDSlice[Union[float, int]]:
+    ) -> _ThickNDSlice[float | int]:
         """Transforms this thick_slice into data coordinates with only relevant dimensions.
 
         The elements in non-displayed dimensions will be real numbers.
@@ -222,8 +214,6 @@ class _SliceInput:
         )
         mapped_nd_subspace = world_to_data(non_displayed_subspace)
         # Look at displayed subspace
-        displayed_mapped_subspace = (
-            mapped_nd_subspace[d] for d in self.displayed
-        )
+        displayed_mapped_subspace = (mapped_nd_subspace[d] for d in self.displayed)
         # Check that displayed subspace is null
         return all(abs(v) < 1e-8 for v in displayed_mapped_subspace)

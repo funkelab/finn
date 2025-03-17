@@ -48,9 +48,7 @@ def test_deprecated_property() -> None:
 
     instance = Dummy()
 
-    add_deprecated_property(
-        Dummy, 'old_property', 'new_property', '0.1.0', '0.0.0'
-    )
+    add_deprecated_property(Dummy, 'old_property', 'new_property', '0.1.0', '0.0.0')
 
     assert instance.new_property == 0
 

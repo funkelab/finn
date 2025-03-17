@@ -3,8 +3,8 @@ import os
 import numpy as np
 import pandas as pd
 import pytest
-from finn.track_data_views.graph_attributes import NodeAttr
 
+from finn.track_data_views.graph_attributes import NodeAttr
 from finn.track_import_export.load_tracks import (
     _test_valid,
     ensure_correct_labels,
@@ -18,11 +18,11 @@ class TestLoadTracks:
         """Test that a ValueError is raised if the ids are not unique"""
 
         data = {
-            "id": [1, 1, 2],
-            "parent_id": [0, 0, 1],
+            'id': [1, 1, 2],
+            'parent_id': [0, 0, 1],
             NodeAttr.TIME.value: [0, 1, 2],
-            "y": [10, 20, 30],
-            "x": [15, 25, 35],
+            'y': [10, 20, 30],
+            'x': [15, 25, 35],
         }
         df = pd.DataFrame(data)
         with pytest.raises(ValueError):
@@ -32,32 +32,32 @@ class TestLoadTracks:
         """Test that string ids are converted to unique integers"""
 
         data = {
-            "id": ["a", "b", "c"],
-            "parent_id": [None, "b", "c"],
+            'id': ['a', 'b', 'c'],
+            'parent_id': [None, 'b', 'c'],
             NodeAttr.TIME.value: [0, 1, 2],
-            "y": [10, 20, 30],
-            "x": [15, 25, 35],
+            'y': [10, 20, 30],
+            'x': [15, 25, 35],
         }
         df = pd.DataFrame(data)
         df = ensure_integer_ids(df)
-        assert pd.api.types.is_integer_dtype(df["id"])
+        assert pd.api.types.is_integer_dtype(df['id'])
         assert (
-            pd.to_numeric(df["parent_id"], errors="coerce")
+            pd.to_numeric(df['parent_id'], errors='coerce')
             .dropna()
             .apply(lambda x: float(x).is_integer())
             .all()
         )
-        assert df["id"].is_unique
+        assert df['id'].is_unique
 
     def test_set_scale(self):
         """Test that the scaling is correctly propagated to the tracks"""
 
         data = {
-            "id": [1, 2, 3],
-            "parent_id": [None, 1, 2],
+            'id': [1, 2, 3],
+            'parent_id': [None, 1, 2],
             NodeAttr.TIME.value: [0, 1, 2],
-            "y": [10, 20, 30],
-            "x": [15, 25, 35],
+            'y': [10, 20, 30],
+            'x': [15, 25, 35],
         }
         df = pd.DataFrame(data)
         scale = [1, 2, 1]
@@ -68,12 +68,12 @@ class TestLoadTracks:
         """Test that the segmentation value of the first node matches with its id"""
 
         data = {
-            "id": [1, 2, 3],
-            "parent_id": [-1, 1, 2],
+            'id': [1, 2, 3],
+            'parent_id': [-1, 1, 2],
             NodeAttr.TIME.value: [0, 1, 2],
-            "y": [0.25, 2, 1.3333],
-            "x": [0.75, 1.5, 1.6667],
-            "seg_id": [1, 2, 3],
+            'y': [0.25, 2, 1.3333],
+            'x': [0.75, 1.5, 1.6667],
+            'seg_id': [1, 2, 3],
         }
         df = pd.DataFrame(data)
         segmentation = np.array(
@@ -88,55 +88,57 @@ class TestLoadTracks:
         assert _test_valid(df, segmentation, scale=None)
 
         data = {
-            "id": [1, 2, 3],
-            "parent_id": [-1, 1, 2],
+            'id': [1, 2, 3],
+            'parent_id': [-1, 1, 2],
             NodeAttr.TIME.value: [0, 1, 2],
-            "y": [1, 8, 5.3333],
-            "x": [3, 6, 6.6667],
-            "seg_id": [1, 2, 3],
+            'y': [1, 8, 5.3333],
+            'x': [3, 6, 6.6667],
+            'seg_id': [1, 2, 3],
         }
         df = pd.DataFrame(data)
 
         # test if False when scaling is applied incorrectly
-        with pytest.raises(UserWarning, match="Could not get the segmentation value at index"):
+        with pytest.raises(
+            UserWarning, match='Could not get the segmentation value at index'
+        ):
             _test_valid(df, segmentation, scale=[1, 1, 1])
         # test if True when scaling is applied correctly
         assert _test_valid(df, segmentation, scale=[1, 4, 4])
         # ndim of segmentation should match with the length of provided scale
         with pytest.warns(
             UserWarning,
-            match=r"Dimensions of the segmentation image \(3\) do not match the number "
-            r"of scale values given \(4\)",
+            match=r'Dimensions of the segmentation image \(3\) do not match the number '
+            r'of scale values given \(4\)',
         ):
             assert not _test_valid(df, segmentation, scale=[1, 4, 4, 1])
 
         data = {
-            "id": [1, 2, 3],
-            "parent_id": [-1, 1, 2],
+            'id': [1, 2, 3],
+            'parent_id': [-1, 1, 2],
             NodeAttr.TIME.value: [0, 1, 2],
-            "z": [1, 1, 1],
-            "y": [1, 8, 5.3333],
-            "x": [3, 6, 6.6667],
-            "seg_id": [1, 2, 3],
+            'z': [1, 1, 1],
+            'y': [1, 8, 5.3333],
+            'x': [3, 6, 6.6667],
+            'seg_id': [1, 2, 3],
         }
         df = pd.DataFrame(data)
         # ndim of segmentation should match with the dims specified in the dataframe
         with pytest.warns(
             UserWarning,
-            match=r"Dimensions of the segmentation \(3\) do not match the number "
-            r"of positional dimensions \(4\)",
+            match=r'Dimensions of the segmentation \(3\) do not match the number '
+            r'of positional dimensions \(4\)',
         ):
             assert not _test_valid(df, segmentation, scale=[1, 4, 4])
 
         # test actual 4D data
         data = {
-            "id": [1, 2, 3],
-            "parent_id": [-1, 1, 2],
+            'id': [1, 2, 3],
+            'parent_id': [-1, 1, 2],
             NodeAttr.TIME.value: [0, 1, 2],
-            "z": [0, 0, 0],
-            "y": [1, 8, 5.3333],
-            "x": [3, 6, 6.6667],
-            "seg_id": [1, 2, 3],
+            'z': [0, 0, 0],
+            'y': [1, 8, 5.3333],
+            'x': [3, 6, 6.6667],
+            'seg_id': [1, 2, 3],
         }
         seg_4d = np.array([segmentation, segmentation, segmentation])
         df = pd.DataFrame(data)
@@ -150,11 +152,11 @@ class TestLoadTracks:
 
         data = {
             NodeAttr.TIME.value: [0, 0, 0, 1],
-            "seg_id": [1, 2, 3, 3],
-            "id": [10, 20, 30, 40],
-            "x": [0, 0, 1, 1],
-            "y": [0, 2, 2, 2],
-            "parent_id": [None, None, None, None],
+            'seg_id': [1, 2, 3, 3],
+            'id': [10, 20, 30, 40],
+            'x': [0, 0, 1, 1],
+            'y': [0, 2, 2, 2],
+            'parent_id': [None, None, None, None],
         }
         df = pd.DataFrame(data)
         segmentation = np.array(
@@ -182,11 +184,11 @@ class TestLoadTracks:
 
         data = {
             NodeAttr.TIME.value: [0, 0, 0, 1],
-            "seg_id": [1, 2, 3, 4],
-            "id": [1, 2, 3, 4],
-            "parent_id": [None, 1, 2, 3],
-            "y": [0, 1.6667, 1.333, 1.333],
-            "x": [1, 0.33333, 1.66667, 1.66667],
+            'seg_id': [1, 2, 3, 4],
+            'id': [1, 2, 3, 4],
+            'parent_id': [None, 1, 2, 3],
+            'y': [0, 1.6667, 1.333, 1.333],
+            'x': [1, 0.33333, 1.66667, 1.66667],
         }
         df = pd.DataFrame(data)
         segmentation = np.array(
@@ -194,7 +196,7 @@ class TestLoadTracks:
         )
 
         tracks = tracks_from_df(
-            df, segmentation, scale=(1, 1, 1), features={"Area": "Recompute"}
+            df, segmentation, scale=(1, 1, 1), features={'Area': 'Recompute'}
         )
 
         assert tracks._get_node_attr(1, NodeAttr.AREA.value) == 3
@@ -203,7 +205,7 @@ class TestLoadTracks:
         assert tracks._get_node_attr(4, NodeAttr.AREA.value) == 3
 
         tracks = tracks_from_df(
-            df, segmentation, scale=(1, 2, 1), features={"Area": "Recompute"}
+            df, segmentation, scale=(1, 2, 1), features={'Area': 'Recompute'}
         )
 
         assert tracks._get_node_attr(1, NodeAttr.AREA.value) == 6
@@ -212,7 +214,7 @@ class TestLoadTracks:
         assert tracks._get_node_attr(4, NodeAttr.AREA.value) == 6
 
         tracks = tracks_from_df(
-            df, segmentation=None, scale=(1, 2, 1), features={"Area": "Recompute"}
+            df, segmentation=None, scale=(1, 2, 1), features={'Area': 'Recompute'}
         )  # no seg provided, should return None
 
         assert tracks._get_node_attr(1, NodeAttr.AREA.value) is None
@@ -225,17 +227,17 @@ class TestLoadTracks:
 
         data = {
             NodeAttr.TIME.value: [0, 0, 0, 1],
-            "seg_id": [1, 2, 3, 4],
-            "id": [1, 2, 3, 4],
-            "parent_id": [None, 1, 2, 3],
-            "y": [0, 1.6667, 1.333, 1.333],
-            "x": [1, 0.33333, 1.66667, 1.66667],
-            "area": [1, 2, 3, 4],
+            'seg_id': [1, 2, 3, 4],
+            'id': [1, 2, 3, 4],
+            'parent_id': [None, 1, 2, 3],
+            'y': [0, 1.6667, 1.333, 1.333],
+            'x': [1, 0.33333, 1.66667, 1.66667],
+            'area': [1, 2, 3, 4],
         }
         df = pd.DataFrame(data)
 
         tracks = tracks_from_df(
-            df, segmentation, scale=(1, 1, 1), features={"Area": "area"}
+            df, segmentation, scale=(1, 1, 1), features={'Area': 'area'}
         )  # Area column provided by the dataframe (import_external_tracks_dialog is in charge of mapping a custom column to a column named 'area' (to be updated in future version that supports additional measured features)
 
         assert tracks._get_node_attr(1, NodeAttr.AREA.value) == 1
@@ -246,14 +248,14 @@ class TestLoadTracks:
     def test_load_sample_data(self):
         test_dir = os.path.abspath(__file__)
         example_csv = os.path.abspath(
-            os.path.join(test_dir, "../hela_example_tracks.csv")
+            os.path.join(test_dir, '../hela_example_tracks.csv')
         )
 
         df = pd.read_csv(example_csv)
 
         # Retrieve selected columns for each required field, and optional columns for additional attributes
         name_map = {
-            "time": "t",
+            'time': 't',
         }
         # Create new columns for each feature based on the original column values
         for feature, column in name_map.items():

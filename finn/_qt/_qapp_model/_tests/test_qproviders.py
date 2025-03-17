@@ -73,9 +73,7 @@ def test_provide_viewer_or_raise(make_napari_viewer):
 def test_provide_qt_viewer_or_raise(make_napari_viewer):
     """Check `_provide_qt_viewer_or_raise` raises or returns `QtViewer`."""
     # raises when no QtViewer
-    with pytest.raises(
-        RuntimeError, match='No current `QtViewer` found. test'
-    ):
+    with pytest.raises(RuntimeError, match='No current `QtViewer` found. test'):
         _provide_qt_viewer_or_raise(msg='test')
 
     # create QtViewer

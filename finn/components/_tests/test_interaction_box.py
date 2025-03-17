@@ -28,13 +28,9 @@ def test_transform_box_vertices_from_bounds():
     top_left = 0, 0
     bottom_right = 10, 10
     # works in vispy coordinates, so x and y are swapped
-    vertices = generate_interaction_box_vertices(
-        top_left, bottom_right, handles=False
-    )
+    vertices = generate_interaction_box_vertices(top_left, bottom_right, handles=False)
     np.testing.assert_allclose(vertices, expected[:4, ::-1])
-    vertices = generate_interaction_box_vertices(
-        top_left, bottom_right, handles=True
-    )
+    vertices = generate_interaction_box_vertices(top_left, bottom_right, handles=True)
     np.testing.assert_allclose(vertices, expected[:, ::-1])
 
 

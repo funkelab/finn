@@ -1,4 +1,3 @@
-import finn
 from qtpy.QtWidgets import (
     QGroupBox,
     QPushButton,
@@ -6,6 +5,7 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
+import finn
 from finn.track_data_views.views_coordinator.tracks_viewer import TracksViewer
 
 
@@ -17,11 +17,11 @@ class EditingMenu(QWidget):
         self.tracks_viewer.selected_nodes.list_updated.connect(self.update_buttons)
         layout = QVBoxLayout()
 
-        node_box = QGroupBox("Edit Node(s)")
+        node_box = QGroupBox('Edit Node(s)')
         node_box.setMaximumHeight(60)
         node_box_layout = QVBoxLayout()
 
-        self.delete_node_btn = QPushButton("Delete [D]")
+        self.delete_node_btn = QPushButton('Delete [D]')
         self.delete_node_btn.clicked.connect(self.tracks_viewer.delete_node)
         self.delete_node_btn.setEnabled(False)
         # self.split_node_btn = QPushButton("Set split [S]")
@@ -41,14 +41,14 @@ class EditingMenu(QWidget):
 
         node_box.setLayout(node_box_layout)
 
-        edge_box = QGroupBox("Edit Edge(s)")
+        edge_box = QGroupBox('Edit Edge(s)')
         edge_box.setMaximumHeight(100)
         edge_box_layout = QVBoxLayout()
 
-        self.delete_edge_btn = QPushButton("Break [B]")
+        self.delete_edge_btn = QPushButton('Break [B]')
         self.delete_edge_btn.clicked.connect(self.tracks_viewer.delete_edge)
         self.delete_edge_btn.setEnabled(False)
-        self.create_edge_btn = QPushButton("Add [A]")
+        self.create_edge_btn = QPushButton('Add [A]')
         self.create_edge_btn.clicked.connect(self.tracks_viewer.create_edge)
         self.create_edge_btn.setEnabled(False)
 
@@ -57,10 +57,10 @@ class EditingMenu(QWidget):
 
         edge_box.setLayout(edge_box_layout)
 
-        self.undo_btn = QPushButton("Undo (Z)")
+        self.undo_btn = QPushButton('Undo (Z)')
         self.undo_btn.clicked.connect(self.tracks_viewer.undo)
 
-        self.redo_btn = QPushButton("Redo (R)")
+        self.redo_btn = QPushButton('Redo (R)')
         self.redo_btn.clicked.connect(self.tracks_viewer.redo)
 
         layout.addWidget(node_box)

@@ -31,8 +31,7 @@ if (
 ):  # pragma: no cover
     try:
         NUMPY_VERSION_IS_THREADSAFE = (
-            'cibw-run'
-            not in np.show_config('dicts')['Python Information']['path']  # type: ignore
+            'cibw-run' not in np.show_config('dicts')['Python Information']['path']  # type: ignore
         )
     except (KeyError, TypeError):
         NUMPY_VERSION_IS_THREADSAFE = True
@@ -40,9 +39,7 @@ else:
     NUMPY_VERSION_IS_THREADSAFE = True
 
 
-def limit_numpy1x_threads_on_macos_arm() -> (
-    None
-):  # pragma: no cover (macos only code)
+def limit_numpy1x_threads_on_macos_arm() -> None:  # pragma: no cover (macos only code)
     """Set openblas to use single thread on macOS arm64 to prevent numpy crash.
 
     On NumPy version<2 wheels on macOS ARM64 architectures, a BusError is
@@ -74,9 +71,7 @@ def limit_numpy1x_threads_on_macos_arm() -> (
     # dynamic library at this location.
     blas_lib = list((numpy_dir / '.dylibs').glob('libopenblas*.dylib'))
     if not blas_lib:
-        logging.warning(
-            'libopenblas not found during try to prevent numpy crash'
-        )
+        logging.warning('libopenblas not found during try to prevent numpy crash')
         return
     blas = ctypes.CDLL(str(blas_lib[0]), mode=os.RTLD_NOLOAD)
     for suffix in ('', '64_', '_64'):

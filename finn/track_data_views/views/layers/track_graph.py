@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 def update_finn_tracks(
     tracks: SolutionTracks,
 ):
-    """Function to take a networkx graph with assigned track_ids and return the data 
+    """Function to take a networkx graph with assigned track_ids and return the data
     needed to add to a finn tracks layer.
 
     Args:
@@ -96,14 +96,12 @@ class TrackGraph(finn.layers.Tracks):
         )
 
         self.colormaps_dict['track_id'] = self.tracks_viewer.colormap
-        self.tracks_layer_graph = copy.deepcopy(
-            self.graph
-        )  # for restoring graph later
+        self.tracks_layer_graph = copy.deepcopy(self.graph)  # for restoring graph later
         # just to 'refresh' the track_id colormap, we do not actually use turbo
         self.colormap = 'turbo'
 
     def _refresh(self):
-        """Refreshes the displayed tracks based on the graph in the current 
+        """Refreshes the displayed tracks based on the graph in the current
         tracks_viewer.tracks
         """
 

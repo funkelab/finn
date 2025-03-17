@@ -15,7 +15,6 @@ from finn.utils.migrations import _DeprecatingDict
 from finn.utils.misc import all_subclasses
 
 if TYPE_CHECKING:
-    import typing
 
     import finn.types
 
@@ -24,9 +23,7 @@ try:
 except ModuleNotFoundError:
     pytest.skip('Cannot test magicgui without qtpy.', allow_module_level=True)
 except RuntimeError:
-    pytest.skip(
-        'Cannot test magicgui without Qt bindings.', allow_module_level=True
-    )
+    pytest.skip('Cannot test magicgui without Qt bindings.', allow_module_level=True)
 
 
 # only test the first of each layer type
@@ -65,7 +62,7 @@ def test_add_layer_data_to_viewer_optional(make_napari_viewer):
     viewer = make_napari_viewer()
 
     @magicgui
-    def func_optional(a: bool) -> 'typing.Optional[finn.types.ImageData]':
+    def func_optional(a: bool) -> 'finn.types.ImageData | None':
         if a:
             return np.zeros((10, 10))
         return None
@@ -83,9 +80,7 @@ def test_add_layer_data_to_viewer_optional(make_napari_viewer):
 
 
 @pytest.mark.parametrize(('LayerType', 'data', 'ndim'), test_data)
-def test_magicgui_add_future_data(
-    qtbot, make_napari_viewer, LayerType, data, ndim
-):
+def test_magicgui_add_future_data(qtbot, make_napari_viewer, LayerType, data, ndim):
     """Test that annotating with Future[] works."""
     from concurrent.futures import Future
     from functools import partial
@@ -319,9 +314,7 @@ def test_mgui_forward_refs(name, monkeypatch):
     monkeypatch.delitem(sys.modules, 'napari')
     monkeypatch.delitem(sys.modules, 'finn.viewer')
     monkeypatch.delitem(sys.modules, 'finn.types')
-    monkeypatch.setattr(
-        'finn.utils.action_manager.action_manager._actions', {}
-    )
+    monkeypatch.setattr('finn.utils.action_manager.action_manager._actions', {})
     # need to clear all of these submodules too, otherwise the layers are oddly not
     # subclasses of finn.layers.Layer, and finn.layers.NAMES
     # oddly ends up as an empty set

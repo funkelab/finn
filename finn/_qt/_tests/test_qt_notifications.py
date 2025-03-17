@@ -82,12 +82,8 @@ def _raise_on_show(monkeypatch, qtbot):
 
         return _raise_on_call
 
-    monkeypatch.setattr(
-        NapariQtNotification, 'show', raise_prepare('notification show')
-    )
-    monkeypatch.setattr(
-        TracebackDialog, 'show', raise_prepare('traceback show')
-    )
+    monkeypatch.setattr(NapariQtNotification, 'show', raise_prepare('notification show'))
+    monkeypatch.setattr(TracebackDialog, 'show', raise_prepare('traceback show'))
     monkeypatch.setattr(
         NapariQtNotification,
         'close_with_fade',
@@ -130,9 +126,7 @@ def _ensure_qtbot(monkeypatch, qtbot):
 
 def test_clean_current_path_exist(make_napari_viewer):
     """If this test fail then you need to fix also clean_current fixture"""
-    assert isinstance(
-        make_napari_viewer().window._qt_viewer._welcome_widget, QWidget
-    )
+    assert isinstance(make_napari_viewer().window._qt_viewer._welcome_widget, QWidget)
 
 
 @pytest.mark.usefixtures('_clean_current')
@@ -153,9 +147,7 @@ def test_notification_manager_via_gui(
     warnButton.clicked.connect(warn_func)
     qtbot.addWidget(errButton)
     qtbot.addWidget(warnButton)
-    monkeypatch.setattr(
-        NapariQtNotification, 'show_notification', lambda x: None
-    )
+    monkeypatch.setattr(NapariQtNotification, 'show_notification', lambda x: None)
     with notification_manager:
         for btt, expected_message in [
             (errButton, 'error!'),
@@ -243,9 +235,7 @@ def test_notification_error(count_show, monkeypatch):
     settings = get_settings()
 
     monkeypatch.delenv('NAPARI_CATCH_ERRORS', raising=False)
-    monkeypatch.setattr(
-        NapariQtNotification, 'close_with_fade', lambda x, y: None
-    )
+    monkeypatch.setattr(NapariQtNotification, 'close_with_fade', lambda x, y: None)
     monkeypatch.setattr(
         settings.application,
         'gui_notification_level',
@@ -270,9 +260,7 @@ def test_notification_error(count_show, monkeypatch):
 def test_notifications_error_with_threading(make_napari_viewer, monkeypatch):
     """Test notifications of `threading` threads, using a dask example."""
     random_image = da.random.random((10, 10))
-    monkeypatch.setattr(
-        NapariQtNotification, 'show_notification', lambda x: None
-    )
+    monkeypatch.setattr(NapariQtNotification, 'show_notification', lambda x: None)
     with notification_manager:
         viewer = make_napari_viewer(strict_qt=False)
         viewer.add_image(random_image)

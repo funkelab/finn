@@ -1,7 +1,6 @@
 import re
 import sys
-from collections.abc import Generator
-from typing import Callable
+from collections.abc import Callable, Generator
 
 import numpy as np
 
@@ -28,9 +27,7 @@ def get_tb_formatter() -> Callable[[ExcInfo, bool, str], str]:
     try:
         import IPython.core.ultratb
 
-        def format_exc_info(
-            info: ExcInfo, as_html: bool, color='Neutral'
-        ) -> str:
+        def format_exc_info(info: ExcInfo, as_html: bool, color='Neutral') -> str:
             # avoid verbose printing of the array data
             with np.printoptions(precision=5, threshold=10, edgeitems=2):
                 vbtb = IPython.core.ultratb.VerboseTB(color_scheme=color)
@@ -78,9 +75,7 @@ def get_tb_formatter() -> Callable[[ExcInfo, bool, str], str]:
                 info = (type(exc), exc, exc.__traceback__)
                 return cgitb.html(info)
 
-            def format_exc_info(
-                info: ExcInfo, as_html: bool, color=None
-            ) -> str:
+            def format_exc_info(info: ExcInfo, as_html: bool, color=None) -> str:
                 # avoid verbose printing of the array data
                 with np.printoptions(precision=5, threshold=10, edgeitems=2):
                     if as_html:
@@ -91,9 +86,7 @@ def get_tb_formatter() -> Callable[[ExcInfo, bool, str], str]:
                         # remove superfluous whitespace
                         html = html.replace('<br>\n', '\n')
                         # but retain it around the <small> bits
-                        html = re.sub(
-                            r'(<tr><td><small.*</tr>)', '<br>\\1<br>', html
-                        )
+                        html = re.sub(r'(<tr><td><small.*</tr>)', '<br>\\1<br>', html)
                         # weird 2-part syntax is a workaround for hard-to-grep text.
                         html = html.replace(
                             '<p>A problem occurred in a Python script.  '
@@ -120,9 +113,7 @@ def get_tb_formatter() -> Callable[[ExcInfo, bool, str], str]:
 
         else:
 
-            def format_exc_info(
-                info: ExcInfo, as_html: bool, color=None
-            ) -> str:
+            def format_exc_info(info: ExcInfo, as_html: bool, color=None) -> str:
                 # avoid verbose printing of the array data
                 with np.printoptions(precision=5, threshold=10, edgeitems=2):
                     tb_text = ''.join(traceback.format_exception(*info))

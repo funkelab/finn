@@ -9,16 +9,13 @@ import uuid
 import warnings
 from abc import ABC, ABCMeta, abstractmethod
 from collections import defaultdict
-from collections.abc import Generator, Hashable, Mapping, Sequence
+from collections.abc import Callable, Generator, Hashable, Mapping, Sequence
 from contextlib import contextmanager
 from functools import cached_property
 from typing import (
     TYPE_CHECKING,
     Any,
-    Callable,
     ClassVar,
-    Optional,
-    Union,
 )
 
 import magicgui as mgui
@@ -301,9 +298,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
     _modeclass: type[StringEnum] = Mode
     _projectionclass: type[StringEnum] = BaseProjectionMode
 
-    ModeCallable = Callable[
-        ['Layer', Event], Union[None, Generator[None, None, None]]
-    ]
+    ModeCallable = Callable[['Layer', Event], None | Generator[None, None, None]]
 
     _drag_modes: ClassVar[dict[StringEnum, ModeCallable]] = {
         Mode.PAN_ZOOM: no_op,
@@ -413,9 +408,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
             scale = [1] * ndim
         if translate is None:
             translate = [0] * ndim
-        self._initial_affine = coerce_affine(
-            affine, ndim=ndim, name='physical2world'
-        )
+        self._initial_affine = coerce_affine(affine, ndim=ndim, name='physical2world')
         self._transforms: TransformChain[Affine] = TransformChain(
             [
                 Affine(np.ones(ndim), np.zeros(ndim), name='tile2data'),
@@ -518,7 +511,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         cls = type(self)
         return f'<{cls.__name__} layer {self.name!r} at {hex(id(self))}>'
 
-    def _mode_setter_helper(self, mode_in: Union[Mode, str]) -> StringEnum:
+    def _mode_setter_helper(self, mode_in: Mode | str) -> StringEnum:
         """
         Helper to manage callbacks in multiple layers
 
@@ -553,9 +546,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
 
         if mode not in self._modeclass:
             raise ValueError(
-                trans._(
-                    'Mode not recognized: {mode}', deferred=True, mode=mode
-                )
+                trans._('Mode not recognized: {mode}', deferred=True, mode=mode)
             )
 
         for callback_list, mode_dict in [
@@ -563,9 +554,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
             (self.mouse_move_callbacks, self._move_modes),
             (
                 self.mouse_double_click_callbacks,
-                getattr(
-                    self, '_double_click_modes', defaultdict(lambda: no_op)
-                ),
+                getattr(self, '_double_click_modes', defaultdict(lambda: no_op)),
             ),
         ]:
             if mode_dict[self._mode] in callback_list:
@@ -588,9 +577,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
     def update_transform_box_visibility(self, visible):
         if 'transform_box' in self._overlays:
             TRANSFORM = self._modeclass.TRANSFORM  # type: ignore[attr-defined]
-            self._overlays['transform_box'].visible = (
-                self.mode == TRANSFORM and visible
-            )
+            self._overlays['transform_box'].visible = self.mode == TRANSFORM and visible
 
     def update_highlight_visibility(self, visible):
         self._highlight_visible = visible
@@ -608,7 +595,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         return str(self._mode)
 
     @mode.setter
-    def mode(self, mode: Union[Mode, str]) -> None:
+    def mode(self, mode: Mode | str) -> None:
         mode_enum = self._mode_setter_helper(mode)
         if mode_enum == self._mode:
             return
@@ -655,7 +642,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         return self._name
 
     @name.setter
-    def name(self, name: Optional[str]) -> None:
+    def name(self, name: str | None) -> None:
         if name == self.name:
             return
         if not name:
@@ -834,7 +821,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         return self._transforms['data2physical'].axis_labels
 
     @axis_labels.setter
-    def axis_labels(self, axis_labels: Optional[Sequence[str]]) -> None:
+    def axis_labels(self, axis_labels: Sequence[str] | None) -> None:
         prev = self._transforms['data2physical'].axis_labels
         # mypy bug https://github.com/python/mypy/issues/3004
         self._transforms['data2physical'].axis_labels = axis_labels  # type: ignore[assignment]
@@ -847,7 +834,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         return self._transforms['data2physical'].units
 
     @units.setter
-    def units(self, units: Optional[Sequence[pint.Unit]]) -> None:
+    def units(self, units: Sequence[pint.Unit] | None) -> None:
         prev = self.units
         # mypy bug https://github.com/python/mypy/issues/3004
         self._transforms['data2physical'].units = units  # type: ignore[assignment]
@@ -860,7 +847,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         return self._transforms['data2physical'].scale
 
     @scale.setter
-    def scale(self, scale: Optional[npt.NDArray]) -> None:
+    def scale(self, scale: npt.NDArray | None) -> None:
         if scale is None:
             scale = np.array([1] * self.ndim)
         self._transforms['data2physical'].scale = np.array(scale)
@@ -906,13 +893,11 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         return self._transforms['physical2world']
 
     @affine.setter
-    def affine(self, affine: Union[npt.ArrayLike, Affine]) -> None:
+    def affine(self, affine: npt.ArrayLike | Affine) -> None:
         # Assignment by transform name is not supported by TransformChain and
         # EventedList, so use the integer index instead. For more details, see:
         # https://github.com/napari/napari/issues/3058
-        self._transforms[2] = coerce_affine(
-            affine, ndim=self.ndim, name='physical2world'
-        )
+        self._transforms[2] = coerce_affine(affine, ndim=self.ndim, name='physical2world')
         self.refresh()
         self.events.affine()
 
@@ -1007,9 +992,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         extent_world : array, shape (2, D)
         """
         # Get full nD bounding box
-        return get_extent_world(
-            self._extent_data_augmented, self._data_to_world
-        )
+        return get_extent_world(self._extent_data_augmented, self._data_to_world)
 
     @cached_property
     def extent(self) -> Extent:
@@ -1258,12 +1241,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
     @experimental_clipping_planes.setter
     def experimental_clipping_planes(
         self,
-        value: Union[
-            dict,
-            ClippingPlane,
-            list[Union[ClippingPlane, dict]],
-            ClippingPlaneList,
-        ],
+        value: dict | ClippingPlane | list[ClippingPlane | dict] | ClippingPlaneList,
     ) -> None:
         self._experimental_clipping_planes.clear()
         if value is None:
@@ -1334,9 +1312,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         else:
             world_slice = _ThickNDSlice.from_dims(dims)
         order_array = (
-            np.arange(world_ndim)
-            if dims.order is None
-            else np.asarray(dims.order)
+            np.arange(world_ndim) if dims.order is None else np.asarray(dims.order)
         )
         order = tuple(
             self._world_to_layer_dims(
@@ -1375,10 +1351,10 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         self,
         position: npt.ArrayLike,
         *,
-        view_direction: Optional[npt.ArrayLike] = None,
-        dims_displayed: Optional[list[int]] = None,
+        view_direction: npt.ArrayLike | None = None,
+        dims_displayed: list[int] | None = None,
         world: bool = False,
-    ) -> Optional[tuple]:
+    ) -> tuple | None:
         """Value of the data at a position.
 
         If the layer is not visible, return None.
@@ -1447,12 +1423,10 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
 
     def _get_value_3d(
         self,
-        start_point: Optional[np.ndarray],
-        end_point: Optional[np.ndarray],
+        start_point: np.ndarray | None,
+        end_point: np.ndarray | None,
         dims_displayed: list[int],
-    ) -> Union[
-        float, int, None, tuple[Union[float, int, None], Optional[int]]
-    ]:
+    ) -> float | int | None | tuple[float | int | None, int | None]:
         """Get the layer data value along a ray
 
         Parameters
@@ -1505,15 +1479,9 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         end_position = np.asarray(end_position)
         view_direction = np.asarray(view_direction)
 
-        start_position = self._world_to_displayed_data(
-            start_position, dims_displayed
-        )
-        end_position = self._world_to_displayed_data(
-            end_position, dims_displayed
-        )
-        view_direction = self._world_to_displayed_data_ray(
-            view_direction, dims_displayed
-        )
+        start_position = self._world_to_displayed_data(start_position, dims_displayed)
+        end_position = self._world_to_displayed_data(end_position, dims_displayed)
+        view_direction = self._world_to_displayed_data_ray(view_direction, dims_displayed)
         return drag_data_to_projected_distance(
             start_position, end_position, view_direction, vector
         )
@@ -1548,7 +1516,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
 
     def refresh(
         self,
-        event: Optional[Event] = None,
+        event: Event | None = None,
         *,
         thumbnail: bool = True,
         data_displayed: bool = True,
@@ -1752,9 +1720,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         transpose_inverse_transform = submatrix.T
 
         # transform the vector
-        transformed_vector = np.matmul(
-            transpose_inverse_transform, vector_world
-        )
+        transformed_vector = np.matmul(transpose_inverse_transform, vector_world)
 
         transformed_vector /= np.linalg.norm(transformed_vector)
 
@@ -1820,9 +1786,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         ndarray
             The corresponding layer dimensions with the same ordering as the given world dimensions.
         """
-        return self._world_to_layer_dims_impl(
-            world_dims, ndim_world, self.ndim
-        )
+        return self._world_to_layer_dims_impl(world_dims, ndim_world, self.ndim)
 
     @staticmethod
     def _world_to_layer_dims_impl(
@@ -1844,9 +1808,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         """An axis aligned (ndisplay, 2) bounding box around the data"""
         return self._extent_data[:, dims_displayed].T
 
-    def _display_bounding_box_augmented(
-        self, dims_displayed: list[int]
-    ) -> npt.NDArray:
+    def _display_bounding_box_augmented(self, dims_displayed: list[int]) -> npt.NDArray:
         """An augmented, axis-aligned (ndisplay, 2) bounding box.
 
         This bounding box includes the size of the layer in best resolution, including required padding
@@ -1898,7 +1860,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         view_direction: npt.ArrayLike,
         dims_displayed: list[int],
         world: bool = True,
-    ) -> tuple[Optional[np.ndarray], Optional[np.ndarray]]:
+    ) -> tuple[np.ndarray | None, np.ndarray | None]:
         """Get the start and end point for the ray extending
         from a point through the data bounding box.
 
@@ -1961,7 +1923,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         dims_displayed: list[int],
         bounding_box: npt.NDArray,
         world: bool = True,
-    ) -> tuple[Optional[np.ndarray], Optional[np.ndarray]]:
+    ) -> tuple[np.ndarray | None, np.ndarray | None]:
         """Get the start and end point for the ray extending
         from a point through the data bounding box.
 
@@ -1998,12 +1960,8 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         # get the view direction and click position in data coords
         # for the displayed dimensions only
         if world is True:
-            view_dir = self._world_to_displayed_data_ray(
-                view_direction, dims_displayed
-            )
-            click_pos_data = self._world_to_displayed_data(
-                position, dims_displayed
-            )
+            view_dir = self._world_to_displayed_data_ray(view_direction, dims_displayed)
+            click_pos_data = self._world_to_displayed_data(position, dims_displayed)
         else:
             # adjust for any offset between viewer and data coordinates
             position = self._get_offset_data_position(position)
@@ -2025,10 +1983,8 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
                 click_pos_data, view_dir, bounding_box, front_face_normal
             )
         )
-        end_point_displayed_dimensions = (
-            intersect_line_with_axis_aligned_bounding_box_3d(
-                click_pos_data, view_dir, bounding_box, back_face_normal
-            )
+        end_point_displayed_dimensions = intersect_line_with_axis_aligned_bounding_box_3d(
+            click_pos_data, view_dir, bounding_box, back_face_normal
         )
 
         # add the coordinates for the axes not displayed
@@ -2039,9 +1995,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
 
         return start_point, end_point
 
-    def _update_draw(
-        self, scale_factor, corner_pixels_displayed, shape_threshold
-    ):
+    def _update_draw(self, scale_factor, corner_pixels_displayed, shape_threshold):
         """Update canvas scale and corner values on draw.
 
         For layer multiscale determining if a new resolution level or tile is
@@ -2067,19 +2021,15 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         all_corners = list(itertools.product(*corner_pixels_displayed.T))
         # Note that we ignore the first transform which is tile2data
         data_corners = (
-            self._transforms[1:]
-            .simplified.set_slice(displayed_axes)
-            .inverse(all_corners)
+            self._transforms[1:].simplified.set_slice(displayed_axes).inverse(all_corners)
         )
 
         # find the maximal data-axis-aligned bounding box containing all four
         # canvas corners and round them to ints
-        data_bbox = np.stack(
-            [np.min(data_corners, axis=0), np.max(data_corners, axis=0)]
+        data_bbox = np.stack([np.min(data_corners, axis=0), np.max(data_corners, axis=0)])
+        data_bbox_int = np.stack([np.floor(data_bbox[0]), np.ceil(data_bbox[1])]).astype(
+            int
         )
-        data_bbox_int = np.stack(
-            [np.floor(data_bbox[0]), np.ceil(data_bbox[1])]
-        ).astype(int)
 
         if self._slice_input.ndisplay == 2 and self.multiscale:
             level, scaled_corners = compute_multiscale_level_and_corners(
@@ -2094,9 +2044,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
             # handle now and downsample_factors is also only on image layers.
             max_coords = np.take(self.data[level].shape, displayed_axes) - 1
             corners[:, displayed_axes] = np.clip(scaled_corners, 0, max_coords)
-            display_shape = tuple(
-                corners[1, displayed_axes] - corners[0, displayed_axes]
-            )
+            display_shape = tuple(corners[1, displayed_axes] - corners[0, displayed_axes])
             if any(s == 0 for s in display_shape):
                 return
             if self.data_level != level or not np.array_equal(
@@ -2142,9 +2090,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
             components['layer_base'] = self.name
             components['source_type'] = 'sample'
             try:
-                components['plugin'] = pm.get_manifest(
-                    self.source.sample[0]
-                ).display_name
+                components['plugin'] = pm.get_manifest(self.source.sample[0]).display_name
             except KeyError:
                 components['plugin'] = self.source.sample[0]
             return components
@@ -2169,20 +2115,17 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
             source_str += '\n' + source_info['layer_base']
         if source_info['source_type']:
             source_str += (
-                '\n'
-                + source_info['source_type']
-                + ' : '
-                + source_info['plugin']
+                '\n' + source_info['source_type'] + ' : ' + source_info['plugin']
             )
 
         return source_str
 
     def get_status(
         self,
-        position: Optional[npt.ArrayLike] = None,
+        position: npt.ArrayLike | None = None,
         *,
-        view_direction: Optional[npt.ArrayLike] = None,
-        dims_displayed: Optional[list[int]] = None,
+        view_direction: npt.ArrayLike | None = None,
+        dims_displayed: list[int] | None = None,
         world: bool = False,
     ) -> dict:
         """
@@ -2224,17 +2167,15 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
                 position[-self.ndim :], value
             )
         else:
-            source_info['coordinates'] = generate_layer_coords_status(
-                position, value
-            )
+            source_info['coordinates'] = generate_layer_coords_status(position, value)
         return source_info
 
     def _get_tooltip_text(
         self,
         position: npt.NDArray,
         *,
-        view_direction: Optional[np.ndarray] = None,
-        dims_displayed: Optional[list[int]] = None,
+        view_direction: np.ndarray | None = None,
+        dims_displayed: list[int] | None = None,
         world: bool = False,
     ) -> str:
         """
@@ -2261,7 +2202,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         """
         return ''
 
-    def save(self, path: str, plugin: Optional[str] = None) -> list[str]:
+    def save(self, path: str, plugin: str | None = None) -> list[str]:
         """Save this layer to ``path`` with default (or specified) plugin.
 
         Parameters
@@ -2311,8 +2252,8 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
     def create(
         cls,
         data: Any,
-        meta: Optional[Mapping] = None,
-        layer_type: Optional[str] = None,
+        meta: Mapping | None = None,
+        layer_type: str | None = None,
     ) -> Layer:
         """Create layer from `data` of type `layer_type`.
 

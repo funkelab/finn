@@ -89,9 +89,7 @@ def test_list_view_keypress(qtbot):
     root.selection = {first}
     assert first in root.selection
     # delete removes the item from the python model too
-    view.keyPressEvent(
-        QKeyEvent(QEvent.KeyPress, Qt.Key_Delete, Qt.NoModifier)
-    )
+    view.keyPressEvent(QKeyEvent(QEvent.KeyPress, Qt.Key_Delete, Qt.NoModifier))
     assert first not in root
 
 

@@ -146,9 +146,7 @@ def test_line_fixed_angles(create_known_shapes_layer):
     # Check new shape added at coordinates
     assert len(layer.data) == n_shapes + 1
     # start should match mouse event
-    assert np.allclose(
-        layer.data[-1][0], np.asarray(known_non_shape).astype(float)
-    )
+    assert np.allclose(layer.data[-1][0], np.asarray(known_non_shape).astype(float))
     # With _fixed_aspect, the line end won't be at the end event
     assert not np.allclose(
         layer.data[-1][-1], np.asarray(known_non_shape_end).astype(float)
@@ -791,9 +789,7 @@ def test_after_in_add_mode_shape(mode, create_known_shapes_layer):
         'add_path',
     ],
 )
-def test_clicking_the_same_point_is_not_crashing(
-    mode, create_known_shapes_layer
-):
+def test_clicking_the_same_point_is_not_crashing(mode, create_known_shapes_layer):
     layer, n_shapes, _ = create_known_shapes_layer
 
     layer.mode = mode
@@ -1012,9 +1008,7 @@ def test_selecting_no_shapes_with_drag(mode, create_known_shapes_layer):
     assert len(layer.selected_data) == 0
 
 
-@pytest.mark.parametrize(
-    'attr', ['_move_modes', '_drag_modes', '_cursor_modes']
-)
+@pytest.mark.parametrize('attr', ['_move_modes', '_drag_modes', '_cursor_modes'])
 def test_all_modes_covered(attr):
     """
     Test that all dictionaries modes have all the keys, this simplify the handling logic
