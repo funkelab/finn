@@ -568,7 +568,7 @@ class QtViewer(QSplitter):
                 warnings.filterwarnings('ignore')
                 console = QtConsole(self.viewer, style_sheet=self.styleSheet())
                 console.push(
-                    {'napari': napari, 'action_manager': action_manager}
+                    {'napari': finn, 'action_manager': action_manager}
                 )
                 with CallerFrame(_in_napari) as c:
                     if c.frame.f_globals.get('__name__', '') == '__main__':
