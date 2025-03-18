@@ -1,7 +1,7 @@
 """Contains napari color constants and utilities."""
 
-from collections.abc import Iterator
-from typing import Callable, Union
+from collections.abc import Callable, Iterator
+from typing import Union
 
 import numpy as np
 
@@ -19,17 +19,17 @@ class ColorValue(np.ndarray):
     use the ``validate`` method to coerce a value to a single color.
     """
 
-    def __new__(cls, value: ColorValueParam) -> 'ColorValue':
+    def __new__(cls, value: ColorValueParam) -> "ColorValue":
         return cls.validate(value)
 
     @classmethod
     def __get_validators__(
         cls,
-    ) -> Iterator[Callable[[ColorValueParam], 'ColorValue']]:
+    ) -> Iterator[Callable[[ColorValueParam], "ColorValue"]]:
         yield cls.validate
 
     @classmethod
-    def validate(cls, value: ColorValueParam) -> 'ColorValue':
+    def validate(cls, value: ColorValueParam) -> "ColorValue":
         """Validates and coerces the given value into an array storing one color.
 
         Parameters
@@ -85,20 +85,20 @@ class ColorArray(np.ndarray):
     use the ``validate`` method to coerce a value to an array of colors.
     """
 
-    def __new__(cls, value: ColorArrayParam) -> 'ColorArray':
+    def __new__(cls, value: ColorArrayParam) -> "ColorArray":
         return cls.validate(value)
 
     @classmethod
     def __get_validators__(
         cls,
-    ) -> Iterator[Callable[[ColorArrayParam], 'ColorArray']]:
+    ) -> Iterator[Callable[[ColorArrayParam], "ColorArray"]]:
         yield cls.validate
 
     def __sizeof__(self) -> int:
         return super().__sizeof__() + self.nbytes
 
     @classmethod
-    def validate(cls, value: ColorArrayParam) -> 'ColorArray':
+    def validate(cls, value: ColorArrayParam) -> "ColorArray":
         """Validates and coerces the given value into an array storing many colors.
 
         Parameters
@@ -136,6 +136,6 @@ class ColorArray(np.ndarray):
         """
         # Special case an empty supported sequence because transform_color
         # warns and returns an array containing a default color in that case.
-        if isinstance(value, (np.ndarray, list, tuple)) and len(value) == 0:
+        if isinstance(value, np.ndarray | list | tuple) and len(value) == 0:
             return np.empty((0, 4), np.float32).view(cls)
         return transform_color(value).view(cls)

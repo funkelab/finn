@@ -3,17 +3,16 @@ from __future__ import annotations
 import random
 from typing import TYPE_CHECKING
 
-import finn
 import numpy as np
+
+import finn
 from finn.utils import DirectLabelColormap
 from finn.utils.action_manager import action_manager
 from finn.utils.notifications import show_info, show_warning
-from finn.utils.translations import trans
 
 if TYPE_CHECKING:
-    from finn.utils.events import Event
-
     from finn.track_data_views.views_coordinator.tracks_viewer import TracksViewer
+    from finn.utils.events import Event
 
 from finn.track_data_views.graph_attributes import NodeAttr
 
@@ -44,10 +43,8 @@ def _new_label(layer: TrackLabels, new_track_id=True):
         new_selected_label = np.max(layer.data) + 1
         if layer.selected_label == new_selected_label:
             show_info(
-                trans._(
-                    "Current selected label is not being used. You will need to use it first "
-                    "to be able to set the current select label to the next one available",
-                )
+                "Current selected label is not being used. You will need to use it first "
+                "to be able to set the current select label to the next one available"
             )
         else:
             if new_track_id:
@@ -57,13 +54,11 @@ def _new_label(layer: TrackLabels, new_track_id=True):
             layer.colormap.color_dict[new_selected_label] = (
                 layer.tracks_viewer.colormap.map(layer.selected_track)
             )
-            layer.colormap = DirectLabelColormap(
-                color_dict=layer.colormap.color_dict
-            )  # to refresh, otherwise you paint with a transparent label until you release the mouse
+            # to refresh, otherwise you paint with a transparent label until you
+            # release the mouse
+            layer.colormap = DirectLabelColormap(color_dict=layer.colormap.color_dict)
     else:
-        show_info(
-            trans._("Calculating empty label on non-numpy array is not supported")
-        )
+        show_info("Calculating empty label on non-numpy array is not supported")
 
 
 class TrackLabels(finn.layers.Labels):
@@ -72,7 +67,9 @@ class TrackLabels(finn.layers.Labels):
 
     @property
     def _type_string(self) -> str:
-        return "labels"  # to make sure that the layer is treated as labels layer for saving
+        return (
+            "labels"  # to make sure that the layer is treated as labels layer for saving
+        )
 
     def __init__(
         self,
@@ -127,20 +124,14 @@ class TrackLabels(finn.layers.Labels):
                     dims_displayed=event.dims_displayed,
                     world=True,
                 )
-
-                if (
-                    label is not None
-                    and label != 0
-                    and self.colormap.map(label)[-1] != 0
-                ):  # check opacity (=visibility) in the colormap
+                # check opacity (=visibility) in the colormap
+                if label is not None and label != 0 and self.colormap.map(label)[-1] != 0:
                     append = "Shift" in event.modifiers
                     self.tracks_viewer.selected_nodes.add(label, append)
 
         # Listen to paint events and changing the selected label
         self.events.paint.connect(self._on_paint)
-        self.tracks_viewer.selected_nodes.list_updated.connect(
-            self.update_selected_label
-        )
+        self.tracks_viewer.selected_nodes.list_updated.connect(self.update_selected_label)
         self.events.selected_label.connect(self._ensure_valid_label)
         self.events.mode.connect(self._check_mode)
         self.viewer.dims.events.current_step.connect(self._ensure_valid_label)
@@ -169,28 +160,28 @@ class TrackLabels(finn.layers.Labels):
 
     def _check_mode(self):
         """Check if the mode is valid and call the ensure_valid_label function"""
-
-        self.events.mode.disconnect(
-            self._check_mode
-        )  # here disconnecting the event listener is still necessary because self.mode = paint triggers the event internally and it is not blocked with event.blocker()
+        # here disconnecting the event listener is still necessary because
+        # self.mode = paint triggers the event internally and it is not blocked with
+        # event.blocker()
+        self.events.mode.disconnect(self._check_mode)
         if self.mode == "polygon":
-            show_info(
-                trans._(
-                    "Please use the paint tool to update the label",
-                )
-            )
+            show_info("Please use the paint tool to update the label")
             self.mode = "paint"
 
         self._ensure_valid_label()
         self.events.mode.connect(self._check_mode)
 
     def redo(self):
-        """Overwrite the redo functionality of the labels layer and invoke redo action on the tracks_viewer.tracks_controller first"""
+        """Overwrite the redo functionality of the labels layer and invoke redo action on
+        the tracks_viewer.tracks_controller first
+        """
 
         self.tracks_viewer.redo()
 
     def undo(self):
-        """Overwrite undo function and invoke undo action on the tracks_viewer.tracks_controller"""
+        """Overwrite undo function and invoke undo action on the
+        tracks_viewer.tracks_controller
+        """
 
         self.tracks_viewer.undo()
 
@@ -198,8 +189,8 @@ class TrackLabels(finn.layers.Labels):
         """_summary_
 
         Args:
-            event_val (list[tuple]): A list of paint "atoms" generated by the labels layer.
-                Each atom is a 3-tuple of arrays containing:
+            event_val (list[tuple]): A list of paint "atoms" generated by the labels
+                layer. Each atom is a 3-tuple of arrays containing:
                 - a numpy multi-index, pointing to the array elements that were
                 changed (a tuple with len ndims)
                 - the values corresponding to those elements before the change
@@ -257,9 +248,9 @@ class TrackLabels(finn.layers.Labels):
                     continue
                 time = pixels[0][0]
                 removed_node = old_value
-                assert (
-                    removed_node is not None
-                ), f"Node with label {old_value} in time {time} was not found"
+                assert removed_node is not None, (
+                    f"Node with label {old_value} in time {time} was not found"
+                )
                 # check if all pixels of old_value are removed
                 if np.sum(self.data[time] == old_value) == 0:
                     to_delete.append((removed_node, pixels))
@@ -279,8 +270,10 @@ class TrackLabels(finn.layers.Labels):
 
             if len(to_delete) > 0 and len(to_add) > 0:
                 show_warning(
-                    "This paint or fill operation completely replaced one label with a new label. This is currently not supported."
-                    " If you want to update the track id of the node, please edit the edges directly instead."
+                    "This paint or fill operation completely replaced one label with a "
+                    "new label. This is currently not supported."
+                    " If you want to update the track id of the node, please edit the "
+                    "edges directly instead."
                 )
                 self._revert_paint(event)
                 self.refresh()
@@ -308,7 +301,8 @@ class TrackLabels(finn.layers.Labels):
         with self.events.selected_label.blocker():
             highlighted = self.tracks_viewer.selected_nodes
 
-            # update the opacity of the cyclic label colormap values according to whether nodes are visible/invisible/highlighted
+            # update the opacity of the cyclic label colormap values according to
+            # whether nodes are visible/invisible/highlighted
             if visible == "all":
                 self.colormap.color_dict = {
                     key: np.array(
@@ -332,10 +326,8 @@ class TrackLabels(finn.layers.Labels):
 
             for node in highlighted:
                 self.colormap.color_dict[node][-1] = 1  # full opacity
-
-            self.colormap = DirectLabelColormap(
-                color_dict=self.colormap.color_dict
-            )  # create a new colormap from the updated colors (otherwise it does not refresh)
+            # create a new colormap from the updated colors (to ensure refresh)
+            self.colormap = DirectLabelColormap(color_dict=self.colormap.color_dict)
 
     def new_colormap(self):
         """Override existing function to generate new colormap on tracks_viewer and
@@ -360,17 +352,25 @@ class TrackLabels(finn.layers.Labels):
         """Make sure a valid label is selected, because it is not allowed to paint with a
         label that already exists at a different timepoint.
         Scenarios:
-        1. If a node with the selected label value (node id) exists at a different time point,
-        check if there is any node with the same track_id at the current time point
-            1.a if there is a node with the same track id, select that one, so that it can be used to update an existing node
-            1.b if there is no node with the same track id, create a new node id and paint with the track_id of the selected label.
-              This can be used to add a new node with the same track id at a time point where it does not (yet) exist (anymore).
-        2. if there is no existing node with this value in the graph, it is assume that you want to add a node with the current track id
-        Retrieve the track_id from self.current_track_id and use it to find if there are any nodes of this track id
-        at current time point
-        3. If no node with this label exists yet, it is valid and can be used to start a new track id.
-        Therefore, create a new node id and map a new color. Add it to the dictionary.
-        4. If a node with the label exists at the current time point, it is valid and can be used to update the existing node in a paint event. No action is needed"""
+        1. If a node with the selected label value (node id) exists at a different time
+            point, check if there is any node with the same track_id at the current time
+            point
+            1.a if there is a node with the same track id, select that one, so that it
+                can be used to update an existing node
+            1.b if there is no node with the same track id, create a new node id and
+                paint with the track_id of the selected label.
+              This can be used to add a new node with the same track id at a time point
+              where it does not (yet) exist (anymore).
+        2. if there is no existing node with this value in the graph, it is assume that
+            you want to add a node with the current track id
+        Retrieve the track_id from self.current_track_id and use it to find if there are
+        any nodes of this track id at current time point
+        3. If no node with this label exists yet, it is valid and can be used to start a
+            new track id. Therefore, create a new node id and map a new color.
+            Add it to the dictionary.
+        4. If a node with the label exists at the current time point, it is valid and
+            can be used to update the existing node in a paint event. No action is needed
+        """
 
         if self.tracks_viewer.tracks is not None and self.mode in (
             "fill",
@@ -394,12 +394,10 @@ class TrackLabels(finn.layers.Labels):
                     # we are changing the existing node. This is fine
                     pass
                 else:
-                    # if there is already a node in that track in this frame, edit that instead
+                    # if there is already a node in that track in this frame, edit that
+                    # instead
                     edit = False
-                    if (
-                        self.selected_track
-                        in self.tracks_viewer.tracks.track_id_to_node
-                    ):
+                    if self.selected_track in self.tracks_viewer.tracks.track_id_to_node:
                         for node in self.tracks_viewer.tracks.track_id_to_node[
                             self.selected_track
                         ]:
@@ -421,10 +419,12 @@ class TrackLabels(finn.layers.Labels):
                         )
 
             # the current node does not exist in the graph.
-            # Use the current selected_track as the track id (will be a new track if a new label was found with "m")
+            # Use the current selected_track as the track id (will be a new track if a
+            # new label was found with "m")
             # Check that the track id is not already in this frame.
             else:
-                # if there is already a node in that track in this frame, edit that instead
+                # if there is already a node in that track in this frame, edit that
+                # instead
                 edit = False
                 if self.selected_track in self.tracks_viewer.tracks.track_id_to_node:
                     for node in self.tracks_viewer.tracks.track_id_to_node[

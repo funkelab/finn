@@ -98,9 +98,7 @@ class LabelVispyColormap(VispyColormap):
         view_dtype: np.dtype,
         raw_dtype: np.dtype,
     ):
-        super().__init__(
-            colors=['w', 'w'], controls=None, interpolation='zero'
-        )
+        super().__init__(colors=["w", "w"], controls=None, interpolation="zero")
         if view_dtype.itemsize == 1:
             shader = auto_lookup_shader_uint8
         elif view_dtype.itemsize == 2:
@@ -113,15 +111,15 @@ class LabelVispyColormap(VispyColormap):
             # to 8-bit on the CPU before sending to the shader.
             # It should thus be impossible to reach this condition.
             raise ValueError(  # pragma: no cover
-                f'Cannot use dtype {view_dtype} with LabelVispyColormap'
+                f"Cannot use dtype {view_dtype} with LabelVispyColormap"
             )
 
         selection = colormap._selection_as_minimum_dtype(raw_dtype)
 
         self.glsl_map = (
-            shader.replace('$color_map_size', str(len(colormap.colors)))
-            .replace('$use_selection', str(colormap.use_selection).lower())
-            .replace('$selection', str(selection))
+            shader.replace("$color_map_size", str(len(colormap.colors)))
+            .replace("$use_selection", str(colormap.use_selection).lower())
+            .replace("$selection", str(selection))
         )
 
 
@@ -134,14 +132,14 @@ class DirectLabelVispyColormap(VispyColormap):
         color_map_size=255,
         multi=False,
     ):
-        colors = ['w', 'w']  # dummy values, since we use our own machinery
-        super().__init__(colors, controls=None, interpolation='zero')
+        colors = ["w", "w"]  # dummy values, since we use our own machinery
+        super().__init__(colors, controls=None, interpolation="zero")
         shader = direct_lookup_shader_many if multi else direct_lookup_shader
         self.glsl_map = (
-            shader.replace('$use_selection', str(use_selection).lower())
-            .replace('$selection', str(selection))
-            .replace('$scale', str(scale))
-            .replace('$color_map_size', str(color_map_size))
+            shader.replace("$use_selection", str(use_selection).lower())
+            .replace("$selection", str(selection))
+            .replace("$scale", str(scale))
+            .replace("$color_map_size", str(color_map_size))
         )
 
 
@@ -155,14 +153,14 @@ def build_textures_from_dict(
     """
     if len(color_dict) > 2**23:
         raise ValueError(  # pragma: no cover
-            'Cannot map more than 2**23 colors because of float32 precision. '
-            f'Got {len(color_dict)}'
+            "Cannot map more than 2**23 colors because of float32 precision. "
+            f"Got {len(color_dict)}"
         )
     if len(color_dict) > max_size**2:
         raise ValueError(
-            'Cannot create a 2D texture holding more than '
-            f'{max_size}**2={max_size**2} colors.'
-            f'Got {len(color_dict)}'
+            "Cannot create a 2D texture holding more than "
+            f"{max_size}**2={max_size**2} colors."
+            f"Got {len(color_dict)}"
         )
     data = np.zeros(
         (
@@ -187,15 +185,15 @@ def _select_colormap_texture(
 
     if color_texture is None:
         raise ValueError(  # pragma: no cover
-            f'Cannot build a texture for dtype {raw_dtype=} and {view_dtype=}'
+            f"Cannot build a texture for dtype {raw_dtype=} and {view_dtype=}"
         )
     return color_texture.reshape(256, -1, 4)
 
 
 class VispyLabelsLayer(VispyScalarFieldBaseLayer):
-    layer: 'Labels'
+    layer: "Labels"
 
-    def __init__(self, layer, node=None, texture_format='r8') -> None:
+    def __init__(self, layer, node=None, texture_format="r8") -> None:
         super().__init__(
             layer,
             node=node,
@@ -206,9 +204,7 @@ class VispyLabelsLayer(VispyScalarFieldBaseLayer):
         self.layer.events.labels_update.connect(self._on_partial_labels_update)
         self.layer.events.selected_label.connect(self._on_colormap_change)
         self.layer.events.show_selected_label.connect(self._on_colormap_change)
-        self.layer.events.iso_gradient_mode.connect(
-            self._on_iso_gradient_mode_change
-        )
+        self.layer.events.iso_gradient_mode.connect(self._on_iso_gradient_mode_change)
         self.layer.events.data.connect(self._on_colormap_change)
         # as we generate colormap texture based on the data type, we need to
         # update it when the data type changes
@@ -218,9 +214,7 @@ class VispyLabelsLayer(VispyScalarFieldBaseLayer):
         if isinstance(self.node, VolumeNode):
             rendering = self.layer.rendering
             self.node.method = (
-                rendering
-                if rendering != 'translucent'
-                else 'translucent_categorical'
+                rendering if rendering != "translucent" else "translucent_categorical"
             )
 
     def _on_colormap_change(self, event=None):
@@ -229,7 +223,7 @@ class VispyLabelsLayer(VispyScalarFieldBaseLayer):
         # in our constructor, we have access to the texture data we need
         if (
             event is not None
-            and event.type == 'selected_label'
+            and event.type == "selected_label"
             and not self.layer.show_selected_label
         ):
             return
@@ -248,19 +242,17 @@ class VispyLabelsLayer(VispyScalarFieldBaseLayer):
                 # The LabelColormap is EventedModel, so we need to make
                 # a copy instead of temporary overwrite the background_value
                 colormap = CyclicLabelColormap(**colormap.dict())
-                colormap.background_value = (
-                    colormap._background_as_minimum_dtype(raw_dtype)
+                colormap.background_value = colormap._background_as_minimum_dtype(
+                    raw_dtype
                 )
-            color_texture = _select_colormap_texture(
-                colormap, view_dtype, raw_dtype
-            )
+            color_texture = _select_colormap_texture(colormap, view_dtype, raw_dtype)
             self.node.cmap = LabelVispyColormap(
                 colormap, view_dtype=view_dtype, raw_dtype=raw_dtype
             )
-            self.node.shared_program['texture2D_values'] = Texture2D(
+            self.node.shared_program["texture2D_values"] = Texture2D(
                 color_texture,
-                internalformat='rgba32f',
-                interpolation='nearest',
+                internalformat="rgba32f",
+                interpolation="nearest",
             )
             self.texture_data = color_texture
 
@@ -285,12 +277,12 @@ class VispyLabelsLayer(VispyScalarFieldBaseLayer):
                 color_map_size=val_texture.shape[0],
                 multi=val_texture.shape[1] > 1,
             )
-            self.node.shared_program['texture2D_values'] = Texture2D(
+            self.node.shared_program["texture2D_values"] = Texture2D(
                 val_texture,
-                internalformat='rgba32f',
-                interpolation='nearest',
+                internalformat="rgba32f",
+                interpolation="nearest",
             )
-            self.node.shared_program['LUT_shape'] = val_texture.shape[:2]
+            self.node.shared_program["LUT_shape"] = val_texture.shape[:2]
         else:
             self.node.cmap = VispyColormap(*colormap)
 
@@ -310,9 +302,7 @@ class VispyLabelsLayer(VispyScalarFieldBaseLayer):
             self.layer.refresh()
             return
 
-        self.node._texture.scale_and_set_data(
-            event.data, copy=False, offset=event.offset
-        )
+        self.node._texture.scale_and_set_data(event.data, copy=False, offset=event.offset)
         self.node.update()
 
     def reset(self, event=None) -> None:
@@ -330,13 +320,13 @@ class LabelLayerNode(ScalarFieldLayerNode):
         self._image_node = LabelNode(
             (
                 None
-                if (texture_format is None or texture_format == 'auto')
+                if (texture_format is None or texture_format == "auto")
                 else np.zeros(
                     (1, 1),
                     dtype=get_dtype_from_vispy_texture_format(texture_format),
                 )
             ),
-            method='auto',
+            method="auto",
             texture_format=texture_format,
         )
 
@@ -347,14 +337,14 @@ class LabelLayerNode(ScalarFieldLayerNode):
             ),
             clim=[0, 2**23 - 1],
             texture_format=texture_format,
-            interpolation='nearest',
+            interpolation="nearest",
         )
 
     def get_node(self, ndisplay: int, dtype=None) -> Node:
         res = self._image_node if ndisplay == 2 else self._volume_node
 
         if (
-            res.texture_format != 'auto'
+            res.texture_format != "auto"
             and dtype is not None
             and _VISPY_FORMAT_TO_DTYPE[res.texture_format] != dtype
         ):

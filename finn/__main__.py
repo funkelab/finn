@@ -16,8 +16,8 @@ from textwrap import wrap
 from typing import Any
 
 from finn.errors import ReaderPluginError
-from finn.utils.translations import trans
 from finn.track_application_menus.main_app import MainApp
+from finn.utils.translations import trans
 
 
 class InfoAction(argparse.Action):
@@ -29,8 +29,8 @@ class InfoAction(argparse.Action):
 
         logging.basicConfig(level=logging.WARNING)
         print(sys_info())  # noqa: T201
-        print('Plugins:')  # noqa: T201
-        cli.list(fields='', sort='0', format='compact')
+        print("Plugins:")  # noqa: T201
+        cli.list(fields="", sort="0", format="compact")
         sys.exit()
 
 
@@ -41,9 +41,9 @@ class PluginInfoAction(argparse.Action):
         from npe2 import cli
 
         cli.list(
-            fields='name,version,npe2,contributions',
-            sort='name',
-            format='table',
+            fields="name,version,npe2,contributions",
+            sort="name",
+            format="table",
         )
         sys.exit()
 
@@ -81,20 +81,20 @@ def validate_unknown_args(unknown: list[str]) -> dict[str, Any]:
     out: dict[str, Any] = {}
     valid = set.union(*valid_add_kwargs().values())
     for i, raw_arg in enumerate(unknown):
-        if not raw_arg.startswith('--'):
+        if not raw_arg.startswith("--"):
             continue
-        arg = raw_arg.lstrip('-')
+        arg = raw_arg.lstrip("-")
 
-        key, *values = arg.split('=', maxsplit=1)
-        key = key.replace('-', '_')
+        key, *values = arg.split("=", maxsplit=1)
+        key = key.replace("-", "_")
         if key not in valid:
-            sys.exit(f'error: unrecognized argument: {raw_arg}')
+            sys.exit(f"error: unrecognized argument: {raw_arg}")
 
         if values:
             value = values[0]
         else:
-            if len(unknown) <= i + 1 or unknown[i + 1].startswith('--'):
-                sys.exit(f'error: argument {raw_arg} expected one argument')
+            if len(unknown) <= i + 1 or unknown[i + 1].startswith("--"):
+                sys.exit(f"error: argument {raw_arg} expected one argument")
             value = unknown[i + 1]
         with contextlib.suppress(Exception):
             value = literal_eval(value)
@@ -111,101 +111,101 @@ def parse_sys_argv():
 
     kwarg_options = []
     for layer_type, keys in valid_add_kwargs().items():
-        kwarg_options.append(f'  {layer_type.title()}:')
-        keys = {k.replace('_', '-') for k in keys}
-        lines = wrap(', '.join(sorted(keys)), break_on_hyphens=False)
-        kwarg_options.extend([f'    {line}' for line in lines])
+        kwarg_options.append(f"  {layer_type.title()}:")
+        keys = {k.replace("_", "-") for k in keys}
+        lines = wrap(", ".join(sorted(keys)), break_on_hyphens=False)
+        kwarg_options.extend([f"    {line}" for line in lines])
 
     parser = argparse.ArgumentParser(
         usage=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="optional layer-type-specific arguments (precede with '--'):\n"
-        + '\n'.join(kwarg_options),
+        + "\n".join(kwarg_options),
     )
-    parser.add_argument('paths', nargs='*', help='path(s) to view.')
+    parser.add_argument("paths", nargs="*", help="path(s) to view.")
     parser.add_argument(
-        '-v',
-        '--verbose',
-        action='count',
+        "-v",
+        "--verbose",
+        action="count",
         default=0,
-        help='increase output verbosity',
+        help="increase output verbosity",
     )
     parser.add_argument(
-        '-w',
-        '--with',
-        dest='with_',
-        nargs='+',
-        action='append',
+        "-w",
+        "--with",
+        dest="with_",
+        nargs="+",
+        action="append",
         default=[],
-        metavar=('PLUGIN_NAME', 'WIDGET_NAME'),
+        metavar=("PLUGIN_NAME", "WIDGET_NAME"),
         help=(
-            'open finn with dock widget from specified plugin name.'
-            '(If plugin provides multiple dock widgets, widget name must also '
-            'be provided). Use __all__ to open all dock widgets of a '
-            'specified plugin. Multiple widgets are opened in tabs.'
+            "open finn with dock widget from specified plugin name."
+            "(If plugin provides multiple dock widgets, widget name must also "
+            "be provided). Use __all__ to open all dock widgets of a "
+            "specified plugin. Multiple widgets are opened in tabs."
         ),
     )
     parser.add_argument(
-        '--version',
-        action='version',
-        version=f'finn version {__version__}',
+        "--version",
+        action="version",
+        version=f"finn version {__version__}",
     )
     parser.add_argument(
-        '--info',
+        "--info",
         action=InfoAction,
         nargs=0,
-        help='show system information and exit',
+        help="show system information and exit",
     )
     parser.add_argument(
-        '--plugin-info',
+        "--plugin-info",
         action=PluginInfoAction,
         nargs=0,
-        help='show information about plugins and exit',
+        help="show information about plugins and exit",
     )
     parser.add_argument(
-        '--citation',
+        "--citation",
         action=CitationAction,
         nargs=0,
-        help='show citation information and exit',
+        help="show citation information and exit",
     )
     # Allow multiple --stack options to be provided.
     # Each stack option will result in its own stack
     parser.add_argument(
-        '--stack',
-        action='append',
-        nargs='*',
+        "--stack",
+        action="append",
+        nargs="*",
         default=[],
-        help='concatenate multiple input files into a single stack. Can be provided multiple times for multiple stacks.',
+        help="concatenate multiple input files into a single stack. Can be provided multiple times for multiple stacks.",
     )
     parser.add_argument(
-        '--plugin',
-        help='specify plugin name when opening a file',
+        "--plugin",
+        help="specify plugin name when opening a file",
     )
     parser.add_argument(
-        '--layer-type',
-        metavar='TYPE',
+        "--layer-type",
+        metavar="TYPE",
         choices=set(layers.NAMES),
         help=(
-            'force file to be interpreted as a specific layer type. '
-            f'one of {set(layers.NAMES)}'
+            "force file to be interpreted as a specific layer type. "
+            f"one of {set(layers.NAMES)}"
         ),
     )
     parser.add_argument(
-        '--reset',
-        action='store_true',
-        help='reset settings to default values.',
+        "--reset",
+        action="store_true",
+        help="reset settings to default values.",
     )
     parser.add_argument(
-        '--settings-path',
+        "--settings-path",
         type=Path,
-        help='use specific path to store and load settings.',
+        help="use specific path to store and load settings.",
     )
 
     args, unknown = parser.parse_known_args()
     # this is a hack to allow using "=" as a key=value separator while also
     # allowing nargs='*' on the "paths" argument...
     for idx, item in enumerate(reversed(args.paths)):
-        if item.startswith('--'):
+        if item.startswith("--"):
             unknown.append(args.paths.pop(len(args.paths) - idx - 1))
     kwargs = validate_unknown_args(unknown) if unknown else {}
 
@@ -224,8 +224,8 @@ def _run() -> None:
     level = levels[min(2, args.verbose)]  # prevent index error
     logging.basicConfig(
         level=level,
-        format='%(asctime)s : %(levelname)s : %(threadName)s : %(message)s',
-        datefmt='%H:%M:%S',
+        format="%(asctime)s : %(levelname)s : %(threadName)s : %(message)s",
+        datefmt="%H:%M:%S",
     )
 
     if args.reset:
@@ -235,26 +235,25 @@ def _run() -> None:
             settings = get_settings()
         settings.reset()
         settings.save()
-        sys.exit('Resetting settings to default values.\n')
+        sys.exit("Resetting settings to default values.\n")
 
     if args.plugin:
         # make sure plugin is only used when files are specified
         if not args.paths:
             sys.exit(
-                "error: The '--plugin' argument is only valid "
-                'when providing a file name'
+                "error: The '--plugin' argument is only valid when providing a file name"
             )
         # I *think* that Qt is looking in sys.argv for a flag `--plugins`,
         # which emits "WARNING: No such plugin for spec 'builtins'"
         # so remove --plugin from sys.argv to prevent that warning
-        sys.argv.remove('--plugin')
+        sys.argv.remove("--plugin")
 
-    if any(p.endswith('.py') for p in args.paths):
+    if any(p.endswith(".py") for p in args.paths):
         # we're running a script
         if len(args.paths) > 1:
             sys.exit(
-                'When providing a python script, only a '
-                'single positional argument may be provided'
+                "When providing a python script, only a "
+                "single positional argument may be provided"
             )
 
         # run the file
@@ -284,9 +283,9 @@ def _run() -> None:
             for plugin in args.with_:
                 pname, *wnames = plugin
                 for name, (w_pname, wnames) in _npe2.widget_iterator():
-                    if name == 'dock' and pname == w_pname:
+                    if name == "dock" and pname == w_pname:
                         npe2_plugins.append(plugin)
-                        if '__all__' in wnames:
+                        if "__all__" in wnames:
                             wnames = wnames
                         break
 
@@ -294,14 +293,14 @@ def _run() -> None:
                     w_pname,
                     wnames_dict,
                 ) in plugin_manager.iter_widgets():
-                    if name2 == 'dock' and pname == w_pname:
+                    if name2 == "dock" and pname == w_pname:
                         plugin_manager_plugins.append(plugin)
-                        if '__all__' in wnames:
+                        if "__all__" in wnames:
                             # Plugin_manager iter_widgets return wnames as dict keys
                             wnames = list(wnames_dict)
                         warnings.warn(
                             trans._(
-                                'Non-npe2 plugin {pname} detected. Disable tabify for this plugin.',
+                                "Non-npe2 plugin {pname} detected. Disable tabify for this plugin.",
                                 deferred=True,
                                 pname=pname,
                             ),
@@ -316,9 +315,9 @@ def _run() -> None:
                             pname, wname
                         ) or plugin_manager.get_widget(pname, wname)
                 else:
-                    _npe2.get_widget_contribution(
+                    _npe2.get_widget_contribution(pname) or plugin_manager.get_widget(
                         pname
-                    ) or plugin_manager.get_widget(pname)
+                    )
 
         from finn._qt.widgets.qt_splash_screen import NapariSplashScreen
 
@@ -332,7 +331,7 @@ def _run() -> None:
         # it will collect it and hang finn at start time.
         # in a way that is machine, os, time (and likely weather dependant).
         viewer = Viewer()
-        
+
         # add in track viewing widgets by default
         main_tracks_widget = MainApp(viewer)
         viewer.window.add_dock_widget(main_tracks_widget)
@@ -359,7 +358,7 @@ def _run() -> None:
             )
         except ReaderPluginError:
             logging.exception(
-                'Loading %s with %s failed with errors',
+                "Loading %s with %s failed with errors",
                 args.paths,
                 args.plugin,
             )
@@ -372,11 +371,11 @@ def _run() -> None:
                 zip(plugin_manager_plugins, repeat(False)),
             ):
                 pname, *wnames = plugin
-                if '__all__' in wnames:
+                if "__all__" in wnames:
                     for name, (_pname, wnames_collection) in chain(
                         _npe2.widget_iterator(), plugin_manager.iter_widgets()
                     ):
-                        if name == 'dock' and pname == _pname:
+                        if name == "dock" and pname == _pname:
                             if isinstance(wnames_collection, dict):
                                 # Plugin_manager iter_widgets return wnames as dict keys
                                 wnames = list(wnames_collection.keys())
@@ -389,9 +388,7 @@ def _run() -> None:
                         pname, wnames[0], tabify=tabify
                     )[0]
                     for wname in wnames[1:]:
-                        viewer.window.add_plugin_dock_widget(
-                            pname, wname, tabify=tabify
-                        )
+                        viewer.window.add_plugin_dock_widget(pname, wname, tabify=tabify)
                     first_dock_widget.show()
                     first_dock_widget.raise_()
                 else:
@@ -458,18 +455,14 @@ def _maybe_rerun_with_macos_fixes():
 
     # This import mus be here to raise exception about PySide6 problem
 
-    if (
-        sys.platform != 'darwin'
-        or 'pdb' in sys.modules
-        or 'pydevd' in sys.modules
-    ):
+    if sys.platform != "darwin" or "pdb" in sys.modules or "pydevd" in sys.modules:
         return
 
-    if '_FINN_RERUN_WITH_FIXES' in os.environ:
+    if "_FINN_RERUN_WITH_FIXES" in os.environ:
         # This function already ran, do not recurse!
         # We also restore sys.executable to its initial value,
         # if we used a symlink
-        if exe := os.environ.pop('_FINN_SYMLINKED_EXECUTABLE', ''):
+        if exe := os.environ.pop("_FINN_SYMLINKED_EXECUTABLE", ""):
             sys.executable = exe
         return
 
@@ -481,15 +474,15 @@ def _maybe_rerun_with_macos_fixes():
     executable = sys.executable
     cwd = Path.cwd()
 
-    _MACOS_AT_LEAST_CATALINA = int(platform.release().split('.')[0]) >= 19
-    _MACOS_AT_LEAST_BIG_SUR = int(platform.release().split('.')[0]) >= 20
-    _RUNNING_CONDA = 'CONDA_PREFIX' in os.environ
-    _RUNNING_PYTHONW = 'PYTHONEXECUTABLE' in os.environ
+    _MACOS_AT_LEAST_CATALINA = int(platform.release().split(".")[0]) >= 19
+    _MACOS_AT_LEAST_BIG_SUR = int(platform.release().split(".")[0]) >= 20
+    _RUNNING_CONDA = "CONDA_PREFIX" in os.environ
+    _RUNNING_PYTHONW = "PYTHONEXECUTABLE" in os.environ
 
     # 1) quick fix for Big Sur py3.9 and qt 5
     # https://github.com/napari/napari/pull/1894
-    if _MACOS_AT_LEAST_BIG_SUR and '6' not in API_NAME:
-        os.environ['QT_MAC_WANTS_LAYER'] = '1'
+    if _MACOS_AT_LEAST_BIG_SUR and "6" not in API_NAME:
+        os.environ["QT_MAC_WANTS_LAYER"] = "1"
 
     # Create the env copy now because the following changes
     # should not persist in the current process in case
@@ -508,19 +501,19 @@ def _maybe_rerun_with_macos_fixes():
         and _RUNNING_CONDA
         and not _RUNNING_PYTHONW
     ):
-        pythonw_path = Path(sys.exec_prefix) / 'bin' / 'pythonw'
+        pythonw_path = Path(sys.exec_prefix) / "bin" / "pythonw"
         if pythonw_path.exists():
             # Use this one instead of sys.executable to relaunch
             # the subprocess
             executable = pythonw_path
         else:
             msg = (
-                'pythonw executable not found.\n'
-                'To unfreeze the menubar on macOS, '
-                'click away from finn to another app, '
-                'then reactivate finn. To avoid this problem, '
-                'please install python.app in conda using:\n'
-                'conda install -c conda-forge python.app'
+                "pythonw executable not found.\n"
+                "To unfreeze the menubar on macOS, "
+                "click away from finn to another app, "
+                "then reactivate finn. To avoid this problem, "
+                "please install python.app in conda using:\n"
+                "conda install -c conda-forge python.app"
             )
             warnings.warn(msg, stacklevel=2)
 
@@ -530,35 +523,35 @@ def _maybe_rerun_with_macos_fixes():
         # When finn is launched from the conda bundle shortcut
         # it already has the right 'finn' name in the app title
         # and __CFBundleIdentifier is set to 'com.finn._(<version>)'
-        'finn' not in os.environ.get('__CFBUNDLEIDENTIFIER', '')
+        "finn" not in os.environ.get("__CFBUNDLEIDENTIFIER", "")
         # with a sys.executable named finn,
         # macOS should have picked the right name already
-        or os.path.basename(executable) != 'finn'
+        or os.path.basename(executable) != "finn"
     )
     if _NEEDS_SYMLINK:
-        tempdir = mkdtemp(prefix='symlink-to-fix-macos-menu-name-')
+        tempdir = mkdtemp(prefix="symlink-to-fix-macos-menu-name-")
         # By using a symlink with basename finn
         # we make macOS take 'finn' as the program name
-        finn_link = os.path.join(tempdir, 'finn')
+        finn_link = os.path.join(tempdir, "finn")
         os.symlink(executable, finn_link)
         # Pass original executable to the subprocess so it can restore it later
-        env['_FINN_SYMLINKED_EXECUTABLE'] = executable
+        env["_FINN_SYMLINKED_EXECUTABLE"] = executable
         executable = finn_link
 
     # if at this point 'executable' is different from 'sys.executable', we
     # need to launch the subprocess to apply the fixes
     if sys.executable != executable:
-        env['_FINN_RERUN_WITH_FIXES'] = '1'
-        if Path(sys.argv[0]).name == 'finn':
+        env["_FINN_RERUN_WITH_FIXES"] = "1"
+        if Path(sys.argv[0]).name == "finn":
             # launched through entry point, we do that again to avoid
             # issues with working directory getting into sys.path (#5007)
             cmd = [executable, sys.argv[0]]
         else:  # we assume it must have been launched via '-m' syntax
-            cmd = [executable, '-m', 'finn']
+            cmd = [executable, "-m", "finn"]
 
         # this fixes issues running from a venv/virtualenv based virtual
         # environment with certain python distributions (e.g. pyenv, asdf)
-        env['PYTHONEXECUTABLE'] = sys.executable
+        env["PYTHONEXECUTABLE"] = sys.executable
 
         # Append original command line arguments.
         if len(sys.argv) > 1:
@@ -589,5 +582,5 @@ def main():
     _run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

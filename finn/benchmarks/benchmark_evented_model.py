@@ -30,9 +30,7 @@ class Model(EventedModel):
 
     @property
     def e(self):
-        return (fibonacci(self.c) + fibonacci(self.a)) ** fibonacci(
-            ceil(self.b)
-        )
+        return (fibonacci(self.c) + fibonacci(self.a)) ** fibonacci(ceil(self.b))
 
 
 class EventedModelSuite:
@@ -59,7 +57,7 @@ class EventedModelSuite:
         self.model.d = 15
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from utils import run_benchmark
 
     run_benchmark()

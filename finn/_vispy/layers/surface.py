@@ -23,27 +23,17 @@ class VispySurfaceLayer(VispyBaseLayer):
         super().__init__(layer, node)
 
         self.layer.events.colormap.connect(self._on_colormap_change)
-        self.layer.events.contrast_limits.connect(
-            self._on_contrast_limits_change
-        )
+        self.layer.events.contrast_limits.connect(self._on_contrast_limits_change)
         self.layer.events.gamma.connect(self._on_gamma_change)
         self.layer.events.shading.connect(self._on_shading_change)
         self.layer.events.texture.connect(self._on_texture_change)
         self.layer.events.texcoords.connect(self._on_texture_change)
 
-        self.layer.wireframe.events.visible.connect(
-            self._on_wireframe_visible_change
-        )
-        self.layer.wireframe.events.width.connect(
-            self._on_wireframe_width_change
-        )
-        self.layer.wireframe.events.color.connect(
-            self._on_wireframe_color_change
-        )
+        self.layer.wireframe.events.visible.connect(self._on_wireframe_visible_change)
+        self.layer.wireframe.events.width.connect(self._on_wireframe_width_change)
+        self.layer.wireframe.events.color.connect(self._on_wireframe_color_change)
         self.layer.normals.face.events.connect(self._on_face_normals_change)
-        self.layer.normals.vertex.events.connect(
-            self._on_vertex_normals_change
-        )
+        self.layer.normals.vertex.events.connect(self._on_vertex_normals_change)
 
         self.reset()
         self._on_data_change()
@@ -57,9 +47,7 @@ class VispySurfaceLayer(VispyBaseLayer):
             # Offsetting so pixels now centered
             # coerce to float to solve vispy/vispy#2007
             # reverse order to get zyx instead of xyz
-            vertices = np.asarray(
-                self.layer._data_view[:, ::-1], dtype=np.float32
-            )
+            vertices = np.asarray(self.layer._data_view[:, ::-1], dtype=np.float32)
             # due to above xyz>zyx, also reverse order of faces to fix
             # handedness of normals
             faces = self.layer._view_faces[:, ::-1]
@@ -78,7 +66,7 @@ class VispySurfaceLayer(VispyBaseLayer):
             vertices = np.pad(
                 vertices,
                 ((0, 0), (0, 1)),
-                mode='constant',
+                mode="constant",
                 constant_values=0,
             )
         assert vertices is None or vertices.shape[-1] == 3
@@ -130,15 +118,13 @@ class VispySurfaceLayer(VispyBaseLayer):
         if self.layer.gamma != 1:
             # when gamma!=1, we instantiate a new colormap with 256 control
             # points from 0-1
-            colors = self.layer.colormap.map(
-                np.linspace(0, 1, 256) ** self.layer.gamma
-            )
+            colors = self.layer.colormap.map(np.linspace(0, 1, 256) ** self.layer.gamma)
             cmap = VispyColormap(colors)
         else:
             cmap = VispyColormap(*self.layer.colormap)
         if self.layer._slice_input.ndisplay == 3:
-            self.node.view_program['texture2D_LUT'] = (
-                cmap.texture_lut() if (hasattr(cmap, 'texture_lut')) else None
+            self.node.view_program["texture2D_LUT"] = (
+                cmap.texture_lut() if (hasattr(cmap, "texture_lut")) else None
             )
         self.node.cmap = cmap
 
@@ -149,7 +135,7 @@ class VispySurfaceLayer(VispyBaseLayer):
         self._on_colormap_change()
 
     def _on_shading_change(self):
-        shading = None if self.layer.shading == 'none' else self.layer.shading
+        shading = None if self.layer.shading == "none" else self.layer.shading
         if not self.node.mesh_data.is_empty():
             self.node.shading = shading
             self._on_camera_move()
@@ -175,7 +161,7 @@ class VispySurfaceLayer(VispyBaseLayer):
                 length=self.layer.normals.face.length,
                 color=self.layer.normals.face.color,
                 width=self.layer.normals.face.width,
-                primitive='face',
+                primitive="face",
             )
 
     def _on_vertex_normals_change(self):
@@ -186,13 +172,13 @@ class VispySurfaceLayer(VispyBaseLayer):
                 length=self.layer.normals.vertex.length,
                 color=self.layer.normals.vertex.color,
                 width=self.layer.normals.vertex.width,
-                primitive='vertex',
+                primitive="vertex",
             )
 
     def _on_camera_move(self, event=None):
         if (
             event is not None
-            and event.type == 'angles'
+            and event.type == "angles"
             and self.layer._slice_input.ndisplay == 3
         ):
             camera = event.source
@@ -201,10 +187,7 @@ class VispySurfaceLayer(VispyBaseLayer):
             view = np.array(camera.view_direction)[::-1]
             # combine to get light behind the camera on the top right
             self._light_direction = view - up + np.cross(up, view)
-        if (
-            self.node.shading_filter is not None
-            and self._meshdata._vertices is not None
-        ):
+        if self.node.shading_filter is not None and self._meshdata._vertices is not None:
             self.node.shading_filter.light_dir = self._light_direction
 
     def reset(self, event=None):

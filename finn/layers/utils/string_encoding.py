@@ -22,7 +22,7 @@ StringArray = Array[str, (-1,)]
 
 
 """The default string value, which may also be used a safe fallback string."""
-DEFAULT_STRING = np.array('', dtype='<U1')
+DEFAULT_STRING = np.array("", dtype="<U1")
 
 
 @runtime_checkable
@@ -35,8 +35,8 @@ class StringEncoding(StyleEncoding[StringValue, StringArray], Protocol):
 
     @classmethod
     def validate(
-        cls, value: Union['StringEncoding', dict, str, Sequence[str]]
-    ) -> 'StringEncoding':
+        cls, value: Union["StringEncoding", dict, str, Sequence[str]]
+    ) -> "StringEncoding":
         """Validates and coerces a value to a StringEncoding.
 
         Parameters
@@ -80,7 +80,7 @@ class StringEncoding(StyleEncoding[StringValue, StringArray], Protocol):
             return ManualStringEncoding(array=value, default=DEFAULT_STRING)
         raise TypeError(
             trans._(
-                'value should be a StringEncoding, a dict, a string, a sequence of strings, or None',
+                "value should be a StringEncoding, a dict, a string, a sequence of strings, or None",
                 deferred=True,
             )
         )
@@ -99,7 +99,7 @@ class ConstantStringEncoding(_ConstantStyleEncoding[StringValue, StringArray]):
     """
 
     constant: StringValue
-    encoding_type: Literal['ConstantStringEncoding'] = 'ConstantStringEncoding'
+    encoding_type: Literal["ConstantStringEncoding"] = "ConstantStringEncoding"
 
 
 class ManualStringEncoding(_ManualStyleEncoding[StringValue, StringArray]):
@@ -119,7 +119,7 @@ class ManualStringEncoding(_ManualStyleEncoding[StringValue, StringArray]):
 
     array: StringArray
     default: StringValue = DEFAULT_STRING
-    encoding_type: Literal['ManualStringEncoding'] = 'ManualStringEncoding'
+    encoding_type: Literal["ManualStringEncoding"] = "ManualStringEncoding"
 
 
 class DirectStringEncoding(_DerivedStyleEncoding[StringValue, StringArray]):
@@ -139,7 +139,7 @@ class DirectStringEncoding(_DerivedStyleEncoding[StringValue, StringArray]):
 
     feature: str
     fallback: StringValue = DEFAULT_STRING
-    encoding_type: Literal['DirectStringEncoding'] = 'DirectStringEncoding'
+    encoding_type: Literal["DirectStringEncoding"] = "DirectStringEncoding"
 
     def __call__(self, features: Any) -> StringArray:
         return np.array(features[self.feature], dtype=str)
@@ -163,18 +163,18 @@ class FormatStringEncoding(_DerivedStyleEncoding[StringValue, StringArray]):
 
     format: str
     fallback: StringValue = DEFAULT_STRING
-    encoding_type: Literal['FormatStringEncoding'] = 'FormatStringEncoding'
+    encoding_type: Literal["FormatStringEncoding"] = "FormatStringEncoding"
 
     def __call__(self, features: Any) -> StringArray:
         feature_names = features.columns.to_list()
         # Expose the dataframe index to the format string keys
         # unless a column exists with the name "index", which takes precedence.
         with_index = False
-        if 'index' not in feature_names:
-            feature_names = ['index'] + feature_names
+        if "index" not in feature_names:
+            feature_names = ["index"] + feature_names
             with_index = True
         values = [
-            self.format.format(**dict(zip(feature_names, row)))
+            self.format.format(**dict(zip(feature_names, row, strict=False)))
             for row in features.itertuples(index=with_index, name=None)
         ]
         return np.array(values, dtype=str)
@@ -184,9 +184,7 @@ def _is_format_string(string: str) -> bool:
     """Returns True if a string is a valid format string with at least one field, False otherwise."""
     try:
         fields = tuple(
-            field
-            for _, field, _, _ in Formatter().parse(string)
-            if field is not None
+            field for _, field, _, _ in Formatter().parse(string) if field is not None
         )
     except ValueError:
         return False

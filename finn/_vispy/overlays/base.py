@@ -122,7 +122,7 @@ class VispyCanvasOverlay(VispyBaseOverlay):
         else:
             raise ValueError(
                 trans._(
-                    'Position {position} not recognized.',
+                    "Position {position} not recognized.",
                     deferred=True,
                     position=position,
                 )
@@ -148,7 +148,7 @@ class VispySceneOverlay(VispyBaseOverlay):
 
 
 class LayerOverlayMixin:
-    def __init__(self, *, layer: 'Layer', overlay, node, parent=None) -> None:
+    def __init__(self, *, layer: "Layer", overlay, node, parent=None) -> None:
         super().__init__(
             node=node,
             overlay=overlay,

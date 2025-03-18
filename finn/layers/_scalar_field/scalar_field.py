@@ -4,7 +4,7 @@ import types
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from contextlib import nullcontext
-from typing import TYPE_CHECKING, Optional, Union, cast
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
 from numpy import typing as npt
@@ -34,7 +34,7 @@ if TYPE_CHECKING:
     from finn.components import Dims
 
 
-__all__ = ('ScalarFieldBase',)
+__all__ = ("ScalarFieldBase",)
 
 
 # It is important to contain at least one abstractmethod to properly exclude this class
@@ -180,10 +180,10 @@ class ScalarFieldBase(Layer, ABC):
         *,
         affine=None,
         axis_labels=None,
-        blending='translucent',
+        blending="translucent",
         cache=True,
         custom_interpolation_kernel_2d=None,
-        depiction='volume',
+        depiction="volume",
         experimental_clipping_planes=None,
         metadata=None,
         multiscale=None,
@@ -191,8 +191,8 @@ class ScalarFieldBase(Layer, ABC):
         ndim=None,
         opacity=1.0,
         plane=None,
-        projection_mode='none',
-        rendering='mip',
+        projection_mode="none",
+        rendering="mip",
         rotate=None,
         scale=None,
         shear=None,
@@ -206,10 +206,8 @@ class ScalarFieldBase(Layer, ABC):
         if isinstance(data, types.GeneratorType):
             data = list(data)
 
-        if getattr(data, 'ndim', 2) < 2:
-            raise ValueError(
-                trans._('Image data must have at least 2 dimensions.')
-            )
+        if getattr(data, "ndim", 2) < 2:
+            raise ValueError(trans._("Image data must have at least 2 dimensions."))
 
         # Determine if data is a multiscale
         self._data_raw = data
@@ -252,7 +250,7 @@ class ScalarFieldBase(Layer, ABC):
                     "'layer.events.interpolation' is deprecated please use `interpolation2d` and `interpolation3d`",
                     deferred=True,
                 ),
-                type_name='select',
+                type_name="select",
             ),
             interpolation2d=Event,
             interpolation3d=Event,
@@ -271,9 +269,7 @@ class ScalarFieldBase(Layer, ABC):
             # Pick the smallest level with at least one axis >= 64. This is
             # done to prevent the thumbnail from being from one of the very
             # low resolution layers and therefore being very blurred.
-            big_enough_levels = [
-                np.any(np.greater_equal(p.shape, 64)) for p in data
-            ]
+            big_enough_levels = [np.any(np.greater_equal(p.shape, 64)) for p in data]
             if np.any(big_enough_levels):
                 self._thumbnail_level = np.where(big_enough_levels)[0][-1]
             else:
@@ -303,7 +299,7 @@ class ScalarFieldBase(Layer, ABC):
         self.depiction = depiction
         if plane is not None:
             self.plane = plane
-        connect_no_arg(self.plane.events, self.events, 'plane')
+        connect_no_arg(self.plane.events, self.events, "plane")
         self.custom_interpolation_kernel_2d = custom_interpolation_kernel_2d
 
     def _post_init(self):
@@ -322,7 +318,7 @@ class ScalarFieldBase(Layer, ABC):
     @property
     def data_raw(
         self,
-    ) -> Union[LayerDataProtocol, Sequence[LayerDataProtocol]]:
+    ) -> LayerDataProtocol | Sequence[LayerDataProtocol]:
         """Data, exactly as provided by the user."""
         return self._data_raw
 
@@ -376,10 +372,7 @@ class ScalarFieldBase(Layer, ABC):
 
     def _get_level_shapes(self):
         data = self.data
-        if isinstance(data, MultiScaleData):
-            shapes = data.shapes
-        else:
-            shapes = [self.data.shape]
+        shapes = data.shapes if isinstance(data, MultiScaleData) else [self.data.shape]
         return shapes
 
     @property
@@ -405,7 +398,7 @@ class ScalarFieldBase(Layer, ABC):
         return str(self._depiction)
 
     @depiction.setter
-    def depiction(self, depiction: Union[str, VolumeDepiction]) -> None:
+    def depiction(self, depiction: str | VolumeDepiction) -> None:
         """Set the current 3D depiction mode."""
         self._depiction = VolumeDepiction(depiction)
         self._update_plane_callbacks()
@@ -418,9 +411,7 @@ class ScalarFieldBase(Layer, ABC):
 
     def _update_plane_callbacks(self):
         """Set plane callbacks depending on depiction mode."""
-        plane_drag_callback_connected = (
-            plane_drag_callback in self.mouse_drag_callbacks
-        )
+        plane_drag_callback_connected = plane_drag_callback in self.mouse_drag_callbacks
         double_click_callback_connected = (
             plane_double_click_callback in self.mouse_double_click_callbacks
         )
@@ -428,23 +419,19 @@ class ScalarFieldBase(Layer, ABC):
             if plane_drag_callback_connected:
                 self.mouse_drag_callbacks.remove(plane_drag_callback)
             if double_click_callback_connected:
-                self.mouse_double_click_callbacks.remove(
-                    plane_double_click_callback
-                )
+                self.mouse_double_click_callbacks.remove(plane_double_click_callback)
         elif self.depiction == VolumeDepiction.PLANE:
             if not plane_drag_callback_connected:
                 self.mouse_drag_callbacks.append(plane_drag_callback)
             if not double_click_callback_connected:
-                self.mouse_double_click_callbacks.append(
-                    plane_double_click_callback
-                )
+                self.mouse_double_click_callbacks.append(plane_double_click_callback)
 
     @property
     def plane(self):
         return self._plane
 
     @plane.setter
-    def plane(self, value: Union[dict, SlicingPlane]) -> None:
+    def plane(self, value: dict | SlicingPlane) -> None:
         self._plane.update(value)
         self.events.plane()
 
@@ -562,16 +549,14 @@ class ScalarFieldBase(Layer, ABC):
         if self.multiscale:
             # for multiscale data map the coordinate from the data back to
             # the tile
-            coord = self._transforms['tile2data'].inverse(position)
+            coord = self._transforms["tile2data"].inverse(position)
         else:
             coord = position
 
         coord = np.round(coord).astype(int)
 
         raw = self._slice.image.raw
-        shape = (
-            raw.shape[:-1] if self.ndim != len(self._data.shape) else raw.shape
-        )
+        shape = raw.shape[:-1] if self.ndim != len(self._data.shape) else raw.shape
 
         if self.ndim < len(coord):
             # handle 3D views of 2D data by omitting extra coordinate
@@ -580,7 +565,7 @@ class ScalarFieldBase(Layer, ABC):
         else:
             coord = coord[self._slice_input.displayed]
 
-        if all(0 <= c < s for c, s in zip(coord, shape)):
+        if all(0 <= c < s for c, s in zip(coord, shape, strict=False)):
             value = raw[tuple(coord)]
         else:
             value = None
@@ -592,10 +577,10 @@ class ScalarFieldBase(Layer, ABC):
 
     def _get_value_ray(
         self,
-        start_point: Optional[np.ndarray],
-        end_point: Optional[np.ndarray],
+        start_point: np.ndarray | None,
+        end_point: np.ndarray | None,
         dims_displayed: list[int],
-    ) -> Optional[int]:
+    ) -> int | None:
         """Get the first non-background value encountered along a ray.
 
         Parameters
@@ -623,21 +608,17 @@ class ScalarFieldBase(Layer, ABC):
             # Account for downsampling in the case of multiscale
             # -1 means lowest resolution here.
             start_point = (
-                start_point[dims_displayed]
-                / self.downsample_factors[-1][dims_displayed]
+                start_point[dims_displayed] / self.downsample_factors[-1][dims_displayed]
             )
             end_point = (
-                end_point[dims_displayed]
-                / self.downsample_factors[-1][dims_displayed]
+                end_point[dims_displayed] / self.downsample_factors[-1][dims_displayed]
             )
             start_point = cast(np.ndarray, start_point)
             end_point = cast(np.ndarray, end_point)
             sample_ray = end_point - start_point
             length_sample_vector = np.linalg.norm(sample_ray)
             n_points = int(2 * length_sample_vector)
-            sample_points = np.linspace(
-                start_point, end_point, n_points, endpoint=True
-            )
+            sample_points = np.linspace(start_point, end_point, n_points, endpoint=True)
             im_slice = self._slice.image.raw
             # ensure the bounding box is for the proper multiscale level
             bounding_box = self._display_bounding_box_at_level(
@@ -663,10 +644,10 @@ class ScalarFieldBase(Layer, ABC):
 
     def _get_value_3d(
         self,
-        start_point: Optional[np.ndarray],
-        end_point: Optional[np.ndarray],
+        start_point: np.ndarray | None,
+        end_point: np.ndarray | None,
         dims_displayed: list[int],
-    ) -> Optional[int]:
+    ) -> int | None:
         """Get the first non-background value encountered along a ray.
 
         Parameters

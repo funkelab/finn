@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 def update_finn_tracks(
     tracks: SolutionTracks,
 ):
-    """Function to take a networkx graph with assigned track_ids and return the data 
+    """Function to take a networkx graph with assigned track_ids and return the data
     needed to add to a finn tracks layer.
 
     Args:
@@ -92,18 +92,16 @@ class TrackGraph(finn.layers.Tracks):
             graph=track_edges,
             name=name,
             tail_length=3,
-            color_by='track_id',
+            color_by="track_id",
         )
 
-        self.colormaps_dict['track_id'] = self.tracks_viewer.colormap
-        self.tracks_layer_graph = copy.deepcopy(
-            self.graph
-        )  # for restoring graph later
+        self.colormaps_dict["track_id"] = self.tracks_viewer.colormap
+        self.tracks_layer_graph = copy.deepcopy(self.graph)  # for restoring graph later
         # just to 'refresh' the track_id colormap, we do not actually use turbo
-        self.colormap = 'turbo'
+        self.colormap = "turbo"
 
     def _refresh(self):
-        """Refreshes the displayed tracks based on the graph in the current 
+        """Refreshes the displayed tracks based on the graph in the current
         tracks_viewer.tracks
         """
 
@@ -114,19 +112,19 @@ class TrackGraph(finn.layers.Tracks):
         self.data = track_data
         self.graph = track_edges
         self.tracks_layer_graph = copy.deepcopy(self.graph)
-        self.colormaps_dict['track_id'] = self.tracks_viewer.colormap
+        self.colormaps_dict["track_id"] = self.tracks_viewer.colormap
         # just to 'refresh' the track_id colormap, we do not actually use turbo
-        self.colormap = 'turbo'
+        self.colormap = "turbo"
 
     def update_track_visibility(self, visible: list[int] | str) -> None:
         """Optionally show only the tracks of a current lineage"""
 
-        if visible == 'all':
+        if visible == "all":
             self.track_colors[:, 3] = 1
             self.graph = self.tracks_layer_graph
         else:
             track_id_mask = np.isin(
-                self.properties['track_id'],
+                self.properties["track_id"],
                 visible,
             )
             self.graph = {

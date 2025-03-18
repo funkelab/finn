@@ -26,7 +26,7 @@ from finn.utils.interactions import (
 from finn.utils.theme import get_theme
 
 if TYPE_CHECKING:
-    from typing import Callable, Optional, Union
+    from collections.abc import Callable
 
     import numpy.typing as npt
     from qtpy.QtCore import Qt, pyqtBoundSignal
@@ -48,7 +48,7 @@ class NapariSceneCanvas(SceneCanvas_):
 
     def _process_mouse_event(self, event: MouseEvent):
         """Ignore mouse wheel events which have modifiers."""
-        if event.type == 'mouse_wheel' and len(event.modifiers) > 0:
+        if event.type == "mouse_wheel" and len(event.modifiers) > 0:
             return
         if event.handled:
             return
@@ -108,21 +108,15 @@ class VispyCanvas:
         self._last_theme_color = None
         self._background_color_override = None
         self.viewer = viewer
-        self._scene_canvas = NapariSceneCanvas(
-            *args, keys=None, vsync=True, **kwargs
-        )
+        self._scene_canvas = NapariSceneCanvas(*args, keys=None, vsync=True, **kwargs)
         self.view = self.central_widget.add_view(border_width=0)
-        self.camera = VispyCamera(
-            self.view, self.viewer.camera, self.viewer.dims
-        )
+        self.camera = VispyCamera(self.view, self.viewer.camera, self.viewer.dims)
         self.layer_to_visual: dict[Layer, VispyBaseLayer] = {}
         self._overlay_to_visual: dict[Overlay, VispyBaseOverlay] = {}
         self._key_map_handler = key_map_handler
         self._instances.add(self)
 
-        self.bgcolor = transform_color(
-            get_theme(self.viewer.theme).canvas.as_hex()
-        )[0]
+        self.bgcolor = transform_color(get_theme(self.viewer.theme).canvas.as_hex())[0]
 
         # Call get_max_texture_sizes() here so that we query OpenGL right
         # now while we know a Canvas exists. Later calls to
@@ -134,21 +128,17 @@ class VispyCanvas:
             self._add_overlay_to_visual(overlay)
 
         self._scene_canvas.events.ignore_callback_errors = False
-        self._scene_canvas.context.set_depth_func('lequal')
+        self._scene_canvas.context.set_depth_func("lequal")
 
         # Connecting events from SceneCanvas
-        self._scene_canvas.events.key_press.connect(
-            self._key_map_handler.on_key_press
-        )
+        self._scene_canvas.events.key_press.connect(self._key_map_handler.on_key_press)
         self._scene_canvas.events.key_release.connect(
             self._key_map_handler.on_key_release
         )
         self._scene_canvas.events.draw.connect(self.enable_dims_play)
         self._scene_canvas.events.draw.connect(self.camera.on_draw)
 
-        self._scene_canvas.events.mouse_double_click.connect(
-            self._on_mouse_double_click
-        )
+        self._scene_canvas.events.mouse_double_click.connect(self._on_mouse_double_click)
         self._scene_canvas.events.mouse_move.connect(
             qthrottled(self._on_mouse_move, timeout=5)
         )
@@ -188,7 +178,7 @@ class VispyCanvas:
         return self._scene_canvas._backend.screen_changed
 
     @property
-    def background_color_override(self) -> Optional[str]:
+    def background_color_override(self) -> str | None:
         """Background color of VispyCanvas.view returned as hex string. When not None, color is shown instead of
         VispyCanvas.bgcolor. The setter expects str (any in vispy.color.get_color_names) or hex starting
         with # or a tuple | np.array ({3,4},) with values between 0 and 1.
@@ -199,9 +189,7 @@ class VispyCanvas:
         return None
 
     @background_color_override.setter
-    def background_color_override(
-        self, value: Union[str, npt.ArrayLike, None]
-    ) -> None:
+    def background_color_override(self, value: str | npt.ArrayLike | None) -> None:
         if value:
             self.view.bgcolor = value
         else:
@@ -218,9 +206,7 @@ class VispyCanvas:
         # keep track of the viewer.
         # Note 2. the reason for using the `as_hex` here is to avoid
         # `UserWarning` which is emitted when RGB values are above 1
-        self._last_theme_color = transform_color(
-            get_theme(theme).canvas.as_hex()
-        )[0]
+        self._last_theme_color = transform_color(get_theme(theme).canvas.as_hex())[0]
         self.bgcolor = self._last_theme_color
 
     def _disconnect_theme(self) -> None:
@@ -234,7 +220,7 @@ class VispyCanvas:
         return self._scene_canvas.bgcolor.hex
 
     @bgcolor.setter
-    def bgcolor(self, value: Union[str, npt.ArrayLike]) -> None:
+    def bgcolor(self, value: str | npt.ArrayLike) -> None:
         self._scene_canvas.bgcolor = value
 
     @property
@@ -264,7 +250,7 @@ class VispyCanvas:
         return self.native.cursor()
 
     @cursor.setter
-    def cursor(self, q_cursor: Union[QCursor, Qt.CursorShape]):
+    def cursor(self, q_cursor: QCursor | Qt.CursorShape):
         """Setting the cursor of the native widget"""
         self.native.setCursor(q_cursor)
 
@@ -275,7 +261,7 @@ class VispyCanvas:
         brush_overlay = self.viewer._brush_circle_overlay
         brush_overlay.visible = False
 
-        if cursor in {'square', 'circle', 'circle_frozen'}:
+        if cursor in {"square", "circle", "circle_frozen"}:
             # Scale size by zoom if needed
             size = self.viewer.cursor.size
             if self.viewer.cursor.scaled:
@@ -284,14 +270,12 @@ class VispyCanvas:
             size = int(size)
 
             # make sure the square fits within the current canvas
-            if (
-                size < 8 or size > (min(*self.size) - 4)
-            ) and cursor != 'circle_frozen':
-                self.cursor = QtCursorVisual['cross'].value
-            elif cursor.startswith('circle'):
+            if (size < 8 or size > (min(*self.size) - 4)) and cursor != "circle_frozen":
+                self.cursor = QtCursorVisual["cross"].value
+            elif cursor.startswith("circle"):
                 brush_overlay.size = size
-                if cursor == 'circle_frozen':
-                    self.cursor = QtCursorVisual['standard'].value
+                if cursor == "circle_frozen":
+                    self.cursor = QtCursorVisual["standard"].value
                     brush_overlay.position_is_frozen = True
                 else:
                     self.cursor = QtCursorVisual.blank()
@@ -299,7 +283,7 @@ class VispyCanvas:
                 brush_overlay.visible = True
             else:
                 self.cursor = QtCursorVisual.square(size)
-        elif cursor == 'crosshair':
+        elif cursor == "crosshair":
             self.cursor = QtCursorVisual.crosshair()
         else:
             self.cursor = QtCursorVisual[cursor].value
@@ -352,9 +336,7 @@ class VispyCanvas:
 
         return tuple(position_world)
 
-    def _process_mouse_event(
-        self, mouse_callbacks: Callable, event: MouseEvent
-    ) -> None:
+    def _process_mouse_event(self, mouse_callbacks: Callable, event: MouseEvent) -> None:
         """Add properties to the mouse event before passing the event to the
         napari events system. Called whenever the mouse moves or is clicked.
         As such, care should be taken to reduce the overhead in this function.
@@ -409,7 +391,7 @@ class VispyCanvas:
         event.dims_point = list(self.viewer.dims.point)
 
         # Put a read only wrapper on the event
-        event = ReadOnlyWrapper(event, exceptions=('handled',))
+        event = ReadOnlyWrapper(event, exceptions=("handled",))
         mouse_callbacks(self.viewer, event)
 
         layer = self.viewer.layers.selection.active
@@ -541,9 +523,7 @@ class VispyCanvas:
                 displayed_axes = list(self.viewer.dims.displayed[-nd:])
             layer._update_draw(
                 scale_factor=1 / self.viewer.camera.zoom,
-                corner_pixels_displayed=canvas_corners_world[
-                    :, displayed_axes
-                ],
+                corner_pixels_displayed=canvas_corners_world[:, displayed_axes],
                 shape_threshold=self._scene_canvas.size,
             )
 
@@ -628,9 +608,7 @@ class VispyCanvas:
 
     def _add_overlay_to_visual(self, overlay: Overlay) -> None:
         """Create vispy overlay and add to dictionary of overlay visuals"""
-        vispy_overlay = create_vispy_overlay(
-            overlay=overlay, viewer=self.viewer
-        )
+        vispy_overlay = create_vispy_overlay(overlay=overlay, viewer=self.viewer)
         if isinstance(overlay, CanvasOverlay):
             vispy_overlay.node.parent = self.view
         elif isinstance(overlay, SceneOverlay):

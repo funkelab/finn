@@ -1,5 +1,5 @@
 from collections.abc import Generator
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from finn.utils.translations import trans
 
@@ -29,8 +29,8 @@ class Node:
         The parent of this Node.
     """
 
-    def __init__(self, name: str = 'Node') -> None:
-        self.parent: Optional[Group] = None
+    def __init__(self, name: str = "Node") -> None:
+        self.parent: Group | None = None
         self._name = name
 
     @property
@@ -48,7 +48,7 @@ class Node:
         """
         return False
 
-    def index_in_parent(self) -> Optional[int]:
+    def index_in_parent(self) -> int | None:
         """Return index of this Node in its parent, or None if no parent."""
         return self.parent.index(self) if self.parent is not None else None
 
@@ -71,14 +71,14 @@ class Node:
             yield obj
             obj = obj.parent
 
-    def root(self) -> 'Node':
+    def root(self) -> "Node":
         """Get the root parent."""
         parents = list(self.iter_parents())
         return parents[-1] if parents else self
 
     def traverse(
         self, leaves_only=False, with_ancestors=False
-    ) -> Generator['Node', None, None]:
+    ) -> Generator["Node", None, None]:
         """Recursive all nodes and leaves of the Node.
 
         This is mostly used by :class:`~finn.utils.tree.Group`, which can
@@ -88,7 +88,7 @@ class Node:
 
     def __str__(self):
         """Render ascii tree string representation of this node"""
-        return '\n'.join(self._render())
+        return "\n".join(self._render())
 
     def _render(self) -> list[str]:
         """Return list of strings that can render ascii tree.
@@ -112,7 +112,7 @@ class Node:
             return self
         raise IndexError(
             trans._(
-                'Cannot unparent orphaned Node: {node!r}',
+                "Cannot unparent orphaned Node: {node!r}",
                 deferred=True,
                 node=self,
             ),

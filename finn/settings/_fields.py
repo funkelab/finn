@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass
 from functools import total_ordering
-from typing import Any, Optional, SupportsInt, Union
+from typing import Any, SupportsInt
 
 from finn.utils.theme import available_themes, is_theme_available
 from finn.utils.translations import _load_language, get_language_packs, trans
@@ -29,7 +29,7 @@ class Theme(str):
     @classmethod
     def validate(cls, v):
         if not isinstance(v, str):
-            raise TypeError(trans._('must be a string', deferred=True))
+            raise TypeError(trans._("must be a string", deferred=True))
 
         value = v.lower()
         if not is_theme_available(value):
@@ -38,7 +38,7 @@ class Theme(str):
                     '"{value}" is not valid. It must be one of {themes}',
                     deferred=True,
                     value=value,
-                    themes=', '.join(available_themes()),
+                    themes=", ".join(available_themes()),
                 )
             )
 
@@ -68,7 +68,7 @@ class Language(str):
     @classmethod
     def validate(cls, v):
         if not isinstance(v, str):
-            raise TypeError(trans._('must be a string', deferred=True))
+            raise TypeError(trans._("must be a string", deferred=True))
 
         language_packs = list(get_language_packs(_load_language()).keys())
         if v not in language_packs:
@@ -77,7 +77,7 @@ class Language(str):
                     '"{value}" is not valid. It must be one of {language_packs}.',
                     deferred=True,
                     value=v,
-                    language_packs=', '.join(language_packs),
+                    language_packs=", ".join(language_packs),
                 )
             )
 
@@ -96,8 +96,8 @@ class Version:
     major: SupportsInt
     minor: SupportsInt = 0
     patch: SupportsInt = 0
-    prerelease: Union[bytes, str, int, None] = None
-    build: Union[bytes, str, int, None] = None
+    prerelease: bytes | str | int | None = None
+    build: bytes | str | int | None = None
 
     _SEMVER_PATTERN = re.compile(
         r"""
@@ -121,15 +121,15 @@ class Version:
     )
 
     @classmethod
-    def parse(cls, version: Union[bytes, str]) -> 'Version':
+    def parse(cls, version: bytes | str) -> "Version":
         """Convert string or bytes into Version object."""
         if isinstance(version, bytes):
-            version = version.decode('UTF-8')
+            version = version.decode("UTF-8")
         match = cls._SEMVER_PATTERN.match(version)
         if match is None:
             raise ValueError(
                 trans._(
-                    '{version} is not valid SemVer string',
+                    "{version} is not valid SemVer string",
                     deferred=True,
                     version=version,
                 )
@@ -153,16 +153,16 @@ class Version:
 
     @classmethod
     def _from_obj(cls, other):
-        if isinstance(other, (str, bytes)):
+        if isinstance(other, str | bytes):
             other = Version.parse(other)
         elif isinstance(other, dict):
             other = Version(**other)
-        elif isinstance(other, (tuple, list)):
+        elif isinstance(other, tuple | list):
             other = Version(*other)
         elif not isinstance(other, Version):
             raise TypeError(
                 trans._(
-                    'Expected str, bytes, dict, tuple, list, or {cls} instance, but got {other_type}',
+                    "Expected str, bytes, dict, tuple, list, or {cls} instance, but got {other_type}",
                     deferred=True,
                     cls=cls,
                     other_type=type(other),
@@ -170,7 +170,7 @@ class Version:
             )
         return other
 
-    def to_tuple(self) -> tuple[int, int, int, Optional[str], Optional[str]]:
+    def to_tuple(self) -> tuple[int, int, int, str | None, str | None]:
         """Return version as tuple (first three are int, last two Opt[str])."""
         return (
             int(self.major),
@@ -184,7 +184,7 @@ class Version:
         yield from self.to_tuple()
 
     def __str__(self) -> str:
-        v = f'{self.major}.{self.minor}.{self.patch}'
+        v = f"{self.major}.{self.minor}.{self.patch}"
         if self.prerelease:  # pragma: no cover
             v += str(self.prerelease)
         if self.build:  # pragma: no cover

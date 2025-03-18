@@ -27,9 +27,7 @@ def interpolate_coordinates(old_coord, new_coord, brush_size):
         old_coord = new_coord
     if new_coord is None:
         new_coord = old_coord
-    num_step = round(
-        max(abs(np.array(new_coord) - np.array(old_coord))) / brush_size * 4
-    )
+    num_step = round(max(abs(np.array(new_coord) - np.array(old_coord))) / brush_size * 4)
     coords = [
         np.linspace(old_coord[i], new_coord[i], num=int(num_step + 1))
         for i in range(len(new_coord))
@@ -63,9 +61,7 @@ def sphere_indices(radius, scale):
     # Create multi-dimensional grid to check for
     # circle/membership around center
     r_normalized = radius / scale_normalized + 0.5
-    slices = [
-        slice(-int(np.ceil(r)), int(np.floor(r)) + 1) for r in r_normalized
-    ]
+    slices = [slice(-int(np.ceil(r)), int(np.floor(r)) + 1) for r in r_normalized]
 
     indices = np.mgrid[slices].T.reshape(-1, ndim)
     distances_sq = np.sum((indices * scale_normalized) ** 2, axis=1)
@@ -132,7 +128,7 @@ def get_dtype(layer):
     if not isinstance(layer_data, list):
         layer_data = [layer_data]
     layer_data_level = layer_data[0]
-    if hasattr(layer_data_level, 'dtype'):
+    if hasattr(layer_data_level, "dtype"):
         layer_dtype = layer_data_level[0].dtype
     else:
         layer_dtype = type(layer_data_level)
@@ -223,9 +219,7 @@ def get_contours(labels: np.ndarray, thickness: int, background_label: int):
     """
     struct_elem = ndi.generate_binary_structure(labels.ndim, 1)
 
-    thick_struct_elem = ndi.iterate_structure(struct_elem, thickness).astype(
-        bool
-    )
+    thick_struct_elem = ndi.iterate_structure(struct_elem, thickness).astype(bool)
 
     dilated_labels = ndi.grey_dilation(labels, footprint=struct_elem)
     eroded_labels = ndi.grey_erosion(labels, footprint=thick_struct_elem)
@@ -247,5 +241,5 @@ def expand_slice(
             max(0, min(max_size, s.stop + offset)),
             s.step,
         )
-        for s, max_size in zip(axes_slice, shape)
+        for s, max_size in zip(axes_slice, shape, strict=False)
     )

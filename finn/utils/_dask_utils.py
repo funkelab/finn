@@ -2,8 +2,8 @@
 
 import collections.abc
 import contextlib
-from collections.abc import Iterator
-from typing import Any, Callable, Optional
+from collections.abc import Callable, Iterator
+from typing import Any
 
 import dask
 import dask.array as da
@@ -16,13 +16,11 @@ from dask.cache import Cache
 _DASK_CACHE = Cache(1)
 _DEFAULT_MEM_FRACTION = 0.25
 
-DaskIndexer = Callable[
-    [], contextlib.AbstractContextManager[Optional[tuple[dict, Cache]]]
-]
+DaskIndexer = Callable[[], contextlib.AbstractContextManager[tuple[dict, Cache] | None]]
 
 
 def resize_dask_cache(
-    nbytes: Optional[int] = None, mem_fraction: Optional[float] = None
+    nbytes: int | None = None, mem_fraction: float | None = None
 ) -> Cache:
     """Create or resize the dask cache used for opportunistic caching.
 
@@ -143,7 +141,7 @@ def configure_dask(data: Any, cache: bool = True) -> DaskIndexer:
     def dask_optimized_slicing(
         memfrac: float = 0.5,
     ) -> Iterator[tuple[Any, Any]]:
-        opts = {'optimization.fuse.active': False}
+        opts = {"optimization.fuse.active": False}
         with dask.config.set(opts) as cfg, _cache as c:
             yield cfg, c
 

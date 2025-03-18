@@ -5,8 +5,9 @@ from qtpy.QtCore import QObject
 
 
 class NodeSelectionList(QObject):
-    """Updates the current selection (0, 1, or 2) of nodes. Sends a signal on every update.
-    Stores a list of node ids only."""
+    """Updates the current selection (0, 1, or 2) of nodes. Sends a signal on every
+    update. Stores a list of node ids only.
+    """
 
     list_updated = Signal()
 
@@ -15,7 +16,9 @@ class NodeSelectionList(QObject):
         self._list = []
 
     def add(self, item, append: bool | None = False):
-        """Append or replace an item to the list, depending on the number of items present and the keyboard modifiers used. Emit update signal"""
+        """Append or replace an item to the list, depending on the number of items
+        present and the keyboard modifiers used. Emit update signal
+        """
 
         # first check if this node was already present, if so, remove it.
         if item in self._list:

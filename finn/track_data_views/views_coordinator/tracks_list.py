@@ -2,9 +2,8 @@ from functools import partial
 from pathlib import Path
 from warnings import warn
 
-import finn
 from fonticon_fa6 import FA6S
-from finn._qt.qt_resources import QColoredSVGIcon
+from funtracks.data_model import SolutionTracks, Tracks
 from qtpy.QtCore import Signal
 from qtpy.QtWidgets import (
     QComboBox,
@@ -21,7 +20,8 @@ from qtpy.QtWidgets import (
 )
 from superqt.fonticon import icon as qticon
 
-from funtracks.data_model import SolutionTracks, Tracks
+import finn
+from finn._qt.qt_resources import QColoredSVGIcon
 from finn.track_import_export.menus.import_external_tracks_dialog import (
     ImportTracksDialog,
 )

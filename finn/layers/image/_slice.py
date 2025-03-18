@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Optional, Union
+from typing import Any
 
 import numpy as np
 
@@ -41,14 +42,14 @@ class _ImageView:
     view: np.ndarray
 
     @classmethod
-    def from_view(cls, view: np.ndarray) -> '_ImageView':
+    def from_view(cls, view: np.ndarray) -> "_ImageView":
         """Makes an image view from the view where no conversion is needed."""
         return cls(raw=view, view=view)
 
     @classmethod
     def from_raw(
         cls, *, raw: np.ndarray, converter: Callable[[np.ndarray], np.ndarray]
-    ) -> '_ImageView':
+    ) -> "_ImageView":
         """Makes an image view from the raw image and a conversion function."""
         view = converter(raw)
         return cls(raw=raw, view=view)
@@ -87,8 +88,8 @@ class _ImageSliceResponse:
         *,
         slice_input: _SliceInput,
         rgb: bool,
-        request_id: Optional[int] = None,
-    ) -> '_ImageSliceResponse':
+        request_id: int | None = None,
+    ) -> "_ImageSliceResponse":
         """Returns an empty image slice response.
 
         An empty slice indicates that there is no valid slice data for an
@@ -115,9 +116,7 @@ class _ImageSliceResponse:
         data = np.zeros(shape, dtype=np.uint8)
         image = _ImageView.from_view(data)
         ndim = slice_input.ndim
-        tile_to_data = Affine(
-            name='tile2data', linear_matrix=np.eye(ndim), ndim=ndim
-        )
+        tile_to_data = Affine(name="tile2data", linear_matrix=np.eye(ndim), ndim=ndim)
         if request_id is None:
             request_id = _next_request_id()
         return _ImageSliceResponse(
@@ -131,7 +130,7 @@ class _ImageSliceResponse:
 
     def to_displayed(
         self, converter: Callable[[np.ndarray], np.ndarray]
-    ) -> '_ImageSliceResponse':
+    ) -> "_ImageSliceResponse":
         """
         Returns a raw slice converted for display,
         which is needed for Labels and Image.
@@ -149,9 +148,7 @@ class _ImageSliceResponse:
         image = _ImageView.from_raw(raw=self.image.raw, converter=converter)
         thumbnail = image
         if self.thumbnail is not self.image:
-            thumbnail = _ImageView.from_raw(
-                raw=self.thumbnail.raw, converter=converter
-            )
+            thumbnail = _ImageView.from_raw(raw=self.thumbnail.raw, converter=converter)
         return _ImageSliceResponse(
             image=image,
             thumbnail=thumbnail,
@@ -207,9 +204,7 @@ class _ImageSliceRequest:
             )
         with self.dask_indexer():
             return (
-                self._call_multi_scale()
-                if self.multiscale
-                else self._call_single_scale()
+                self._call_multi_scale() if self.multiscale else self._call_single_scale()
             )
 
     def _call_single_scale(self) -> _ImageSliceResponse:
@@ -220,9 +215,7 @@ class _ImageSliceRequest:
         # `Layer.multiscale` is mutable so we need to pass back the identity
         # transform to ensure `tile2data` is properly set on the layer.
         ndim = self.slice_input.ndim
-        tile_to_data = Affine(
-            name='tile2data', linear_matrix=np.eye(ndim), ndim=ndim
-        )
+        tile_to_data = Affine(name="tile2data", linear_matrix=np.eye(ndim), ndim=ndim)
         return _ImageSliceResponse(
             image=image,
             thumbnail=image,
@@ -232,10 +225,7 @@ class _ImageSliceRequest:
         )
 
     def _call_multi_scale(self) -> _ImageSliceResponse:
-        if self.slice_input.ndisplay == 3:
-            level = len(self.data) - 1
-        else:
-            level = self.data_level
+        level = len(self.data) - 1 if self.slice_input.ndisplay == 3 else self.data_level
 
         # Calculate the tile-to-data transform.
         scale = np.ones(self.slice_input.ndim)
@@ -258,7 +248,7 @@ class _ImageSliceRequest:
         # This only needs to be a ScaleTranslate but different types
         # of transforms in a chain don't play nicely together right now.
         tile_to_data = Affine(
-            name='tile2data',
+            name="tile2data",
             scale=scale,
             translate=translate,
             ndim=self.slice_input.ndim,
@@ -310,14 +300,12 @@ class _ImageSliceRequest:
         by a lazy store or compute graph (e.g. dask).
         """
 
-        if self.projection_mode == 'none':
+        if self.projection_mode == "none":
             # early return with only the dims point being used
             slices = self._point_to_slices(data_slice.point)
             return np.asarray(data[slices])
 
-        slices = self._data_slice_to_slices(
-            data_slice, self.slice_input.displayed
-        )
+        slices = self._data_slice_to_slices(data_slice, self.slice_input.displayed)
 
         return project_slice(
             data=np.asarray(data[slices]),
@@ -341,7 +329,7 @@ class _ImageSliceRequest:
         for d in self.slice_input.not_displayed:
             pt = self.data_slice.point[d]
             max_idx = data.shape[d] - 1
-            if self.projection_mode == 'none':
+            if self.projection_mode == "none":
                 if np.round(pt) < 0 or np.round(pt) > max_idx:
                     return True
             else:
@@ -355,16 +343,14 @@ class _ImageSliceRequest:
     @staticmethod
     def _point_to_slices(
         point: tuple[float, ...],
-    ) -> tuple[Union[slice, int], ...]:
+    ) -> tuple[slice | int, ...]:
         # no need to check out of bounds here cause it's guaranteed
 
         # values in point and margins are np.nan if no slicing should happen along that dimension
         # which is always the case for displayed dims, so that becomes `slice(None)` for actually
         # indexing the layer.
         # For the rest, indices are rounded to the closest integer
-        return tuple(
-            slice(None) if np.isnan(p) else int(np.round(p)) for p in point
-        )
+        return tuple(slice(None) if np.isnan(p) else int(np.round(p)) for p in point)
 
     @staticmethod
     def _data_slice_to_slices(

@@ -1,6 +1,5 @@
 import typing
 from pathlib import Path
-from typing import Optional, Union
 from weakref import WeakSet
 
 import magicgui as mgui
@@ -35,13 +34,13 @@ class Viewer(ViewerModel):
         Whether to show the viewer after instantiation. By default True.
     """
 
-    _window: 'Window' = None  # type: ignore
-    _instances: typing.ClassVar[WeakSet['Viewer']] = WeakSet()
+    _window: "Window" = None  # type: ignore
+    _instances: typing.ClassVar[WeakSet["Viewer"]] = WeakSet()
 
     def __init__(
         self,
         *,
-        title='Motile Tracker',
+        title="Motile Tracker",
         ndisplay=2,
         order=(),
         axis_labels=(),
@@ -71,7 +70,7 @@ class Viewer(ViewerModel):
 
     # Expose private window publicly. This is needed to keep window off pydantic model
     @property
-    def window(self) -> 'Window':
+    def window(self) -> "Window":
         return self._window
 
     def update_console(self, variables):
@@ -94,7 +93,7 @@ class Viewer(ViewerModel):
 
     def export_figure(
         self,
-        path: Optional[str] = None,
+        path: str | None = None,
         *,
         scale_factor: float = 1,
         flash: bool = False,
@@ -148,8 +147,8 @@ class Viewer(ViewerModel):
     def export_rois(
         self,
         rois: list[np.ndarray],
-        paths: Optional[Union[str, Path, list[Union[str, Path]]]] = None,
-        scale: Optional[float] = None,
+        paths: str | Path | list[str | Path] | None = None,
+        scale: float | None = None,
     ):
         """Export the given rectangular rois to specified file paths.
 
@@ -183,22 +182,20 @@ class Viewer(ViewerModel):
         # Check to see if roi has shape (n,2,2)
         if any(roi.shape[-2:] != (4, 2) for roi in rois):
             raise ValueError(
-                'ROI found with invalid shape, all rois must have shape (4, 2), i.e. have 4 corners defined in 2 '
-                'dimensions. 3D is not supported.'
+                "ROI found with invalid shape, all rois must have shape (4, 2), i.e. "
+                "have 4 corners defined in 2 dimensions. 3D is not supported."
             )
 
-        screenshot_list = self.window.export_rois(
-            rois, paths=paths, scale=scale
-        )
+        screenshot_list = self.window.export_rois(rois, paths=paths, scale=scale)
 
         return screenshot_list
 
     def screenshot(
         self,
-        path: Optional[str] = None,
+        path: str | None = None,
         *,
-        size: Optional[tuple[str, str]] = None,
-        scale: Optional[float] = None,
+        size: tuple[str, str] | None = None,
+        scale: float | None = None,
         canvas_only: bool = True,
         flash: bool = False,
     ):
@@ -279,7 +276,7 @@ class Viewer(ViewerModel):
         return ret
 
 
-def current_viewer() -> Optional[Viewer]:
+def current_viewer() -> Viewer | None:
     """Return the currently active napari viewer."""
     try:
         from finn._qt.qt_main_window import _QtMainWindow

@@ -33,7 +33,7 @@ class BoundingBox(Compound):
     )
 
     def __init__(self, *args, **kwargs):
-        self._line_color = 'red'
+        self._line_color = "red"
         self._line_thickness = 2
         self._marker_color = (1, 1, 1, 1)
         self._marker_size = 1

@@ -2,9 +2,10 @@
 
 import json
 import os
+from collections.abc import Callable
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Callable, Optional, Union
+from typing import Any
 
 import wrapt
 
@@ -12,16 +13,14 @@ from finn.utils.perf._patcher import patch_callables
 from finn.utils.perf._timers import perf_timer
 from finn.utils.translations import trans
 
-PERFMON_ENV_VAR = 'NAPARI_PERFMON'
+PERFMON_ENV_VAR = "NAPARI_PERFMON"
 
 
 class PerfmonConfigError(Exception):
     """Error parsing or interpreting config file."""
 
 
-def _patch_perf_timer(
-    parent: Union[ModuleType, type], callable_name: str, label: str
-) -> None:
+def _patch_perf_timer(parent: ModuleType | type, callable_name: str, label: str) -> None:
     """Patches the callable to run it inside a perf_timer.
 
     Parameters
@@ -41,7 +40,7 @@ def _patch_perf_timer(
         args: tuple[Any],
         kwargs: dict[str, Any],
     ) -> Callable:
-        with perf_timer(f'{label}'):
+        with perf_timer(f"{label}"):
             return wrapped(*args, **kwargs)
 
 
@@ -75,7 +74,7 @@ class PerfmonConfig:
     }
     """
 
-    def __init__(self, config_path: Optional[str]) -> None:
+    def __init__(self, config_path: str | None) -> None:
         # Should only patch once, but it can't be on module load, user
         # should patch once main() as started running during startup.
         self.patched = False
@@ -109,7 +108,7 @@ class PerfmonConfig:
             The name of the list to return.
         """
         try:
-            return self.data['callable_lists'][list_name]
+            return self.data["callable_lists"][list_name]
         except KeyError as e:
             raise PerfmonConfigError(
                 trans._(
@@ -128,7 +127,7 @@ class PerfmonConfig:
         data["trace_callables"] should contain the names of one or more
         lists of callables which are defined in data["callable_lists"].
         """
-        for list_name in self.data['trace_callables']:
+        for list_name in self.data["trace_callables"]:
             callable_list = self._get_callables(list_name)
             patch_callables(callable_list, _patch_perf_timer)
 
@@ -138,17 +137,17 @@ class PerfmonConfig:
         if self.config_path is None:
             return True  # always trace qt events in legacy mode
         try:
-            return self.data['trace_qt_events']
+            return self.data["trace_qt_events"]
         except KeyError:
             return False
 
     @property
-    def trace_file_on_start(self) -> Optional[str]:
+    def trace_file_on_start(self) -> str | None:
         """Return path of trace file to write or None."""
         if self.config_path is None:
             return None  # don't trace on start in legacy mode
         try:
-            path = self.data['trace_file_on_start']
+            path = self.data["trace_file_on_start"]
 
             # Return None if it was empty string or false.
         except KeyError:
@@ -157,12 +156,12 @@ class PerfmonConfig:
             return path or None
 
 
-def _create_perf_config() -> Optional[PerfmonConfig]:
-    value = os.getenv('NAPARI_PERFMON')
+def _create_perf_config() -> PerfmonConfig | None:
+    value = os.getenv("NAPARI_PERFMON")
 
-    if value is None or value == '0':
+    if value is None or value == "0":
         return None  # Totally disabled
-    if value == '1':
+    if value == "1":
         return PerfmonConfig(None)  # Legacy no config, Qt events only.
 
     return PerfmonConfig(value)  # Normal parse the config file.

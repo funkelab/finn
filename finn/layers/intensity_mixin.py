@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -37,19 +37,20 @@ class IntensityVisualizationMixin:
             colormap=Event,
         )
         self._gamma = 1
-        self._colormap_name = ''
-        self._contrast_limits_msg = ''
-        self._contrast_limits: tuple[Optional[float], Optional[float]] = (
+        self._colormap_name = ""
+        self._contrast_limits_msg = ""
+        self._contrast_limits: tuple[float | None, float | None] = (
             None,
             None,
         )
-        self._contrast_limits_range: tuple[
-            Optional[float], Optional[float]
-        ] = (None, None)
-        self._auto_contrast_source = 'slice'
+        self._contrast_limits_range: tuple[float | None, float | None] = (
+            None,
+            None,
+        )
+        self._auto_contrast_source = "slice"
         self._keep_auto_contrast = False
 
-    def reset_contrast_limits(self: 'ScalarFieldBase', mode=None):
+    def reset_contrast_limits(self: "ScalarFieldBase", mode=None):
         """Scale contrast limits to data range"""
         mode = mode or self._auto_contrast_source
         self.contrast_limits = self._calc_data_range(mode)
@@ -98,9 +99,7 @@ class IntensityVisualizationMixin:
         validate_2_tuple(contrast_limits)
         _validate_increasing(contrast_limits)
         self._contrast_limits_msg = (
-            format_float(contrast_limits[0])
-            + ', '
-            + format_float(contrast_limits[1])
+            format_float(contrast_limits[0]) + ", " + format_float(contrast_limits[1])
         )
         self._contrast_limits = contrast_limits
         # make sure range slider is big enough to fit range
@@ -142,7 +141,7 @@ class IntensityVisualizationMixin:
         # make sure that the contrast limits fit within the new range
         # this also serves the purpose of emitting events.contrast_limits()
         # and updating the views/controllers
-        if hasattr(self, '_contrast_limits') and any(self._contrast_limits):
+        if hasattr(self, "_contrast_limits") and any(self._contrast_limits):
             clipped_limits = np.clip(self.contrast_limits, *value)
             if clipped_limits[0] < clipped_limits[1]:
                 self.contrast_limits = tuple(clipped_limits)

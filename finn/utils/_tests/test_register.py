@@ -26,8 +26,8 @@ class SimpleClass:
 class SimpleClassDeprecated:
     """Simple class to test create_func"""
 
-    @deprecated_constructor_arg_by_attr('b')
-    @deprecated_constructor_arg_by_attr('c')
+    @deprecated_constructor_arg_by_attr("b")
+    @deprecated_constructor_arg_by_attr("c")
     def __init__(self, a=1):
         self.a = a
 
@@ -52,16 +52,16 @@ class SimpleClassRenamed:
     """Simple class to test create_func"""
 
     @rename_argument(
-        from_name='c',
-        to_name='a',
-        version='0.6.0',
-        since_version='0.4.18',
+        from_name="c",
+        to_name="a",
+        version="0.6.0",
+        since_version="0.4.18",
     )
     @rename_argument(
-        from_name='d',
-        to_name='b',
-        version='0.6.0',
-        since_version='0.4.18',
+        from_name="d",
+        to_name="b",
+        version="0.6.0",
+        since_version="0.4.18",
     )
     def __init__(self, a=1, b=1):
         self.a = a

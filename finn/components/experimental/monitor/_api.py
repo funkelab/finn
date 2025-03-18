@@ -8,10 +8,10 @@ from typing import ClassVar, NamedTuple
 
 from finn.utils.events import EmitterGroup
 
-LOGGER = logging.getLogger('finn.monitor')
+LOGGER = logging.getLogger("finn.monitor")
 
 # The client needs to know this.
-AUTH_KEY = 'napari'
+AUTH_KEY = "napari"
 
 # Port 0 means the OS chooses an available port. We send the server_port
 # port to the client in its NAPARI_MON_CLIENT variable.
@@ -116,21 +116,15 @@ class MonitorApi:
         # We must register all callbacks before we create our instance of
         # SharedMemoryManager. The client must do the same thing, but it
         # only needs to know the names. We allocate the shared memory.
-        SharedMemoryManager.register('napari_data', callable=self._napari_data)
-        SharedMemoryManager.register(
-            'napari_messages', callable=self._napari_messages
-        )
-        SharedMemoryManager.register(
-            'napari_shutdown', callable=self._napari_shutdown
-        )
-        SharedMemoryManager.register('client_data', callable=self._client_data)
-        SharedMemoryManager.register(
-            'client_messages', callable=self._client_messages
-        )
+        SharedMemoryManager.register("napari_data", callable=self._napari_data)
+        SharedMemoryManager.register("napari_messages", callable=self._napari_messages)
+        SharedMemoryManager.register("napari_shutdown", callable=self._napari_shutdown)
+        SharedMemoryManager.register("client_data", callable=self._client_data)
+        SharedMemoryManager.register("client_messages", callable=self._client_messages)
 
         # Start our shared memory server.
         self._manager = SharedMemoryManager(
-            address=('127.0.0.1', SERVER_PORT), authkey=str.encode(AUTH_KEY)
+            address=("127.0.0.1", SERVER_PORT), authkey=str.encode(AUTH_KEY)
         )
         self._manager.start()
 
@@ -184,9 +178,7 @@ class MonitorApi:
                 message = client_messages.get_nowait()
 
                 if not isinstance(message, dict):
-                    LOGGER.warning(
-                        'Ignore message that was not a dict: %s', message
-                    )
+                    LOGGER.warning("Ignore message that was not a dict: %s", message)
                     continue
 
                 # Assume every message is a command that napari should

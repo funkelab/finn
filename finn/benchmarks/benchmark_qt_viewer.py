@@ -19,7 +19,7 @@ class QtViewerSuite:
         self.viewer = finn.Viewer()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from utils import run_benchmark
 
     run_benchmark()

@@ -1,4 +1,3 @@
-import finn
 from qtpy.QtWidgets import (
     QGroupBox,
     QPushButton,
@@ -6,6 +5,7 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
+import finn
 from finn.track_data_views.views_coordinator.tracks_viewer import TracksViewer
 
 
@@ -72,7 +72,7 @@ class EditingMenu(QWidget):
         self.setMaximumHeight(300)
 
     def update_buttons(self):
-        """Set the buttons to enabled/disabled depending on the currently selected nodes"""
+        """Set the buttons to enabled/disabled depending on the selected nodes"""
 
         n_selected = len(self.tracks_viewer.selected_nodes)
         if n_selected == 0:

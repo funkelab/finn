@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
-
 import numpy as np
 from vispy.scene.widgets.viewbox import ViewBox
 
@@ -89,7 +87,7 @@ def create_vispy_layer(layer: Layer) -> VispyBaseLayer:
 
     raise TypeError(
         trans._(
-            'Could not find VispyLayer for layer of type {dtype}',
+            "Could not find VispyLayer for layer of type {dtype}",
             deferred=True,
             dtype=type(layer),
         )
@@ -116,7 +114,7 @@ def create_vispy_overlay(overlay: Overlay, **kwargs) -> VispyBaseOverlay:
 
     raise TypeError(
         trans._(
-            'Could not find VispyOverlay for overlay of type {dtype}',
+            "Could not find VispyOverlay for overlay of type {dtype}",
             deferred=True,
             dtype=type(overlay),
         )
@@ -127,7 +125,7 @@ def get_view_direction_in_scene_coordinates(
     view: ViewBox,
     ndim: int,
     dims_displayed: tuple[int],
-) -> Optional[np.ndarray]:
+) -> np.ndarray | None:
     """Calculate the unit vector pointing in the direction of the view.
 
     This is only for 3D viewing, so it returns None when

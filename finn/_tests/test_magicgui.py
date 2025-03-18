@@ -15,18 +15,14 @@ from finn.utils.migrations import _DeprecatingDict
 from finn.utils.misc import all_subclasses
 
 if TYPE_CHECKING:
-    import typing
-
     import finn.types
 
 try:
     import qtpy  # noqa: F401 need to be ignored as qtpy may be available but Qt bindings may not be
 except ModuleNotFoundError:
-    pytest.skip('Cannot test magicgui without qtpy.', allow_module_level=True)
+    pytest.skip("Cannot test magicgui without qtpy.", allow_module_level=True)
 except RuntimeError:
-    pytest.skip(
-        'Cannot test magicgui without Qt bindings.', allow_module_level=True
-    )
+    pytest.skip("Cannot test magicgui without Qt bindings.", allow_module_level=True)
 
 
 # only test the first of each layer type
@@ -38,7 +34,7 @@ for cls in all_subclasses(Layer):
 test_data.sort(key=lambda x: x[0].__name__)  # required for xdist to work
 
 
-@pytest.mark.parametrize(('LayerType', 'data', 'ndim'), test_data)
+@pytest.mark.parametrize(("LayerType", "data", "ndim"), test_data)
 def test_magicgui_add_data(make_napari_viewer, LayerType, data, ndim):
     """Test that annotating with finn.types.<layer_type>Data works.
 
@@ -46,7 +42,7 @@ def test_magicgui_add_data(make_napari_viewer, LayerType, data, ndim):
     of the corresponding type to the viewer.
     """
     viewer = make_napari_viewer()
-    dtype = getattr(types, f'{LayerType.__name__}Data')
+    dtype = getattr(types, f"{LayerType.__name__}Data")
 
     @magicgui
     # where `dtype` is something like finn.types.ImageData
@@ -65,7 +61,7 @@ def test_add_layer_data_to_viewer_optional(make_napari_viewer):
     viewer = make_napari_viewer()
 
     @magicgui
-    def func_optional(a: bool) -> 'typing.Optional[finn.types.ImageData]':
+    def func_optional(a: bool) -> "finn.types.ImageData | None":
         if a:
             return np.zeros((10, 10))
         return None
@@ -82,10 +78,8 @@ def test_add_layer_data_to_viewer_optional(make_napari_viewer):
     assert len(viewer.layers) == 1
 
 
-@pytest.mark.parametrize(('LayerType', 'data', 'ndim'), test_data)
-def test_magicgui_add_future_data(
-    qtbot, make_napari_viewer, LayerType, data, ndim
-):
+@pytest.mark.parametrize(("LayerType", "data", "ndim"), test_data)
+def test_magicgui_add_future_data(qtbot, make_napari_viewer, LayerType, data, ndim):
     """Test that annotating with Future[] works."""
     from concurrent.futures import Future
     from functools import partial
@@ -93,7 +87,7 @@ def test_magicgui_add_future_data(
     from qtpy.QtCore import QTimer
 
     viewer = make_napari_viewer()
-    dtype = getattr(types, f'{LayerType.__name__}Data')
+    dtype = getattr(types, f"{LayerType.__name__}Data")
 
     @magicgui
     # where `dtype` is something like finn.types.ImageData
@@ -147,7 +141,7 @@ def test_magicgui_add_threadworker(qtbot, make_napari_viewer):
     assert np.array_equal(viewer.layers[0].data, DATA)
 
 
-@pytest.mark.parametrize(('LayerType', 'data', 'ndim'), test_data)
+@pytest.mark.parametrize(("LayerType", "data", "ndim"), test_data)
 def test_magicgui_get_data(make_napari_viewer, LayerType, data, ndim):
     """Test that annotating parameters with finn.types.<layer_type>Data.
 
@@ -156,7 +150,7 @@ def test_magicgui_get_data(make_napari_viewer, LayerType, data, ndim):
     receive `layer.data` rather than `layer`
     """
     viewer = make_napari_viewer()
-    dtype = getattr(types, f'{LayerType.__name__}Data')
+    dtype = getattr(types, f"{LayerType.__name__}Data")
 
     @magicgui
     # where `dtype` is something like finn.types.ImageData
@@ -169,7 +163,7 @@ def test_magicgui_get_data(make_napari_viewer, LayerType, data, ndim):
     viewer.add_layer(layer)
 
 
-@pytest.mark.parametrize(('LayerType', 'data', 'ndim'), test_data)
+@pytest.mark.parametrize(("LayerType", "data", "ndim"), test_data)
 def test_magicgui_add_layer(make_napari_viewer, LayerType, data, ndim):
     viewer = make_napari_viewer()
 
@@ -210,8 +204,8 @@ def test_magicgui_add_layer_data_tuple(make_napari_viewer):
     def add_layer() -> types.LayerDataTuple:
         data = (
             np.random.randint(0, 10, size=(10, 10)),
-            {'name': 'hi'},
-            'labels',
+            {"name": "hi"},
+            "labels",
         )
         # it works fine to just return `data`
         # but this will avoid mypy/linter errors and has no runtime burden
@@ -229,11 +223,11 @@ def test_magicgui_add_layer_data_tuple_list(make_napari_viewer):
 
     @magicgui
     def add_layer() -> list[types.LayerDataTuple]:
-        data1 = (np.random.rand(10, 10), {'name': 'hi'})
+        data1 = (np.random.rand(10, 10), {"name": "hi"})
         data2 = (
             np.random.randint(0, 10, size=(10, 10)),
-            {'name': 'hi2'},
-            'labels',
+            {"name": "hi2"},
+            "labels",
         )
         return [data1, data2]  # type: ignore
 
@@ -303,12 +297,12 @@ def test_magicgui_get_viewer(make_napari_viewer):
     assert current_viewer() is viewer2
 
 
-MGUI_EXPORTS = ['finn.layers.Layer', 'finn.Viewer']
-MGUI_EXPORTS += [f'finn.types.{nm.title()}Data' for nm in layers.NAMES]
-NAMES = ('Image', 'Labels', 'Layer', 'Points', 'Shapes', 'Surface')
+MGUI_EXPORTS = ["finn.layers.Layer", "finn.Viewer"]
+MGUI_EXPORTS += [f"finn.types.{nm.title()}Data" for nm in layers.NAMES]
+NAMES = ("Image", "Labels", "Layer", "Points", "Shapes", "Surface")
 
 
-@pytest.mark.parametrize('name', sorted(MGUI_EXPORTS))
+@pytest.mark.parametrize("name", sorted(MGUI_EXPORTS))
 def test_mgui_forward_refs(name, monkeypatch):
     """make sure that magicgui's `get_widget_class` returns the right widget type
     for the various napari types... even when expressed as strings.
@@ -316,23 +310,21 @@ def test_mgui_forward_refs(name, monkeypatch):
     import magicgui.widgets
     from magicgui.type_map import get_widget_class
 
-    monkeypatch.delitem(sys.modules, 'napari')
-    monkeypatch.delitem(sys.modules, 'finn.viewer')
-    monkeypatch.delitem(sys.modules, 'finn.types')
-    monkeypatch.setattr(
-        'finn.utils.action_manager.action_manager._actions', {}
-    )
+    monkeypatch.delitem(sys.modules, "napari")
+    monkeypatch.delitem(sys.modules, "finn.viewer")
+    monkeypatch.delitem(sys.modules, "finn.types")
+    monkeypatch.setattr("finn.utils.action_manager.action_manager._actions", {})
     # need to clear all of these submodules too, otherwise the layers are oddly not
     # subclasses of finn.layers.Layer, and finn.layers.NAMES
     # oddly ends up as an empty set
     for m in list(sys.modules):
-        if m.startswith('finn.layers') and 'utils' not in m:
+        if m.startswith("finn.layers") and "utils" not in m:
             monkeypatch.delitem(sys.modules, m)
 
     wdg, options = get_widget_class(annotation=name)
-    if name == 'finn.Viewer':
+    if name == "finn.Viewer":
         assert wdg == magicgui.widgets.EmptyWidget
-        assert 'bind' in options
+        assert "bind" in options
     else:
         assert wdg == magicgui.widgets.Combobox
 
@@ -341,7 +333,7 @@ def test_layers_populate_immediately(make_napari_viewer):
     """make sure that the layers dropdown is populated upon adding to viewer"""
     from magicgui.widgets import create_widget
 
-    labels_layer = create_widget(annotation=Labels, label='ROI')
+    labels_layer = create_widget(annotation=Labels, label="ROI")
     viewer = make_napari_viewer()
     viewer.add_labels(np.zeros((10, 10), dtype=int))
     assert not len(labels_layer.choices)
@@ -356,12 +348,12 @@ def test_from_layer_data_tuple_accept_deprecating_dict(make_napari_viewer):
     @magicgui
     def from_layer_data_tuple() -> types.LayerDataTuple:
         data = np.zeros((10, 10))
-        meta = _DeprecatingDict({'name': 'test_image'})
-        layer_type = 'image'
+        meta = _DeprecatingDict({"name": "test_image"})
+        layer_type = "image"
         return data, meta, layer_type
 
     viewer.window.add_dock_widget(from_layer_data_tuple)
     from_layer_data_tuple()
     assert len(viewer.layers) == 1
     assert isinstance(viewer.layers[0], Image)
-    assert viewer.layers[0].name == 'test_image'
+    assert viewer.layers[0].name == "test_image"

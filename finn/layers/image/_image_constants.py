@@ -6,22 +6,22 @@ from finn.utils.misc import StringEnum
 from finn.utils.translations import trans
 
 InterpolationStr = Literal[
-    'bessel',
-    'cubic',
-    'linear',
-    'blackman',
-    'catrom',
-    'gaussian',
-    'hamming',
-    'hanning',
-    'hermite',
-    'kaiser',
-    'lanczos',
-    'mitchell',
-    'nearest',
-    'spline16',
-    'spline36',
-    'custom',
+    "bessel",
+    "cubic",
+    "linear",
+    "blackman",
+    "catrom",
+    "gaussian",
+    "hamming",
+    "hanning",
+    "hermite",
+    "kaiser",
+    "lanczos",
+    "mitchell",
+    "nearest",
+    "spline16",
+    "spline36",
+    "custom",
 ]
 
 
@@ -57,11 +57,11 @@ class Interpolation(StringEnum):
     def view_subset(
         cls,
     ) -> tuple[
-        'Interpolation',
-        'Interpolation',
-        'Interpolation',
-        'Interpolation',
-        'Interpolation',
+        "Interpolation",
+        "Interpolation",
+        "Interpolation",
+        "Interpolation",
+        "Interpolation",
     ]:
         return (
             cls.CUBIC,
@@ -109,13 +109,13 @@ class ImageRendering(StringEnum):
 
 
 ImageRenderingStr = Literal[
-    'translucent',
-    'additive',
-    'iso',
-    'mip',
-    'minip',
-    'attenuated_mip',
-    'average',
+    "translucent",
+    "additive",
+    "iso",
+    "mip",
+    "minip",
+    "attenuated_mip",
+    "average",
 ]
 
 
@@ -133,8 +133,8 @@ class VolumeDepiction(StringEnum):
 
 VOLUME_DEPICTION_TRANSLATION = OrderedDict(
     [
-        (VolumeDepiction.VOLUME, trans._('volume')),
-        (VolumeDepiction.PLANE, trans._('plane')),
+        (VolumeDepiction.VOLUME, trans._("volume")),
+        (VolumeDepiction.PLANE, trans._("plane")),
     ]
 )
 

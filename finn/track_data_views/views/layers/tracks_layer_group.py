@@ -2,13 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import finn
-
 from funtracks.data_model.tracks import Tracks
 
-from .track_graph import TrackGraph
-from .track_labels import TrackLabels
-from .track_points import TrackPoints
+import finn
+from finn.track_data_views.views.layers.track_graph import TrackGraph
+from finn.track_data_views.views.layers.track_labels import TrackLabels
+from finn.track_data_views.views.layers.track_points import TrackPoints
 
 if TYPE_CHECKING:
     from finn.track_data_views.views_coordinator.tracks_viewer import TracksViewer
@@ -109,9 +108,10 @@ class TracksLayerGroup:
 
         if self.seg_layer is None or self.seg_layer.mode == "pan_zoom":
             location = self.tracks.get_positions([node], incl_time=True)[0].tolist()
-            assert (
-                len(location) == self.viewer.dims.ndim
-            ), f"Location {location} does not match viewer number of dims {self.viewer.dims.ndim}"
+            assert len(location) == self.viewer.dims.ndim, (
+                f"Location {location} does not match viewer number of dims "
+                f"{self.viewer.dims.ndim}"
+            )
 
             step = list(self.viewer.dims.current_step)
             for dim in self.viewer.dims.not_displayed:
@@ -157,8 +157,8 @@ class TracksLayerGroup:
             ):
                 camera_center = self.viewer.camera.center
 
-                # set the center y and x to the center of the node, by using the index of the
-                # currently displayed dimensions
+                # set the center y and x to the center of the node, by using the index
+                # of the currently displayed dimensions
                 self.viewer.camera.center = (
                     camera_center[0],
                     location[y_dim],

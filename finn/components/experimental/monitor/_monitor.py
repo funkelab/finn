@@ -11,11 +11,10 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Optional
 
 from finn.utils.translations import trans
 
-LOGGER = logging.getLogger('finn.monitor')
+LOGGER = logging.getLogger("finn.monitor")
 
 # If False monitor is disabled even if we meet all other requirements.
 ENABLE_MONITOR = True
@@ -39,7 +38,7 @@ def _load_config(path: str) -> dict:
         raise FileNotFoundError(
             errno.ENOENT,
             trans._(
-                'Monitor: Config file not found: {path}',
+                "Monitor: Config file not found: {path}",
                 deferred=True,
                 path=path,
             ),
@@ -49,7 +48,7 @@ def _load_config(path: str) -> dict:
         return json.load(infile)
 
 
-def _load_monitor_config() -> Optional[dict]:
+def _load_monitor_config() -> dict | None:
     """Return the MonitorService config file data, or None.
 
     Returns
@@ -59,8 +58,8 @@ def _load_monitor_config() -> Optional[dict]:
     """
     # We shouldn't even call into this file unless NAPARI_MON is defined
     # but check to be sure.
-    value = os.getenv('NAPARI_MON')
-    if value in [None, '0']:
+    value = os.getenv("NAPARI_MON")
+    if value in [None, "0"]:
         return None
 
     return _load_config(value)
@@ -75,7 +74,7 @@ def _setup_logging(config: dict) -> None:
         Monitor configuration
     """
     try:
-        log_path = config['log_path']
+        log_path = config["log_path"]
     except KeyError:
         return  # No log file.
 
@@ -85,10 +84,10 @@ def _setup_logging(config: dict) -> None:
     fh = logging.FileHandler(log_path)
     LOGGER.addHandler(fh)
     LOGGER.setLevel(logging.DEBUG)
-    LOGGER.info('Writing to log path %s', log_path)
+    LOGGER.info("Writing to log path %s", log_path)
 
 
-def _get_monitor_config() -> Optional[dict]:
+def _get_monitor_config() -> dict | None:
     """Create and return the configuration for the MonitorService.
 
     The routine might return None for one serveral reasons:
@@ -104,14 +103,14 @@ def _get_monitor_config() -> Optional[dict]:
     """
 
     if not ENABLE_MONITOR:
-        logging.warning('Monitor: not starting, disabled')
+        logging.warning("Monitor: not starting, disabled")
         return None
 
     # The NAPARI_MON environment variable points to our config file.
     config = _load_monitor_config()
 
     if config is None:
-        logging.warning('Monitor: not starting, no usable config file')
+        logging.warning("Monitor: not starting, no usable config file")
         return None
 
     return config

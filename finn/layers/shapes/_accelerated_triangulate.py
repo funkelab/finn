@@ -6,7 +6,7 @@ import numpy as np
 from numba import njit
 
 
-@njit(cache=True, inline='always')
+@njit(cache=True, inline="always")
 def _dot(v0: np.ndarray, v1: np.ndarray) -> float:
     """Return the dot product of two 2D vectors.
 
@@ -15,7 +15,7 @@ def _dot(v0: np.ndarray, v1: np.ndarray) -> float:
     return v0[0] * v1[0] + v0[1] * v1[1]
 
 
-@njit(cache=True, inline='always')
+@njit(cache=True, inline="always")
 def _cross_z(v0: np.ndarray, v1: np.ndarray) -> float:
     """Return the z-magnitude of the cross-product between two vectors.
 
@@ -24,7 +24,7 @@ def _cross_z(v0: np.ndarray, v1: np.ndarray) -> float:
     return v0[0] * v1[1] - v0[1] * v1[0]
 
 
-@njit(cache=True, inline='always')
+@njit(cache=True, inline="always")
 def _sign_abs(f: float) -> tuple[float, float]:
     """Return 1, -1, or 0 based on the sign of f, as well as the abs of f.
 
@@ -39,7 +39,7 @@ def _sign_abs(f: float) -> tuple[float, float]:
     return 0.0, 0.0
 
 
-@njit(cache=True, inline='always')
+@njit(cache=True, inline="always")
 def _orthogonal_vector(v: np.ndarray, ccw: bool = True) -> np.ndarray:
     """Return an orthogonal vector to v (2D).
 
@@ -61,7 +61,7 @@ def _orthogonal_vector(v: np.ndarray, ccw: bool = True) -> np.ndarray:
     return np.array([-v[1], v[0]])
 
 
-@njit(cache=True, inline='always')
+@njit(cache=True, inline="always")
 def _calc_output_size(
     direction_vectors: np.ndarray,
     closed: bool,
@@ -137,7 +137,7 @@ def _calc_output_size(
     return point_count + bevel_count
 
 
-@njit(cache=True, inline='always')
+@njit(cache=True, inline="always")
 def _set_centers_and_offsets(
     centers: np.ndarray,
     offsets: np.ndarray,
@@ -248,9 +248,7 @@ def _set_centers_and_offsets(
         counterclockwise = not clockwise
         invert = -1.0 if counterclockwise else 1.0
         offsets[j + counterclockwise] = invert * miter
-        offsets[j + clockwise] = 0.5 * _orthogonal_vector(
-            vec1, ccw=counterclockwise
-        )
+        offsets[j + clockwise] = 0.5 * _orthogonal_vector(vec1, ccw=counterclockwise)
         offsets[j + 2] = 0.5 * _orthogonal_vector(vec2, ccw=counterclockwise)
         triangles[j] = [j, j + 1, j + 2]
         triangles[j + 1] = [j + counterclockwise, j + 2, j + 3]
@@ -267,7 +265,7 @@ def _set_centers_and_offsets(
     return 2  # miter join added 2 triangles
 
 
-@njit(cache=True, inline='always')
+@njit(cache=True, inline="always")
 def _normalize_triangle_orientation(
     triangles: np.ndarray, centers: np.ndarray, offsets: np.ndarray
 ) -> None:
@@ -301,7 +299,7 @@ def _normalize_triangle_orientation(
             triangles[i] = [ti[2], ti[1], ti[0]]
 
 
-@njit(cache=True, inline='always')
+@njit(cache=True, inline="always")
 def _orientation(p1: np.ndarray, p2: np.ndarray, p3: np.ndarray) -> float:
     """Compute the orientation of three points.
 
@@ -326,7 +324,7 @@ def _orientation(p1: np.ndarray, p2: np.ndarray, p3: np.ndarray) -> float:
     # fmt: on
 
 
-@njit(cache=True, inline='always')
+@njit(cache=True, inline="always")
 def _direction_vec_and_half_length(
     path: np.ndarray, closed: bool
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -364,7 +362,7 @@ def _direction_vec_and_half_length(
     return normals, vec_len_arr * 0.5
 
 
-@njit(cache=True, inline='always')
+@njit(cache=True, inline="always")
 def _generate_2D_edge_meshes_loop(
     path: np.ndarray,
     closed: bool,
@@ -441,7 +439,7 @@ def _generate_2D_edge_meshes_loop(
         offsets[j + 1] = -offsets[j]
 
 
-@njit(cache=True, inline='always')
+@njit(cache=True, inline="always")
 def _cut_end_if_repetition(path: np.ndarray) -> np.ndarray:
     """Cut the last point of the path if it is the same as the second to last point.
 
@@ -521,13 +519,9 @@ def generate_2D_edge_meshes(
     # https://github.com/napari/napari/pull/7268#user-content-bevel-limit
     cos_limit = 1 / (2 * (limit / 2) ** 2) - 1.0
 
-    direction_vectors, bevel_limit_array = _direction_vec_and_half_length(
-        path, closed
-    )
+    direction_vectors, bevel_limit_array = _direction_vec_and_half_length(path, closed)
 
-    point_count = _calc_output_size(
-        direction_vectors, closed, cos_limit, bevel
-    )
+    point_count = _calc_output_size(direction_vectors, closed, cos_limit, bevel)
 
     centers = np.empty((point_count, 2), dtype=np.float32)
     offsets = np.empty((point_count, 2), dtype=np.float32)

@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from finn._pydantic_compat import Field
 from finn.settings._appearance import AppearanceSettings
@@ -17,7 +17,7 @@ from finn.settings._shortcuts import ShortcutsSettings
 from finn.utils._base import _DEFAULT_CONFIG_PATH
 from finn.utils.translations import trans
 
-_CFG_PATH = os.getenv('NAPARI_CONFIG', _DEFAULT_CONFIG_PATH)
+_CFG_PATH = os.getenv("NAPARI_CONFIG", _DEFAULT_CONFIG_PATH)
 
 CURRENT_SCHEMA_VERSION = Version(0, 6, 0)
 
@@ -33,44 +33,44 @@ class NapariSettings(EventedConfigFileSettings):
     # 3. You don't need to touch this value if you're just adding a new option
     schema_version: Version = Field(
         CURRENT_SCHEMA_VERSION,
-        description=trans._('Napari settings schema version.'),
+        description=trans._("Napari settings schema version."),
     )
 
     application: ApplicationSettings = Field(
         default_factory=ApplicationSettings,
-        title=trans._('Application'),
-        description=trans._('Main application settings.'),
+        title=trans._("Application"),
+        description=trans._("Main application settings."),
     )
     appearance: AppearanceSettings = Field(
         default_factory=AppearanceSettings,
-        title=trans._('Appearance'),
-        description=trans._('User interface appearance settings.'),
+        title=trans._("Appearance"),
+        description=trans._("User interface appearance settings."),
         allow_mutation=False,
     )
     plugins: PluginsSettings = Field(
         default_factory=PluginsSettings,
-        title=trans._('Plugins'),
-        description=trans._('Plugins settings.'),
+        title=trans._("Plugins"),
+        description=trans._("Plugins settings."),
         allow_mutation=False,
     )
     shortcuts: ShortcutsSettings = Field(
         default_factory=ShortcutsSettings,
-        title=trans._('Shortcuts'),
-        description=trans._('Shortcut settings.'),
+        title=trans._("Shortcuts"),
+        description=trans._("Shortcut settings."),
         allow_mutation=False,
     )
     experimental: ExperimentalSettings = Field(
         default_factory=ExperimentalSettings,
-        title=trans._('Experimental'),
-        description=trans._('Experimental settings.'),
+        title=trans._("Experimental"),
+        description=trans._("Experimental settings."),
         allow_mutation=False,
     )
 
     # private attributes and ClassVars will not appear in the schema
-    _config_path: Optional[Path] = Path(_CFG_PATH) if _CFG_PATH else None
+    _config_path: Path | None = Path(_CFG_PATH) if _CFG_PATH else None
 
     class Config(EventedConfigFileSettings.Config):
-        env_prefix = 'napari_'
+        env_prefix = "napari_"
         use_enum_values = False
         # all of these fields are evented models, so we don't want to break
         # connections by setting the top-level field itself
@@ -81,7 +81,7 @@ class NapariSettings(EventedConfigFileSettings):
             # before '0.4.0' we didn't write the schema_version in the file
             # written to disk. so if it's missing, add schema_version of 0.3.0
             d = super()._config_file_settings_source(settings)
-            d.setdefault('schema_version', '0.3.0')
+            d.setdefault("schema_version", "0.3.0")
             return d
 
     def __init__(self, config_path=_NOT_SET, **values: Any) -> None:
@@ -92,12 +92,12 @@ class NapariSettings(EventedConfigFileSettings):
         # we always want schema_version written to the settings.yaml
         # TODO: is there a better way to always include schema version?
         return {
-            'schema_version': self.schema_version,
+            "schema_version": self.schema_version,
             **super()._save_dict(**kwargs),
         }
 
     def __str__(self):
-        out = 'NapariSettings (defaults excluded)\n' + 34 * '-' + '\n'
+        out = "NapariSettings (defaults excluded)\n" + 34 * "-" + "\n"
         data = self.dict(exclude_defaults=True)
         out += self._yaml_dump(_remove_empty_dicts(data))
         return out
@@ -112,11 +112,11 @@ class NapariSettings(EventedConfigFileSettings):
             do_migrations(self)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
 
     if len(sys.argv) > 2:
         dest = Path(sys.argv[2]).expanduser().absolute()
     else:
-        dest = Path(__file__).parent / 'finn.schema.json'
+        dest = Path(__file__).parent / "finn.schema.json"
     dest.write_text(NapariSettings.schema_json())

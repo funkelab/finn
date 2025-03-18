@@ -38,7 +38,7 @@ class Line(Shape):
         )
         self._filled = False
         self.data = data
-        self.name = 'line'
+        self.name = "line"
 
     @property
     def data(self):
@@ -55,7 +55,7 @@ class Line(Shape):
         if len(data) != 2:
             raise ValueError(
                 trans._(
-                    'Data shape does not match a line. A line expects two end vertices, {number} provided.',
+                    "Data shape does not match a line. A line expects two end vertices, {number} provided.",
                     deferred=True,
                     number=len(data),
                 )
@@ -78,6 +78,6 @@ class Line(Shape):
         self._set_meshes(self.data_displayed, face=False, closed=False)
         self._box = create_box(self.data_displayed)
 
-        self.slice_key = np.round(
-            self._bounding_box[:, self.dims_not_displayed]
-        ).astype('int')
+        self.slice_key = np.round(self._bounding_box[:, self.dims_not_displayed]).astype(
+            "int"
+        )

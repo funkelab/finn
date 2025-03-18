@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from finn.settings._base import _NOT_SET
 from finn.settings._napari_settings import (
@@ -8,7 +8,7 @@ from finn.settings._napari_settings import (
 )
 from finn.utils.translations import trans
 
-__all__ = ['CURRENT_SCHEMA_VERSION', 'NapariSettings', 'get_settings']
+__all__ = ["CURRENT_SCHEMA_VERSION", "NapariSettings", "get_settings"]
 
 
 class _SettingsProxy:
@@ -23,7 +23,7 @@ SETTINGS = _SettingsProxy()
 
 # private global object
 # will be populated on first call of get_settings
-_SETTINGS: Optional[NapariSettings] = None
+_SETTINGS: NapariSettings | None = None
 
 
 def get_settings(path=_NOT_SET) -> NapariSettings:
@@ -57,7 +57,7 @@ def get_settings(path=_NOT_SET) -> NapariSettings:
         calframe = inspect.getouterframes(curframe, 2)
         raise RuntimeError(
             trans._(
-                'The path can only be set once per session. Settings called from {calframe}',
+                "The path can only be set once per session. Settings called from {calframe}",
                 deferred=True,
                 calframe=calframe[1][3],
             )

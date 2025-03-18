@@ -15,15 +15,15 @@ from finn.components.overlays.scale_bar import ScaleBarOverlay
 from finn.components.overlays.text import TextOverlay
 
 __all__ = [
-    'AxesOverlay',
-    'BoundingBoxOverlay',
-    'BrushCircleOverlay',
-    'CanvasOverlay',
-    'LabelsPolygonOverlay',
-    'Overlay',
-    'ScaleBarOverlay',
-    'SceneOverlay',
-    'SelectionBoxOverlay',
-    'TextOverlay',
-    'TransformBoxOverlay',
+    "AxesOverlay",
+    "BoundingBoxOverlay",
+    "BrushCircleOverlay",
+    "CanvasOverlay",
+    "LabelsPolygonOverlay",
+    "Overlay",
+    "ScaleBarOverlay",
+    "SceneOverlay",
+    "SelectionBoxOverlay",
+    "TextOverlay",
+    "TransformBoxOverlay",
 ]

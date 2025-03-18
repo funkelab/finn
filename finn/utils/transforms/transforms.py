@@ -1,5 +1,5 @@
 from collections.abc import Iterable, Sequence
-from typing import Generic, Optional, TypeVar, Union, overload
+from typing import Generic, TypeVar, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -54,22 +54,18 @@ class Transform:
         return self.func(coords)
 
     @property
-    def inverse(self) -> 'Transform':
+    def inverse(self) -> "Transform":
         if self._inverse_func is None:
-            raise ValueError(
-                trans._('Inverse function was not provided.', deferred=True)
-            )
-        if 'inverse' not in self._cache_dict:
-            self._cache_dict['inverse'] = Transform(
-                self._inverse_func, self.func
-            )
-        return self._cache_dict['inverse']
+            raise ValueError(trans._("Inverse function was not provided.", deferred=True))
+        if "inverse" not in self._cache_dict:
+            self._cache_dict["inverse"] = Transform(self._inverse_func, self.func)
+        return self._cache_dict["inverse"]
 
-    def compose(self, transform: 'Transform') -> 'Transform':
+    def compose(self, transform: "Transform") -> "Transform":
         """Return the composite of this transform and the provided one."""
         return TransformChain([self, transform])
 
-    def set_slice(self, axes: Sequence[int]) -> 'Transform':
+    def set_slice(self, axes: Sequence[int]) -> "Transform":
         """Return a transform subset to the visible dimensions.
 
         Parameters
@@ -83,10 +79,10 @@ class Transform:
             Resulting transform.
         """
         raise NotImplementedError(
-            trans._('Cannot subset arbitrary transforms.', deferred=True)
+            trans._("Cannot subset arbitrary transforms.", deferred=True)
         )
 
-    def expand_dims(self, axes: Sequence[int]) -> 'Transform':
+    def expand_dims(self, axes: Sequence[int]) -> "Transform":
         """Return a transform with added axes for non-visible dimensions.
 
         Parameters
@@ -102,7 +98,7 @@ class Transform:
             Resulting transform.
         """
         raise NotImplementedError(
-            trans._('Cannot subset arbitrary transforms.', deferred=True)
+            trans._("Cannot subset arbitrary transforms.", deferred=True)
         )
 
     @property
@@ -119,13 +115,11 @@ class Transform:
         self.changed.emit()
 
 
-_T = TypeVar('_T', bound=Transform)
+_T = TypeVar("_T", bound=Transform)
 
 
 class TransformChain(EventedList[_T], Transform, Generic[_T]):
-    def __init__(
-        self, transforms: Optional[Iterable[Transform]] = None
-    ) -> None:
+    def __init__(self, transforms: Iterable[Transform] | None = None) -> None:
         if transforms is None:
             transforms = []
         super().__init__(
@@ -138,7 +132,7 @@ class TransformChain(EventedList[_T], Transform, Generic[_T]):
         # in turn call super().__init__(). So we call it explicitly here.
         Transform.__init__(self)
         for tr in self:
-            if hasattr(tr, 'changed'):
+            if hasattr(tr, "changed"):
                 tr.changed.connect(self._clean_cache)
 
     def __call__(self, coords):
@@ -154,42 +148,42 @@ class TransformChain(EventedList[_T], Transform, Generic[_T]):
     def __getitem__(self, key: str) -> _T: ...
 
     @overload
-    def __getitem__(self, key: slice) -> 'TransformChain[_T]': ...
+    def __getitem__(self, key: slice) -> "TransformChain[_T]": ...
 
     def __getitem__(self, key):
-        if f'getitem_{key}' not in self._cache_dict:
-            self._cache_dict[f'getitem_{key}'] = super().__getitem__(key)
-        return self._cache_dict[f'getitem_{key}']
+        if f"getitem_{key}" not in self._cache_dict:
+            self._cache_dict[f"getitem_{key}"] = super().__getitem__(key)
+        return self._cache_dict[f"getitem_{key}"]
 
     def __setitem__(self, key, value):
-        if key in self and hasattr(self[key], 'changed'):
+        if key in self and hasattr(self[key], "changed"):
             self[key].changed.disconnect(self._clean_cache)
         super().__setitem__(key, value)
-        if hasattr(value, 'changed'):
+        if hasattr(value, "changed"):
             value.changed.connect(self._clean_cache)
         self._clean_cache()
 
     def __delitem__(self, key):
         val = self[key]
-        if hasattr(val, 'changed'):
+        if hasattr(val, "changed"):
             val.changed.disconnect(self._clean_cache)
         super().__delitem__(key)
         self._clean_cache()
 
     @property
-    def inverse(self) -> 'TransformChain':
+    def inverse(self) -> "TransformChain":
         """Return the inverse transform chain."""
-        if 'inverse' not in self._cache_dict:
-            self._cache_dict['inverse'] = TransformChain(
+        if "inverse" not in self._cache_dict:
+            self._cache_dict["inverse"] = TransformChain(
                 [tf.inverse for tf in self[::-1]]
             )
-        return self._cache_dict['inverse']
+        return self._cache_dict["inverse"]
 
     @property
     def _is_diagonal(self):
-        if all(getattr(tf, '_is_diagonal', False) for tf in self):
+        if all(getattr(tf, "_is_diagonal", False) for tf in self):
             return True
-        return getattr(self.simplified, '_is_diagonal', False)
+        return getattr(self.simplified, "_is_diagonal", False)
 
     @property
     def simplified(self) -> _T:
@@ -202,20 +196,18 @@ class TransformChain(EventedList[_T], Transform, Generic[_T]):
             If the transform chain is empty.
         """
         if len(self) == 0:
-            raise ValueError(
-                trans._('Cannot simplify an empty transform chain.')
-            )
+            raise ValueError(trans._("Cannot simplify an empty transform chain."))
 
         if len(self) == 1:
             return self[0]
 
-        if 'simplified' not in self._cache_dict:
-            self._cache_dict['simplified'] = tz.pipe(
+        if "simplified" not in self._cache_dict:
+            self._cache_dict["simplified"] = tz.pipe(
                 self[0], *[tf.compose for tf in self[1:]]
             )
-        return self._cache_dict['simplified']
+        return self._cache_dict["simplified"]
 
-    def set_slice(self, axes: Sequence[int]) -> 'TransformChain':
+    def set_slice(self, axes: Sequence[int]) -> "TransformChain":
         """Return a transform chain subset to the visible dimensions.
 
         Parameters
@@ -230,7 +222,7 @@ class TransformChain(EventedList[_T], Transform, Generic[_T]):
         """
         return TransformChain([tf.set_slice(axes) for tf in self])
 
-    def expand_dims(self, axes: Sequence[int]) -> 'TransformChain':
+    def expand_dims(self, axes: Sequence[int]) -> "TransformChain":
         """Return a transform chain with added axes for non-visible dimensions.
 
         Parameters
@@ -293,9 +285,7 @@ class ScaleTranslate(Transform):
             scale = self.scale
             translate = self.translate
         else:
-            scale = np.concatenate(
-                ([1.0] * (coords_ndim - len(self.scale)), self.scale)
-            )
+            scale = np.concatenate(([1.0] * (coords_ndim - len(self.scale)), self.scale))
             translate = np.concatenate(
                 ([0.0] * (coords_ndim - len(self.translate)), self.translate)
             )
@@ -306,11 +296,11 @@ class ScaleTranslate(Transform):
         return out
 
     @property
-    def inverse(self) -> 'ScaleTranslate':
+    def inverse(self) -> "ScaleTranslate":
         """Return the inverse transform."""
         return ScaleTranslate(1 / self.scale, -1 / self.scale * self.translate)
 
-    def compose(self, transform: 'Transform') -> 'Transform':
+    def compose(self, transform: "Transform") -> "Transform":
         """Return the composite of this transform and the provided one."""
         if not isinstance(transform, ScaleTranslate):
             super().compose(transform)
@@ -318,7 +308,7 @@ class ScaleTranslate(Transform):
         translate = self.translate + self.scale * transform.translate
         return ScaleTranslate(scale, translate)
 
-    def set_slice(self, axes: Sequence[int]) -> 'ScaleTranslate':
+    def set_slice(self, axes: Sequence[int]) -> "ScaleTranslate":
         """Return a transform subset to the visible dimensions.
 
         Parameters
@@ -331,11 +321,9 @@ class ScaleTranslate(Transform):
         Transform
             Resulting transform.
         """
-        return ScaleTranslate(
-            self.scale[axes], self.translate[axes], name=self.name
-        )
+        return ScaleTranslate(self.scale[axes], self.translate[axes], name=self.name)
 
-    def expand_dims(self, axes: Sequence[int]) -> 'ScaleTranslate':
+    def expand_dims(self, axes: Sequence[int]) -> "ScaleTranslate":
         """Return a transform with added axes for non-visible dimensions.
 
         Parameters
@@ -429,13 +417,13 @@ class Affine(Transform):
         ),
         *,
         affine_matrix=None,
-        axis_labels: Optional[Sequence[str]] = None,
+        axis_labels: Sequence[str] | None = None,
         linear_matrix=None,
         name=None,
         ndim=None,
         rotate=None,
         shear=None,
-        units: Optional[Sequence[Union[str, pint.Unit]]] = None,
+        units: Sequence[str | pint.Unit] | None = None,
     ) -> None:
         super().__init__(name=name)
         self._upper_triangular = True
@@ -457,13 +445,11 @@ class Affine(Transform):
             else:
                 if np.array(shear).ndim == 2:
                     if is_matrix_triangular(shear):
-                        self._upper_triangular = is_matrix_upper_triangular(
-                            shear
-                        )
+                        self._upper_triangular = is_matrix_upper_triangular(shear)
                     else:
                         raise ValueError(
                             trans._(
-                                'Only upper triangular or lower triangular matrices are accepted for shear, got {shear}. For other matrices, set the affine_matrix or linear_matrix directly.',
+                                "Only upper triangular or lower triangular matrices are accepted for shear, got {shear}. For other matrices, set the affine_matrix or linear_matrix directly.",
                                 deferred=True,
                                 shear=shear,
                             )
@@ -473,7 +459,7 @@ class Affine(Transform):
         ndim = max(ndim, linear_matrix.shape[0])
         self._linear_matrix = embed_in_identity_matrix(linear_matrix, ndim)
         self._translate = translate_to_vector(translate, ndim=ndim)
-        self._axis_labels = tuple(f'axis {i}' for i in range(-ndim, 0))
+        self._axis_labels = tuple(f"axis {i}" for i in range(-ndim, 0))
         self._units = (pint.get_application_registry().pixel,) * ndim
 
         self.axis_labels = axis_labels
@@ -485,9 +471,7 @@ class Affine(Transform):
         if append_first_axis:
             coords = coords[np.newaxis, :]
         coords_ndim = coords.shape[1]
-        padded_linear_matrix = embed_in_identity_matrix(
-            self._linear_matrix, coords_ndim
-        )
+        padded_linear_matrix = embed_in_identity_matrix(self._linear_matrix, coords_ndim)
         translate = translate_to_vector(self._translate, ndim=coords_ndim)
         out = coords @ padded_linear_matrix.T
         out += translate
@@ -506,13 +490,11 @@ class Affine(Transform):
         return self._axis_labels
 
     @axis_labels.setter
-    def axis_labels(self, axis_labels: Optional[Sequence[str]]) -> None:
+    def axis_labels(self, axis_labels: Sequence[str] | None) -> None:
         if axis_labels is None:
-            axis_labels = tuple(f'axis {i}' for i in range(-self.ndim, 0))
+            axis_labels = tuple(f"axis {i}" for i in range(-self.ndim, 0))
         if len(axis_labels) != self.ndim:
-            raise ValueError(
-                f'{axis_labels=} must have length ndim={self.ndim}.'
-            )
+            raise ValueError(f"{axis_labels=} must have length ndim={self.ndim}.")
         axis_labels = tuple(axis_labels)
         self._axis_labels = axis_labels
 
@@ -522,14 +504,14 @@ class Affine(Transform):
         return self._units
 
     @units.setter
-    def units(self, units: Optional[Sequence[pint.Unit]]) -> None:
+    def units(self, units: Sequence[pint.Unit] | None) -> None:
         units = get_units_from_name(units)
         if units is None:
             units = (pint.get_application_registry().pixel,) * self.ndim
         if isinstance(units, pint.Unit):
             units = (units,) * self.ndim
         if len(units) != self.ndim:
-            raise ValueError(f'{units=} must have length ndim={self.ndim}.')
+            raise ValueError(f"{units=} must have length ndim={self.ndim}.")
         self._units = units
 
     @property
@@ -538,7 +520,7 @@ class Affine(Transform):
         if self._is_diagonal:
             return np.diag(self._linear_matrix)
         self._setup_decompose_linear_matrix_cache()
-        return self._cache_dict['decompose_linear_matrix'][1]
+        return self._cache_dict["decompose_linear_matrix"][1]
 
     @scale.setter
     def scale(self, scale):
@@ -570,9 +552,9 @@ class Affine(Transform):
         self._clean_cache()
 
     def _setup_decompose_linear_matrix_cache(self):
-        if 'decompose_linear_matrix' in self._cache_dict:
+        if "decompose_linear_matrix" in self._cache_dict:
             return
-        self._cache_dict['decompose_linear_matrix'] = decompose_linear_matrix(
+        self._cache_dict["decompose_linear_matrix"] = decompose_linear_matrix(
             self.linear_matrix, upper_triangular=self._upper_triangular
         )
 
@@ -580,14 +562,12 @@ class Affine(Transform):
     def rotate(self) -> npt.NDArray:
         """Return the rotation of the transform."""
         self._setup_decompose_linear_matrix_cache()
-        return self._cache_dict['decompose_linear_matrix'][0]
+        return self._cache_dict["decompose_linear_matrix"][0]
 
     @rotate.setter
     def rotate(self, rotate):
         """Set the rotation of the transform."""
-        self._linear_matrix = compose_linear_matrix(
-            rotate, self.scale, self._shear_cache
-        )
+        self._linear_matrix = compose_linear_matrix(rotate, self.scale, self._shear_cache)
         self._clean_cache()
 
     @property
@@ -596,7 +576,7 @@ class Affine(Transform):
         if self._is_diagonal:
             return np.zeros((self.ndim,))
         self._setup_decompose_linear_matrix_cache()
-        return self._cache_dict['decompose_linear_matrix'][2]
+        return self._cache_dict["decompose_linear_matrix"][2]
 
     @shear.setter
     def shear(self, shear):
@@ -608,22 +588,20 @@ class Affine(Transform):
             else:
                 raise ValueError(
                     trans._(
-                        'Only upper triangular or lower triangular matrices are accepted for shear, got {shear}. For other matrices, set the affine_matrix or linear_matrix directly.',
+                        "Only upper triangular or lower triangular matrices are accepted for shear, got {shear}. For other matrices, set the affine_matrix or linear_matrix directly.",
                         deferred=True,
                         shear=shear,
                     )
                 )
         else:
             self._upper_triangular = True
-        self._linear_matrix = compose_linear_matrix(
-            self.rotate, self.scale, shear
-        )
+        self._linear_matrix = compose_linear_matrix(self.rotate, self.scale, shear)
         self._clean_cache()
 
     @property
     def _shear_cache(self):
         self._setup_decompose_linear_matrix_cache()
-        return self._cache_dict['decompose_linear_matrix'][2]
+        return self._cache_dict["decompose_linear_matrix"][2]
 
     @property
     def linear_matrix(self) -> npt.NDArray:
@@ -633,9 +611,7 @@ class Affine(Transform):
     @linear_matrix.setter
     def linear_matrix(self, linear_matrix):
         """Set the linear matrix of the transform."""
-        self._linear_matrix = embed_in_identity_matrix(
-            linear_matrix, ndim=self.ndim
-        )
+        self._linear_matrix = embed_in_identity_matrix(linear_matrix, ndim=self.ndim)
         self._clean_cache()
 
     @property
@@ -658,19 +634,19 @@ class Affine(Transform):
         return self.affine_matrix
 
     @property
-    def inverse(self) -> 'Affine':
+    def inverse(self) -> "Affine":
         """Return the inverse transform."""
-        if 'inverse' not in self._cache_dict:
-            self._cache_dict['inverse'] = Affine(
+        if "inverse" not in self._cache_dict:
+            self._cache_dict["inverse"] = Affine(
                 affine_matrix=np.linalg.inv(self.affine_matrix)
             )
-        return self._cache_dict['inverse']
+        return self._cache_dict["inverse"]
 
     @overload
-    def compose(self, transform: 'Affine') -> 'Affine': ...
+    def compose(self, transform: "Affine") -> "Affine": ...
 
     @overload
-    def compose(self, transform: 'Transform') -> 'Transform': ...
+    def compose(self, transform: "Transform") -> "Transform": ...
 
     def compose(self, transform):
         """Return the composite of this transform and the provided one."""
@@ -679,7 +655,7 @@ class Affine(Transform):
         affine_matrix = self.affine_matrix @ transform.affine_matrix
         return Affine(affine_matrix=affine_matrix)
 
-    def set_slice(self, axes: Sequence[int]) -> 'Affine':
+    def set_slice(self, axes: Sequence[int]) -> "Affine":
         """Return a transform subset to the visible dimensions.
 
         Parameters
@@ -708,9 +684,7 @@ class Affine(Transform):
             axis_labels=axes_labels,
         )
 
-    def replace_slice(
-        self, axes: Sequence[int], transform: 'Affine'
-    ) -> 'Affine':
+    def replace_slice(self, axes: Sequence[int], transform: "Affine") -> "Affine":
         """Returns a transform where the transform at the indicated n dimensions is replaced with another n-dimensional transform
 
         Parameters
@@ -729,7 +703,7 @@ class Affine(Transform):
         if len(axes) != transform.ndim:
             raise ValueError(
                 trans._(
-                    'Dimensionality of provided axes list and transform differ.',
+                    "Dimensionality of provided axes list and transform differ.",
                     deferred=True,
                 )
             )
@@ -745,7 +719,7 @@ class Affine(Transform):
             name=self.name,
         )
 
-    def expand_dims(self, axes: Sequence[int]) -> 'Affine':
+    def expand_dims(self, axes: Sequence[int]) -> "Affine":
         """Return a transform with added axes for non-visible dimensions.
 
         Parameters
@@ -780,11 +754,9 @@ class Affine(Transform):
         Since only `self.linear_matrix` is checked, affines with a translation
         component can still be considered diagonal.
         """
-        if '_is_diagonal' not in self._cache_dict:
-            self._cache_dict['_is_diagonal'] = is_diagonal(
-                self.linear_matrix, tol=1e-8
-            )
-        return self._cache_dict['_is_diagonal']
+        if "_is_diagonal" not in self._cache_dict:
+            self._cache_dict["_is_diagonal"] = is_diagonal(self.linear_matrix, tol=1e-8)
+        return self._cache_dict["_is_diagonal"]
 
 
 class CompositeAffine(Affine):
@@ -904,7 +876,7 @@ class CompositeAffine(Affine):
         """Setting the linear matrix of a CompositeAffine transform is not supported."""
         raise NotImplementedError(
             trans._(
-                'linear_matrix cannot be set directly for a CompositeAffine transform',
+                "linear_matrix cannot be set directly for a CompositeAffine transform",
                 deferred=True,
             )
         )
@@ -918,12 +890,12 @@ class CompositeAffine(Affine):
         """Setting the affine matrix of a CompositeAffine transform is not supported."""
         raise NotImplementedError(
             trans._(
-                'affine_matrix cannot be set directly for a CompositeAffine transform',
+                "affine_matrix cannot be set directly for a CompositeAffine transform",
                 deferred=True,
             )
         )
 
-    def set_slice(self, axes: Sequence[int]) -> 'CompositeAffine':
+    def set_slice(self, axes: Sequence[int]) -> "CompositeAffine":
         return CompositeAffine(
             scale=self._scale[axes],
             translate=self._translate[axes],
@@ -935,7 +907,7 @@ class CompositeAffine(Affine):
             axis_labels=[self.axis_labels[i] for i in axes],
         )
 
-    def expand_dims(self, axes: Sequence[int]) -> 'CompositeAffine':
+    def expand_dims(self, axes: Sequence[int]) -> "CompositeAffine":
         n = len(axes) + len(self.scale)
         not_axes = [i for i in range(n) if i not in axes]
         rotate = np.eye(n)

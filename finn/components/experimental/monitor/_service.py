@@ -98,19 +98,18 @@ import logging
 import os
 import subprocess
 from multiprocessing.managers import SharedMemoryManager
-from typing import Union
 
 from finn.components.experimental.monitor._utils import base64_encoded_json
 
-LOGGER = logging.getLogger('finn.monitor')
+LOGGER = logging.getLogger("finn.monitor")
 
 # If False we don't start any clients, for debugging.
 START_CLIENTS = True
 
 # We pass the data in this template to each client as an encoded
 # NAPARI_MON_CLIENT environment variable.
-client_config_template: dict[str, Union[str, int]] = {
-    'server_port': '<number>',
+client_config_template: dict[str, str | int] = {
+    "server_port": "<number>",
 }
 
 
@@ -125,11 +124,11 @@ def _create_client_env(server_port: int) -> dict:
     # Every client gets the same config. Copy template and then stuff
     # in the correct values.
     client_config = copy.deepcopy(client_config_template)
-    client_config['server_port'] = server_port
+    client_config["server_port"] = server_port
 
     # Start with our environment and just add in the one variable.
     env = os.environ.copy()
-    env.update({'NAPARI_MON_CLIENT': base64_encoded_json(client_config)})
+    env.update({"NAPARI_MON_CLIENT": base64_encoded_json(client_config)})
     return env
 
 
@@ -159,23 +158,23 @@ class MonitorService:
         # We asked for port 0 which means the OS will pick a port, we
         # save it off so we can send it the clients are starting up.
         server_port = self._manager.address[1]
-        LOGGER.info('Listening on port %s', server_port)
+        LOGGER.info("Listening on port %s", server_port)
 
-        num_clients = len(self._config['clients'])
-        LOGGER.info('Starting %d clients...', num_clients)
+        num_clients = len(self._config["clients"])
+        LOGGER.info("Starting %d clients...", num_clients)
 
         env = _create_client_env(server_port)
 
         # Start every client.
-        for args in self._config['clients']:
-            LOGGER.info('Starting client %s', args)
+        for args in self._config["clients"]:
+            LOGGER.info("Starting client %s", args)
 
             # Use Popen to run and not wait for the process to finish.
             subprocess.Popen(args, env=env)
 
-        LOGGER.info('Started %d clients.', num_clients)
+        LOGGER.info("Started %d clients.", num_clients)
 
     def stop(self) -> None:
         """Stop the shared memory service."""
-        LOGGER.info('MonitorService.stop')
+        LOGGER.info("MonitorService.stop")
         self._manager.shutdown()

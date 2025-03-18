@@ -1,6 +1,5 @@
 from collections import OrderedDict
 from enum import auto
-from typing import Union
 
 from finn.utils.misc import StringEnum
 from finn.utils.translations import trans
@@ -59,41 +58,41 @@ class Symbol(StringEnum):
 
 # Mapping of symbol alias names to the deduplicated name
 SYMBOL_ALIAS = {
-    '>': Symbol.ARROW,
-    '+': Symbol.CROSS,
-    'o': Symbol.DISC,
-    '-': Symbol.HBAR,
-    's': Symbol.SQUARE,
-    '*': Symbol.STAR,
-    '->': Symbol.TAILED_ARROW,
-    'v': Symbol.TRIANGLE_DOWN,
-    '^': Symbol.TRIANGLE_UP,
-    '|': Symbol.VBAR,
+    ">": Symbol.ARROW,
+    "+": Symbol.CROSS,
+    "o": Symbol.DISC,
+    "-": Symbol.HBAR,
+    "s": Symbol.SQUARE,
+    "*": Symbol.STAR,
+    "->": Symbol.TAILED_ARROW,
+    "v": Symbol.TRIANGLE_DOWN,
+    "^": Symbol.TRIANGLE_UP,
+    "|": Symbol.VBAR,
 }
 
 SYMBOL_TRANSLATION = OrderedDict(
     [
-        (Symbol.ARROW, trans._('arrow')),
-        (Symbol.CLOBBER, trans._('clobber')),
-        (Symbol.CROSS, trans._('cross')),
-        (Symbol.DIAMOND, trans._('diamond')),
-        (Symbol.DISC, trans._('disc')),
-        (Symbol.HBAR, trans._('hbar')),
-        (Symbol.RING, trans._('ring')),
-        (Symbol.SQUARE, trans._('square')),
-        (Symbol.STAR, trans._('star')),
-        (Symbol.TAILED_ARROW, trans._('tailed arrow')),
-        (Symbol.TRIANGLE_DOWN, trans._('triangle down')),
-        (Symbol.TRIANGLE_UP, trans._('triangle up')),
-        (Symbol.VBAR, trans._('vbar')),
-        (Symbol.X, trans._('x')),
+        (Symbol.ARROW, trans._("arrow")),
+        (Symbol.CLOBBER, trans._("clobber")),
+        (Symbol.CROSS, trans._("cross")),
+        (Symbol.DIAMOND, trans._("diamond")),
+        (Symbol.DISC, trans._("disc")),
+        (Symbol.HBAR, trans._("hbar")),
+        (Symbol.RING, trans._("ring")),
+        (Symbol.SQUARE, trans._("square")),
+        (Symbol.STAR, trans._("star")),
+        (Symbol.TAILED_ARROW, trans._("tailed arrow")),
+        (Symbol.TRIANGLE_DOWN, trans._("triangle down")),
+        (Symbol.TRIANGLE_UP, trans._("triangle up")),
+        (Symbol.VBAR, trans._("vbar")),
+        (Symbol.X, trans._("x")),
     ]
 )
 
 SYMBOL_TRANSLATION_INVERTED = {v: k for k, v in SYMBOL_TRANSLATION.items()}
 
 
-SYMBOL_DICT: dict[Union[str, Symbol], Symbol] = {x: x for x in Symbol}
+SYMBOL_DICT: dict[str | Symbol, Symbol] = {x: x for x in Symbol}
 SYMBOL_DICT.update({str(x): x for x in Symbol})
 SYMBOL_DICT.update(SYMBOL_TRANSLATION_INVERTED)  # type: ignore[arg-type]
 SYMBOL_DICT.update(SYMBOL_ALIAS)  # type: ignore[arg-type]
@@ -111,8 +110,8 @@ class Shading(StringEnum):
 
 
 SHADING_TRANSLATION = {
-    trans._('none'): Shading.NONE,
-    trans._('spherical'): Shading.SPHERICAL,
+    trans._("none"): Shading.NONE,
+    trans._("spherical"): Shading.SPHERICAL,
 }
 
 

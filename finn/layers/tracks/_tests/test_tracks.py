@@ -17,14 +17,10 @@ from finn.utils._test_utils import (
 
 data_array_2dt = np.zeros((1, 4))
 data_list_2dt = list(data_array_2dt)
-dataframe_2dt = pd.DataFrame(
-    data=data_array_2dt, columns=['track_id', 't', 'y', 'x']
-)
+dataframe_2dt = pd.DataFrame(data=data_array_2dt, columns=["track_id", "t", "y", "x"])
 
 
-@pytest.mark.parametrize(
-    'data', [data_array_2dt, data_list_2dt, dataframe_2dt]
-)
+@pytest.mark.parametrize("data", [data_array_2dt, data_list_2dt, dataframe_2dt])
 def test_tracks_layer_2dt_ndim(data):
     """Test instantiating Tracks layer, check 2D+t dimensionality."""
     layer = Tracks(data)
@@ -34,13 +30,11 @@ def test_tracks_layer_2dt_ndim(data):
 data_array_3dt = np.zeros((1, 5))
 data_list_3dt = list(data_array_3dt)
 dataframe_3dt = pd.DataFrame(
-    data=data_array_3dt, columns=['track_id', 't', 'z', 'y', 'x']
+    data=data_array_3dt, columns=["track_id", "t", "z", "y", "x"]
 )
 
 
-@pytest.mark.parametrize(
-    'data', [data_array_3dt, data_list_3dt, dataframe_3dt]
-)
+@pytest.mark.parametrize("data", [data_array_3dt, data_list_3dt, dataframe_3dt])
 def test_tracks_layer_3dt_ndim(data):
     """Test instantiating Tracks layer, check 3D+t dimensionality."""
     layer = Tracks(data)
@@ -50,8 +44,8 @@ def test_tracks_layer_3dt_ndim(data):
 def test_track_layer_name():
     """Test track name."""
     data = np.zeros((1, 4))
-    layer = Tracks(data, name='test_tracks')
-    assert layer.name == 'test_tracks'
+    layer = Tracks(data, name="test_tracks")
+    assert layer.name == "test_tracks"
 
 
 def test_track_layer_data():
@@ -62,9 +56,7 @@ def test_track_layer_data():
     np.testing.assert_array_equal(layer.data, data)
 
 
-@pytest.mark.parametrize(
-    'timestamps', [np.arange(100, 200), np.arange(100, 300, 2)]
-)
+@pytest.mark.parametrize("timestamps", [np.arange(100, 200), np.arange(100, 300, 2)])
 def test_track_layer_data_nonzero_starting_time(timestamps):
     """Test data with sparse timestamps or not starting at zero."""
     data = np.zeros((100, 4))
@@ -83,11 +75,11 @@ def test_track_layer_data_flipped():
     np.testing.assert_array_equal(layer.data, np.flip(data, axis=0))
 
 
-properties_dict = {'time': np.arange(100)}
+properties_dict = {"time": np.arange(100)}
 properties_df = pd.DataFrame(properties_dict)
 
 
-@pytest.mark.parametrize('properties', [{}, properties_dict, properties_df])
+@pytest.mark.parametrize("properties", [{}, properties_dict, properties_df])
 def test_track_layer_properties(properties):
     """Test properties."""
     data = np.zeros((100, 4))
@@ -97,7 +89,7 @@ def test_track_layer_properties(properties):
         np.testing.assert_equal(layer.properties[k], v)
 
 
-@pytest.mark.parametrize('properties', [{}, properties_dict, properties_df])
+@pytest.mark.parametrize("properties", [{}, properties_dict, properties_df])
 def test_track_layer_properties_flipped(properties):
     """Test properties."""
     data = np.zeros((100, 4))
@@ -109,32 +101,30 @@ def test_track_layer_properties_flipped(properties):
         np.testing.assert_equal(layer.properties[k], np.flip(v))
 
 
-@pytest.mark.filterwarnings('ignore:.*track_id.*:UserWarning')
+@pytest.mark.filterwarnings("ignore:.*track_id.*:UserWarning")
 def test_track_layer_colorby_nonexistent():
     """Test error handling for non-existent properties with color_by"""
     data = np.zeros((100, 4))
     data[:, 1] = np.arange(100)
-    non_existant_property = 'not_a_valid_key'
+    non_existant_property = "not_a_valid_key"
     assert non_existant_property not in properties_dict
-    with pytest.raises(ValueError, match='not a valid property'):
-        Tracks(
-            data, properties=properties_dict, color_by=non_existant_property
-        )
+    with pytest.raises(ValueError, match="not a valid property"):
+        Tracks(data, properties=properties_dict, color_by=non_existant_property)
 
 
-@pytest.mark.filterwarnings('ignore:.*track_id.*:UserWarning')
+@pytest.mark.filterwarnings("ignore:.*track_id.*:UserWarning")
 def test_track_layer_properties_changed_colorby():
     """Test behaviour when changes to properties invalidate current color_by"""
-    properties_dict_1 = {'time': np.arange(100), 'prop1': np.arange(100)}
-    properties_dict_2 = {'time': np.arange(100), 'prop2': np.arange(100)}
+    properties_dict_1 = {"time": np.arange(100), "prop1": np.arange(100)}
+    properties_dict_2 = {"time": np.arange(100), "prop2": np.arange(100)}
     data = np.zeros((100, 4))
     data[:, 1] = np.arange(100)
-    layer = Tracks(data, properties=properties_dict_1, color_by='prop1')
+    layer = Tracks(data, properties=properties_dict_1, color_by="prop1")
     # test warning is raised
     with pytest.warns(UserWarning):
         layer.properties = properties_dict_2
     # test default fallback
-    assert layer.color_by == 'track_id'
+    assert layer.color_by == "track_id"
 
 
 def test_track_layer_graph():
@@ -152,7 +142,7 @@ def test_track_layer_reset_data():
     data = np.zeros((100, 4))
     data[:, 1] = np.arange(100)
     data[50:, 0] = 1
-    properties = {'time': data[:, 1]}
+    properties = {"time": data[:, 1]}
     graph = {1: [0]}
     layer = Tracks(data, graph=graph, properties=properties)
     cropped_data = data[:10, :]
@@ -165,7 +155,7 @@ def test_malformed_id():
     """Test for malformed track ID."""
     data = np.random.random((100, 4))
     data[:, 1] = np.arange(100)
-    with pytest.raises(ValueError, match='must be an integer'):
+    with pytest.raises(ValueError, match="must be an integer"):
         Tracks(data)
 
 
@@ -175,7 +165,7 @@ def test_malformed_graph():
     data[:, 1] = np.arange(100)
     data[50:, 0] = 1
     graph = {1: [0], 2: [33]}
-    with pytest.raises(ValueError, match='node 2 not found'):
+    with pytest.raises(ValueError, match="node 2 not found"):
         Tracks(data, graph=graph)
 
 
@@ -217,7 +207,7 @@ def test_fast_points_lookup() -> None:
 
     assert len(time_points) == len(points_lookup)
     total_length = 0
-    for s, e, t, r in zip(start, end, time_points, repeats):
+    for s, e, t, r in zip(start, end, time_points, repeats, strict=False):
         assert points_lookup[t].start == s
         assert points_lookup[t].stop == e
         assert points_lookup[t].stop - points_lookup[t].start == r
@@ -247,7 +237,7 @@ def test_track_ids_ordering() -> None:
     sorted_track_ids = [0, 0, 1, 1, 2]  # track_ids after sorting
 
     layer = Tracks(unsorted_data)
-    np.testing.assert_array_equal(sorted_track_ids, layer.features['track_id'])
+    np.testing.assert_array_equal(sorted_track_ids, layer.features["track_id"])
 
 
 def test_changing_data_inplace() -> None:

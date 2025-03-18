@@ -6,7 +6,7 @@ from finn.utils.events.containers._nested_list import NestableEventedList
 from finn.utils.events.containers._selection import Selectable
 from finn.utils.translations import trans
 
-_T = TypeVar('_T')
+_T = TypeVar("_T")
 
 
 class SelectableEventedList(Selectable[_T], EventedList[_T]):
@@ -54,7 +54,7 @@ class SelectableEventedList(Selectable[_T], EventedList[_T]):
         if value not in self:
             raise ValueError(
                 trans._(
-                    'Cannot select item that is not in list: {value!r}',
+                    "Cannot select item that is not in list: {value!r}",
                     deferred=True,
                     value=value,
                 )
@@ -113,7 +113,7 @@ class SelectableEventedList(Selectable[_T], EventedList[_T]):
         # this is just here for now to support the old layerlist API
         warnings.warn(
             trans._(
-                'move_selected is deprecated since 0.4.16. Please use layers.move_multiple with layers.selection instead.',
+                "move_selected is deprecated since 0.4.16. Please use layers.move_multiple with layers.selection instead.",
                 deferred=True,
             ),
             FutureWarning,
@@ -150,7 +150,5 @@ class SelectableEventedList(Selectable[_T], EventedList[_T]):
         self.select_next(-1, shift=shift)
 
 
-class SelectableNestableEventedList(
-    SelectableEventedList[_T], NestableEventedList[_T]
-):
+class SelectableNestableEventedList(SelectableEventedList[_T], NestableEventedList[_T]):
     pass

@@ -1,7 +1,6 @@
 """MutableMapping that emits events when altered."""
 
 from collections.abc import Mapping, Sequence
-from typing import Optional, Union
 
 from finn.utils.events.containers._dict import _K, _T, TypedMutableMapping
 from finn.utils.events.event import EmitterGroup, Event
@@ -47,26 +46,24 @@ class EventedDict(TypedMutableMapping[_K, _T]):
 
     def __init__(
         self,
-        data: Optional[Mapping[_K, _T]] = None,
-        basetype: Union[type[_T], Sequence[type[_T]]] = (),
+        data: Mapping[_K, _T] | None = None,
+        basetype: type[_T] | Sequence[type[_T]] = (),
     ) -> None:
         _events = {
-            'changing': None,
-            'changed': None,
-            'adding': None,
-            'added': None,
-            'removing': None,
-            'removed': None,
-            'updated': None,
+            "changing": None,
+            "changed": None,
+            "adding": None,
+            "added": None,
+            "removing": None,
+            "removed": None,
+            "updated": None,
         }
         # For inheritance: If the mro already provides an EmitterGroup, add...
-        if hasattr(self, 'events') and isinstance(self.events, EmitterGroup):
+        if hasattr(self, "events") and isinstance(self.events, EmitterGroup):
             self.events.add(**_events)
         else:
             # otherwise create a new one
-            self.events = EmitterGroup(
-                source=self, auto_connect=False, **_events
-            )
+            self.events = EmitterGroup(source=self, auto_connect=False, **_events)
         super().__init__(data, basetype)
 
     def __setitem__(self, key: _K, value: _T) -> None:
@@ -91,7 +88,7 @@ class EventedDict(TypedMutableMapping[_K, _T]):
 
     def _reemit_child_event(self, event: Event) -> None:
         """An item in the dict emitted an event.  Re-emit with key"""
-        if not hasattr(event, 'key'):
+        if not hasattr(event, "key"):
             event.key = self.key(event.source)
 
         # re-emit with this object's EventEmitter
@@ -110,7 +107,7 @@ class EventedDict(TypedMutableMapping[_K, _T]):
                 child.events.source = child
             child.events.connect(self._reemit_child_event)
 
-    def key(self, value: _T) -> Optional[_K]:
+    def key(self, value: _T) -> _K | None:
         """Return first instance of value."""
         for k, v in self._dict.items():
             if v is value or v == value:

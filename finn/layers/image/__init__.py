@@ -7,4 +7,4 @@ from finn.layers.image.image import Image
 del _image_key_bindings
 
 
-__all__ = ['Image']
+__all__ = ["Image"]

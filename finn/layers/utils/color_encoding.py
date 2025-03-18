@@ -1,7 +1,6 @@
 from typing import (
     Any,
     Literal,
-    Optional,
     Protocol,
     Union,
     runtime_checkable,
@@ -24,7 +23,7 @@ from finn.utils.colormaps.categorical_colormap import CategoricalColormap
 from finn.utils.translations import trans
 
 """The default color to use, which may also be used a safe fallback color."""
-DEFAULT_COLOR = ColorValue.validate('cyan')
+DEFAULT_COLOR = ColorValue.validate("cyan")
 
 
 @runtime_checkable
@@ -37,8 +36,8 @@ class ColorEncoding(StyleEncoding[ColorValue, ColorArray], Protocol):
 
     @classmethod
     def validate(
-        cls, value: Union['ColorEncoding', dict, str, ColorType]
-    ) -> 'ColorEncoding':
+        cls, value: Union["ColorEncoding", dict, str, ColorType]
+    ) -> "ColorEncoding":
         """Validates and coerces a value to a ColorEncoding.
 
         Parameters
@@ -80,7 +79,7 @@ class ColorEncoding(StyleEncoding[ColorValue, ColorArray], Protocol):
         except (ValueError, AttributeError, KeyError) as e:
             raise TypeError(
                 trans._(
-                    'value should be a ColorEncoding, a dict, a color, or a sequence of colors',
+                    "value should be a ColorEncoding, a dict, a color, or a sequence of colors",
                     deferred=True,
                 )
             ) from e
@@ -98,7 +97,7 @@ class ConstantColorEncoding(_ConstantStyleEncoding[ColorValue, ColorArray]):
         The constant color RGBA value.
     """
 
-    encoding_type: Literal['ConstantColorEncoding'] = 'ConstantColorEncoding'
+    encoding_type: Literal["ConstantColorEncoding"] = "ConstantColorEncoding"
     constant: ColorValue
 
 
@@ -114,7 +113,7 @@ class ManualColorEncoding(_ManualStyleEncoding[ColorValue, ColorArray]):
         The default color value.
     """
 
-    encoding_type: Literal['ManualColorEncoding'] = 'ManualColorEncoding'
+    encoding_type: Literal["ManualColorEncoding"] = "ManualColorEncoding"
     array: ColorArray
     default: ColorValue = Field(default_factory=lambda: DEFAULT_COLOR)
 
@@ -131,7 +130,7 @@ class DirectColorEncoding(_DerivedStyleEncoding[ColorValue, ColorArray]):
         does not contain valid color values.
     """
 
-    encoding_type: Literal['DirectColorEncoding'] = 'DirectColorEncoding'
+    encoding_type: Literal["DirectColorEncoding"] = "DirectColorEncoding"
     feature: str
     fallback: ColorValue = Field(default_factory=lambda: DEFAULT_COLOR)
 
@@ -155,7 +154,7 @@ class NominalColorEncoding(_DerivedStyleEncoding[ColorValue, ColorArray]):
         colors fails.
     """
 
-    encoding_type: Literal['NominalColorEncoding'] = 'NominalColorEncoding'
+    encoding_type: Literal["NominalColorEncoding"] = "NominalColorEncoding"
     feature: str
     colormap: CategoricalColormap
     fallback: ColorValue = Field(default_factory=lambda: DEFAULT_COLOR)
@@ -186,37 +185,29 @@ class QuantitativeColorEncoding(_DerivedStyleEncoding[ColorValue, ColorArray]):
         colors fails.
     """
 
-    encoding_type: Literal['QuantitativeColorEncoding'] = (
-        'QuantitativeColorEncoding'
-    )
+    encoding_type: Literal["QuantitativeColorEncoding"] = "QuantitativeColorEncoding"
     feature: str
     colormap: Colormap
-    contrast_limits: Optional[tuple[float, float]] = None
+    contrast_limits: tuple[float, float] | None = None
     fallback: ColorValue = Field(default_factory=lambda: DEFAULT_COLOR)
 
     def __call__(self, features: Any) -> ColorArray:
         values = features[self.feature]
-        contrast_limits = self.contrast_limits or _calculate_contrast_limits(
-            values
-        )
+        contrast_limits = self.contrast_limits or _calculate_contrast_limits(values)
         if contrast_limits is not None:
             values = np.interp(values, contrast_limits, (0, 1))
         return self.colormap.map(values)
 
-    @validator('colormap', pre=True, always=True, allow_reuse=True)
+    @validator("colormap", pre=True, always=True, allow_reuse=True)
     def _check_colormap(cls, colormap: ValidColormapArg) -> Colormap:
         return ensure_colormap(colormap)
 
-    @validator('contrast_limits', pre=True, always=True, allow_reuse=True)
-    def _check_contrast_limits(
-        cls, contrast_limits
-    ) -> Optional[tuple[float, float]]:
-        if (contrast_limits is not None) and (
-            contrast_limits[0] >= contrast_limits[1]
-        ):
+    @validator("contrast_limits", pre=True, always=True, allow_reuse=True)
+    def _check_contrast_limits(cls, contrast_limits) -> tuple[float, float] | None:
+        if (contrast_limits is not None) and (contrast_limits[0] >= contrast_limits[1]):
             raise ValueError(
                 trans._(
-                    'contrast_limits must be a strictly increasing pair of values',
+                    "contrast_limits must be a strictly increasing pair of values",
                     deferred=True,
                 )
             )
@@ -225,7 +216,7 @@ class QuantitativeColorEncoding(_DerivedStyleEncoding[ColorValue, ColorArray]):
 
 def _calculate_contrast_limits(
     values: np.ndarray,
-) -> Optional[tuple[float, float]]:
+) -> tuple[float, float] | None:
     contrast_limits = None
     if values.size > 0:
         min_value = np.min(values)

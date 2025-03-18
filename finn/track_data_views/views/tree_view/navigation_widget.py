@@ -27,7 +27,8 @@ class NavigationWidget(QWidget):
 
         Args:
             track_df (pd.DataFrame): The dataframe holding the track information
-            view_direction (str): The view direction of the tree widget. Options: "vertical", "horizontal".
+            view_direction (str): The view direction of the tree widget. Options:
+                "vertical", "horizontal".
             selected_nodes (NodeSelectionList): The list of selected nodes.
             feature (str): The feature currently being displayed
         """
@@ -101,8 +102,8 @@ class NavigationWidget(QWidget):
                 next_node = self.get_next_track_node(
                     self.lineage_df, node_id, forward=False
                 )
-                # if not found, look in the whole dataframe
-                # to enable jumping to the next node outside the current tree view content
+                # if not found, look in the whole dataframe to enable jumping to the
+                # next node outside the current tree view content
                 if next_node is None:
                     next_node = self.get_next_track_node(
                         self.track_df, node_id, forward=False
@@ -122,7 +123,8 @@ class NavigationWidget(QWidget):
         """Get the node at the same time point in an adjacent track.
 
         Args:
-            df (pd.DataFrame): The dataframe to be used (full track_df or subset lineage_df).
+            df (pd.DataFrame): The dataframe to be used (full track_df or subset
+                lineage_df).
             node_id (str): The current node ID to get the next from.
             forward (bool, optional): If true, pick the next track (right/down).
                 Otherwise, pick the previous track (left/up). Defaults to True.
@@ -151,6 +153,7 @@ class NavigationWidget(QWidget):
             )
             neighbor = neighbors.loc[closest_index_label, "node_id"]
             return neighbor
+        return None
 
     def get_predecessor(self, node_id: str) -> str | None:
         """Get the predecessor node of the given node_id
@@ -168,6 +171,7 @@ class NavigationWidget(QWidget):
         parent_row = self.track_df.loc[self.track_df["node_id"] == parent_id]
         if not parent_row.empty:
             return parent_row["node_id"].values[0]
+        return None
 
     def get_successor(self, node_id: str) -> str | None:
         """Get the successor node of the given node_id. If there are two children,
@@ -184,3 +188,4 @@ class NavigationWidget(QWidget):
         if not children.empty:
             child = children.to_dict("records")[0]
             return child["node_id"]
+        return None

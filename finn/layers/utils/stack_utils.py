@@ -75,36 +75,36 @@ def split_channels(
     """
 
     # Determine if data is a multiscale
-    multiscale = kwargs.get('multiscale')
+    multiscale = kwargs.get("multiscale")
     if not multiscale:
         multiscale, data = guess_multiscale(data)
-        kwargs['multiscale'] = multiscale
+        kwargs["multiscale"] = multiscale
 
     n_channels = (data[0] if multiscale else data).shape[channel_axis]
     # Use original blending mode or for multichannel use translucent for first channel then additive
-    kwargs['blending'] = kwargs.get('blending') or ['translucent_no_depth'] + [
-        'additive'
+    kwargs["blending"] = kwargs.get("blending") or ["translucent_no_depth"] + [
+        "additive"
     ] * (n_channels - 1)
-    kwargs.setdefault('colormap', None)
+    kwargs.setdefault("colormap", None)
     # these arguments are *already* iterables in the single-channel case.
     iterable_kwargs = {
-        'axis_labels',
-        'scale',
-        'translate',
-        'contrast_limits',
-        'metadata',
-        'plane',
-        'experimental_clipping_planes',
-        'custom_interpolation_kernel_2d',
-        'units',
+        "axis_labels",
+        "scale",
+        "translate",
+        "contrast_limits",
+        "metadata",
+        "plane",
+        "experimental_clipping_planes",
+        "custom_interpolation_kernel_2d",
+        "units",
     }
 
     # turn the kwargs dict into a mapping of {key: iterator}
     # so that we can use {k: next(v) for k, v in kwargs.items()} below
     for key, val in kwargs.items():
-        if key == 'colormap' and val is None:
+        if key == "colormap" and val is None:
             if n_channels == 1:
-                kwargs[key] = iter(['gray'])
+                kwargs[key] = iter(["gray"])
             elif n_channels == 2:
                 kwargs[key] = iter(MAGENTA_GREEN)
             else:
@@ -113,9 +113,7 @@ def split_channels(
         # make sure that iterable_kwargs are a *sequence* of iterables
         # for the multichannel case.  For example: if scale == (1, 2) &
         # n_channels = 3, then scale should == [(1, 2), (1, 2), (1, 2)]
-        elif key in iterable_kwargs or (
-            key == 'colormap' and isinstance(val, Colormap)
-        ):
+        elif key in iterable_kwargs or (key == "colormap" and isinstance(val, Colormap)):
             kwargs[key] = iter(
                 ensure_sequence_of_iterables(
                     val,
@@ -124,7 +122,7 @@ def split_channels(
                     allow_none=True,
                 )
             )
-        elif key == 'affine' and isinstance(val, np.ndarray):
+        elif key == "affine" and isinstance(val, np.ndarray):
             # affine may be Affine or np.ndarray object that is not
             # iterable, but it is not now a problem as we use it only to warning
             # if a provided object is a sequence and channel_axis is not provided
@@ -158,7 +156,7 @@ def split_channels(
                     )
                 ) from e
 
-        layerdata: FullLayerData = (image, i_kwargs, 'image')
+        layerdata: FullLayerData = (image, i_kwargs, "image")
         layerdata_list.append(layerdata)
 
     return layerdata_list
@@ -192,7 +190,7 @@ def stack_to_images(stack: Image, axis: int, **kwargs) -> list[Image]:
 
     data, meta, _ = stack.as_layer_data_tuple()
 
-    for key in ('contrast_limits', 'colormap', 'blending'):
+    for key in ("contrast_limits", "colormap", "blending"):
         del meta[key]
 
     name = stack.name
@@ -201,7 +199,7 @@ def stack_to_images(stack: Image, axis: int, **kwargs) -> list[Image]:
     if num_dim < 3:
         raise ValueError(
             trans._(
-                'The image needs more than 2 dimensions for splitting',
+                "The image needs more than 2 dimensions for splitting",
                 deferred=True,
             )
         )
@@ -216,34 +214,34 @@ def stack_to_images(stack: Image, axis: int, **kwargs) -> list[Image]:
             )
         )
 
-    if kwargs.get('colormap'):
-        kwargs['colormap'] = itertools.cycle(kwargs['colormap'])
+    if kwargs.get("colormap"):
+        kwargs["colormap"] = itertools.cycle(kwargs["colormap"])
 
-    if meta['rgb']:
+    if meta["rgb"]:
         if axis in [num_dim - 1, -1]:
-            kwargs['rgb'] = False  # split channels as grayscale
+            kwargs["rgb"] = False  # split channels as grayscale
         else:
-            kwargs['rgb'] = True  # split some other axis, remain rgb
-            meta['scale'].pop(axis)
-            meta['translate'].pop(axis)
+            kwargs["rgb"] = True  # split some other axis, remain rgb
+            meta["scale"].pop(axis)
+            meta["translate"].pop(axis)
     else:
-        kwargs['rgb'] = False
-        meta['scale'].pop(axis)
-        meta['translate'].pop(axis)
+        kwargs["rgb"] = False
+        meta["scale"].pop(axis)
+        meta["translate"].pop(axis)
 
-    meta['rotate'] = None
-    meta['shear'] = None
-    meta['affine'] = None
-    meta['axis_labels'] = None
-    meta['units'] = None
+    meta["rotate"] = None
+    meta["shear"] = None
+    meta["affine"] = None
+    meta["axis_labels"] = None
+    meta["units"] = None
 
     meta.update(kwargs)
     imagelist = []
     layerdata_list = split_channels(data, axis, **meta)
     for i, tup in enumerate(layerdata_list):
         idata, imeta, _ = tup
-        layer_name = f'{name} layer {i}'
-        imeta['name'] = layer_name
+        layer_name = f"{name} layer {i}"
+        imeta["name"] = layer_name
 
         imagelist.append(Image(idata, **imeta))
 
@@ -253,11 +251,9 @@ def stack_to_images(stack: Image, axis: int, **kwargs) -> list[Image]:
 def split_rgb(stack: Image, with_alpha=False) -> list[Image]:
     """Variant of stack_to_images that splits an RGB with predefined cmap."""
     if not stack.rgb:
-        raise ValueError(
-            trans._('Image must be RGB to use split_rgb', deferred=True)
-        )
+        raise ValueError(trans._("Image must be RGB to use split_rgb", deferred=True))
 
-    images = stack_to_images(stack, -1, colormap=('red', 'green', 'blue'))
+    images = stack_to_images(stack, -1, colormap=("red", "green", "blue"))
     return images if with_alpha else images[:3]
 
 
@@ -284,7 +280,7 @@ def images_to_stack(images: list[Image], axis: int = 0, **kwargs) -> Image:
     """
 
     if not images:
-        raise IndexError(trans._('images list is empty', deferred=True))
+        raise IndexError(trans._("images list is empty", deferred=True))
 
     if not all(isinstance(layer, Image) for layer in images):
         non_image_layers = [
@@ -294,29 +290,27 @@ def images_to_stack(images: list[Image], axis: int = 0, **kwargs) -> Image:
         ]
         raise ValueError(
             trans._(
-                'All selected layers to be merged must be Image layers. '
-                'The following layers are not Image layers: '
-                f'{", ".join(f"{name} ({layer_type})" for name, layer_type in non_image_layers)}'
+                "All selected layers to be merged must be Image layers. "
+                "The following layers are not Image layers: "
+                f"{', '.join(f'{name} ({layer_type})' for name, layer_type in non_image_layers)}"
             )
         )
 
     data, meta, _ = images[0].as_layer_data_tuple()
 
     # RGB images do not need extra dimensions inserted into metadata
-    if 'rgb' not in kwargs:
-        kwargs.setdefault('scale', np.insert(meta['scale'], axis, 1))
-        kwargs.setdefault('translate', np.insert(meta['translate'], axis, 0))
+    if "rgb" not in kwargs:
+        kwargs.setdefault("scale", np.insert(meta["scale"], axis, 1))
+        kwargs.setdefault("translate", np.insert(meta["translate"], axis, 0))
 
     meta.update(kwargs)
     new_data = np.stack([image.data for image in images], axis=axis)
 
     # RGB images do not need extra dimensions inserted into metadata
     # They can use the meta dict from one of the source image layers
-    if not meta['rgb']:
-        meta['units'] = (pint.get_application_registry().pixel,) + meta[
-            'units'
-        ]
-        meta['axis_labels'] = (f'axis -{data.ndim + 1}',) + meta['axis_labels']
+    if not meta["rgb"]:
+        meta["units"] = (pint.get_application_registry().pixel,) + meta["units"]
+        meta["axis_labels"] = (f"axis -{data.ndim + 1}",) + meta["axis_labels"]
 
     return Image(new_data, **meta)
 
@@ -325,38 +319,31 @@ def merge_rgb(images: list[Image]) -> Image:
     """Variant of images_to_stack that makes an RGB from 3 images."""
     if not (len(images) == 3 and all(isinstance(x, Image) for x in images)):
         raise ValueError(
-            trans._(
-                'Merging to RGB requires exactly 3 Image layers', deferred=True
-            )
+            trans._("Merging to RGB requires exactly 3 Image layers", deferred=True)
         )
     if not all(image.data.shape == images[0].data.shape for image in images):
         all_shapes = [(image.name, image.data.shape) for image in images]
         raise ValueError(
             trans._(
-                'Shape mismatch! To merge to RGB, all selected Image layers (with R, G, and B colormaps) must have the same shape. '
-                'Mismatched shapes: '
-                f'{", ".join(f"{name} (shape: {shape})" for name, shape in all_shapes)}'
+                "Shape mismatch! To merge to RGB, all selected Image layers (with R, G, and B colormaps) must have the same shape. "
+                "Mismatched shapes: "
+                f"{', '.join(f'{name} (shape: {shape})' for name, shape in all_shapes)}"
             )
         )
 
     # we will check for the presence of R G B colormaps to determine how to merge
     colormaps = {image.colormap.name for image in images}
-    r_g_b = ['red', 'green', 'blue']
+    r_g_b = ["red", "green", "blue"]
     if colormaps != set(r_g_b):
         missing_colormaps = set(r_g_b) - colormaps
         raise ValueError(
             trans._(
-                'Missing colormap(s): {missing_colormaps}! To merge layers to RGB, ensure you have red, green, and blue as layer colormaps.',
+                "Missing colormap(s): {missing_colormaps}! To merge layers to RGB, ensure you have red, green, and blue as layer colormaps.",
                 missing_colormaps=missing_colormaps,
                 deferred=True,
             )
         )
 
     # use the R G B colormaps to order the images for merging
-    imgs = [
-        image
-        for color in r_g_b
-        for image in images
-        if image.colormap.name == color
-    ]
+    imgs = [image for color in r_g_b for image in images if image.colormap.name == color]
     return images_to_stack(imgs, axis=-1, rgb=True)

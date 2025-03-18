@@ -1,5 +1,3 @@
-from typing import Union
-
 import numpy as np
 from vispy.scene.visuals import Text
 
@@ -10,7 +8,7 @@ from finn.layers.utils.string_encoding import ConstantStringEncoding
 def update_text(
     *,
     node: Text,
-    layer: Union[Points, Shapes],
+    layer: Points | Shapes,
 ):
     """Update the vispy text node with a layer's text parameters.
 
@@ -32,11 +30,11 @@ def update_text(
         colors = layer._view_text_color
         coords, anchor_x, anchor_y = layer._view_text_coords
     else:
-        text_values = np.array([''])
+        text_values = np.array([""])
         colors = np.zeros((4,), np.float32)
         coords = np.zeros((1, ndisplay))
-        anchor_x = 'center'
-        anchor_y = 'center'
+        anchor_x = "center"
+        anchor_y = "center"
 
     # Vispy wants (x, y) positions instead of (row, column) coordinates.
     if ndisplay == 2:
@@ -62,13 +60,10 @@ def update_text(
     node.font_size = text_manager.size
 
 
-def _has_visible_text(layer: Union[Points, Shapes]) -> bool:
+def _has_visible_text(layer: Points | Shapes) -> bool:
     text = layer.text
     if not text.visible:
         return False
-    if (
-        isinstance(text.string, ConstantStringEncoding)
-        and text.string.constant == ''
-    ):
+    if isinstance(text.string, ConstantStringEncoding) and text.string.constant == "":
         return False
     return len(layer._indices_view) != 0

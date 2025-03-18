@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 
 def make_colorbar(
-    cmap: 'Colormap', size: tuple[int, int] = (18, 28), horizontal: bool = True
+    cmap: "Colormap", size: tuple[int, int] = (18, 28), horizontal: bool = True
 ) -> npt.NDArray[np.uint8]:
     """Make a colorbar from a colormap.
 
@@ -30,9 +30,7 @@ def make_colorbar(
 
     if horizontal:
         basic_values = np.linspace(0, 1, size[1])
-        bar = np.tile(np.expand_dims(basic_values, 1), size[0]).transpose(
-            (1, 0)
-        )
+        bar = np.tile(np.expand_dims(basic_values, 1), size[0]).transpose((1, 0))
     else:
         basic_values = np.linspace(0, 1, size[0])
         bar = np.tile(np.expand_dims(basic_values, 1), size[1])
@@ -40,4 +38,4 @@ def make_colorbar(
     color_array = cmap.map(bar.ravel())
     cbar = color_array.reshape((*bar.shape, 4))
 
-    return np.round(255 * cbar).astype(np.uint8).copy(order='C')
+    return np.round(255 * cbar).astype(np.uint8).copy(order="C")

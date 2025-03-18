@@ -1,5 +1,3 @@
-from typing import Optional
-
 import numpy as np
 import numpy.typing as npt
 
@@ -40,7 +38,7 @@ def convert_image_to_coordinates(vectors: npt.NDArray) -> npt.NDArray:
 
 
 def fix_data_vectors(
-    vectors: Optional[np.ndarray], ndim: Optional[int]
+    vectors: np.ndarray | None, ndim: int | None
 ) -> tuple[np.ndarray, int]:
     """
     Ensure that vectors array is 3d and have second dimension of size 2
@@ -91,10 +89,10 @@ def fix_data_vectors(
         if vectors.ndim != 3 or vectors.shape[1] != 2:
             raise ValueError(
                 trans._(
-                    'could not reshape Vector data from {vectors_shape} to (N, 2, {dimensions})',
+                    "could not reshape Vector data from {vectors_shape} to (N, 2, {dimensions})",
                     deferred=True,
                     vectors_shape=vectors.shape,
-                    dimensions=ndim or 'D',
+                    dimensions=ndim or "D",
                 )
             )
 
@@ -102,7 +100,7 @@ def fix_data_vectors(
     if ndim is not None and ndim != data_ndim:
         raise ValueError(
             trans._(
-                'Vectors dimensions ({data_ndim}) must be equal to ndim ({ndim})',
+                "Vectors dimensions ({data_ndim}) must be equal to ndim ({ndim})",
                 deferred=True,
                 data_ndim=data_ndim,
                 ndim=ndim,

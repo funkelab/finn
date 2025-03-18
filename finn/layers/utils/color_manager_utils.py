@@ -1,4 +1,4 @@
-from typing import Any, Union
+from typing import Any
 
 import numpy as np
 
@@ -23,8 +23,7 @@ def guess_continuous(color_map: np.ndarray) -> bool:
     """
     # if the property is a floating type, guess continuous
     return issubclass(color_map.dtype.type, np.floating) or (
-        len(np.unique(color_map)) > 16
-        and issubclass(color_map.dtype.type, np.integer)
+        len(np.unique(color_map)) > 16 and issubclass(color_map.dtype.type, np.integer)
     )
 
 
@@ -34,12 +33,12 @@ def is_color_mapped(color, properties):
         return color in properties
     if isinstance(color, dict):
         return True
-    if isinstance(color, (list, np.ndarray)):
+    if isinstance(color, list | np.ndarray):
         return False
 
     raise ValueError(
         trans._(
-            'face_color should be the name of a color, an array of colors, or the name of an property',
+            "face_color should be the name of a color, an array of colors, or the name of an property",
             deferred=True,
         )
     )
@@ -48,7 +47,7 @@ def is_color_mapped(color, properties):
 def map_property(
     prop: np.ndarray,
     colormap: Colormap,
-    contrast_limits: Union[None, tuple[float, float]] = None,
+    contrast_limits: None | tuple[float, float] = None,
 ) -> tuple[np.ndarray, tuple[float, float]]:
     """Apply a colormap to a property
 
@@ -90,26 +89,26 @@ def _validate_colormap_mode(
         The (Nx4) color array to set as ColorManager.colors
     values : dict
     """
-    color_properties = values['color_properties'].values
-    cmap = values['continuous_colormap']
+    color_properties = values["color_properties"].values
+    cmap = values["continuous_colormap"]
     if len(color_properties) > 0:
-        if values['contrast_limits'] is None:
+        if values["contrast_limits"] is None:
             colors, contrast_limits = map_property(
                 prop=color_properties,
                 colormap=cmap,
             )
-            values['contrast_limits'] = contrast_limits
+            values["contrast_limits"] = contrast_limits
         else:
             colors, _ = map_property(
                 prop=color_properties,
                 colormap=cmap,
-                contrast_limits=values['contrast_limits'],
+                contrast_limits=values["contrast_limits"],
             )
     else:
         colors = np.empty((0, 4))
-        current_prop_value = values['color_properties'].current_value
+        current_prop_value = values["color_properties"].current_value
         if current_prop_value is not None:
-            values['current_color'] = cmap.map(current_prop_value)[0]
+            values["current_color"] = cmap.map(current_prop_value)[0]
 
     if len(colors) == 0:
         colors = np.empty((0, 4))
@@ -134,15 +133,15 @@ def _validate_cycle_mode(
         The (Nx4) color array to set as ColorManager.colors
     values : dict
     """
-    color_properties = values['color_properties'].values
-    cmap = values['categorical_colormap']
+    color_properties = values["color_properties"].values
+    cmap = values["categorical_colormap"]
     if len(color_properties) == 0:
         colors = np.empty((0, 4))
-        current_prop_value = values['color_properties'].current_value
+        current_prop_value = values["color_properties"].current_value
         if current_prop_value is not None:
-            values['current_color'] = cmap.map(current_prop_value)[0]
+            values["current_color"] = cmap.map(current_prop_value)[0]
     else:
         colors = cmap.map(color_properties)
-    values['categorical_colormap'] = cmap
+    values["categorical_colormap"] = cmap
 
     return colors, values

@@ -8,14 +8,14 @@ class VispyBrushCircleOverlay(ViewerOverlayMixin, VispyCanvasOverlay):
         self._white_circle = Ellipse(
             center=(0, 0),
             color=(0, 0, 0, 0.0),
-            border_color='white',
-            border_method='agg',
+            border_color="white",
+            border_method="agg",
         )
         self._black_circle = Ellipse(
             center=(0, 0),
             color=(0, 0, 0, 0.0),
-            border_color='black',
-            border_method='agg',
+            border_color="black",
+            border_method="agg",
         )
 
         super().__init__(
@@ -29,9 +29,7 @@ class VispyBrushCircleOverlay(ViewerOverlayMixin, VispyCanvasOverlay):
 
         self.overlay.events.size.connect(self._on_size_change)
         self.node.events.canvas_change.connect(self._on_canvas_change)
-        self.viewer.events.mouse_over_canvas.connect(
-            self._on_mouse_over_canvas
-        )
+        self.viewer.events.mouse_over_canvas.connect(self._on_mouse_over_canvas)
         # no need to connect position, since that's in the base classes of CanvasOverlay
 
         self.reset()
@@ -46,9 +44,7 @@ class VispyBrushCircleOverlay(ViewerOverlayMixin, VispyCanvasOverlay):
     def _on_visible_change(self):
         if self._last_mouse_pos is not None:
             self._set_position(self._last_mouse_pos)
-        self.node.visible = (
-            self.overlay.visible and self.viewer.mouse_over_canvas
-        )
+        self.node.visible = self.overlay.visible and self.viewer.mouse_over_canvas
 
     def _on_mouse_move(self, event):
         self._last_mouse_pos = event.pos

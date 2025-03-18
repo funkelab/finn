@@ -12,16 +12,14 @@ from finn.utils.transforms.transform_utils import (
 )
 
 
-@pytest.mark.parametrize('upper_triangular', [True, False])
+@pytest.mark.parametrize("upper_triangular", [True, False])
 def test_decompose_linear_matrix(upper_triangular):
     """Test composing and decomposing a linear matrix."""
     np.random.seed(0)
 
     # Decompose linear matrix
     A = np.random.random((2, 2))
-    rotate, scale, shear = decompose_linear_matrix(
-        A, upper_triangular=upper_triangular
-    )
+    rotate, scale, shear = decompose_linear_matrix(A, upper_triangular=upper_triangular)
 
     # Compose linear matrix and check it matches
     B = compose_linear_matrix(rotate, scale, shear)
@@ -48,9 +46,7 @@ def test_decompose_linear_matrix_3d():
             [0, 1, 0],
         ]
     )
-    rotate, scale, shear = decompose_linear_matrix(
-        arr * 5, upper_triangular=False
-    )
+    rotate, scale, shear = decompose_linear_matrix(arr * 5, upper_triangular=False)
     np.testing.assert_almost_equal(rotate, arr)
     np.testing.assert_almost_equal(scale, [5, 5, 5])
 

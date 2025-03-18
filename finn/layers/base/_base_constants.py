@@ -46,11 +46,11 @@ class Blending(StringEnum):
 
 BLENDING_TRANSLATIONS = OrderedDict(
     [
-        (Blending.TRANSLUCENT, trans._('translucent')),
-        (Blending.TRANSLUCENT_NO_DEPTH, trans._('translucent_no_depth')),
-        (Blending.ADDITIVE, trans._('additive')),
-        (Blending.MINIMUM, trans._('minimum')),
-        (Blending.OPAQUE, trans._('opaque')),
+        (Blending.TRANSLUCENT, trans._("translucent")),
+        (Blending.TRANSLUCENT_NO_DEPTH, trans._("translucent_no_depth")),
+        (Blending.ADDITIVE, trans._("additive")),
+        (Blending.MINIMUM, trans._("minimum")),
+        (Blending.OPAQUE, trans._("opaque")),
     ]
 )
 
@@ -95,9 +95,7 @@ class InteractionBoxHandle(IntEnum):
     INSIDE = 9
 
     @classmethod
-    def opposite_handle(
-        cls, handle: 'InteractionBoxHandle'
-    ) -> 'InteractionBoxHandle':
+    def opposite_handle(cls, handle: "InteractionBoxHandle") -> "InteractionBoxHandle":
         opposites = {
             InteractionBoxHandle.TOP_LEFT: InteractionBoxHandle.BOTTOM_RIGHT,
             InteractionBoxHandle.TOP_CENTER: InteractionBoxHandle.BOTTOM_CENTER,
@@ -107,17 +105,17 @@ class InteractionBoxHandle(IntEnum):
 
         opposites.update({v: k for k, v in opposites.items()})
         if (opposite := opposites.get(handle)) is None:
-            raise ValueError(f'{handle} has no opposite handle.')
+            raise ValueError(f"{handle} has no opposite handle.")
         return opposite
 
     @classmethod
     def corners(
         cls,
     ) -> tuple[
-        'InteractionBoxHandle',
-        'InteractionBoxHandle',
-        'InteractionBoxHandle',
-        'InteractionBoxHandle',
+        "InteractionBoxHandle",
+        "InteractionBoxHandle",
+        "InteractionBoxHandle",
+        "InteractionBoxHandle",
     ]:
         return (
             cls.TOP_LEFT,

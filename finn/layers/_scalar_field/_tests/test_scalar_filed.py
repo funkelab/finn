@@ -10,5 +10,5 @@ def test_docstring():
     validate_all_params_in_docstring(ScalarFieldBase)
     validate_kwargs_sorted(ScalarFieldBase)
     validate_docstring_parent_class_consistency(
-        ScalarFieldBase, skip=('data', 'ndim', 'multiscale')
+        ScalarFieldBase, skip=("data", "ndim", "multiscale")
     )

@@ -216,14 +216,14 @@ vec3 calculateGradient(vec3 loc, vec3 step, float current_val) {
 """
 
 ISO_CATEGORICAL_SNIPPETS = {
-    'before_loop': """
+    "before_loop": """
         vec4 color3 = vec4(0.0);  // final color
         vec3 dstep = 1.5 / u_shape;  // step to sample derivative, set to match iso shader
         gl_FragColor = vec4(0.0);
         bool discard_fragment = true;
         vec4 label_id = vec4(0.0);
         """,
-    'in_loop': """
+    "in_loop": """
         // check if value is different from the background value
         if ( floatNotEqual(val, categorical_bg_value) ) {
             // Take the last interval in smaller steps
@@ -249,20 +249,20 @@ ISO_CATEGORICAL_SNIPPETS = {
             }
         }
         """,
-    'after_loop': """
+    "after_loop": """
         if (discard_fragment)
             discard;
         """,
 }
 
 TRANSLUCENT_CATEGORICAL_SNIPPETS = {
-    'before_loop': """
+    "before_loop": """
         vec4 color3 = vec4(0.0);  // final color
         gl_FragColor = vec4(0.0);
         bool discard_fragment = true;
         vec4 label_id = vec4(0.0);
         """,
-    'in_loop': """
+    "in_loop": """
         // check if value is different from the background value
         if ( floatNotEqual(val, categorical_bg_value) ) {
             // Take the last interval in smaller steps
@@ -287,20 +287,20 @@ TRANSLUCENT_CATEGORICAL_SNIPPETS = {
             }
         }
         """,
-    'after_loop': """
+    "after_loop": """
         if (discard_fragment)
             discard;
         """,
 }
 
 shaders = BaseVolume._shaders.copy()
-before, after = shaders['fragment'].split('void main()')
+before, after = shaders["fragment"].split("void main()")
 FAST_GRADIENT_SHADER = (
     before
     + FUNCTION_DEFINITIONS
     + FAST_GRADIENT_DEFINITION
     + CALCULATE_COLOR_DEFINITION
-    + 'void main()'
+    + "void main()"
     + after
 )
 SMOOTH_GRADIENT_SHADER = (
@@ -308,15 +308,15 @@ SMOOTH_GRADIENT_SHADER = (
     + FUNCTION_DEFINITIONS
     + SMOOTH_GRADIENT_DEFINITION
     + CALCULATE_COLOR_DEFINITION
-    + 'void main()'
+    + "void main()"
     + after
 )
 
-shaders['fragment'] = FAST_GRADIENT_SHADER
+shaders["fragment"] = FAST_GRADIENT_SHADER
 
 rendering_methods = BaseVolume._rendering_methods.copy()
-rendering_methods['iso_categorical'] = ISO_CATEGORICAL_SNIPPETS
-rendering_methods['translucent_categorical'] = TRANSLUCENT_CATEGORICAL_SNIPPETS
+rendering_methods["iso_categorical"] = ISO_CATEGORICAL_SNIPPETS
+rendering_methods["translucent_categorical"] = TRANSLUCENT_CATEGORICAL_SNIPPETS
 
 
 class Volume(TextureMixin, BaseVolume):
@@ -345,7 +345,7 @@ class Volume(TextureMixin, BaseVolume):
             if value == IsoCategoricalGradientMode.SMOOTH
             else FAST_GRADIENT_SHADER
         )
-        self.shared_program['u_clamp_at_border'] = self._clamp_at_border
+        self.shared_program["u_clamp_at_border"] = self._clamp_at_border
         self.update()
 
     @property
@@ -364,5 +364,5 @@ class Volume(TextureMixin, BaseVolume):
     @clamp_at_border.setter
     def clamp_at_border(self, value: bool) -> None:
         self._clamp_at_border = value
-        self.shared_program['u_clamp_at_border'] = self._clamp_at_border
+        self.shared_program["u_clamp_at_border"] = self._clamp_at_border
         self.update()

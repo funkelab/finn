@@ -7,15 +7,15 @@ from finn._qt.widgets.qt_viewer_buttons import QtViewerButtons
 from finn.qt.threading import create_worker, thread_worker
 
 __all__ = (
-    'QtToolTipLabel',
-    'QtViewer',
-    'QtViewerButtons',
-    'Window',
-    'create_worker',
-    'get_app',
-    'get_current_stylesheet',
-    'get_qapp',
-    'get_stylesheet',
-    'run',
-    'thread_worker',
+    "QtToolTipLabel",
+    "QtViewer",
+    "QtViewerButtons",
+    "Window",
+    "create_worker",
+    "get_app",
+    "get_current_stylesheet",
+    "get_qapp",
+    "get_stylesheet",
+    "run",
+    "thread_worker",
 )

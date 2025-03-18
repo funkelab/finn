@@ -6,8 +6,9 @@ for any type of patching. See patch_callables() below as the main entrypoint.
 
 import logging
 import types
+from collections.abc import Callable
 from importlib import import_module
-from typing import Callable, Union
+from typing import Union
 
 from finn.utils.translations import trans
 
@@ -40,24 +41,24 @@ def _patch_attribute(
     """
     # We expect attribute_str is <function> or <class>.<method>. We could
     # allow nested classes and functions if we wanted to extend this some.
-    if attribute_str.count('.') > 1:
+    if attribute_str.count(".") > 1:
         raise PatchError(
             trans._(
-                'Nested attribute not found: {attribute_str}',
+                "Nested attribute not found: {attribute_str}",
                 deferred=True,
                 attribute_str=attribute_str,
             )
         )
 
-    if '.' in attribute_str:
+    if "." in attribute_str:
         # Assume attribute_str is <class>.<method>
-        class_str, callable_str = attribute_str.split('.')
+        class_str, callable_str = attribute_str.split(".")
         try:
             parent = getattr(module, class_str)
         except AttributeError as e:
             raise PatchError(
                 trans._(
-                    'Module {module_name} has no attribute {attribute_str}',
+                    "Module {module_name} has no attribute {attribute_str}",
                     deferred=True,
                     module_name=module.__name__,
                     attribute_str=attribute_str,
@@ -76,25 +77,23 @@ def _patch_attribute(
     except AttributeError as e:
         raise PatchError(
             trans._(
-                'Parent {parent_str} has no attribute {callable_str}',
+                "Parent {parent_str} has no attribute {callable_str}",
                 deferred=True,
                 parent_str=parent_str,
                 callable_str=callable_str,
             )
         ) from e
 
-    label = (
-        callable_str if class_str is None else f'{class_str}.{callable_str}'
-    )
+    label = callable_str if class_str is None else f"{class_str}.{callable_str}"
 
     # Patch it with the user-provided patch_func.
-    logging.info('patching %s.%s', module.__name__, label)
+    logging.info("patching %s.%s", module.__name__, label)
     patch_func(parent, callable_str, label)
 
 
 def _import_module(
     target_str: str,
-) -> Union[tuple[types.ModuleType, str], tuple[None, None]]:
+) -> tuple[types.ModuleType, str] | tuple[None, None]:
     """Import the module portion of this target string.
 
     Try importing successively longer segments of the target_str. For example:
@@ -120,12 +119,12 @@ def _import_module(
         Where the module is the inner most imported module, and the string
         is the rest of target_str that was not modules.
     """
-    parts = target_str.split('.')
+    parts = target_str.split(".")
     module = None  # Inner-most module imported so far.
 
     # Progressively try to import longer and longer segments of the path.
     for i in range(1, len(target_str)):
-        module_path = '.'.join(parts[:i])
+        module_path = ".".join(parts[:i])
         try:
             module = import_module(module_path)
         except ModuleNotFoundError as e:
@@ -133,7 +132,7 @@ def _import_module(
                 # The very first top-level module import failed!
                 raise PatchError(
                     trans._(
-                        'Module not found: {module_path}',
+                        "Module not found: {module_path}",
                         deferred=True,
                         module_path=module_path,
                     )
@@ -144,7 +143,7 @@ def _import_module(
             # importing a class or function. Return the inner-most
             # module we did successfully import. And return the rest of
             # the module_path we didn't use.
-            attribute_str = '.'.join(parts[i - 1 :])
+            attribute_str = ".".join(parts[i - 1 :])
             return module, attribute_str
     return None, None
 
@@ -184,7 +183,7 @@ def patch_callables(callables: list[str], patch_func: PatchFunction) -> None:
     for target_str in callables:
         if target_str in patched:
             # Ignore duplicated targets in the config file.
-            logging.warning('skipping duplicate %s', target_str)
+            logging.warning("skipping duplicate %s", target_str)
             continue
 
         # Patch the target and note that we did.
@@ -198,6 +197,6 @@ def patch_callables(callables: list[str], patch_func: PatchFunction) -> None:
             # file to contain targets that aren't in the code.
 
             # logging.exception magically logs the stack trace too!
-            logging.exception('Something went wrong while patching')
+            logging.exception("Something went wrong while patching")
 
         patched.add(target_str)

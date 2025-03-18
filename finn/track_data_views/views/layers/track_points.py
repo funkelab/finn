@@ -3,12 +3,12 @@ from __future__ import annotations
 import math
 from typing import TYPE_CHECKING
 
-import finn
 import numpy as np
+from funtracks.data_model import NodeType, Tracks
+
+import finn
 from finn.track_data_views.graph_attributes import NodeAttr
 from finn.utils.notifications import show_info
-
-from funtracks.data_model import NodeType, Tracks
 
 if TYPE_CHECKING:
     from finn.track_data_views.views_coordinator.tracks_viewer import TracksViewer
@@ -21,7 +21,9 @@ class TrackPoints(finn.layers.Points):
 
     @property
     def _type_string(self) -> str:
-        return "points"  # to make sure that the layer is treated as points layer for saving
+        return (
+            "points"  # to make sure that the layer is treated as points layer for saving
+        )
 
     def __init__(
         self,
@@ -150,7 +152,9 @@ class TrackPoints(finn.layers.Points):
         return attributes
 
     def _update_data(self, event):
-        """Calls the tracks controller with to update the data in the Tracks object and dispatch the update"""
+        """Calls the tracks controller with to update the data in the Tracks object and
+        dispatch the update
+        """
 
         if event.action == "added":
             # we only want to allow this update if there is no seg layer
@@ -160,7 +164,8 @@ class TrackPoints(finn.layers.Points):
                 self.tracks_viewer.tracks_controller.add_nodes(attributes)
             else:
                 show_info(
-                    "Mixed point and segmentation nodes not allowed: add points by drawing on segmentation layer"
+                    "Mixed point and segmentation nodes not allowed: add points by "
+                    "drawing on segmentation layer"
                 )
                 self._refresh()
 
@@ -207,7 +212,8 @@ class TrackPoints(finn.layers.Points):
         return symbols
 
     def update_point_outline(self, visible: list[int] | str) -> None:
-        """Update the outline color of the selected points and visibility according to display mode
+        """Update the outline color of the selected points and visibility according to
+        display mode
 
         Args:
             visible (list[int] | str): A list of track ids, or "all"
@@ -216,9 +222,7 @@ class TrackPoints(finn.layers.Points):
         if visible == "all":
             self.shown[:] = True
         else:
-            indices = np.where(np.isin(self.properties["track_id"], visible))[
-                0
-            ].tolist()
+            indices = np.where(np.isin(self.properties["track_id"], visible))[0].tolist()
             self.shown[:] = False
             self.shown[indices] = True
 

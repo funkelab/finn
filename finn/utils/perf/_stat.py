@@ -57,4 +57,4 @@ class Stat:
         """
         if self.count > 0:
             return self.sum // self.count
-        raise ValueError('no values')  # impossible for us
+        raise ValueError("no values")  # impossible for us

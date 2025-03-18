@@ -1,7 +1,8 @@
 """guess_rgb, guess_multiscale, guess_labels."""
 
-from collections.abc import Sequence
-from typing import Any, Callable, Literal, Union
+import itertools
+from collections.abc import Callable, Sequence
+from typing import Any, Literal
 
 import numpy as np
 import numpy.typing as npt
@@ -32,16 +33,12 @@ def guess_rgb(shape: tuple[int, ...], min_side_len: int = 30) -> bool:
     last_dim = shape[-1]
     viewed_dims = shape[-3:-1]
 
-    return (
-        ndim > 2
-        and last_dim in (3, 4)
-        and all(d > min_side_len for d in viewed_dims)
-    )
+    return ndim > 2 and last_dim in (3, 4) and all(d > min_side_len for d in viewed_dims)
 
 
 def guess_multiscale(
-    data: Union[MultiScaleData, list, tuple],
-) -> tuple[bool, Union[LayerDataProtocol, Sequence[LayerDataProtocol]]]:
+    data: MultiScaleData | list | tuple,
+) -> tuple[bool, LayerDataProtocol | Sequence[LayerDataProtocol]]:
     """Guess whether the passed data is multiscale, process it accordingly.
 
     If shape of arrays along first axis is strictly decreasing, the data is
@@ -68,10 +65,10 @@ def guess_multiscale(
     if isinstance(data, MultiScaleData):
         return True, data
 
-    if hasattr(data, 'ndim') and data.ndim > 1:
+    if hasattr(data, "ndim") and data.ndim > 1:
         return False, data
 
-    if isinstance(data, (list, tuple)) and len(data) == 1:
+    if isinstance(data, list | tuple) and len(data) == 1:
         # pyramid with only one level, unwrap
         return False, data[0]
 
@@ -79,13 +76,13 @@ def guess_multiscale(
     if len(sizes) <= 1:
         return False, data
 
-    consistent = all(s1 > s2 for s1, s2 in zip(sizes[:-1], sizes[1:]))
+    consistent = all(s1 > s2 for s1, s2 in itertools.pairwise(sizes))
     if all(s == sizes[0] for s in sizes):
         # note: the individual array case should be caught by the first
         # code line in this function, hasattr(ndim) and ndim > 1.
         raise ValueError(
             trans._(
-                'Input data should be an array-like object, or a sequence of arrays of decreasing size. Got arrays of single size: {size}',
+                "Input data should be an array-like object, or a sequence of arrays of decreasing size. Got arrays of single size: {size}",
                 deferred=True,
                 size=sizes[0],
             )
@@ -93,7 +90,7 @@ def guess_multiscale(
     if not consistent:
         raise ValueError(
             trans._(
-                'Input data should be an array-like object, or a sequence of arrays of decreasing size. Got arrays in incorrect order, sizes: {sizes}',
+                "Input data should be an array-like object, or a sequence of arrays of decreasing size. Got arrays in incorrect order, sizes: {sizes}",
                 deferred=True,
                 sizes=sizes,
             )
@@ -102,18 +99,18 @@ def guess_multiscale(
     return True, MultiScaleData(data)
 
 
-def guess_labels(data: Any) -> Literal['labels', 'image']:
+def guess_labels(data: Any) -> Literal["labels", "image"]:
     """Guess if array contains labels data."""
 
-    if hasattr(data, 'dtype') and data.dtype in (
+    if hasattr(data, "dtype") and data.dtype in (
         np.int32,
         np.uint32,
         np.int64,
         np.uint64,
     ):
-        return 'labels'
+        return "labels"
 
-    return 'image'
+    return "image"
 
 
 def project_slice(
@@ -130,5 +127,5 @@ def project_slice(
     elif mode == ImageProjectionMode.MIN:
         func = np.min
     else:
-        raise NotImplementedError(f'unimplemented projection: {mode}')
+        raise NotImplementedError(f"unimplemented projection: {mode}")
     return func(data, tuple(axis))

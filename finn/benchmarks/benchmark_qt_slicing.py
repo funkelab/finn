@@ -14,17 +14,17 @@ from finn.layers import Image
 from .utils import Skip
 
 SAMPLE_PARAMS = {
-    'skin_data': {
+    "skin_data": {
         # napari-bio-sample-data
-        'shape': (1280, 960, 3),
-        'chunk_shape': (512, 512, 3),
-        'dtype': 'uint8',
+        "shape": (1280, 960, 3),
+        "chunk_shape": (512, 512, 3),
+        "dtype": "uint8",
     },
-    'jrc_hela-2 (scale 3)': {
+    "jrc_hela-2 (scale 3)": {
         # s3://janelia-cosem-datasets/jrc_hela-2/jrc_hela-2.n5
-        'shape': (796, 200, 1500),
-        'dtype': 'uint16',
-        'chunk_shape': (64, 64, 64),
+        "shape": (796, 200, 1500),
+        "dtype": "uint16",
+        "chunk_shape": (64, 64, 64),
     },
 }
 
@@ -54,9 +54,9 @@ class AsyncImage2DSuite:
     skip_params = Skip(if_in_pr=lambda latency, dataname: latency > 0)
 
     def setup(self, latency, dataname):
-        shape = SAMPLE_PARAMS[dataname]['shape']
-        chunk_shape = SAMPLE_PARAMS[dataname]['chunk_shape']
-        dtype = SAMPLE_PARAMS[dataname]['dtype']
+        shape = SAMPLE_PARAMS[dataname]["shape"]
+        chunk_shape = SAMPLE_PARAMS[dataname]["chunk_shape"]
+        dtype = SAMPLE_PARAMS[dataname]["dtype"]
 
         store = SlowMemoryStore(load_delay=latency)
         self.data = zarr.zeros(
@@ -82,7 +82,7 @@ class AsyncImage2DSuite:
 
 
 def _skip_3d_rgb(_latency, dataname):
-    shape = SAMPLE_PARAMS[dataname]['shape']
+    shape = SAMPLE_PARAMS[dataname]["shape"]
     return len(shape) == 3 and shape[2] == 3
 
 
@@ -94,9 +94,9 @@ class QtViewerAsyncImage2DSuite:
     timeout = 300
 
     def setup(self, latency, dataname):
-        shape = SAMPLE_PARAMS[dataname]['shape']
-        chunk_shape = SAMPLE_PARAMS[dataname]['chunk_shape']
-        dtype = SAMPLE_PARAMS[dataname]['dtype']
+        shape = SAMPLE_PARAMS[dataname]["shape"]
+        chunk_shape = SAMPLE_PARAMS[dataname]["chunk_shape"]
+        dtype = SAMPLE_PARAMS[dataname]["dtype"]
 
         store = SlowMemoryStore(load_delay=latency)
         _ = QApplication.instance() or QApplication([])
@@ -132,7 +132,7 @@ class QtViewerAsyncPointsSuite:
         np.random.seed(0)
         self.viewer = finn.Viewer()
         # Fake image layer to set bounds. Is this really needed?
-        self.empty_image = np.zeros((512, 512, 512), dtype='uint8')
+        self.empty_image = np.zeros((512, 512, 512), dtype="uint8")
         self.viewer.add_image(self.empty_image)
         self.point_data = np.random.randint(512, size=(n_points, 3))
         self.viewer.add_points(self.point_data)
@@ -169,7 +169,7 @@ class QtViewerAsyncPointsAndImage2DSuite:
         self.image_data = zarr.zeros(
             (64, 2048, 2048),
             chunks=(1, chunksize, chunksize),
-            dtype='uint8',
+            dtype="uint8",
             store=store,
         )
 
@@ -188,7 +188,7 @@ class QtViewerAsyncPointsAndImage2DSuite:
         self.viewer.window.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from utils import run_benchmark
 
     run_benchmark()

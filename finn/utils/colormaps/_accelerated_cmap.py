@@ -19,10 +19,10 @@ if TYPE_CHECKING:
 
 
 __all__ = (
-    'labels_raw_to_texture_direct',
-    'minimum_dtype_for_labels',
-    'zero_preserving_modulo',
-    'zero_preserving_modulo_numpy',
+    "labels_raw_to_texture_direct",
+    "minimum_dtype_for_labels",
+    "zero_preserving_modulo",
+    "zero_preserving_modulo_numpy",
 )
 
 MAPPING_OF_UNKNOWN_VALUE = 0
@@ -152,7 +152,7 @@ def _zero_preserving_modulo_inner_loop(
     return out
 
 
-if parse('2.0') <= parse(version('numpy')) < parse('2.1'):
+if parse("2.0") <= parse(version("numpy")) < parse("2.1"):
 
     def clip(data: np.ndarray, min_val: int, max_val: int) -> np.ndarray:
         """
@@ -169,7 +169,7 @@ else:
 
 
 def _labels_raw_to_texture_direct_numpy(
-    data: np.ndarray, direct_colormap: 'DirectLabelColormap'
+    data: np.ndarray, direct_colormap: "DirectLabelColormap"
 ) -> np.ndarray:
     """Convert labels data to the data type used in the texture.
 
@@ -190,7 +190,7 @@ def _labels_raw_to_texture_direct_numpy(
 
 
 def _labels_raw_to_texture_direct_loop(
-    data: np.ndarray, direct_colormap: 'DirectLabelColormap'
+    data: np.ndarray, direct_colormap: "DirectLabelColormap"
 ) -> np.ndarray:
     """
     Cast direct labels to the minimum type.
@@ -211,17 +211,13 @@ def _labels_raw_to_texture_direct_loop(
         return (data == direct_colormap.selection).astype(np.uint8)
 
     dkt = direct_colormap._get_typed_dict_mapping(data.dtype)
-    target_dtype = minimum_dtype_for_labels(
-        direct_colormap._num_unique_colors + 2
-    )
-    result_array = np.full_like(
-        data, MAPPING_OF_UNKNOWN_VALUE, dtype=target_dtype
-    )
+    target_dtype = minimum_dtype_for_labels(direct_colormap._num_unique_colors + 2)
+    result_array = np.full_like(data, MAPPING_OF_UNKNOWN_VALUE, dtype=target_dtype)
     return _labels_raw_to_texture_direct_inner_loop(data, dkt, result_array)
 
 
 def _labels_raw_to_texture_direct_inner_loop(
-    data: np.ndarray, dkt: 'typed.Dict', out: np.ndarray
+    data: np.ndarray, dkt: "typed.Dict", out: np.ndarray
 ) -> np.ndarray:
     """
     Relabel data using typed dict with mapping unknown labels to default value
@@ -248,9 +244,9 @@ else:
     )
     zero_preserving_modulo = _zero_preserving_modulo_loop
     labels_raw_to_texture_direct = _labels_raw_to_texture_direct_loop
-    _labels_raw_to_texture_direct_inner_loop = numba.njit(
-        parallel=True, cache=True
-    )(_labels_raw_to_texture_direct_inner_loop)
+    _labels_raw_to_texture_direct_inner_loop = numba.njit(parallel=True, cache=True)(
+        _labels_raw_to_texture_direct_inner_loop
+    )
     prange = numba.prange  # type: ignore [misc]
 
     del numba

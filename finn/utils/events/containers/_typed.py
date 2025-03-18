@@ -1,9 +1,7 @@
 import logging
-from collections.abc import Iterable, MutableSequence, Sequence
+from collections.abc import Callable, Iterable, MutableSequence, Sequence
 from typing import (
     Any,
-    Callable,
-    Optional,
     TypeVar,
     Union,
     overload,
@@ -19,8 +17,8 @@ logger = logging.getLogger(__name__)
 
 Index = Union[int, slice]
 
-_T = TypeVar('_T')
-_L = TypeVar('_L', bound=Any)
+_T = TypeVar("_T")
+_L = TypeVar("_L", bound=Any)
 
 
 class TypedMutableSequence(MutableSequence[_T]):
@@ -47,8 +45,8 @@ class TypedMutableSequence(MutableSequence[_T]):
         self,
         data: Iterable[_T] = (),
         *,
-        basetype: Union[type[_T], Sequence[type[_T]]] = (),
-        lookup: Optional[dict[type[_L], Callable[[_T], Union[_T, _L]]]] = None,
+        basetype: type[_T] | Sequence[type[_T]] = (),
+        lookup: dict[type[_L], Callable[[_T], _T | _L]] | None = None,
     ) -> None:
         if lookup is None:
             lookup = {}
@@ -77,16 +75,14 @@ class TypedMutableSequence(MutableSequence[_T]):
     def __setitem__(self, key: int, value: _T): ...  # pragma: no cover
 
     @overload
-    def __setitem__(
-        self, key: slice, value: Iterable[_T]
-    ): ...  # pragma: no cover
+    def __setitem__(self, key: slice, value: Iterable[_T]): ...  # pragma: no cover
 
     def __setitem__(self, key, value):
         if isinstance(key, slice):
             if not isinstance(value, Iterable):
                 raise TypeError(
                     trans._(
-                        'Can only assign an iterable to slice',
+                        "Can only assign an iterable to slice",
                         deferred=True,
                     )
                 )
@@ -116,7 +112,7 @@ class TypedMutableSequence(MutableSequence[_T]):
     @overload
     def __getitem__(
         self, key: slice
-    ) -> 'TypedMutableSequence[_T]': ...  # pragma: no cover
+    ) -> "TypedMutableSequence[_T]": ...  # pragma: no cover
 
     def __getitem__(self, key):
         """Get an item from the list
@@ -153,12 +149,10 @@ class TypedMutableSequence(MutableSequence[_T]):
         del self._list[_key]
 
     def _type_check(self, e: Any) -> _T:
-        if self._basetypes and not any(
-            isinstance(e, t) for t in self._basetypes
-        ):
+        if self._basetypes and not any(isinstance(e, t) for t in self._basetypes):
             raise TypeError(
                 trans._(
-                    'Cannot add object with type {dtype!r} to TypedList expecting type {basetypes!r}',
+                    "Cannot add object with type {dtype!r} to TypedList expecting type {basetypes!r}",
                     deferred=True,
                     dtype=type(e),
                     basetypes=self._basetypes,
@@ -166,9 +160,7 @@ class TypedMutableSequence(MutableSequence[_T]):
             )
         return e
 
-    def __newlike__(
-        self, iterable: Iterable[_T]
-    ) -> 'TypedMutableSequence[_T]':
+    def __newlike__(self, iterable: Iterable[_T]) -> "TypedMutableSequence[_T]":
         new = self.__class__()
         # separating this allows subclasses to omit these from their `__init__`
         new._basetypes = self._basetypes
@@ -176,11 +168,11 @@ class TypedMutableSequence(MutableSequence[_T]):
         new.extend(iterable)
         return new
 
-    def copy(self) -> 'TypedMutableSequence[_T]':
+    def copy(self) -> "TypedMutableSequence[_T]":
         """Return a shallow copy of the list."""
         return self.__newlike__(self)
 
-    def __add__(self, other: Iterable[_T]) -> 'TypedMutableSequence[_T]':
+    def __add__(self, other: Iterable[_T]) -> "TypedMutableSequence[_T]":
         """Add other to self, return new object."""
         copy = self.copy()
         copy.extend(other)
@@ -195,9 +187,7 @@ class TypedMutableSequence(MutableSequence[_T]):
         """Add other to self in place (self += other)."""
         return other + list(self)
 
-    def index(
-        self, value: _L, start: int = 0, stop: Optional[int] = None
-    ) -> int:
+    def index(self, value: _L, start: int = 0, stop: int | None = None) -> int:
         """Return first index of value.
 
         Parameters
@@ -235,15 +225,13 @@ class TypedMutableSequence(MutableSequence[_T]):
 
         raise ValueError(
             trans._(
-                '{value!r} is not in list',
+                "{value!r} is not in list",
                 deferred=True,
                 value=value,
             )
         )
 
-    def _iter_indices(
-        self, start: int = 0, stop: Optional[int] = None
-    ) -> Iterable[int]:
+    def _iter_indices(self, start: int = 0, stop: int | None = None) -> Iterable[int]:
         """Iter indices from start to stop.
 
         While this is trivial for this basic sequence type, this method lets

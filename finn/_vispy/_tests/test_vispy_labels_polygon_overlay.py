@@ -17,9 +17,7 @@ def test_vispy_labels_polygon_overlay(make_napari_viewer):
     data = np.zeros((50, 50), dtype=int)
     layer = viewer.add_labels(data, opacity=0.5)
 
-    vispy_labels_polygon = VispyLabelsPolygonOverlay(
-        layer=layer, overlay=labels_polygon
-    )
+    vispy_labels_polygon = VispyLabelsPolygonOverlay(layer=layer, overlay=labels_polygon)
 
     assert vispy_labels_polygon._polygon.color.alpha == 0.5
 
@@ -30,9 +28,7 @@ def test_vispy_labels_polygon_overlay(make_napari_viewer):
     labels_polygon.points = [(0, 0), (1, 1)]
     assert vispy_labels_polygon._line.visible
     assert not vispy_labels_polygon._polygon.visible
-    assert np.allclose(
-        vispy_labels_polygon._line.color[:3], layer._selected_color[:3]
-    )
+    assert np.allclose(vispy_labels_polygon._line.color[:3], layer._selected_color[:3])
 
     labels_polygon.points = [(0, 0), (1, 1), (0, 3)]
     assert not vispy_labels_polygon._line.visible
@@ -50,14 +46,14 @@ def test_labels_drawing_with_polygons(MouseEvent, make_napari_viewer):
     viewer = make_napari_viewer()
     layer = viewer.add_labels(data)
 
-    layer.mode = 'polygon'
+    layer.mode = "polygon"
     layer.selected_label = 1
 
     # Place some random points and then cancel them all
     for _ in range(5):
         position = (0,) + tuple(np.random.randint(20, size=2))
         event = MouseEvent(
-            type='mouse_press',
+            type="mouse_press",
             button=1,
             position=position,
             dims_displayed=[1, 2],
@@ -67,7 +63,7 @@ def test_labels_drawing_with_polygons(MouseEvent, make_napari_viewer):
     # Cancel all the points
     for _ in range(5):
         event = MouseEvent(
-            type='mouse_press',
+            type="mouse_press",
             button=2,
             position=(0, 0, 0),
             dims_displayed=(1, 2),
@@ -87,7 +83,7 @@ def test_labels_drawing_with_polygons(MouseEvent, make_napari_viewer):
     ]
     for position in points:
         event = MouseEvent(
-            type='mouse_move',
+            type="mouse_move",
             button=None,
             position=(1,) + tuple(np.random.randint(20, size=2)),
             dims_displayed=(1, 2),
@@ -95,7 +91,7 @@ def test_labels_drawing_with_polygons(MouseEvent, make_napari_viewer):
         mouse_move_callbacks(layer, event)
 
         event = MouseEvent(
-            type='mouse_press',
+            type="mouse_press",
             button=1,
             position=position,
             dims_displayed=[1, 2],
@@ -105,7 +101,7 @@ def test_labels_drawing_with_polygons(MouseEvent, make_napari_viewer):
     # Cancel the latest two points
     for _ in range(2):
         event = MouseEvent(
-            type='mouse_press',
+            type="mouse_press",
             button=2,
             position=(1, 5, 1),
             dims_displayed=(1, 2),
@@ -125,7 +121,7 @@ def test_labels_drawing_with_polygons(MouseEvent, make_napari_viewer):
     # Try to finish with an incomplete polygon
     for position in [(0, 1, 1)]:
         event = MouseEvent(
-            type='mouse_press',
+            type="mouse_press",
             button=1,
             position=position,
             dims_displayed=(1, 2),

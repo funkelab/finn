@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from vispy.scene.visuals import create_visual_node
 from vispy.visuals.image import ImageVisual
@@ -16,7 +16,7 @@ class LabelVisual(TextureMixin, ImageVisual):
     def _build_color_transform(self) -> FunctionChain:
         """Build the color transform function chain."""
         funcs = [
-            Function(self._func_templates['red_to_luminance']),
+            Function(self._func_templates["red_to_luminance"]),
             Function(self.cmap.glsl_map),
         ]
 
@@ -30,8 +30,8 @@ BaseLabel = create_visual_node(LabelVisual)
 
 class LabelNode(BaseLabel):  # type: ignore [valid-type,misc]
     def _compute_bounds(
-        self, axis: int, view: 'VisualView'
-    ) -> Optional[tuple[float, float]]:
+        self, axis: int, view: "VisualView"
+    ) -> tuple[float, float] | None:
         if self._data is None:
             return None
         elif axis > 1:  # noqa: RET505

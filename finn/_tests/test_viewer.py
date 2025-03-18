@@ -24,18 +24,14 @@ def _get_provider_actions(type_):
     for superclass in type_.mro():
         actions.update(
             action.command
-            for action in action_manager._get_provider_actions(
-                superclass
-            ).values()
+            for action in action_manager._get_provider_actions(superclass).values()
         )
     return actions
 
 
 def _assert_shortcuts_exist_for_each_action(type_):
     actions = _get_provider_actions(type_)
-    shortcuts = {
-        name.partition(':')[-1] for name in get_settings().shortcuts.shortcuts
-    }
+    shortcuts = {name.partition(":")[-1] for name in get_settings().shortcuts.shortcuts}
     shortcuts.update(func.__name__ for func in type_.class_keymap.values())
     for action in actions:
         assert action.__name__ in shortcuts, (
@@ -61,18 +57,18 @@ def test_non_existing_bindings():
     Those are condition tested in next unittest; but do not exists; this is
     likely due to an oversight somewhere.
     """
-    assert 'play' in [func.__name__ for func in viewer_actions]
-    assert 'toggle_fullscreen' in [func.__name__ for func in viewer_actions]
+    assert "play" in [func.__name__ for func in viewer_actions]
+    assert "toggle_fullscreen" in [func.__name__ for func in viewer_actions]
 
 
-@pytest.mark.parametrize('func', viewer_actions)
+@pytest.mark.parametrize("func", viewer_actions)
 def test_viewer_actions(make_napari_viewer, func):
     viewer = make_napari_viewer()
 
-    if func.__name__ == 'toggle_fullscreen' and not os.getenv('CI'):
-        pytest.skip('Fullscreen cannot be tested in CI')
-    if func.__name__ == 'play':
-        pytest.skip('Play cannot be tested with Pytest')
+    if func.__name__ == "toggle_fullscreen" and not os.getenv("CI"):
+        pytest.skip("Fullscreen cannot be tested in CI")
+    if func.__name__ == "play":
+        pytest.skip("Play cannot be tested with Pytest")
     func(viewer)
 
 
@@ -81,7 +77,7 @@ def test_viewer(make_napari_viewer):
     viewer = make_napari_viewer()
     view = viewer.window._qt_viewer
 
-    assert viewer.title == 'napari'
+    assert viewer.title == "napari"
     assert view.viewer == viewer
 
     assert len(viewer.layers) == 0
@@ -98,7 +94,7 @@ def test_viewer(make_napari_viewer):
     assert viewer.dims.ndisplay == 2
 
 
-@pytest.mark.parametrize(('layer_class', 'data', 'ndim'), layer_test_data)
+@pytest.mark.parametrize(("layer_class", "data", "ndim"), layer_test_data)
 def test_add_layer(make_napari_viewer, layer_class, data, ndim):
     viewer = make_napari_viewer()
     layer = add_layer_by_type(viewer, layer_class, data, visible=True)
@@ -109,20 +105,18 @@ def test_add_layer(make_napari_viewer, layer_class, data, ndim):
 
 
 layer_types = (
-    'Image',
-    'Vectors',
-    'Surface',
-    'Tracks',
-    'Points',
-    'Labels',
-    'Shapes',
+    "Image",
+    "Vectors",
+    "Surface",
+    "Tracks",
+    "Points",
+    "Labels",
+    "Shapes",
 )
 
 
-@pytest.mark.parametrize(('layer_class', 'data', 'ndim'), layer_test_data)
-def test_all_layer_actions_are_accessible_via_shortcut(
-    layer_class, data, ndim
-):
+@pytest.mark.parametrize(("layer_class", "data", "ndim"), layer_test_data)
+def test_all_layer_actions_are_accessible_via_shortcut(layer_class, data, ndim):
     """
     Make sure we do find all the actions attached to a layer via keybindings
     """
@@ -131,20 +125,16 @@ def test_all_layer_actions_are_accessible_via_shortcut(
     _assert_shortcuts_exist_for_each_action(layer_class)
 
 
-@pytest.mark.parametrize(
-    ('layer_class', 'a_unique_name', 'ndim'), layer_test_data
-)
-def test_add_layer_magic_name(
-    make_napari_viewer, layer_class, a_unique_name, ndim
-):
+@pytest.mark.parametrize(("layer_class", "a_unique_name", "ndim"), layer_test_data)
+def test_add_layer_magic_name(make_napari_viewer, layer_class, a_unique_name, ndim):
     """Test magic_name works when using add_* for layers"""
     # Tests for issue #1709
     viewer = make_napari_viewer()  # noqa: F841
     layer = eval_with_filename(
-        'add_layer_by_type(viewer, layer_class, a_unique_name)',
-        'somefile.py',
+        "add_layer_by_type(viewer, layer_class, a_unique_name)",
+        "somefile.py",
     )
-    assert layer.name == 'a_unique_name'
+    assert layer.name == "a_unique_name"
 
 
 @skip_on_win_ci
@@ -176,9 +166,7 @@ def test_screenshot(make_napari_viewer, qtbot):
     # Take screenshot of the image canvas only
     # Test that flash animation does not occur
     screenshot = viewer.screenshot(canvas_only=True)
-    assert not hasattr(
-        viewer.window._qt_viewer._welcome_widget, '_flash_animation'
-    )
+    assert not hasattr(viewer.window._qt_viewer._welcome_widget, "_flash_animation")
     assert screenshot.ndim == 3
 
     # Take screenshot with the viewer included
@@ -191,17 +179,13 @@ def test_screenshot(make_napari_viewer, qtbot):
 
     # test flash animation works
     screenshot = viewer.screenshot(canvas_only=True, flash=True)
-    assert hasattr(
-        viewer.window._qt_viewer._welcome_widget, '_flash_animation'
-    )
+    assert hasattr(viewer.window._qt_viewer._welcome_widget, "_flash_animation")
 
     # Here we wait until the flash animation will be over for teardown.
     # We cannot wait on finished signal as _flash_animation may be already
     # removed when calling wait.
     qtbot.waitUntil(
-        lambda: not hasattr(
-            viewer.window._qt_viewer._welcome_widget, '_flash_animation'
-        )
+        lambda: not hasattr(viewer.window._qt_viewer._welcome_widget, "_flash_animation")
     )
 
 
@@ -214,25 +198,23 @@ def test_changing_theme(make_napari_viewer):
     size = viewer.window._qt_viewer.size()
     viewer.window._qt_viewer.setFixedSize(size)
 
-    assert viewer.theme == 'dark'
+    assert viewer.theme == "dark"
     screenshot_dark = viewer.screenshot(canvas_only=False, flash=False)
 
-    viewer.theme = 'light'
-    assert viewer.theme == 'light'
+    viewer.theme = "light"
+    assert viewer.theme == "light"
     screenshot_light = viewer.screenshot(canvas_only=False, flash=False)
 
     equal = (screenshot_dark == screenshot_light).min(-1)
 
     # more than 99.5% of the pixels have changed
-    assert (np.count_nonzero(equal) / equal.size) < 0.05, 'Themes too similar'
+    assert (np.count_nonzero(equal) / equal.size) < 0.05, "Themes too similar"
 
-    with pytest.raises(
-        ValidationError, match="Theme 'nonexistent_theme' not found"
-    ):
-        viewer.theme = 'nonexistent_theme'
+    with pytest.raises(ValidationError, match="Theme 'nonexistent_theme' not found"):
+        viewer.theme = "nonexistent_theme"
 
 
-@pytest.mark.parametrize(('layer_class', 'data', 'ndim'), layer_test_data)
+@pytest.mark.parametrize(("layer_class", "data", "ndim"), layer_test_data)
 def test_roll_transpose_update(make_napari_viewer, layer_class, data, ndim):
     """Check that transpose and roll preserve correct transform sequence."""
     viewer = make_napari_viewer()
@@ -243,14 +225,14 @@ def test_roll_transpose_update(make_napari_viewer, layer_class, data, ndim):
 
     # Set translations and scalings (match type of visual layer storing):
     transf_dict = {
-        'translate': np.random.randint(0, 10, ndim).astype(np.float32),
-        'scale': np.random.rand(ndim).astype(np.float32),
+        "translate": np.random.randint(0, 10, ndim).astype(np.float32),
+        "scale": np.random.rand(ndim).astype(np.float32),
     }
     for k, val in transf_dict.items():
         setattr(layer, k, val)
 
     if layer_class in [layers.Image, layers.Labels]:
-        transf_dict['translate'] -= transf_dict['scale'] / 2
+        transf_dict["translate"] -= transf_dict["scale"] / 2
 
     # Check consistency:
     check_view_transform_consistency(layer, viewer, transf_dict)
@@ -356,7 +338,7 @@ def test_emitting_data_doesnt_change_points_value(make_napari_viewer):
     assert layer._value == 1
 
 
-@pytest.mark.parametrize(('layer_class', 'data', 'ndim'), layer_test_data)
+@pytest.mark.parametrize(("layer_class", "data", "ndim"), layer_test_data)
 def test_emitting_data_doesnt_change_cursor_position(
     make_napari_viewer, layer_class, data, ndim
 ):
@@ -399,7 +381,7 @@ def test_current_viewer(make_napari_viewer):
     assert current_viewer() is not viewer2
 
 
-@pytest.mark.parametrize('n_viewers', [1, 2, 3, 4])
+@pytest.mark.parametrize("n_viewers", [1, 2, 3, 4])
 def test_close_all(n_viewers, make_napari_viewer):
     """Test that close all closes multiple viewers"""
 
@@ -434,12 +416,8 @@ def test_running_status_thread(make_napari_viewer, qtbot, monkeypatch):
     viewer = make_napari_viewer()
     settings = get_settings()
     start_mock, stop_mock = Mock(), Mock()
-    monkeypatch.setattr(
-        viewer.window._qt_window.status_thread, 'start', start_mock
-    )
-    monkeypatch.setattr(
-        viewer.window._qt_window.status_thread, 'terminate', stop_mock
-    )
+    monkeypatch.setattr(viewer.window._qt_window.status_thread, "start", start_mock)
+    monkeypatch.setattr(viewer.window._qt_window.status_thread, "terminate", stop_mock)
     assert settings.appearance.update_status_based_on_layer
     settings.appearance.update_status_based_on_layer = False
     stop_mock.assert_called_once()

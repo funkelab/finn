@@ -3,14 +3,11 @@ from __future__ import annotations
 import functools
 import inspect
 import warnings
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import (
     TYPE_CHECKING,
     Any,
-    Callable,
     NamedTuple,
-    Optional,
-    Union,
 )
 
 import dask
@@ -60,7 +57,7 @@ def register_layer_action(
     keymapprovider,
     description: str,
     repeatable: bool = False,
-    shortcuts: Optional[Union[str, list[str]]] = None,
+    shortcuts: str | list[str] | None = None,
 ) -> Callable[[Callable], Callable]:
     """
     Convenient decorator to register an action with the current Layers
@@ -92,7 +89,7 @@ def register_layer_action(
 
     def _inner(func: Callable) -> Callable:
         nonlocal shortcuts
-        name = 'napari:' + func.__name__
+        name = "napari:" + func.__name__
 
         action_manager.register_action(
             name=name,
@@ -153,7 +150,7 @@ def register_layer_attr_action(
         except StopIteration as e:
             raise RuntimeError(
                 trans._(
-                    'If actions has no arguments there is no way to know what to set the attribute to.',
+                    "If actions has no arguments there is no way to know what to set the attribute to.",
                     deferred=True,
                 ),
             ) from e
@@ -170,9 +167,9 @@ def register_layer_attr_action(
             return _callback
 
         repeatable = False  # attribute actions are always non-repeatable
-        register_layer_action(
-            keymapprovider, description, repeatable, shortcuts
-        )(_wrapper)
+        register_layer_action(keymapprovider, description, repeatable, shortcuts)(
+            _wrapper
+        )
         return func
 
     return _handle
@@ -204,9 +201,7 @@ def _nanmax(array):
     return max_value
 
 
-def calc_data_range(
-    data: LayerDataProtocol, rgb: bool = False
-) -> tuple[float, float]:
+def calc_data_range(data: LayerDataProtocol, rgb: bool = False) -> tuple[float, float]:
     """Calculate range of data values. If all values are equal return [0, 1].
 
     Parameters
@@ -237,8 +232,8 @@ def calc_data_range(
             max_val = max(max_val, 1)
         return float(min_val), float(max_val)
 
-    center: Union[int, list[int]]
-    reduced_data: Union[list, LayerDataProtocol]
+    center: int | list[int]
+    reduced_data: list | LayerDataProtocol
     if data.size > 1e7 and (data.ndim == 1 or (rgb and data.ndim == 2)):
         # If data is very large take the average of start, middle and end.
         center = int(data.shape[0] // 2)
@@ -352,31 +347,27 @@ def convert_to_uint8(data: np.ndarray) -> np.ndarray:
     if data.dtype == out_dtype:
         return data
     in_kind = data.dtype.kind
-    if in_kind == 'b':
+    if in_kind == "b":
         return data.astype(out_dtype) * 255
-    if in_kind == 'f':
+    if in_kind == "f":
         image_out = np.multiply(data, out_max, dtype=data.dtype)
         np.rint(image_out, out=image_out)
         np.clip(image_out, 0, out_max, out=image_out)
         image_out = np.nan_to_num(image_out, copy=False)
         return image_out.astype(out_dtype)
 
-    if in_kind in 'ui':
-        if in_kind == 'u':
+    if in_kind in "ui":
+        if in_kind == "u":
             if data.max() < out_max:
                 return data.astype(out_dtype)
-            return np.right_shift(data, (data.dtype.itemsize - 1) * 8).astype(
-                out_dtype
-            )
+            return np.right_shift(data, (data.dtype.itemsize - 1) * 8).astype(out_dtype)
 
         np.maximum(data, 0, out=data, dtype=data.dtype)
         if data.dtype == np.int8:
             return (data * 2).astype(np.uint8)
         if data.max() < out_max:
             return data.astype(out_dtype)
-        return np.right_shift(data, (data.dtype.itemsize - 1) * 8 - 1).astype(
-            out_dtype
-        )
+        return np.right_shift(data, (data.dtype.itemsize - 1) * 8 - 1).astype(out_dtype)
     raise NotImplementedError
 
 
@@ -404,13 +395,9 @@ def get_current_properties(
     """
     current_properties = {}
     if num_data > 0:
-        current_properties = {
-            k: np.asarray([v[-1]]) for k, v in properties.items()
-        }
+        current_properties = {k: np.asarray([v[-1]]) for k, v in properties.items()}
     elif num_data == 0 and len(choices) > 0:
-        current_properties = {
-            k: np.asarray([v[0]]) for k, v in choices.items()
-        }
+        current_properties = {k: np.asarray([v[0]]) for k, v in choices.items()}
     return current_properties
 
 
@@ -432,8 +419,8 @@ def dataframe_to_properties(
 
 
 def validate_properties(
-    properties: Optional[Union[dict[str, Array], pd.DataFrame]],
-    expected_len: Optional[int] = None,
+    properties: dict[str, Array] | pd.DataFrame | None,
+    expected_len: int | None = None,
 ) -> dict[str, np.ndarray]:
     """Validate the type and size of properties and coerce values to numpy arrays.
     Parameters
@@ -459,7 +446,7 @@ def validate_properties(
     if any(v != expected_len for v in lens):
         raise ValueError(
             trans._(
-                'the number of items must be equal for all properties',
+                "the number of items must be equal for all properties",
                 deferred=True,
             )
         )
@@ -474,7 +461,7 @@ def _validate_property_choices(property_choices):
 
 
 def _coerce_current_properties_value(
-    value: Union[float, str, bool, list, tuple, np.ndarray],
+    value: float | str | bool | list | tuple | np.ndarray,
 ) -> np.ndarray:
     """Coerce a value in a current_properties dictionary into the correct type.
 
@@ -488,11 +475,11 @@ def _coerce_current_properties_value(
     coerced_value : np.ndarray
         The value in a 1D numpy array with length 1.
     """
-    if isinstance(value, (np.ndarray, list, tuple)):
+    if isinstance(value, np.ndarray | list | tuple):
         if len(value) != 1:
             raise ValueError(
                 trans._(
-                    'current_properties values should have length 1.',
+                    "current_properties values should have length 1.",
                     deferred=True,
                 )
             )
@@ -505,7 +492,7 @@ def _coerce_current_properties_value(
 
 def coerce_current_properties(
     current_properties: Mapping[
-        str, Union[float, str, int, bool, list, tuple, npt.NDArray]
+        str, float | str | int | bool | list | tuple | npt.NDArray
     ],
 ) -> dict[str, np.ndarray]:
     """Coerce a current_properties dictionary into the correct type.
@@ -522,16 +509,13 @@ def coerce_current_properties(
         The current_properties dictionary with string keys and 1D numpy array with length 1 values.
     """
     coerced_current_properties = {
-        k: _coerce_current_properties_value(v)
-        for k, v in current_properties.items()
+        k: _coerce_current_properties_value(v) for k, v in current_properties.items()
     }
 
     return coerced_current_properties
 
 
-def compute_multiscale_level(
-    requested_shape, shape_threshold, downsample_factors
-):
+def compute_multiscale_level(requested_shape, shape_threshold, downsample_factors):
     """Computed desired level of the multiscale given requested field of view.
 
     The level of the multiscale should be the lowest resolution such that
@@ -593,9 +577,7 @@ def compute_multiscale_level_and_corners(
         Needed corner pixels at target resolution.
     """
     requested_shape = corner_pixels[1] - corner_pixels[0]
-    level = compute_multiscale_level(
-        requested_shape, shape_threshold, downsample_factors
-    )
+    level = compute_multiscale_level(requested_shape, shape_threshold, downsample_factors)
 
     corners = corner_pixels / downsample_factors[level]
     corners = np.array([np.floor(corners[0]), np.ceil(corners[1])]).astype(int)
@@ -604,10 +586,10 @@ def compute_multiscale_level_and_corners(
 
 
 def coerce_affine(
-    affine: Union[npt.ArrayLike, Affine],
+    affine: npt.ArrayLike | Affine,
     *,
     ndim: int,
-    name: Optional[str] = None,
+    name: str | None = None,
 ) -> Affine:
     """Coerce a user input into an affine transform object.
 
@@ -638,7 +620,7 @@ def coerce_affine(
     elif not isinstance(affine, Affine):
         raise TypeError(
             trans._(
-                'affine input not recognized. must be either finn.utils.transforms.Affine or ndarray. Got {dtype}',
+                "affine input not recognized. must be either finn.utils.transforms.Affine or ndarray. Got {dtype}",
                 deferred=True,
                 dtype=type(affine),
             )
@@ -669,9 +651,7 @@ def dims_displayed_world_to_layer(
     """
     if ndim_world > len(dims_displayed_world):
         all_dims = list(range(ndim_world))
-        not_in_dims_displayed = [
-            d for d in all_dims if d not in dims_displayed_world
-        ]
+        not_in_dims_displayed = [d for d in all_dims if d not in dims_displayed_world]
         order = not_in_dims_displayed + dims_displayed_world
     else:
         order = dims_displayed_world
@@ -684,10 +664,7 @@ def dims_displayed_world_to_layer(
         order = list(order_arr[order_arr >= offset] - offset)
 
     n_display_world = len(dims_displayed_world)
-    if n_display_world > ndim_layer:
-        n_display_layer = ndim_layer
-    else:
-        n_display_layer = n_display_world
+    n_display_layer = ndim_layer if n_display_world > ndim_layer else n_display_world
     dims_displayed = order[-n_display_layer:]
 
     return dims_displayed
@@ -696,7 +673,7 @@ def dims_displayed_world_to_layer(
 def get_extent_world(
     data_extent: npt.NDArray,
     data_to_world: Affine,
-    centered: Optional[Any] = None,
+    centered: Any | None = None,
 ) -> npt.NDArray:
     """Range of layer in world coordinates base on provided data_extent
 
@@ -714,8 +691,8 @@ def get_extent_world(
     if centered is not None:
         warnings.warn(
             trans._(
-                'The `centered` argument is deprecated. '
-                'Extents are now always centered on data points.',
+                "The `centered` argument is deprecated. "
+                "Extents are now always centered on data points.",
                 deferred=True,
             ),
             stacklevel=2,
@@ -774,10 +751,10 @@ class _FeatureTable:
 
     def __init__(
         self,
-        values: Optional[Union[dict[str, np.ndarray], pd.DataFrame]] = None,
+        values: dict[str, np.ndarray] | pd.DataFrame | None = None,
         *,
-        num_data: Optional[int] = None,
-        defaults: Optional[Union[dict[str, Any], pd.DataFrame]] = None,
+        num_data: int | None = None,
+        defaults: dict[str, Any] | pd.DataFrame | None = None,
     ) -> None:
         self._values = _validate_features(values, num_data=num_data)
         self._defaults = _validate_feature_defaults(defaults, self._values)
@@ -797,9 +774,7 @@ class _FeatureTable:
         """The default values one-row table."""
         return self._defaults
 
-    def set_defaults(
-        self, defaults: Union[dict[str, Any], pd.DataFrame]
-    ) -> None:
+    def set_defaults(self, defaults: dict[str, Any] | pd.DataFrame) -> None:
         """Sets the feature default values."""
         self._defaults = _validate_feature_defaults(defaults, self._values)
 
@@ -840,7 +815,7 @@ class _FeatureTable:
         self,
         currents: dict[str, npt.NDArray],
         *,
-        update_indices: Optional[list[int]] = None,
+        update_indices: list[int] | None = None,
     ) -> None:
         """Sets the default values using the deprecated current properties dictionary.
 
@@ -897,9 +872,7 @@ class _FeatureTable:
             The indices of the rows to remove. Must be usable as the labels parameter
             to pandas.DataFrame.drop.
         """
-        self._values = self._values.drop(labels=indices, axis=0).reset_index(
-            drop=True
-        )
+        self._values = self._values.drop(labels=indices, axis=0).reset_index(drop=True)
 
     def reorder(self, order: Sequence[int]) -> None:
         """Reorders the rows of the feature values table."""
@@ -909,13 +882,11 @@ class _FeatureTable:
     def from_layer(
         cls,
         *,
-        features: Optional[Union[dict[str, np.ndarray], pd.DataFrame]] = None,
-        feature_defaults: Optional[Union[dict[str, Any], pd.DataFrame]] = None,
-        properties: Optional[
-            Union[dict[str, np.ndarray], pd.DataFrame]
-        ] = None,
-        property_choices: Optional[dict[str, np.ndarray]] = None,
-        num_data: Optional[int] = None,
+        features: dict[str, np.ndarray] | pd.DataFrame | None = None,
+        feature_defaults: dict[str, Any] | pd.DataFrame | None = None,
+        properties: dict[str, np.ndarray] | pd.DataFrame | None = None,
+        property_choices: dict[str, np.ndarray] | None = None,
+        num_data: int | None = None,
     ) -> _FeatureTable:
         """Coerces a layer's keyword arguments to a feature manager.
 
@@ -960,9 +931,7 @@ def _get_default_column(column: pd.Series) -> pd.Series:
         choices = column.dtype.categories
         if choices.size > 0:
             value = choices[0]
-    elif isinstance(column.dtype, np.dtype) and np.issubdtype(
-        column.dtype, np.integer
-    ):
+    elif isinstance(column.dtype, np.dtype) and np.issubdtype(column.dtype, np.integer):
         # For numpy backed columns that store integers there's no way to
         # store missing values, so passing None creates an np.float64 series
         # containing NaN. Therefore, use a default of 0 instead.
@@ -971,9 +940,9 @@ def _get_default_column(column: pd.Series) -> pd.Series:
 
 
 def _validate_features(
-    features: Optional[Union[dict[str, np.ndarray], pd.DataFrame]],
+    features: dict[str, np.ndarray] | pd.DataFrame | None,
     *,
-    num_data: Optional[int] = None,
+    num_data: int | None = None,
 ) -> pd.DataFrame:
     """Validates and coerces feature values into a pandas DataFrame.
 
@@ -995,7 +964,7 @@ def _validate_features(
 
 
 def _validate_feature_defaults(
-    defaults: Optional[Union[dict[str, Any], pd.DataFrame]],
+    defaults: dict[str, Any] | pd.DataFrame | None,
     values: pd.DataFrame,
 ) -> pd.DataFrame:
     """Validates and coerces feature default values into a pandas DataFrame.
@@ -1013,7 +982,7 @@ def _validate_feature_defaults(
         if len(extra_defaults) > 0:
             raise ValueError(
                 trans._(
-                    'Feature defaults contain some extra columns not in feature values: {extra_defaults}',
+                    "Feature defaults contain some extra columns not in feature values: {extra_defaults}",
                     deferred=True,
                     extra_defaults=extra_defaults,
                 )
@@ -1022,7 +991,7 @@ def _validate_feature_defaults(
         if len(missing_defaults) > 0:
             raise ValueError(
                 trans._(
-                    'Feature defaults is missing some columns in feature values: {missing_defaults}',
+                    "Feature defaults is missing some columns in feature values: {missing_defaults}",
                     deferred=True,
                     missing_defaults=missing_defaults,
                 )
@@ -1043,9 +1012,9 @@ def _validate_feature_defaults(
 
 def _features_from_properties(
     *,
-    properties: Optional[Union[dict[str, np.ndarray], pd.DataFrame]] = None,
-    property_choices: Optional[dict[str, np.ndarray]] = None,
-    num_data: Optional[int] = None,
+    properties: dict[str, np.ndarray] | pd.DataFrame | None = None,
+    property_choices: dict[str, np.ndarray] | None = None,
+    num_data: int | None = None,
 ) -> pd.DataFrame:
     """Validates and coerces deprecated properties input into a features DataFrame.
 
@@ -1059,9 +1028,7 @@ def _features_from_properties(
         for name, choices in property_choices.items():
             dtype = pd.CategoricalDtype(categories=choices)
             num_values = properties.shape[0] if num_data is None else num_data
-            values = (
-                properties[name] if name in properties else [None] * num_values
-            )
+            values = properties[name] if name in properties else [None] * num_values
             properties[name] = pd.Series(values, dtype=dtype)
     return _validate_features(properties, num_data=num_data)
 
@@ -1076,7 +1043,7 @@ def _features_to_properties(features: pd.DataFrame) -> dict[str, np.ndarray]:
     return {name: series.to_numpy() for name, series in features.items()}
 
 
-def _unique_element(array: Array) -> Optional[Any]:
+def _unique_element(array: Array) -> Any | None:
     """
     Returns the unique element along the 0th axis, if it exists; otherwise, returns None.
 

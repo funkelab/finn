@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Generator
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -17,11 +17,11 @@ if TYPE_CHECKING:
 
 def move_plane_along_normal(
     layer: Image, event: Event
-) -> Union[None, Generator[None, None, None]]:
+) -> None | Generator[None, None, None]:
     """Move a layers slicing plane along its normal vector on click and drag."""
     # early exit clauses
     if (
-        'Shift' not in event.modifiers
+        "Shift" not in event.modifiers
         or layer.visible is False
         or layer.mouse_pan is False
         or len(event.dims_displayed) < 3
@@ -59,7 +59,7 @@ def move_plane_along_normal(
 
     yield None
 
-    while event.type == 'mouse_move':
+    while event.type == "mouse_move":
         # Project mouse drag onto plane normal
         drag_distance = layer.projected_distance_from_mouse_drag(
             start_position=initial_position_world,

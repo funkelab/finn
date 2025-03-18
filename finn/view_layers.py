@@ -14,7 +14,7 @@ of the layer types, like "image", "points", etc...):
 """
 
 import inspect
-from typing import Any, Optional
+from typing import Any
 
 from numpydoc.docscrape import NumpyDocString as _NumpyDocString
 
@@ -23,15 +23,15 @@ from finn.layers import Image
 from finn.viewer import Viewer
 
 __all__ = [
-    'imshow',
-    'view_image',
-    'view_labels',
-    'view_path',
-    'view_points',
-    'view_shapes',
-    'view_surface',
-    'view_tracks',
-    'view_vectors',
+    "imshow",
+    "view_image",
+    "view_labels",
+    "view_path",
+    "view_points",
+    "view_shapes",
+    "view_surface",
+    "view_tracks",
+    "view_vectors",
 ]
 
 _doc_template = """Create a viewer and add a{n} {layer_string} layer.
@@ -45,7 +45,7 @@ viewer : :class:`finn.Viewer`
 """
 
 _VIEW_DOC = _NumpyDocString(Viewer.__doc__)
-_VIEW_PARAMS = '    ' + '\n'.join(_VIEW_DOC._str_param_list('Parameters')[2:])
+_VIEW_PARAMS = "    " + "\n".join(_VIEW_DOC._str_param_list("Parameters")[2:])
 
 
 def _merge_docstrings(add_method, layer_string):
@@ -56,10 +56,10 @@ def _merge_docstrings(add_method, layer_string):
 
     # this ugliness is because the indentation of the parsed numpydocstring
     # is different for the first parameter :(
-    lines = add_method_doc._str_param_list('Parameters')
-    lines = lines[:3] + textwrap.dedent('\n'.join(lines[3:])).splitlines()
-    params = '\n'.join(lines) + '\n' + textwrap.dedent(_VIEW_PARAMS)
-    n = 'n' if layer_string.startswith(tuple('aeiou')) else ''
+    lines = add_method_doc._str_param_list("Parameters")
+    lines = lines[:3] + textwrap.dedent("\n".join(lines[3:])).splitlines()
+    params = "\n".join(lines) + "\n" + textwrap.dedent(_VIEW_PARAMS)
+    n = "n" if layer_string.startswith(tuple("aeiou")) else ""
     return _doc_template.format(n=n, layer_string=layer_string, params=params)
 
 
@@ -84,11 +84,11 @@ def _merge_layer_viewer_sigs_docs(func):
     from finn.utils.misc import _combine_signatures
 
     # get the `Viewer.add_*` method
-    layer_string = func.__name__.replace('view_', '')
-    if layer_string == 'path':
+    layer_string = func.__name__.replace("view_", "")
+    if layer_string == "path":
         add_method = Viewer.open
     else:
-        add_method = getattr(Viewer, f'add_{layer_string}')
+        add_method = getattr(Viewer, f"add_{layer_string}")
 
     # merge the docstrings of Viewer and viewer.add_*
     func.__doc__ = _merge_docstrings(add_method, layer_string)
@@ -98,14 +98,14 @@ def _merge_layer_viewer_sigs_docs(func):
         add_method,
         Viewer,
         return_annotation=Viewer,
-        exclude=('self', 'axis_labels'),
+        exclude=("self", "axis_labels"),
     )
 
     # merge the __annotations__
     func.__annotations__ = {
         **add_method.__annotations__,
         **Viewer.__init__.__annotations__,
-        'return': Viewer,
+        "return": Viewer,
     }
 
     # _forwardrefns_ is used by stubgen.py to populate the globals
@@ -122,7 +122,7 @@ def _make_viewer_then(
     add_method: str,
     /,
     *args,
-    viewer: Optional[Viewer] = None,
+    viewer: Viewer | None = None,
     **kwargs,
 ) -> tuple[Viewer, Any]:
     """Create a viewer, call given add_* method, then return viewer and layer.
@@ -156,19 +156,17 @@ def _make_viewer_then(
         k: kwargs.pop(k)
         for k in list(kwargs)
         if k in _viewer_params
-        if k != 'axis_labels'
+        if k != "axis_labels"
     }
-    if 'axis_labels' in kwargs:
-        vkwargs['axis_labels'] = (
-            kwargs['axis_labels'] if kwargs['axis_labels'] is not None else ()
+    if "axis_labels" in kwargs:
+        vkwargs["axis_labels"] = (
+            kwargs["axis_labels"] if kwargs["axis_labels"] is not None else ()
         )
     # separate dims kwargs because we want to set those after adding data
-    dims_kwargs = {
-        k: vkwargs.pop(k) for k in list(vkwargs) if k in _dims_params
-    }
+    dims_kwargs = {k: vkwargs.pop(k) for k in list(vkwargs) if k in _dims_params}
     if viewer is None:
         viewer = Viewer(**vkwargs)
-    kwargs.update(kwargs.pop('kwargs', {}))
+    kwargs.update(kwargs.pop("kwargs", {}))
     method = getattr(viewer, add_method)
     added = method(*args, **kwargs)
     if isinstance(added, list):
@@ -189,42 +187,42 @@ def _make_viewer_then(
 
 @_merge_layer_viewer_sigs_docs
 def view_image(*args, **kwargs):
-    return _make_viewer_then('add_image', *args, **kwargs)[0]
+    return _make_viewer_then("add_image", *args, **kwargs)[0]
 
 
 @_merge_layer_viewer_sigs_docs
 def view_labels(*args, **kwargs):
-    return _make_viewer_then('add_labels', *args, **kwargs)[0]
+    return _make_viewer_then("add_labels", *args, **kwargs)[0]
 
 
 @_merge_layer_viewer_sigs_docs
 def view_points(*args, **kwargs):
-    return _make_viewer_then('add_points', *args, **kwargs)[0]
+    return _make_viewer_then("add_points", *args, **kwargs)[0]
 
 
 @_merge_layer_viewer_sigs_docs
 def view_shapes(*args, **kwargs):
-    return _make_viewer_then('add_shapes', *args, **kwargs)[0]
+    return _make_viewer_then("add_shapes", *args, **kwargs)[0]
 
 
 @_merge_layer_viewer_sigs_docs
 def view_surface(*args, **kwargs):
-    return _make_viewer_then('add_surface', *args, **kwargs)[0]
+    return _make_viewer_then("add_surface", *args, **kwargs)[0]
 
 
 @_merge_layer_viewer_sigs_docs
 def view_tracks(*args, **kwargs):
-    return _make_viewer_then('add_tracks', *args, **kwargs)[0]
+    return _make_viewer_then("add_tracks", *args, **kwargs)[0]
 
 
 @_merge_layer_viewer_sigs_docs
 def view_vectors(*args, **kwargs):
-    return _make_viewer_then('add_vectors', *args, **kwargs)[0]
+    return _make_viewer_then("add_vectors", *args, **kwargs)[0]
 
 
 @_merge_layer_viewer_sigs_docs
 def view_path(*args, **kwargs):
-    return _make_viewer_then('open', *args, **kwargs)[0]
+    return _make_viewer_then("open", *args, **kwargs)[0]
 
 
 def imshow(
@@ -239,19 +237,19 @@ def imshow(
     colormap=None,
     contrast_limits=None,
     custom_interpolation_kernel_2d=None,
-    depiction='volume',
+    depiction="volume",
     experimental_clipping_planes=None,
     gamma=1.0,
-    interpolation2d='nearest',
-    interpolation3d='linear',
+    interpolation2d="nearest",
+    interpolation3d="linear",
     iso_threshold=None,
     metadata=None,
     multiscale=None,
     name=None,
     opacity=1.0,
     plane=None,
-    projection_mode='none',
-    rendering='mip',
+    projection_mode="none",
+    rendering="mip",
     rgb=None,
     rotate=None,
     scale=None,
@@ -260,11 +258,11 @@ def imshow(
     units=None,
     visible=True,
     viewer=None,
-    title='finn',
+    title="finn",
     ndisplay=2,
     order=(),
     show=True,
-) -> tuple[Viewer, list['Image']]:
+) -> tuple[Viewer, list["Image"]]:
     """Load data into an Image layer and return the Viewer and Layer.
 
     Parameters
@@ -309,15 +307,16 @@ def imshow(
         be a string to assign as a name to a colormap and the value must be a
         Colormap.
     contrast_limits : list (2,)
-        Intensity value limits to be used for determining the minimum and maximum colormap bounds for
-        luminance images. If not passed, they will be calculated as the min and max intensity value of
-        the image.
+        Intensity value limits to be used for determining the minimum and maximum
+        colormap bounds for luminance images. If not passed, they will be calculated as
+        the min and max intensity value of the image.
     custom_interpolation_kernel_2d : np.ndarray
         Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
     depiction : str or list of str
         3D Depiction mode. Must be one of {'volume', 'plane'}.
         The default value is 'volume'.
-    experimental_clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
+    experimental_clipping_planes : list of dicts, list of ClippingPlane, or
+            ClippingPlaneList
         Each dict defines a clipping plane in 3D in data coordinates.
         Valid dictionary keys are {'position', 'normal', and 'enabled'}.
         Values on the negative side of the normal are discarded if the plane is enabled.
@@ -403,7 +402,7 @@ def imshow(
     """
 
     return _make_viewer_then(
-        'add_image',
+        "add_image",
         data,
         viewer=viewer,
         channel_axis=channel_axis,

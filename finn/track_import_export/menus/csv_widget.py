@@ -1,7 +1,6 @@
 import os
 
 import pandas as pd
-from finn.track_data_views.graph_attributes import NodeAttr
 from psygnal import Signal
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import (
@@ -17,9 +16,13 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
+from finn.track_data_views.graph_attributes import NodeAttr
+
 
 class CSVFieldMapWidget(QWidget):
-    """QWidget accepting a CSV file and displaying the different column names in QComboBoxes"""
+    """QWidget accepting a CSV file and displaying the different column names in
+    QComboBoxes
+    """
 
     columns_updated = Signal()
 

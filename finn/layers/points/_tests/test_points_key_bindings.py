@@ -9,18 +9,18 @@ def test_modes(layer):
     layer = Points(data, size=1)
 
     key_bindings.activate_points_add_mode(layer)
-    assert layer.mode == 'add'
+    assert layer.mode == "add"
     key_bindings.activate_points_select_mode(layer)
-    assert layer.mode == 'select'
+    assert layer.mode == "select"
     key_bindings.activate_points_pan_zoom_mode(layer)
-    assert layer.mode == 'pan_zoom'
+    assert layer.mode == "pan_zoom"
 
 
 @pytest.mark.key_bindings
 def test_copy_paste(layer):
     data = [[1, 3], [8, 4], [10, 10], [15, 4]]
     layer = Points(data, size=1)
-    layer.mode = 'select'
+    layer.mode = "select"
 
     assert len(layer.data) == 4
     assert layer._clipboard == {}
@@ -39,7 +39,7 @@ def test_copy_paste(layer):
 def test_select_all_in_slice(layer):
     data = [[1, 3], [8, 4], [10, 10], [15, 4]]
     layer = Points(data, size=1)
-    layer.mode = 'select'
+    layer.mode = "select"
     layer._set_view_slice()
 
     assert len(layer.data) == 4
@@ -56,7 +56,7 @@ def test_select_all_in_slice(layer):
 def test_select_all_in_slice_3d_data(layer):
     data = [[0, 1, 3], [0, 8, 4], [0, 10, 10], [1, 15, 4]]
     layer = Points(data, size=1)
-    layer.mode = 'select'
+    layer.mode = "select"
     layer._set_view_slice()
 
     assert len(layer.data) == 4
@@ -73,7 +73,7 @@ def test_select_all_in_slice_3d_data(layer):
 def test_select_all_data(layer):
     data = [[1, 3], [8, 4], [10, 10], [15, 4]]
     layer = Points(data, size=1)
-    layer.mode = 'select'
+    layer.mode = "select"
     layer._set_view_slice()
 
     assert len(layer.data) == 4
@@ -90,7 +90,7 @@ def test_select_all_data(layer):
 def test_select_all_data_3d_data(layer):
     data = [[0, 1, 3], [0, 8, 4], [0, 10, 10], [1, 15, 4]]
     layer = Points(data, size=1)
-    layer.mode = 'select'
+    layer.mode = "select"
     layer._set_view_slice()
 
     assert len(layer.data) == 4
@@ -106,7 +106,7 @@ def test_select_all_data_3d_data(layer):
 def test_select_all_mixed(layer):
     data = [[0, 1, 3], [0, 8, 4], [0, 10, 10], [1, 15, 4]]
     layer = Points(data, size=1)
-    layer.mode = 'select'
+    layer.mode = "select"
     layer._set_view_slice()
 
     assert len(layer.data) == 4
@@ -134,7 +134,7 @@ def test_select_all_mixed(layer):
 def test_delete_selected_points(layer):
     data = [[1, 3], [8, 4], [10, 10], [15, 4]]
     layer = Points(data, size=1)
-    layer.mode = 'select'
+    layer.mode = "select"
 
     assert len(layer.data) == 4
     layer.selected_data = {0, 1}

@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from finn.layers.base import Layer
 
 
-def highlight_box_handles(layer: 'Layer', event: Event) -> None:
+def highlight_box_handles(layer: "Layer", event: Event) -> None:
     """
     Highlight the hovered handle of a TransformBox.
     """
@@ -27,22 +27,18 @@ def highlight_box_handles(layer: 'Layer', event: Event) -> None:
 
     # we work in data space so we're axis aligned which simplifies calculation
     # same as Layer.world_to_data
-    world_to_data = (
-        layer._transforms[1:].set_slice(layer._slice_input.displayed).inverse
-    )
+    world_to_data = layer._transforms[1:].set_slice(layer._slice_input.displayed).inverse
     pos = np.array(world_to_data(event.position))[event.dims_displayed]
-    handle_coords = generate_transform_box_from_layer(
-        layer, layer._slice_input.displayed
-    )
+    handle_coords = generate_transform_box_from_layer(layer, layer._slice_input.displayed)
     # TODO: dynamically set tolerance based on canvas size so it's not hard to pick small layer
     nearby_handle = get_nearby_handle(pos, handle_coords)
 
     # set the selected vertex of the box to the nearby_handle (can also be INSIDE or None)
-    layer._overlays['transform_box'].selected_handle = nearby_handle
+    layer._overlays["transform_box"].selected_handle = nearby_handle
 
 
 def _translate_with_box(
-    layer: 'Layer',
+    layer: "Layer",
     initial_affine: Affine,
     initial_mouse_pos: npt.NDArray,
     mouse_pos: npt.NDArray,
@@ -50,13 +46,11 @@ def _translate_with_box(
 ) -> None:
     offset = mouse_pos - initial_mouse_pos
     new_affine = Affine(translate=offset).compose(initial_affine)
-    layer.affine = layer.affine.replace_slice(
-        layer._slice_input.displayed, new_affine
-    )
+    layer.affine = layer.affine.replace_slice(layer._slice_input.displayed, new_affine)
 
 
 def _rotate_with_box(
-    layer: 'Layer',
+    layer: "Layer",
     initial_affine: Affine,
     initial_mouse_pos: npt.NDArray,
     initial_handle_coords: npt.NDArray,
@@ -73,16 +67,14 @@ def _rotate_with_box(
     center_to_mouse /= np.linalg.norm(center_to_mouse)
 
     # if shift held, snap rotation to 45 degree steps
-    if 'Shift' in event.modifiers:
+    if "Shift" in event.modifiers:
         angle = np.round(
             np.arctan2(center_to_mouse[1], center_to_mouse[0]) / np.deg2rad(45)
-        ) * np.deg2rad(45) - np.arctan2(
+        ) * np.deg2rad(45) - np.arctan2(center_to_handle[1], center_to_handle[0])
+    else:
+        angle = np.arctan2(center_to_mouse[1], center_to_mouse[0]) - np.arctan2(
             center_to_handle[1], center_to_handle[0]
         )
-    else:
-        angle = np.arctan2(
-            center_to_mouse[1], center_to_mouse[0]
-        ) - np.arctan2(center_to_handle[1], center_to_handle[0])
 
     new_affine = (
         Affine(translate=initial_center)
@@ -90,13 +82,11 @@ def _rotate_with_box(
         .compose(Affine(translate=-initial_center))
         .compose(initial_affine)
     )
-    layer.affine = layer.affine.replace_slice(
-        layer._slice_input.displayed, new_affine
-    )
+    layer.affine = layer.affine.replace_slice(layer._slice_input.displayed, new_affine)
 
 
 def _scale_with_box(
-    layer: 'Layer',
+    layer: "Layer",
     initial_affine: Affine,
     initial_world_to_data: Affine,
     initial_data2physical: Affine,
@@ -107,13 +97,13 @@ def _scale_with_box(
     event: Event,
 ) -> None:
     locked_aspect_ratio = False
-    if 'Shift' in event.modifiers:
+    if "Shift" in event.modifiers:
         if nearby_handle in InteractionBoxHandle.corners():
             locked_aspect_ratio = True
         else:
             warnings.warn(
                 trans._(
-                    'Aspect ratio can only be blocked when resizing from a corner',
+                    "Aspect ratio can only be blocked when resizing from a corner",
                     deferred=True,
                 ),
                 RuntimeWarning,
@@ -124,7 +114,7 @@ def _scale_with_box(
 
     # if Control is held, instead of locking into place the opposite handle,
     # lock into place the center of the layer and resize around it.
-    if 'Control' in event.modifiers:
+    if "Control" in event.modifiers:
         scaling_center = initial_world_to_data(initial_center)
     else:
         # opposite handle
@@ -133,9 +123,7 @@ def _scale_with_box(
         ]
 
     # calculate the distance to the scaling center (which is fixed) before and after drag
-    center_to_handle = (
-        initial_handle_coords_data[nearby_handle] - scaling_center
-    )
+    center_to_handle = initial_handle_coords_data[nearby_handle] - scaling_center
     center_to_mouse = initial_world_to_data(mouse_pos) - scaling_center
     # get per-dimension scale values
     with warnings.catch_warnings():
@@ -143,7 +131,7 @@ def _scale_with_box(
         # (i.e: dragging the central handle of the TransformBox).
         # That's intended, because we get inf or nan, which we can then replace with 1s
         # and thus maintain the size along that axis.
-        warnings.simplefilter('ignore', RuntimeWarning)
+        warnings.simplefilter("ignore", RuntimeWarning)
         scale = center_to_mouse / center_to_handle
         scale = np.nan_to_num(scale, posinf=1, neginf=1)
 
@@ -165,14 +153,10 @@ def _scale_with_box(
         # compose with the original affine
         .compose(initial_affine)
     )
-    layer.affine = layer.affine.replace_slice(
-        layer._slice_input.displayed, new_affine
-    )
+    layer.affine = layer.affine.replace_slice(layer._slice_input.displayed, new_affine)
 
 
-def transform_with_box(
-    layer: 'Layer', event: Event
-) -> Generator[None, None, None]:
+def transform_with_box(layer: "Layer", event: Event) -> Generator[None, None, None]:
     """
     Translate, rescale or rotate a layer by dragging a TransformBox handle.
     """
@@ -190,9 +174,7 @@ def transform_with_box(
     initial_handle_coords_data = generate_transform_box_from_layer(
         layer, layer._slice_input.displayed
     )
-    nearby_handle = get_nearby_handle(
-        initial_mouse_pos_data, initial_handle_coords_data
-    )
+    nearby_handle = get_nearby_handle(initial_mouse_pos_data, initial_handle_coords_data)
 
     if nearby_handle is None:
         return
@@ -205,7 +187,7 @@ def transform_with_box(
     initial_affine = layer.affine.set_slice(layer._slice_input.displayed)
 
     # needed for rescaling
-    initial_data2physical = layer._transforms['data2physical'].set_slice(
+    initial_data2physical = layer._transforms["data2physical"].set_slice(
         layer._slice_input.displayed
     )
 
@@ -222,7 +204,7 @@ def transform_with_box(
 
     yield
 
-    while event.type == 'mouse_move':
+    while event.type == "mouse_move":
         mouse_pos = np.array(event.position)[event.dims_displayed]
 
         if nearby_handle == InteractionBoxHandle.INSIDE:

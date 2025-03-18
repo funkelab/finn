@@ -1,6 +1,6 @@
-from collections.abc import Generator, Iterable, Iterator
+from collections.abc import Callable, Generator, Iterable, Iterator
 from itertools import takewhile
-from typing import Callable, Optional
+from typing import Optional
 
 from tqdm import tqdm
 
@@ -8,7 +8,7 @@ from finn.utils.events.containers import EventedSet
 from finn.utils.events.event import EmitterGroup, Event
 from finn.utils.translations import trans
 
-__all__ = ['cancelable_progress', 'progrange', 'progress']
+__all__ = ["cancelable_progress", "progrange", "progress"]
 
 
 class progress(tqdm):
@@ -66,14 +66,14 @@ class progress(tqdm):
     # this evented *class* attribute, accessed through `progress._all_instances`
     # this allows the ActivityDialog to find out about new progress objects and
     # hook up GUI progress bars to its update events
-    _all_instances: EventedSet['progress'] = EventedSet()
+    _all_instances: EventedSet["progress"] = EventedSet()
 
     def __init__(
         self,
-        iterable: Optional[Iterable] = None,
-        desc: Optional[str] = None,
-        total: Optional[int] = None,
-        nest_under: Optional['progress'] = None,
+        iterable: Iterable | None = None,
+        desc: str | None = None,
+        total: int | None = None,
+        nest_under: Optional["progress"] = None,
         *args,
         **kwargs,
     ) -> None:
@@ -91,9 +91,9 @@ class progress(tqdm):
         # if the progress bar is set to disable the 'desc' member is not set by the
         # tqdm super constructor, so we set it to a dummy value to avoid errors thrown below
         if self.disable:
-            self.desc = ''
+            self.desc = ""
         if not self.desc:
-            self.set_description(trans._('progress'))
+            self.set_description(trans._("progress"))
         progress._all_instances.add(self)
         self.is_init = False
 
@@ -109,16 +109,14 @@ class progress(tqdm):
         self._total = total
         self.events.total(value=self.total)
 
-    def display(
-        self, msg: Optional[str] = None, pos: Optional[int] = None
-    ) -> None:
+    def display(self, msg: str | None = None, pos: int | None = None) -> None:
         """Update the display and emit eta event."""
         # just plain tqdm if we don't have gui
         if not self.gui and not self.is_init:
             super().display(msg, pos)
             return
         # TODO: This could break if user is formatting their own terminal tqdm
-        etas = str(self).split('|')[-1] if self.total != 0 else ''
+        etas = str(self).split("|")[-1] if self.total != 0 else ""
         self.events.eta(value=etas)
 
     def update(self, n=1):
@@ -189,11 +187,11 @@ class cancelable_progress(progress):
 
     def __init__(
         self,
-        iterable: Optional[Iterable] = None,
-        desc: Optional[str] = None,
-        total: Optional[int] = None,
-        nest_under: Optional['progress'] = None,
-        cancel_callback: Optional[Callable] = None,
+        iterable: Iterable | None = None,
+        desc: str | None = None,
+        total: int | None = None,
+        nest_under: Optional["progress"] = None,
+        cancel_callback: Callable | None = None,
         *args,
         **kwargs,
     ) -> None:

@@ -76,12 +76,12 @@ def test_merge_stack_rgb():
     layer_list.selection.add(layer_list[2])
 
     # check that without R G B colormaps we warn
-    with pytest.raises(ValueError, match='Missing colormap'):
+    with pytest.raises(ValueError, match="Missing colormap"):
         _merge_stack(layer_list, rgb=True)
 
-    layer_list[0].colormap = 'red'
-    layer_list[1].colormap = 'green'
-    layer_list[2].colormap = 'blue'
+    layer_list[0].colormap = "red"
+    layer_list[1].colormap = "green"
+    layer_list[2].colormap = "blue"
     _merge_stack(layer_list, rgb=True)
     assert len(layer_list) == 1
     assert layer_list[0].data.shape == (8, 8, 3)
@@ -127,25 +127,23 @@ def test_toggle_visibility_with_linked_layers():
     assert layer_list[3].visible is True
 
 
-@pytest.mark.parametrize('layer_type', [Points, Shapes])
+@pytest.mark.parametrize("layer_type", [Points, Shapes])
 def test_duplicate_layers(layer_type):
     def _dummy():
         pass
 
     layer_list = LayerList()
-    layer_list.append(layer_type([], name='test'))
+    layer_list.append(layer_type([], name="test"))
     layer_list.selection.active = layer_list[0]
     layer_list[0].events.data.connect(_dummy)
     assert len(layer_list[0].events.data.callbacks) == 2
     assert len(layer_list) == 1
     _duplicate_layer(layer_list)
     assert len(layer_list) == 2
-    assert layer_list[0].name == 'test'
-    assert layer_list[1].name == 'test copy'
+    assert layer_list[0].name == "test"
+    assert layer_list[1].name == "test copy"
     assert layer_list[1].events.source is layer_list[1]
-    assert (
-        len(layer_list[1].events.data.callbacks) == 1
-    )  # `events` Event Emitter
+    assert len(layer_list[1].events.data.callbacks) == 1  # `events` Event Emitter
     assert layer_list[1].source.parent() is layer_list[0]
 
 
@@ -227,9 +225,7 @@ def test_show_selected_layers():
     assert layer_list[2].visible is True
 
 
-@pytest.mark.parametrize(
-    'mode', ['max', 'min', 'std', 'sum', 'mean', 'median']
-)
+@pytest.mark.parametrize("mode", ["max", "min", "std", "sum", "mean", "median"])
 def test_projections(mode):
     ll = LayerList()
     ll.append(
@@ -237,8 +233,8 @@ def test_projections(mode):
             np.random.rand(7, 8, 8),
             scale=(3, 2, 2),
             translate=(10, 5, 5),
-            units=('nm', 'um', 'um'),
-            axis_labels=('z', 'y', 'x'),
+            units=("nm", "um", "um"),
+            axis_labels=("z", "y", "x"),
         )
     )
     assert len(ll) == 1
@@ -250,12 +246,12 @@ def test_projections(mode):
     assert tuple(ll[-1].scale) == (2, 2)
     assert tuple(ll[-1].translate) == (5, 5)
     assert ll[-1].units == (REG.um, REG.um)
-    assert ll[-1].axis_labels == ('y', 'x')
+    assert ll[-1].axis_labels == ("y", "x")
 
 
 @pytest.mark.parametrize(
-    'mode',
-    ['int8', 'int16', 'int32', 'int64', 'uint8', 'uint16', 'uint32', 'uint64'],
+    "mode",
+    ["int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64"],
 )
 def test_convert_dtype(mode):
     ll = LayerList()
@@ -265,7 +261,7 @@ def test_convert_dtype(mode):
 
     data[5, 5] = 1000
     assert data[5, 5] == 1000
-    if mode == 'int8' or mode == 'uint8':
+    if mode == "int8" or mode == "uint8":
         # label value 1000 is outside of the target data type range.
         with pytest.raises(AssertionError):
             _convert_dtype(ll, mode=mode)
@@ -279,17 +275,17 @@ def test_convert_dtype(mode):
 
 
 @pytest.mark.parametrize(
-    ('layer', 'type_'),
+    ("layer", "type_"),
     [
-        (Image(np.random.rand(10, 10)), 'labels'),
-        (Image(np.array([[1.5, 2.5], [3.5, 4.5]])), 'labels'),
-        (Image(np.array([[1, 2], [3, 4]], dtype=(int))), 'labels'),
+        (Image(np.random.rand(10, 10)), "labels"),
+        (Image(np.array([[1.5, 2.5], [3.5, 4.5]])), "labels"),
+        (Image(np.array([[1, 2], [3, 4]], dtype=(int))), "labels"),
         (
             Image(zarr.array([[1, 2], [3, 4]], dtype=(int), chunks=(1, 2))),
-            'labels',
+            "labels",
         ),
-        (Labels(np.ones((10, 10), dtype=int)), 'image'),
-        (Shapes([np.array([[0, 0], [0, 10], [10, 0], [10, 10]])]), 'labels'),
+        (Labels(np.ones((10, 10), dtype=int)), "image"),
+        (Shapes([np.array([[0, 0], [0, 10], [10, 0], [10, 10]])]), "labels"),
     ],
 )
 def test_convert_layer(layer, type_):
@@ -300,36 +296,32 @@ def test_convert_layer(layer, type_):
     assert ll[0]._type_string != type_
     _convert(ll, type_)
     if isinstance(layer, Shapes) or (
-        type_ == 'labels'
+        type_ == "labels"
         and isinstance(layer, Image)
         and np.issubdtype(layer.data.dtype, float)
     ):
         assert ll[1]._type_string == type_
         assert np.array_equal(ll[1].scale, original_scale)
     else:
-        assert (
-            layer.data is ll[0].data
-        )  # check array data not copied unnecessarily
+        assert layer.data is ll[0].data  # check array data not copied unnecessarily
 
 
 def test_convert_warns_with_projecton_mode():
     # inplace
-    ll = LayerList(
-        [Image(np.random.rand(10, 10).astype(int), projection_mode='mean')]
-    )
-    with pytest.warns(UserWarning, match='projection mode'):
-        _convert(ll, 'labels')
-    assert isinstance(ll['Image'], Labels)
+    ll = LayerList([Image(np.random.rand(10, 10).astype(int), projection_mode="mean")])
+    with pytest.warns(UserWarning, match="projection mode"):
+        _convert(ll, "labels")
+    assert isinstance(ll["Image"], Labels)
     # not inplace
-    ll = LayerList([Image(np.random.rand(10, 10), projection_mode='mean')])
-    with pytest.warns(UserWarning, match='projection mode'):
-        _convert(ll, 'labels')
-    assert isinstance(ll['Image [1]'], Labels)
+    ll = LayerList([Image(np.random.rand(10, 10), projection_mode="mean")])
+    with pytest.warns(UserWarning, match="projection mode"):
+        _convert(ll, "labels")
+    assert isinstance(ll["Image [1]"], Labels)
 
 
 def make_three_layer_layerlist():
     layer_list = LayerList()
-    layer_list.append(Points([[0, 0]], name='test'))
+    layer_list.append(Points([[0, 0]], name="test"))
     layer_list.append(Image(np.random.rand(8, 8, 8)))
     layer_list.append(Image(np.random.rand(8, 8, 8)))
 

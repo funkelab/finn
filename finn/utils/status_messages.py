@@ -1,5 +1,4 @@
 from collections.abc import Iterable
-from typing import Optional
 
 import numpy as np
 import numpy.typing as npt
@@ -7,7 +6,7 @@ import numpy.typing as npt
 
 def format_float(value):
     """Nice float formatting into strings."""
-    return f'{value:0.3g}'
+    return f"{value:0.3g}"
 
 
 def status_format(value):
@@ -34,9 +33,9 @@ def status_format(value):
         return value
     if isinstance(value, Iterable):
         # FIMXE: use an f-string?
-        return '[' + str.join(', ', [status_format(v) for v in value]) + ']'
+        return "[" + str.join(", ", [status_format(v) for v in value]) + "]"
     if value is None:
-        return ''
+        return ""
     if isinstance(value, float) or np.issubdtype(type(value), np.floating):
         return format_float(value)
 
@@ -44,23 +43,23 @@ def status_format(value):
 
 
 def generate_layer_coords_status(
-    position: Optional[npt.ArrayLike], value: Optional[tuple]
+    position: npt.ArrayLike | None, value: tuple | None
 ) -> str:
     if position is not None:
         full_coord = map(str, np.round(np.array(position)).astype(int))
-        msg = f' [{" ".join(full_coord)}]'
+        msg = f" [{' '.join(full_coord)}]"
     else:
-        msg = ''
+        msg = ""
 
     if value is not None:
         if isinstance(value, tuple) and value != (None, None):
             # it's a multiscale -> value = (data_level, value)
-            msg += f': {status_format(value[0])}'
+            msg += f": {status_format(value[0])}"
             if value[1] is not None:
-                msg += f', {status_format(value[1])}'
+                msg += f", {status_format(value[1])}"
         else:
             # it's either a grayscale or rgb image (scalar or list)
-            msg += f': {status_format(value)}'
+            msg += f": {status_format(value)}"
     return msg
 
 
@@ -83,17 +82,17 @@ def generate_layer_status(name, position, value):
     """
     if position is not None:
         full_coord = map(str, np.round(position).astype(int))
-        msg = f'{name} [{" ".join(full_coord)}]'
+        msg = f"{name} [{' '.join(full_coord)}]"
     else:
-        msg = f'{name}'
+        msg = f"{name}"
 
     if value is not None:
         if isinstance(value, tuple) and value != (None, None):
             # it's a multiscale -> value = (data_level, value)
-            msg += f': {status_format(value[0])}'
+            msg += f": {status_format(value[0])}"
             if value[1] is not None:
-                msg += f', {status_format(value[1])}'
+                msg += f", {status_format(value[1])}"
         else:
             # it's either a grayscale or rgb image (scalar or list)
-            msg += f': {status_format(value)}'
+            msg += f": {status_format(value)}"
     return msg

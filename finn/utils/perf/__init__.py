@@ -61,16 +61,16 @@ from finn.utils.perf._timers import (
     timers,
 )
 
-USE_PERFMON = os.getenv('NAPARI_PERFMON', '0') != '0'
+USE_PERFMON = os.getenv("NAPARI_PERFMON", "0") != "0"
 
 
 __all__ = [
-    'USE_PERFMON',
-    'PerfEvent',
-    'add_counter_event',
-    'add_instant_event',
-    'block_timer',
-    'perf_config',
-    'perf_timer',
-    'timers',
+    "USE_PERFMON",
+    "PerfEvent",
+    "add_counter_event",
+    "add_instant_event",
+    "block_timer",
+    "perf_config",
+    "perf_timer",
+    "timers",
 ]

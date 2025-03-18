@@ -11,13 +11,13 @@ from finn.settings._fields import Version
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Set as AbstractSet
-    from typing import Any, Optional, TypeVar, Union
+    from typing import Any, TypeVar, Union
 
     IntStr = Union[int, str]
     AbstractSetIntStr = AbstractSet[IntStr]
     DictStrAny = dict[str, Any]
     MappingIntStrAny = Mapping[IntStr, Any]
-    Model = TypeVar('Model', bound=BaseModel)
+    Model = TypeVar("Model", bound=BaseModel)
 
 
 class YamlDumper(SafeDumper):
@@ -38,12 +38,8 @@ YamlDumper.add_multi_representer(
 # disabled_plugins: !!set
 #   bioformats: null
 # and pydantic will make sure that incoming sets are converted to sets
-YamlDumper.add_representer(
-    set, lambda dumper, data: dumper.represent_list(data)
-)
-YamlDumper.add_representer(
-    Version, lambda dumper, data: dumper.represent_str(str(data))
-)
+YamlDumper.add_representer(set, lambda dumper, data: dumper.represent_list(data))
+YamlDumper.add_representer(Version, lambda dumper, data: dumper.represent_str(str(data)))
 YamlDumper.add_representer(
     KeyBinding, lambda dumper, data: dumper.represent_str(str(data))
 )
@@ -62,13 +58,13 @@ class PydanticYamlMixin(BaseModel):
     def yaml(
         self,
         *,
-        include: Union[AbstractSetIntStr, MappingIntStrAny] = None,  # type: ignore
-        exclude: Union[AbstractSetIntStr, MappingIntStrAny] = None,  # type: ignore
+        include: AbstractSetIntStr | MappingIntStrAny = None,  # type: ignore
+        exclude: AbstractSetIntStr | MappingIntStrAny = None,  # type: ignore
         by_alias: bool = False,
         exclude_unset: bool = False,
         exclude_defaults: bool = False,
         exclude_none: bool = False,
-        dumper: Optional[type[SafeDumper]] = None,
+        dumper: type[SafeDumper] | None = None,
         **dumps_kwargs: Any,
     ) -> str:
         """Serialize model to yaml."""
@@ -86,9 +82,7 @@ class PydanticYamlMixin(BaseModel):
             data = data[ROOT_KEY]
         return self._yaml_dump(data, dumper, **dumps_kwargs)
 
-    def _yaml_dump(
-        self, data, dumper: Optional[type[SafeDumper]] = None, **kw
-    ) -> str:
-        kw.setdefault('sort_keys', False)
-        dumper = dumper or getattr(self.__config__, 'yaml_dumper', YamlDumper)
+    def _yaml_dump(self, data, dumper: type[SafeDumper] | None = None, **kw) -> str:
+        kw.setdefault("sort_keys", False)
+        dumper = dumper or getattr(self.__config__, "yaml_dumper", YamlDumper)
         return dump_all([data], Dumper=dumper, **kw)

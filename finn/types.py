@@ -1,21 +1,21 @@
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from functools import partial, wraps
 from pathlib import Path
 from types import TracebackType
 from typing import (
     TYPE_CHECKING,
     Any,
-    Callable,
     NewType,
     Optional,
     Union,
+    get_args,
 )
 
 import numpy as np
 
 # TODO decide where types should be defined to have single place for them
 from npe2.types import LayerName as LayerTypeName
-from typing_extensions import TypedDict, get_args
+from typing_extensions import TypedDict
 
 if TYPE_CHECKING:
     # dask zarr should be imported as `import dask.array as da` But here it is used only in type annotation to
@@ -28,29 +28,29 @@ if TYPE_CHECKING:
 
 
 __all__ = [
-    'ArrayBase',
-    'ArrayLike',
-    'AugmentedWidget',
-    'ExcInfo',
-    'FullLayerData',
-    'ImageData',
-    'LabelsData',
-    'LayerData',
-    'LayerDataTuple',
-    'LayerTypeName',
-    'PathLike',
-    'PathOrPaths',
-    'PointsData',
-    'ReaderFunction',
-    'SampleData',
-    'SampleDict',
-    'ShapesData',
-    'SurfaceData',
-    'TracksData',
-    'VectorsData',
-    'WidgetCallable',
-    'WriterFunction',
-    'image_reader_to_layerdata_reader',
+    "ArrayBase",
+    "ArrayLike",
+    "AugmentedWidget",
+    "ExcInfo",
+    "FullLayerData",
+    "ImageData",
+    "LabelsData",
+    "LayerData",
+    "LayerDataTuple",
+    "LayerTypeName",
+    "PathLike",
+    "PathOrPaths",
+    "PointsData",
+    "ReaderFunction",
+    "SampleData",
+    "SampleDict",
+    "ShapesData",
+    "SurfaceData",
+    "TracksData",
+    "VectorsData",
+    "WidgetCallable",
+    "WriterFunction",
+    "image_reader_to_layerdata_reader",
 ]
 
 # This is a WOEFULLY inadequate stub for a duck-array type.
@@ -59,7 +59,7 @@ __all__ = [
 # and should probably be replaced by a typing.Protocol
 # note, numpy.typing.ArrayLike (in v1.20) is not quite what we want either,
 # since it includes all valid arguments for np.array() ( int, float, str...)
-ArrayLike = Union[np.ndarray, 'dask.array.Array', 'zarr.Array']
+ArrayLike = Union[np.ndarray, "dask.array.Array", "zarr.Array"]
 
 # layer data may be: (data,) (data, meta), or (data, meta, layer_type)
 # using "Any" for the data type until ArrayLike is more mature.
@@ -77,7 +77,7 @@ ExcInfo = Union[
 ]
 
 # Types for GUI HookSpecs
-WidgetCallable = Callable[..., Union['FunctionGui', 'QWidget']]
+WidgetCallable = Callable[..., Union["FunctionGui", "QWidget"]]
 AugmentedWidget = Union[WidgetCallable, tuple[WidgetCallable, dict]]
 
 
@@ -102,13 +102,13 @@ class SampleDict(TypedDict):
 ArrayBase: type[np.ndarray] = np.ndarray
 
 
-ImageData = NewType('ImageData', np.ndarray)
-LabelsData = NewType('LabelsData', np.ndarray)
-PointsData = NewType('PointsData', np.ndarray)
-ShapesData = NewType('ShapesData', list[np.ndarray])
-SurfaceData = NewType('SurfaceData', tuple[np.ndarray, np.ndarray, np.ndarray])
-TracksData = NewType('TracksData', np.ndarray)
-VectorsData = NewType('VectorsData', np.ndarray)
+ImageData = NewType("ImageData", np.ndarray)
+LabelsData = NewType("LabelsData", np.ndarray)
+PointsData = NewType("PointsData", np.ndarray)
+ShapesData = NewType("ShapesData", list[np.ndarray])
+SurfaceData = NewType("SurfaceData", tuple[np.ndarray, np.ndarray, np.ndarray])
+TracksData = NewType("TracksData", np.ndarray)
+VectorsData = NewType("VectorsData", np.ndarray)
 _LayerData = Union[
     ImageData,
     LabelsData,
@@ -119,7 +119,7 @@ _LayerData = Union[
     VectorsData,
 ]
 
-LayerDataTuple = NewType('LayerDataTuple', tuple)
+LayerDataTuple = NewType("LayerDataTuple", tuple)
 
 
 def image_reader_to_layerdata_reader(

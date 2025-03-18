@@ -55,11 +55,11 @@ class PointsVisual(ClippingPlanesMixin, Compound):
         Scaling property for both the markers visuals. If set to true,
         the points rescale based on zoom (i.e: constant world-space size)
         """
-        return self.points_markers.scaling == 'visual'
+        return self.points_markers.scaling == "visual"
 
     @scaling.setter
     def scaling(self, value: bool) -> None:
-        scaling_txt = 'visual' if value else 'fixed'
+        scaling_txt = "visual" if value else "fixed"
         self.points_markers.scaling = scaling_txt
         self.selection_markers.scaling = scaling_txt
 

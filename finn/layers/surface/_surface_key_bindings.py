@@ -1,4 +1,4 @@
-from typing import Callable
+from collections.abc import Callable
 
 from finn.layers.base._base_constants import Mode
 from finn.layers.surface.surface import Surface
@@ -18,15 +18,15 @@ def register_surface_action(
 def register_surface_mode_action(
     description: str,
 ) -> Callable[[Callable], Callable]:
-    return register_layer_attr_action(Surface, description, 'mode')
+    return register_layer_attr_action(Surface, description, "mode")
 
 
-@register_surface_mode_action(trans._('Transform'))
+@register_surface_mode_action(trans._("Transform"))
 def activate_surface_transform_mode(layer: Surface) -> None:
     layer.mode = str(Mode.TRANSFORM)
 
 
-@register_surface_mode_action(trans._('Pan/zoom'))
+@register_surface_mode_action(trans._("Pan/zoom"))
 def activate_surface_pan_zoom_mode(layer: Surface) -> None:
     layer.mode = str(Mode.PAN_ZOOM)
 

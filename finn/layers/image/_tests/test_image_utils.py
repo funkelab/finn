@@ -14,14 +14,12 @@ from finn.layers.image._image_utils import guess_multiscale, guess_rgb
 from finn.layers.image._slice import _ImageSliceRequest
 from finn.layers.utils._slice_input import _ThickNDSlice
 
-data_dask = da.random.random(
-    size=(100_000, 1000, 1000), chunks=(1, 1000, 1000)
-)
+data_dask = da.random.random(size=(100_000, 1000, 1000), chunks=(1, 1000, 1000))
 
 
 def test_guess_rgb():
     sig = inspect.signature(guess_rgb)
-    min_side_len = sig.parameters['min_side_len'].default
+    min_side_len = sig.parameters["min_side_len"].default
 
     shape = (10, 15)  # 2D only
     assert not guess_rgb(shape)
@@ -51,12 +49,10 @@ def test_guess_rgb():
 @given(shape=array_shapes(min_dims=3, min_side=0))
 def test_guess_rgb_property(shape):
     sig = inspect.signature(guess_rgb)
-    min_side_len = sig.parameters['min_side_len'].default
+    min_side_len = sig.parameters["min_side_len"].default
 
     assert guess_rgb(shape) == (
-        shape[-1] in (3, 4)
-        and shape[-2] > min_side_len
-        and shape[-3] > min_side_len
+        shape[-1] in (3, 4) and shape[-2] > min_side_len and shape[-3] > min_side_len
     )
 
 
@@ -79,14 +75,12 @@ def test_guess_multiscale():
     data = tuple(data)
     assert guess_multiscale(data)[0]
 
-    if skimage.__version__ > '0.19':
-        pyramid_kwargs = {'channel_axis': None}
+    if skimage.__version__ > "0.19":
+        pyramid_kwargs = {"channel_axis": None}
     else:
-        pyramid_kwargs = {'multichannel': False}
+        pyramid_kwargs = {"multichannel": False}
 
-    data = tuple(
-        pyramid_gaussian(np.random.random((10, 15)), **pyramid_kwargs)
-    )
+    data = tuple(pyramid_gaussian(np.random.random((10, 15)), **pyramid_kwargs))
     assert guess_multiscale(data)[0]
 
     data = np.asarray(
@@ -103,9 +97,7 @@ def test_guess_multiscale():
     # Test for overflow in calculating array sizes
     s = 17179869184
     data = [
-        da.from_delayed(
-            dask.delayed(lambda: None), shape=(s,) * 2, dtype=np.float64
-        ),
+        da.from_delayed(dask.delayed(lambda: None), shape=(s,) * 2, dtype=np.float64),
         da.from_delayed(
             dask.delayed(lambda: None), shape=(s // 2,) * 2, dtype=np.float64
         ),
@@ -123,13 +115,13 @@ def test_guess_multiscale_strip_single_scale():
 def test_guess_multiscale_non_array_list():
     """Check that non-decreasing list input raises ValueError"""
     data = [np.empty((10, 15, 6))] * 2
-    with pytest.raises(ValueError, match='decreasing size'):
+    with pytest.raises(ValueError, match="decreasing size"):
         _, _ = guess_multiscale(data)
 
 
 def test_guess_multiscale_incorrect_order():
     data = [np.empty((10, 15)), np.empty((5, 6)), np.empty((20, 15))]
-    with pytest.raises(ValueError, match='decreasing size'):
+    with pytest.raises(ValueError, match="decreasing size"):
         _, _ = guess_multiscale(data)
 
 
@@ -137,7 +129,7 @@ def test_timing_multiscale_big():
     now = time.monotonic()
     assert not guess_multiscale(data_dask)[0]
     elapsed = time.monotonic() - now
-    assert elapsed < 2, 'test was too slow, computation was likely not lazy'
+    assert elapsed < 2, "test was too slow, computation was likely not lazy"
 
 
 def test_create_data_indexing():
@@ -153,9 +145,7 @@ def test_create_data_indexing():
         margin_left=(np.nan, 0, 1.6, 0.3, 1),
         margin_right=(np.nan, 0.1, 0.3, 0.5, 0.6),
     )
-    idx = _ImageSliceRequest._data_slice_to_slices(
-        data_slice, dims_displayed=(0,)
-    )
+    idx = _ImageSliceRequest._data_slice_to_slices(data_slice, dims_displayed=(0,))
     expected = (
         slice(None),
         slice(10, 11),

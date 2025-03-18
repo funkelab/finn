@@ -7,7 +7,7 @@ from finn.components.experimental.remote._messages import RemoteMessages
 from finn.components.layerlist import LayerList
 from finn.utils.events import Event
 
-LOGGER = logging.getLogger('finn.monitor')
+LOGGER = logging.getLogger("finn.monitor")
 
 
 class RemoteManager:

@@ -1,7 +1,8 @@
 import sys
 import warnings
+from collections.abc import Callable
 from contextlib import contextmanager
-from typing import Any, Callable, ClassVar, Union
+from typing import Any, ClassVar, Union
 
 import numpy as np
 from app_model.types import KeyBinding
@@ -55,7 +56,7 @@ def no_class_attributes():
     - https://codereview.qt-project.org/c/pyside/pyside-setup/+/261411
     """
 
-    if 'PySide2' not in sys.modules:
+    if "PySide2" not in sys.modules:
         yield
         return
 
@@ -96,7 +97,7 @@ class EventedMetaclass(ModelMetaclass):
             # encoders for this model.
             # NOTE: a _json_encode field must return an object that can be
             # passed to json.dumps ... but it needn't return a string.
-            if hasattr(f.type_, '_json_encode'):
+            if hasattr(f.type_, "_json_encode"):
                 encoder = f.type_._json_encode
                 cls.__config__.json_encoders[f.type_] = encoder
                 # also add it to the base config
@@ -111,23 +112,19 @@ class EventedMetaclass(ModelMetaclass):
                 cls.__properties__[name] = attr
                 # determine compare operator
                 if (
-                    hasattr(attr.fget, '__annotations__')
-                    and 'return' in attr.fget.__annotations__
-                    and not isinstance(
-                        attr.fget.__annotations__['return'], str
-                    )
+                    hasattr(attr.fget, "__annotations__")
+                    and "return" in attr.fget.__annotations__
+                    and not isinstance(attr.fget.__annotations__["return"], str)
                 ):
                     cls.__eq_operators__[name] = pick_equality_operator(
-                        attr.fget.__annotations__['return']
+                        attr.fget.__annotations__["return"]
                     )
 
         cls.__field_dependents__ = _get_field_dependents(cls)
         return cls
 
 
-def _update_dependents_from_property_code(
-    cls, prop_name, prop, deps, visited=()
-):
+def _update_dependents_from_property_code(cls, prop_name, prop, deps, visited=()):
     """Recursively find all the dependents of a property by inspecting the code object.
 
     Update the given deps dictionary with the new findings.
@@ -140,12 +137,10 @@ def _update_dependents_from_property_code(
             visited = visited + (name,)
             # sub_prop is the new property, but we leave prop_name the same
             sub_prop = cls.__properties__[name]
-            _update_dependents_from_property_code(
-                cls, prop_name, sub_prop, deps, visited
-            )
+            _update_dependents_from_property_code(cls, prop_name, sub_prop, deps, visited)
 
 
-def _get_field_dependents(cls: 'EventedModel') -> dict[str, set[str]]:
+def _get_field_dependents(cls: "EventedModel") -> dict[str, set[str]]:
     """Return mapping of field name -> dependent set of property names.
 
     Dependencies will be guessed by inspecting the code of each property
@@ -190,17 +185,16 @@ def _get_field_dependents(cls: 'EventedModel') -> dict[str, set[str]]:
 
     deps: dict[str, set[str]] = {}
 
-    _deps = getattr(cls.__config__, 'dependencies', None)
+    _deps = getattr(cls.__config__, "dependencies", None)
     if _deps:
         for prop_name, fields in _deps.items():
             if prop_name not in cls.__properties__:
                 raise ValueError(
-                    'Fields with dependencies must be properties. '
-                    f'{prop_name!r} is not.'
+                    f"Fields with dependencies must be properties. {prop_name!r} is not."
                 )
             for field in fields:
                 if field not in cls.__fields__:
-                    warnings.warn(f'Unrecognized field dependency: {field}')
+                    warnings.warn(f"Unrecognized field dependency: {field}")
                 deps.setdefault(field, set()).add(prop_name)
     else:
         # if dependencies haven't been explicitly defined, we can glean
@@ -229,7 +223,7 @@ class EventedModel(BaseModel, metaclass=EventedMetaclass):
     _changes_queue: dict[str, Any] = PrivateAttr(default_factory=dict)
     _primary_changes: set[str] = PrivateAttr(default_factory=set)
     _delay_check_semaphore: int = PrivateAttr(0)
-    __slots__: ClassVar[set[str]] = {'__weakref__'}  # type: ignore
+    __slots__: ClassVar[set[str]] = {"__weakref__"}  # type: ignore
 
     # pydantic BaseModel configuration.  see:
     # https://pydantic-docs.helpmanual.io/usage/model_config/
@@ -262,9 +256,7 @@ class EventedModel(BaseModel, metaclass=EventedMetaclass):
             if field.field_info.allow_mutation
         ]
 
-        self._events.add(
-            **dict.fromkeys(field_events + list(self.__properties__))
-        )
+        self._events.add(**dict.fromkeys(field_events + list(self.__properties__)))
 
         # while seemingly redundant, this next line is very important to maintain
         # correct sources; see https://github.com/napari/napari/pull/4138
@@ -299,7 +291,7 @@ class EventedModel(BaseModel, metaclass=EventedMetaclass):
         return not are_equal(new_value, old_value), new_value
 
     def __setattr__(self, name: str, value: Any) -> None:
-        if name not in getattr(self, 'events', {}):
+        if name not in getattr(self, "events", {}):
             # This is a workaround needed because `EventedConfigFileSettings` uses
             # `_config_path` before calling the superclass constructor
             super().__setattr__(name, value)
@@ -345,7 +337,7 @@ class EventedModel(BaseModel, metaclass=EventedMetaclass):
                 getattr(self.events, name)(value=new_value)
 
     def _setattr_impl(self, name: str, value: Any) -> None:
-        if name not in getattr(self, 'events', {}):
+        if name not in getattr(self, "events", {}):
             # fallback to default behavior
             self._super_setattr_(name, value)
             return
@@ -353,23 +345,18 @@ class EventedModel(BaseModel, metaclass=EventedMetaclass):
         # grab current value
         field_dep = self.__field_dependents__.get(name, set())
         has_callbacks = {
-            name: bool(getattr(self.events, name).callbacks)
-            for name in field_dep
+            name: bool(getattr(self.events, name).callbacks) for name in field_dep
         }
         emitter = getattr(self.events, name)
         # equality comparisons may be expensive, so just avoid them if
         # event has no callbacks connected
         if not (
-            emitter.callbacks
-            or self._events.callbacks
-            or any(has_callbacks.values())
+            emitter.callbacks or self._events.callbacks or any(has_callbacks.values())
         ):
             self._super_setattr_(name, value)
             return
 
-        dep_with_callbacks = [
-            dep for dep, has_cb in has_callbacks.items() if has_cb
-        ]
+        dep_with_callbacks = [dep for dep, has_cb in has_callbacks.items() if has_cb]
 
         if name not in self._changes_queue:
             self._changes_queue[name] = getattr(self, name, object())
@@ -416,9 +403,7 @@ class EventedModel(BaseModel, metaclass=EventedMetaclass):
             ):
                 setattr(self, name, value)
 
-    def update(
-        self, values: Union['EventedModel', dict], recurse: bool = True
-    ) -> None:
+    def update(self, values: Union["EventedModel", dict], recurse: bool = True) -> None:
         """Update a model in place.
 
         Parameters
@@ -438,7 +423,7 @@ class EventedModel(BaseModel, metaclass=EventedMetaclass):
         if not isinstance(values, dict):
             raise TypeError(
                 trans._(
-                    'Unsupported update from {values}',
+                    "Unsupported update from {values}",
                     deferred=True,
                     values=type(values),
                 )
@@ -486,7 +471,7 @@ class EventedModel(BaseModel, metaclass=EventedMetaclass):
             by default `True`
         """
         null = object()
-        before = getattr(self.Config, 'use_enum_values', null)
+        before = getattr(self.Config, "use_enum_values", null)
         self.Config.use_enum_values = as_values
         try:
             yield
@@ -494,7 +479,7 @@ class EventedModel(BaseModel, metaclass=EventedMetaclass):
             if before is not null:
                 self.Config.use_enum_values = before
             else:
-                delattr(self.Config, 'use_enum_values')
+                delattr(self.Config, "use_enum_values")
 
 
 def get_defaults(obj: BaseModel):

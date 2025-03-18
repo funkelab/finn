@@ -5,7 +5,7 @@ import typing
 import warnings
 from collections.abc import Iterable
 from functools import cached_property
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -98,9 +98,7 @@ class LayerList(SelectableEventedList[Layer]):
             self.events.removed.connect(self._ctx_keys.update)
 
             self._selection_ctx_keys = LayerListSelectionContextKeys(self._ctx)
-            self.selection.events.changed.connect(
-                self._selection_ctx_keys.update
-            )
+            self.selection.events.changed.connect(self._selection_ctx_keys.update)
 
     def _process_delete_item(self, item: Layer):
         super()._process_delete_item(item)
@@ -110,10 +108,10 @@ class LayerList(SelectableEventedList[Layer]):
 
     def _clean_cache(self):
         cached_properties = (
-            'extent',
-            '_extent_world',
-            '_extent_world_augmented',
-            '_step_size',
+            "extent",
+            "_extent_world",
+            "_extent_world_augmented",
+            "_step_size",
         )
         [self.__dict__.pop(p, None) for p in cached_properties]
 
@@ -161,7 +159,7 @@ class LayerList(SelectableEventedList[Layer]):
         return values
 
     @typing.overload
-    def __getitem__(self, item: Union[int, str]) -> Layer: ...
+    def __getitem__(self, item: int | str) -> Layer: ...
 
     @typing.overload
     def __getitem__(self, item: slice) -> Self: ...
@@ -241,10 +239,8 @@ class LayerList(SelectableEventedList[Layer]):
             # behaviour is acceptable and we can filter the
             # warning
             warnings.filterwarnings(
-                'ignore',
-                message=str(
-                    trans._('All-NaN axis encountered', deferred=True)
-                ),
+                "ignore",
+                message=str(trans._("All-NaN axis encountered", deferred=True)),
             )
             min_v = np.nanmin(
                 list(itertools.zip_longest(*mins_list, fillvalue=np.nan)),
@@ -357,7 +353,8 @@ class LayerList(SelectableEventedList[Layer]):
         """Get ranges for Dims.range in world coordinates."""
         ext = self.extent
         return tuple(
-            RangeTuple(*x) for x in zip(ext.world[0], ext.world[1], ext.step)
+            RangeTuple(*x)
+            for x in zip(ext.world[0], ext.world[1], ext.step, strict=False)
         )
 
     @property
@@ -375,7 +372,7 @@ class LayerList(SelectableEventedList[Layer]):
     def _link_layers(
         self,
         method: str,
-        layers: Optional[Iterable[Union[str, Layer]]] = None,
+        layers: Iterable[str | Layer] | None = None,
         attributes: Iterable[str] = (),
     ):
         # adding this method here allows us to emit an event when
@@ -392,25 +389,25 @@ class LayerList(SelectableEventedList[Layer]):
 
     def link_layers(
         self,
-        layers: Optional[Iterable[Union[str, Layer]]] = None,
+        layers: Iterable[str | Layer] | None = None,
         attributes: Iterable[str] = (),
     ):
-        return self._link_layers('link_layers', layers, attributes)
+        return self._link_layers("link_layers", layers, attributes)
 
     def unlink_layers(
         self,
-        layers: Optional[Iterable[Union[str, Layer]]] = None,
+        layers: Iterable[str | Layer] | None = None,
         attributes: Iterable[str] = (),
     ):
-        return self._link_layers('unlink_layers', layers, attributes)
+        return self._link_layers("unlink_layers", layers, attributes)
 
     def save(
         self,
         path: str,
         *,
         selected: bool = False,
-        plugin: Optional[str] = None,
-        _writer: Optional[WriterContribution] = None,
+        plugin: str | None = None,
+        _writer: WriterContribution | None = None,
     ) -> list[str]:
         """Save all or only selected layers to a path using writer plugins.
 
@@ -468,16 +465,12 @@ class LayerList(SelectableEventedList[Layer]):
         """
         from finn.plugins.io import save_layers
 
-        layers = (
-            [x for x in self if x in self.selection]
-            if selected
-            else list(self)
-        )
+        layers = [x for x in self if x in self.selection] if selected else list(self)
 
         if selected:
-            msg = trans._('No layers selected', deferred=True)
+            msg = trans._("No layers selected", deferred=True)
         else:
-            msg = trans._('No layers to save', deferred=True)
+            msg = trans._("No layers to save", deferred=True)
 
         if not layers:
             warnings.warn(msg)

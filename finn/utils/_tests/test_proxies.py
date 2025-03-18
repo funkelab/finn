@@ -11,11 +11,11 @@ from finn.utils.events.containers._set import EventedSet
 
 def test_ReadOnlyWrapper_setitem():
     """test that ReadOnlyWrapper prevents setting items"""
-    d = {'hi': 3}
+    d = {"hi": 3}
     d_read_only = ReadOnlyWrapper(d)
 
     with pytest.raises(TypeError):
-        d_read_only['hi'] = 5
+        d_read_only["hi"] = 5
 
 
 def test_ReadOnlyWrapper_setattr():
@@ -34,15 +34,15 @@ def test_ReadOnlyWrapper_setattr():
 @pytest.fixture
 def _patched_root_dir():
     """Simulate a call from outside of napari"""
-    with patch('finn.utils.misc.ROOT_DIR', new='/some/other/package'):
+    with patch("finn.utils.misc.ROOT_DIR", new="/some/other/package"):
         yield
 
 
-@pytest.mark.usefixtures('_patched_root_dir')
+@pytest.mark.usefixtures("_patched_root_dir")
 def test_PublicOnlyProxy():
     class X:
         a = 1
-        _b = 'nope'
+        _b = "nope"
 
         def method(self):
             return 2
@@ -61,46 +61,46 @@ def test_PublicOnlyProxy():
     assert proxy.x.method() == 2
 
     assert isinstance(proxy, Tester)
-    with pytest.warns(FutureWarning, match='Private attribute access'):
+    with pytest.warns(FutureWarning, match="Private attribute access"):
         proxy._private
 
-    with pytest.warns(FutureWarning, match='Private attribute access'):
+    with pytest.warns(FutureWarning, match="Private attribute access"):
         # warns on setattr
         proxy._private = 4
 
-    with pytest.warns(FutureWarning, match='Private attribute access'):
+    with pytest.warns(FutureWarning, match="Private attribute access"):
         # works on sub-objects too
         proxy.x._b
 
-    with pytest.warns(FutureWarning, match='Private attribute access'):
+    with pytest.warns(FutureWarning, match="Private attribute access"):
         # works on sub-items too
         proxy[0]._b
 
-    assert '_private' not in dir(proxy)
-    assert '_private' in dir(t)
+    assert "_private" not in dir(proxy)
+    assert "_private" in dir(t)
 
 
-@pytest.mark.filterwarnings('ignore:Qt libs are available but')
+@pytest.mark.filterwarnings("ignore:Qt libs are available but")
 def test_thread_proxy_guard(monkeypatch, single_threaded_executor):
     class X:
         a = 1
 
-    monkeypatch.setenv('NAPARI_ENSURE_PLUGIN_MAIN_THREAD', 'True')
+    monkeypatch.setenv("NAPARI_ENSURE_PLUGIN_MAIN_THREAD", "True")
 
     x = X()
     x_proxy = PublicOnlyProxy(x)
 
-    f = single_threaded_executor.submit(x.__setattr__, 'a', 2)
+    f = single_threaded_executor.submit(x.__setattr__, "a", 2)
     f.result()
     assert x.a == 2
 
-    f = single_threaded_executor.submit(x_proxy.__setattr__, 'a', 3)
+    f = single_threaded_executor.submit(x_proxy.__setattr__, "a", 3)
     with pytest.raises(RuntimeError):
         f.result()
     assert x.a == 2
 
 
-@pytest.mark.usefixtures('_patched_root_dir')
+@pytest.mark.usefixtures("_patched_root_dir")
 def test_public_proxy_limited_to_napari():
     """Test that the recursive public proxy goes no farther than finn."""
     viewer = ViewerModel()
@@ -109,7 +109,7 @@ def test_public_proxy_limited_to_napari():
     assert not isinstance(pv.layers[0].data, PublicOnlyProxy)
 
 
-@pytest.mark.usefixtures('_patched_root_dir')
+@pytest.mark.usefixtures("_patched_root_dir")
 def test_array_from_proxy_objects():
     """Test that the recursive public proxy goes no farther than finn."""
     viewer = ViewerModel()
@@ -125,7 +125,7 @@ def test_receive_return_proxy_object():
     pv = PublicOnlyProxy(viewer)
 
     # simulates behavior from outside of napari
-    with patch('finn.utils.misc.ROOT_DIR', new='/some/other/package'):
+    with patch("finn.utils.misc.ROOT_DIR", new="/some/other/package"):
         # the recursion means this layer will be a Proxy Object on __getitem__
         layer = pv.layers[-1]
         assert isinstance(layer, PublicOnlyProxy)
@@ -148,7 +148,7 @@ def test_unwrap_on_call():
     """
     evset = EventedSet()
     public_only_evset = PublicOnlyProxy(evset)
-    text = 'aaa'
+    text = "aaa"
     wrapped_text = PublicOnlyProxy(text)
     public_only_evset.add(wrapped_text)
     retrieved_text = next(iter(evset))
@@ -165,12 +165,12 @@ def test_unwrap_setattr():
 
     @dataclass
     class Sample:
-        attribute = 'aaa'
+        attribute = "aaa"
 
     sample = Sample()
     public_only_sample = PublicOnlyProxy(sample)
 
-    text = 'bbb'
+    text = "bbb"
     wrapped_text = PublicOnlyProxy(text)
 
     public_only_sample.attribute = wrapped_text

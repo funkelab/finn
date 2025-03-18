@@ -3,7 +3,7 @@ import sys
 from collections import abc
 from contextlib import suppress
 from threading import RLock
-from typing import Any, Union
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -25,25 +25,25 @@ from finn.utils.color import ColorArray
 from finn.utils.events.event import WarningEmitter
 
 skip_on_win_ci = pytest.mark.skipif(
-    sys.platform.startswith('win') and os.getenv('CI', '0') != '0',
-    reason='Screenshot tests are not supported on windows CI.',
+    sys.platform.startswith("win") and os.getenv("CI", "0") != "0",
+    reason="Screenshot tests are not supported on windows CI.",
 )
 
 skip_on_mac_ci = pytest.mark.skipif(
-    sys.platform.startswith('darwin') and os.getenv('CI', '0') != '0',
-    reason='Unsupported test on macOS CI.',
+    sys.platform.startswith("darwin") and os.getenv("CI", "0") != "0",
+    reason="Unsupported test on macOS CI.",
 )
 
 skip_local_popups = pytest.mark.skipif(
-    not os.getenv('CI') and os.getenv('NAPARI_POPUP_TESTS', '0') == '0',
-    reason='Tests requiring GUI windows are skipped locally by default.'
-    ' Set NAPARI_POPUP_TESTS=1 environment variable to enable.',
+    not os.getenv("CI") and os.getenv("NAPARI_POPUP_TESTS", "0") == "0",
+    reason="Tests requiring GUI windows are skipped locally by default."
+    " Set NAPARI_POPUP_TESTS=1 environment variable to enable.",
 )
 
 skip_local_focus = pytest.mark.skipif(
-    not os.getenv('CI') and os.getenv('NAPARI_FOCUS_TESTS', '0') == '0',
-    reason='Tests requiring GUI windows focus are skipped locally by default.'
-    ' Set NAPARI_FOCUS_TESTS=1 environment variable to enable.',
+    not os.getenv("CI") and os.getenv("NAPARI_FOCUS_TESTS", "0") == "0",
+    reason="Tests requiring GUI windows focus are skipped locally by default."
+    " Set NAPARI_FOCUS_TESTS=1 environment variable to enable.",
 )
 
 """
@@ -85,16 +85,12 @@ layer_test_data = [
     ),
     (
         Tracks,
-        np.column_stack(
-            (np.ones(20), np.arange(20), 20 * np.random.random((20, 2)))
-        ),
+        np.column_stack((np.ones(20), np.arange(20), 20 * np.random.random((20, 2)))),
         3,
     ),
     (
         Tracks,
-        np.column_stack(
-            (np.ones(20), np.arange(20), 20 * np.random.random((20, 3)))
-        ),
+        np.column_stack((np.ones(20), np.arange(20), 20 * np.random.random((20, 3)))),
         4,
     ),
 ]
@@ -109,26 +105,26 @@ with suppress(ModuleNotFoundError):
 classes = [Labels, Points, Vectors, Shapes, Surface, Tracks, Image]
 names = [cls.__name__.lower() for cls in classes]
 layer2addmethod = {
-    cls: getattr(Viewer, 'add_' + name) for cls, name in zip(classes, names)
+    cls: getattr(Viewer, "add_" + name) for cls, name in zip(classes, names, strict=False)
 }
 
 
 # examples of valid tuples that might be passed to viewer._add_layer_from_data
 good_layer_data = [
     (np.random.random((10, 10)),),
-    (np.random.random((10, 10, 3)), {'rgb': True}),
-    (np.random.randint(20, size=(10, 15)), {'opacity': 0.9}, 'labels'),
-    (np.random.random((10, 2)) * 20, {'face_color': 'blue'}, 'points'),
-    (np.random.random((10, 2, 2)) * 20, {}, 'vectors'),
-    (np.random.random((10, 4, 2)) * 20, {'opacity': 1}, 'shapes'),
+    (np.random.random((10, 10, 3)), {"rgb": True}),
+    (np.random.randint(20, size=(10, 15)), {"opacity": 0.9}, "labels"),
+    (np.random.random((10, 2)) * 20, {"face_color": "blue"}, "points"),
+    (np.random.random((10, 2, 2)) * 20, {}, "vectors"),
+    (np.random.random((10, 4, 2)) * 20, {"opacity": 1}, "shapes"),
     (
         (
             np.random.random((10, 3)),
             np.random.randint(10, size=(6, 3)),
             np.random.random(10),
         ),
-        {'name': 'some surface'},
-        'surface',
+        {"name": "some surface"},
+        "surface",
     ),
 ]
 
@@ -158,7 +154,7 @@ class LockableData:
         return len(self.data.shape)
 
     def __getitem__(
-        self, key: Union[Index, tuple[Index, ...], LayerDataProtocol]
+        self, key: Index | tuple[Index, ...] | LayerDataProtocol
     ) -> LayerDataProtocol:
         with self.lock:
             return self.data[key]
@@ -186,7 +182,7 @@ def are_objects_equal(object1, object2):
     compare two (collections of) arrays or other objects for equality. Ignores nan.
     """
     if isinstance(object1, abc.Sequence):
-        items = zip(object1, object2)
+        items = zip(object1, object2, strict=False)
     elif isinstance(object1, dict):
         items = [(value, object2[key]) for key, value in object1.items()]
     else:
@@ -194,9 +190,7 @@ def are_objects_equal(object1, object2):
 
     # equal_nan does not exist in array_equal in old numpy
     try:
-        return np.all(
-            [np.array_equal(a1, a2, equal_nan=True) for a1, a2 in items]
-        )
+        return np.all([np.array_equal(a1, a2, equal_nan=True) for a1, a2 in items])
     except TypeError:
         # np.array_equal fails for arrays of type `object` (e.g: strings)
         return np.all([a1 == a2 for a1, a2 in items])
@@ -291,9 +285,7 @@ def check_layer_world_data_extent(layer, extent, scale, translate):
     np.testing.assert_almost_equal(layer.extent.world, translated_world_extent)
 
 
-def assert_layer_state_equal(
-    actual: dict[str, Any], expected: dict[str, Any]
-) -> None:
+def assert_layer_state_equal(actual: dict[str, Any], expected: dict[str, Any]) -> None:
     """Asserts that an layer state dictionary is equal to an expected one.
 
     This is useful because some members of state may array-like whereas others
@@ -334,6 +326,4 @@ def count_warning_events(callbacks) -> int:
     Counts the number of WarningEmitter in the callback list.
     Useful to filter out deprecated events' callbacks.
     """
-    return len(
-        list(filter(lambda x: isinstance(x, WarningEmitter), callbacks))
-    )
+    return len(list(filter(lambda x: isinstance(x, WarningEmitter), callbacks)))

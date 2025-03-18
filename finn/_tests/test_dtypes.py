@@ -18,8 +18,8 @@ dtypes = [
         # np.array([0, 1]) defaults to int64, and numpy 2.0.0 does not allow
         # clip values outside the range of the dtype of the input array.
         marks=pytest.mark.skipif(
-            not np.__version__.startswith('1'),
-            reason='Expected failure in numpy v2+',
+            not np.__version__.startswith("1"),
+            reason="Expected failure in numpy v2+",
         ),
     ),
     np.dtype(np.float16),
@@ -28,7 +28,7 @@ dtypes = [
 ]
 
 
-@pytest.mark.parametrize('dtype', dtypes)
+@pytest.mark.parametrize("dtype", dtypes)
 def test_image_dytpes(dtype):
     """Test different dtype images."""
     np.random.seed(0)

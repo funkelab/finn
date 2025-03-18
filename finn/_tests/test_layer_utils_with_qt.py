@@ -8,7 +8,7 @@ from finn.layers.utils.interactivity_utils import (
 
 
 @pytest.mark.parametrize(
-    'layer',
+    "layer",
     [
         Image(np.zeros(shape=(28, 28, 28))),
         Image(np.zeros(shape=(2, 28, 28, 28))),
@@ -21,7 +21,7 @@ def test_orient_plane_normal_around_cursor(make_napari_viewer, layer):
     viewer.cursor.position = [14] * layer._ndim
 
     viewer.add_layer(layer)
-    layer.depiction = 'plane'
+    layer.depiction = "plane"
     layer.plane.normal = (1, 0, 0)
     layer.plane.position = (14, 14, 14)
 
@@ -32,7 +32,5 @@ def test_orient_plane_normal_around_cursor(make_napari_viewer, layer):
     orient_plane_normal_around_cursor(layer=layer, plane_normal=(1, 0, 1))
 
     # check that plane normal has been updated
-    assert np.allclose(
-        layer.plane.normal, [1, 0, 1] / np.linalg.norm([1, 0, 1])
-    )
+    assert np.allclose(layer.plane.normal, [1, 0, 1] / np.linalg.norm([1, 0, 1]))
     assert np.allclose(layer.plane.position, (14, 13, 13))

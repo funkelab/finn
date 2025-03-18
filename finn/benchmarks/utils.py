@@ -1,13 +1,10 @@
 import itertools
 import os
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from functools import lru_cache
 from types import ModuleType
 from typing import (
-    Callable,
     Literal,
-    Optional,
-    Union,
     overload,
 )
 
@@ -26,16 +23,12 @@ class Skip:
         if_on_ci: Callable[..., bool] = always_false,
         always: Callable[..., bool] = always_false,
     ):
-        self.func_pr = if_in_pr if 'PR' in os.environ else always_false
-        self.func_ci = if_on_ci if 'CI' in os.environ else always_false
+        self.func_pr = if_in_pr if "PR" in os.environ else always_false
+        self.func_ci = if_on_ci if "CI" in os.environ else always_false
         self.func_always = always
 
     def __contains__(self, item):
-        return (
-            self.func_pr(*item)
-            or self.func_ci(*item)
-            or self.func_always(*item)
-        )
+        return self.func_pr(*item) or self.func_ci(*item) or self.func_always(*item)
 
 
 def _generate_ball(radius: int, ndim: int) -> np.ndarray:
@@ -81,9 +74,7 @@ def _structure_at_coordinates(
     *,
     multipliers: Sequence = itertools.repeat(1),
     dtype=None,
-    reduce_fn: Callable[
-        [np.ndarray, np.ndarray, Optional[np.ndarray]], np.ndarray
-    ],
+    reduce_fn: Callable[[np.ndarray, np.ndarray, np.ndarray | None], np.ndarray],
 ):
     """Update data with structure at given coordinates.
 
@@ -108,11 +99,9 @@ def _structure_at_coordinates(
     radius = (structure.shape[0] - 1) // 2
     data = np.zeros(shape, dtype=dtype)
 
-    for point, value in zip(coordinates, multipliers):
+    for point, value in zip(coordinates, multipliers, strict=False):
         slice_im, slice_ball = _get_slices_at(shape, point, radius)
-        reduce_fn(
-            data[slice_im], value * structure[slice_ball], out=data[slice_im]
-        )
+        reduce_fn(data[slice_im], value * structure[slice_ball], out=data[slice_im])
     return data
 
 
@@ -120,9 +109,7 @@ def _get_slices_at(shape, point, radius):
     slice_im = []
     slice_ball = []
     for i, p in enumerate(point):
-        slice_im.append(
-            slice(max(0, p - radius), min(shape[i], p + radius + 1))
-        )
+        slice_im.append(slice(max(0, p - radius), min(shape[i], p + radius + 1)))
         ball_start = max(0, radius - p)
         ball_stop = slice_im[-1].stop - slice_im[-1].start + ball_start
         slice_ball.append(slice(ball_start, ball_stop))
@@ -148,15 +135,15 @@ def _smallest_dtype(n: int) -> np.dtype:
             return dtype
             break
     else:
-        raise ValueError(f'{n=} is too large for any dtype.')
+        raise ValueError(f"{n=} is too large for any dtype.")
 
 
 @overload
 def labeled_particles(
     shape: Sequence[int],
-    dtype: Optional[np.dtype] = None,
+    dtype: np.dtype | None = None,
     n: int = 144,
-    seed: Optional[int] = None,
+    seed: int | None = None,
     return_density: Literal[False] = False,
 ) -> np.ndarray: ...
 
@@ -164,9 +151,9 @@ def labeled_particles(
 @overload
 def labeled_particles(
     shape: Sequence[int],
-    dtype: Optional[np.dtype] = None,
+    dtype: np.dtype | None = None,
     n: int = 144,
-    seed: Optional[int] = None,
+    seed: int | None = None,
     return_density: Literal[True] = True,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]: ...
 
@@ -174,11 +161,11 @@ def labeled_particles(
 @lru_cache
 def labeled_particles(
     shape: Sequence[int],
-    dtype: Optional[np.dtype] = None,
+    dtype: np.dtype | None = None,
     n: int = 144,
-    seed: Optional[int] = None,
+    seed: int | None = None,
     return_density: bool = False,
-) -> Union[np.ndarray, tuple[np.ndarray, np.ndarray, np.ndarray]]:
+) -> np.ndarray | tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Generate labeled blobs of given shape and dtype.
 
     Parameters
@@ -199,9 +186,7 @@ def labeled_particles(
     rng = np.random.default_rng(seed)
     ndim = len(shape)
     points = rng.integers(shape, size=(n, ndim))
-    values = rng.integers(
-        np.iinfo(dtype).min, np.iinfo(dtype).max, size=n, dtype=dtype
-    )
+    values = rng.integers(np.iinfo(dtype).min, np.iinfo(dtype).max, size=n, dtype=dtype)
     sigma = int(max(shape) / (4.0 * n ** (1 / ndim)))
     ball = _generate_ball(sigma, ndim)
 
@@ -225,12 +210,10 @@ def labeled_particles(
         return labels
 
 
-def run_benchmark_from_module(
-    module: ModuleType, klass_name: str, method_name: str
-):
+def run_benchmark_from_module(module: ModuleType, klass_name: str, method_name: str):
     klass = getattr(module, klass_name)
-    if getattr(klass, 'params', None):
-        skip_if = getattr(klass, 'skip_params', {})
+    if getattr(klass, "params", None):
+        skip_if = getattr(klass, "skip_params", {})
         if isinstance(klass.params[0], Sequence):
             params = itertools.product(*klass.params)
         else:
@@ -244,7 +227,7 @@ def run_benchmark_from_module(
             except NotImplementedError:
                 continue
             getattr(obj, method_name)(*param)
-            getattr(obj, 'teardown', lambda: None)()
+            getattr(obj, "teardown", lambda: None)()
     else:
         obj = klass()
         try:
@@ -252,21 +235,21 @@ def run_benchmark_from_module(
         except NotImplementedError:
             return
         getattr(obj, method_name)()
-        getattr(obj, 'teardown', lambda: None)()
+        getattr(obj, "teardown", lambda: None)()
 
 
 def run_benchmark():
     import argparse
     import inspect
 
-    parser = argparse.ArgumentParser(description='Run benchmark')
+    parser = argparse.ArgumentParser(description="Run benchmark")
     parser.add_argument(
-        'benchmark', type=str, help='Name of the benchmark to run', default=''
+        "benchmark", type=str, help="Name of the benchmark to run", default=""
     )
 
     args = parser.parse_args()
 
-    benchmark_selection = args.benchmark.split('.')
+    benchmark_selection = args.benchmark.split(".")
 
     # get module of parent frame
     call_module = inspect.getmodule(inspect.currentframe().f_back)

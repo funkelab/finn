@@ -13,7 +13,7 @@ from finn.layers import Points
 
 from .utils import Skip
 
-NAPARI_0_4_19 = parse_version(finn.__version__) <= parse_version('0.4.19')
+NAPARI_0_4_19 = parse_version(finn.__version__) <= parse_version("0.4.19")
 
 
 class Points2DSuite:
@@ -21,7 +21,7 @@ class Points2DSuite:
 
     params = [2**i for i in range(4, 18, 2)]
 
-    if 'PR' in os.environ:
+    if "PR" in os.environ:
         skip_params = [(2**i,) for i in range(8, 18, 2)]
 
     def setup(self, n):
@@ -65,7 +65,7 @@ class Points3DSuite:
     """Benchmarks for the Points layer with 3D data."""
 
     params = [2**i for i in range(4, 18, 2)]
-    if 'PR' in os.environ:
+    if "PR" in os.environ:
         skip_params = [(2**i,) for i in range(6, 18, 2)]
 
     def setup(self, n):
@@ -111,7 +111,7 @@ class PointsSlicingSuite:
 
     def setup(self, flatten_slice_axis):
         np.random.seed(0)
-        size = 20000 if 'PR' in os.environ else 20000000
+        size = 20000 if "PR" in os.environ else 20000000
         self.data = np.random.uniform(size=(size, 3), low=0, high=500)
         if flatten_slice_axis:
             self.data[:, 0] = np.round(self.data[:, 0])
@@ -126,7 +126,7 @@ class PointsSlicingSuite:
 class PointsToMaskSuite:
     """Benchmarks for creating a binary image mask from points."""
 
-    param_names = ['num_points', 'mask_shape', 'point_size']
+    param_names = ["num_points", "mask_shape", "point_size"]
     params = [
         [64, 256, 1024, 4096, 16384],
         [
@@ -155,7 +155,7 @@ class PointsToMaskSuite:
         self.layer.to_mask(shape=mask_shape)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from utils import run_benchmark
 
     run_benchmark()

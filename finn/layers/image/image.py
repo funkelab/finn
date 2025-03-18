@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import typing
 import warnings
-from typing import Any, Literal, Union, cast
+from typing import Any, Literal, cast
 
 import numpy as np
 from scipy import ndimage as ndi
@@ -28,7 +28,7 @@ from finn.utils.colormaps.colormap_utils import _coerce_contrast_limits
 from finn.utils.migrations import rename_argument
 from finn.utils.translations import trans
 
-__all__ = ('Image',)
+__all__ = ("Image",)
 
 
 class Image(IntensityVisualizationMixin, ScalarFieldBase):
@@ -224,10 +224,10 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
     _projectionclass = ImageProjectionMode
 
     @rename_argument(
-        from_name='interpolation',
-        to_name='interpolation2d',
-        version='0.6.0',
-        since_version='0.4.17',
+        from_name="interpolation",
+        to_name="interpolation2d",
+        version="0.6.0",
+        since_version="0.4.17",
     )
     def __init__(
         self,
@@ -236,24 +236,24 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         affine=None,
         attenuation=0.05,
         axis_labels=None,
-        blending='translucent',
+        blending="translucent",
         cache=True,
-        colormap='gray',
+        colormap="gray",
         contrast_limits=None,
         custom_interpolation_kernel_2d=None,
-        depiction='volume',
+        depiction="volume",
         experimental_clipping_planes=None,
         gamma=1.0,
-        interpolation2d='nearest',
-        interpolation3d='linear',
+        interpolation2d="nearest",
+        interpolation3d="linear",
         iso_threshold=None,
         metadata=None,
         multiscale=None,
         name=None,
         opacity=1.0,
         plane=None,
-        projection_mode='none',
-        rendering='mip',
+        projection_mode="none",
+        rendering="mip",
         rgb=None,
         rotate=None,
         scale=None,
@@ -263,7 +263,7 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         visible=True,
     ):
         # Determine if rgb
-        data_shape = data.shape if hasattr(data, 'shape') else data[0].shape
+        data_shape = data.shape if hasattr(data, "shape") else data[0].shape
         if rgb and not guess_rgb(data_shape, min_side_len=0):
             raise ValueError(
                 trans._(
@@ -311,7 +311,7 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         # Set contrast limits, colormaps and plane parameters
         if contrast_limits is None:
             if not isinstance(data, np.ndarray):
-                dtype = normalize_dtype(getattr(data, 'dtype', None))
+                dtype = normalize_dtype(getattr(data, "dtype", None))
                 if np.issubdtype(dtype, np.integer):
                     self.contrast_limits_range = get_dtype_limits(dtype)
                 else:
@@ -378,20 +378,20 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         state = self._get_base_state()
         state.update(
             {
-                'rgb': self.rgb,
-                'multiscale': self.multiscale,
-                'colormap': self.colormap.dict(),
-                'contrast_limits': self.contrast_limits,
-                'interpolation2d': self.interpolation2d,
-                'interpolation3d': self.interpolation3d,
-                'rendering': self.rendering,
-                'depiction': self.depiction,
-                'plane': self.plane.dict(),
-                'iso_threshold': self.iso_threshold,
-                'attenuation': self.attenuation,
-                'gamma': self.gamma,
-                'data': self.data,
-                'custom_interpolation_kernel_2d': self.custom_interpolation_kernel_2d,
+                "rgb": self.rgb,
+                "multiscale": self.multiscale,
+                "colormap": self.colormap.dict(),
+                "contrast_limits": self.contrast_limits,
+                "interpolation2d": self.interpolation2d,
+                "interpolation3d": self.interpolation3d,
+                "rendering": self.rendering,
+                "depiction": self.depiction,
+                "plane": self.plane.dict(),
+                "iso_threshold": self.iso_threshold,
+                "attenuation": self.attenuation,
+                "gamma": self.gamma,
+                "data": self.data,
+                "custom_interpolation_kernel_2d": self.custom_interpolation_kernel_2d,
             }
         )
         return state
@@ -426,12 +426,12 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         self.events.attenuation()
 
     @property
-    def data(self) -> Union[LayerDataProtocol, MultiScaleData]:
+    def data(self) -> LayerDataProtocol | MultiScaleData:
         """Data, possibly in multiscale wrapper. Obeys LayerDataProtocol."""
         return self._data
 
     @data.setter
-    def data(self, data: Union[LayerDataProtocol, MultiScaleData]) -> None:
+    def data(self, data: LayerDataProtocol | MultiScaleData) -> None:
         self._data_raw = data
         # note, we don't support changing multiscale in an Image instance
         self._data = MultiScaleData(data) if self.multiscale else data  # type: ignore
@@ -462,7 +462,7 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         """
         warnings.warn(
             trans._(
-                'Interpolation attribute is deprecated since 0.4.17. Please use interpolation2d or interpolation3d',
+                "Interpolation attribute is deprecated since 0.4.17. Please use interpolation2d or interpolation3d",
             ),
             category=DeprecationWarning,
             stacklevel=2,
@@ -478,7 +478,7 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         """Set current interpolation mode."""
         warnings.warn(
             trans._(
-                'Interpolation setting is deprecated since 0.4.17. Please use interpolation2d or interpolation3d',
+                "Interpolation setting is deprecated since 0.4.17. Please use interpolation2d or interpolation3d",
             ),
             category=DeprecationWarning,
             stacklevel=2,
@@ -486,8 +486,8 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         if self._slice_input.ndisplay == 3:
             self.interpolation3d = interpolation
         else:
-            if interpolation == 'bilinear':
-                interpolation = 'linear'
+            if interpolation == "bilinear":
+                interpolation = "linear"
                 warnings.warn(
                     trans._(
                         "'bilinear' is invalid for interpolation2d (introduced in napari 0.4.17). "
@@ -503,17 +503,15 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         return cast(InterpolationStr, str(self._interpolation2d))
 
     @interpolation2d.setter
-    def interpolation2d(
-        self, value: Union[InterpolationStr, Interpolation]
-    ) -> None:
-        if value == 'bilinear':
+    def interpolation2d(self, value: InterpolationStr | Interpolation) -> None:
+        if value == "bilinear":
             raise ValueError(
                 trans._(
                     "'bilinear' interpolation is not valid for interpolation2d. Did you mean 'linear' instead ?",
                 ),
             )
-        if value == 'bicubic':
-            value = 'cubic'
+        if value == "bicubic":
+            value = "cubic"
             warnings.warn(
                 trans._("'bicubic' is deprecated. Please use 'cubic' instead"),
                 category=DeprecationWarning,
@@ -528,15 +526,13 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         return cast(InterpolationStr, str(self._interpolation3d))
 
     @interpolation3d.setter
-    def interpolation3d(
-        self, value: Union[InterpolationStr, Interpolation]
-    ) -> None:
-        if value == 'custom':
+    def interpolation3d(self, value: InterpolationStr | Interpolation) -> None:
+        if value == "custom":
             raise NotImplementedError(
-                'custom interpolation is not implemented yet for 3D rendering'
+                "custom interpolation is not implemented yet for 3D rendering"
             )
-        if value == 'bicubic':
-            value = 'cubic'
+        if value == "bicubic":
+            value = "cubic"
             warnings.warn(
                 trans._("'bicubic' is deprecated. Please use 'cubic' instead"),
                 category=DeprecationWarning,
@@ -581,9 +577,7 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         if dtype in [np.dtype(np.float16)]:
             image = image.astype(np.float32)
 
-        raw_zoom_factor = np.divide(
-            self._thumbnail_shape[:2], image.shape[:2]
-        ).min()
+        raw_zoom_factor = np.divide(self._thumbnail_shape[:2], image.shape[:2]).min()
         new_shape = np.clip(
             raw_zoom_factor * np.array(image.shape[:2]),
             1,  # smallest side should be 1 pixel wide
@@ -591,9 +585,7 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         )
         zoom_factor = tuple(new_shape / image.shape[:2])
         if self.rgb:
-            downsampled = ndi.zoom(
-                image, zoom_factor + (1,), prefilter=False, order=0
-            )
+            downsampled = ndi.zoom(image, zoom_factor + (1,), prefilter=False, order=0)
             if image.shape[2] == 4:  # image is RGBA
                 colormapped = np.copy(downsampled)
                 colormapped[..., 3] = downsampled[..., 3] * self.opacity
@@ -610,9 +602,7 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
                     alpha = np.full(downsampled.shape[:2] + (1,), self.opacity)
                 colormapped = np.concatenate([downsampled, alpha], axis=2)
         else:
-            downsampled = ndi.zoom(
-                image, zoom_factor, prefilter=False, order=0
-            )
+            downsampled = ndi.zoom(image, zoom_factor, prefilter=False, order=0)
             low, high = self.contrast_limits
             if np.issubdtype(downsampled.dtype, np.integer):
                 low = max(low, np.iinfo(downsampled.dtype).min)
@@ -628,15 +618,15 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         self.thumbnail = colormapped
 
     def _calc_data_range(
-        self, mode: Literal['data', 'slice'] = 'data'
+        self, mode: Literal["data", "slice"] = "data"
     ) -> tuple[float, float]:
         """
         Calculate the range of the data values in the currently viewed slice
         or full data array
         """
-        if mode == 'data':
+        if mode == "data":
             input_data = self.data[-1] if self.multiscale else self.data
-        elif mode == 'slice':
+        elif mode == "slice":
             data = self._slice.image.raw  # ugh
             input_data = data[-1] if self.multiscale else data
         else:
@@ -647,9 +637,7 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
                     mode=mode,
                 )
             )
-        return calc_data_range(
-            cast(LayerDataProtocol, input_data), rgb=self.rgb
-        )
+        return calc_data_range(cast(LayerDataProtocol, input_data), rgb=self.rgb)
 
     def _raw_to_displayed(self, raw: np.ndarray) -> np.ndarray:
         """Determine displayed image from raw image.
@@ -671,9 +659,7 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
             Displayed array.
         """
         fixed_contrast_info = _coerce_contrast_limits(self.contrast_limits)
-        if np.allclose(
-            fixed_contrast_info.contrast_limits, self.contrast_limits
-        ):
+        if np.allclose(fixed_contrast_info.contrast_limits, self.contrast_limits):
             return raw
 
         return fixed_contrast_info.coerce_data(raw)
@@ -724,9 +710,9 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
             return np.nanmin(values)
         if self.rendering == ImageRendering.ATTENUATED_MIP:
             # normalize values so attenuation applies from 0 to 1
-            values_attenuated = (
-                values - self.contrast_limits[0]
-            ) / self.contrast_limits[1]
+            values_attenuated = (values - self.contrast_limits[0]) / self.contrast_limits[
+                1
+            ]
             # approx, step size is actually calculated with int(lenght(ray) * 2)
             step_size = 0.5
             sumval = (
@@ -738,5 +724,5 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
             return values[np.nanargmin(values_attenuated * scale)]
 
         raise RuntimeError(  # pragma: no cover
-            f'ray value calculation not implemented for {self.rendering}'
+            f"ray value calculation not implemented for {self.rendering}"
         )

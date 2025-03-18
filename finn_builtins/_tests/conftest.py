@@ -12,18 +12,16 @@ from finn import layers
 @pytest.fixture(autouse=True)
 def mock_npe2_pm():
     """Mock plugin manager with no registered plugins."""
-    with patch.object(PluginManager, 'discover'):
+    with patch.object(PluginManager, "discover"):
         _pm = PluginManager()
-    with patch('npe2.PluginManager.instance', return_value=_pm):
+    with patch("npe2.PluginManager.instance", return_value=_pm):
         yield _pm
 
 
 @pytest.fixture(autouse=True)
 def use_builtins(mock_npe2_pm: PluginManager):
-    plugin = DynamicPlugin('napari', plugin_manager=mock_npe2_pm)
-    mf = PluginManifest.from_file(
-        Path(finn_builtins.__file__).parent / 'builtins.yaml'
-    )
+    plugin = DynamicPlugin("napari", plugin_manager=mock_npe2_pm)
+    mf = PluginManifest.from_file(Path(finn_builtins.__file__).parent / "builtins.yaml")
     plugin.manifest = mf
     with plugin:
         yield plugin
@@ -31,11 +29,9 @@ def use_builtins(mock_npe2_pm: PluginManager):
 
 LAYERS: list[layers.Layer] = [
     layers.Image(np.random.rand(10, 10)),
-    layers.Labels(np.random.randint(0, 16000, (32, 32), 'uint64')),
+    layers.Labels(np.random.randint(0, 16000, (32, 32), "uint64")),
     layers.Points(np.random.rand(20, 2)),
-    layers.Points(
-        np.random.rand(20, 2), properties={'values': np.random.rand(20)}
-    ),
+    layers.Points(np.random.rand(20, 2), properties={"values": np.random.rand(20)}),
     layers.Shapes(
         [
             [(0, 0), (1, 1)],
@@ -44,7 +40,7 @@ LAYERS: list[layers.Layer] = [
             [(4, 3), (5, -4), (6.1, 5), (7, 6.5), (8, 7), (9, 8)],
             [(5.4, 6.7), (1.2, -3)],
         ],
-        shape_type=['ellipse', 'line', 'path', 'polygon', 'rectangle'],
+        shape_type=["ellipse", "line", "path", "polygon", "rectangle"],
     ),
 ]
 

@@ -20,17 +20,17 @@ class Shapes2DSuite:
 
     params = [2**i for i in range(4, 9)]
 
-    if 'PR' in os.environ:
+    if "PR" in os.environ:
         skip_params = [(2**i,) for i in range(6, 9)]
 
     def setup(self, n):
         np.random.seed(0)
         self.data = [50 * np.random.random((6, 2)) for i in range(n)]
-        self.layer = Shapes(self.data, shape_type='polygon')
+        self.layer = Shapes(self.data, shape_type="polygon")
 
     def time_create_layer(self, n):
         """Time to create an image layer."""
-        Shapes(self.data, shape_type='polygon')
+        Shapes(self.data, shape_type="polygon")
 
     def time_refresh(self, n):
         """Time to refresh view."""
@@ -62,17 +62,17 @@ class Shapes3DSuite:
     """Benchmarks for the Shapes layer with 3D data."""
 
     params = [2**i for i in range(4, 9)]
-    if 'PR' in os.environ:
+    if "PR" in os.environ:
         skip_params = [(2**i,) for i in range(6, 9)]
 
     def setup(self, n):
         np.random.seed(0)
         self.data = [50 * np.random.random((6, 3)) for i in range(n)]
-        self.layer = Shapes(self.data, shape_type='polygon')
+        self.layer = Shapes(self.data, shape_type="polygon")
 
     def time_create_layer(self, n):
         """Time to create a layer."""
-        Shapes(self.data, shape_type='polygon')
+        Shapes(self.data, shape_type="polygon")
 
     def time_refresh(self, n):
         """Time to refresh view."""
@@ -107,15 +107,15 @@ class ShapesInteractionSuite:
     def setup(self, n):
         np.random.seed(0)
         self.data = [50 * np.random.random((6, 2)) for i in range(n)]
-        self.layer = Shapes(self.data, shape_type='polygon')
-        self.layer.mode = 'select'
+        self.layer = Shapes(self.data, shape_type="polygon")
+        self.layer.mode = "select"
 
         # initialize the position and select a shape
         position = tuple(np.mean(self.layer.data[0], axis=0))
 
         # create events
         click_event = read_only_mouse_event(
-            type='mouse_press',
+            type="mouse_press",
             is_dragging=False,
             modifiers=[],
             position=position,
@@ -124,7 +124,7 @@ class ShapesInteractionSuite:
         mouse_press_callbacks(self.layer, click_event)
 
         release_event = read_only_mouse_event(
-            type='mouse_release',
+            type="mouse_release",
             is_dragging=False,
             modifiers=[],
             position=position,
@@ -140,7 +140,7 @@ class ShapesInteractionSuite:
 
         # create events
         click_event = read_only_mouse_event(
-            type='mouse_press',
+            type="mouse_press",
             is_dragging=False,
             modifiers=[],
             position=position,
@@ -151,7 +151,7 @@ class ShapesInteractionSuite:
 
         # create events
         drag_event = read_only_mouse_event(
-            type='mouse_press',
+            type="mouse_press",
             is_dragging=True,
             modifiers=[],
             position=position,
@@ -164,7 +164,7 @@ class ShapesInteractionSuite:
         for _ in range(5):
             position = tuple(np.add(position, [10, 5]))
             drag_event = read_only_mouse_event(
-                type='mouse_press',
+                type="mouse_press",
                 is_dragging=True,
                 modifiers=[],
                 position=position,
@@ -174,7 +174,7 @@ class ShapesInteractionSuite:
             mouse_move_callbacks(self.layer, drag_event)
 
         release_event = read_only_mouse_event(
-            type='mouse_release',
+            type="mouse_release",
             is_dragging=False,
             modifiers=[],
             position=position,
@@ -183,7 +183,7 @@ class ShapesInteractionSuite:
         # Simulate release
         mouse_release_callbacks(self.layer, release_event)
 
-    time_drag_shape.param_names = ['n_shapes']
+    time_drag_shape.param_names = ["n_shapes"]
 
     def time_select_shape(self, n):
         """Time to process shape selection events"""
@@ -191,7 +191,7 @@ class ShapesInteractionSuite:
 
         # create events
         click_event = read_only_mouse_event(
-            type='mouse_press',
+            type="mouse_press",
             is_dragging=False,
             modifiers=[],
             position=position,
@@ -200,7 +200,7 @@ class ShapesInteractionSuite:
         mouse_press_callbacks(self.layer, click_event)
 
         release_event = read_only_mouse_event(
-            type='mouse_release',
+            type="mouse_release",
             is_dragging=False,
             modifiers=[],
             position=position,
@@ -209,10 +209,10 @@ class ShapesInteractionSuite:
         # Simulate release
         mouse_release_callbacks(self.layer, release_event)
 
-    time_select_shape.param_names = ['n_shapes']
+    time_select_shape.param_names = ["n_shapes"]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from utils import run_benchmark
 
     run_benchmark()

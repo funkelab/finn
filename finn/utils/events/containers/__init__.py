@@ -11,14 +11,14 @@ from finn.utils.events.containers._set import EventedSet
 from finn.utils.events.containers._typed import TypedMutableSequence
 
 __all__ = [
-    'EventedDict',
-    'EventedList',
-    'EventedSet',
-    'NestableEventedList',
-    'Selectable',
-    'SelectableEventedList',
-    'SelectableNestableEventedList',
-    'Selection',
-    'TypedMutableMapping',
-    'TypedMutableSequence',
+    "EventedDict",
+    "EventedList",
+    "EventedSet",
+    "NestableEventedList",
+    "Selectable",
+    "SelectableEventedList",
+    "SelectableNestableEventedList",
+    "Selection",
+    "TypedMutableMapping",
+    "TypedMutableSequence",
 ]

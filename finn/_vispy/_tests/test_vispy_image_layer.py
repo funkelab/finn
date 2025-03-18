@@ -10,7 +10,7 @@ from finn.components.dims import Dims
 from finn.layers import Image
 
 
-@pytest.mark.parametrize('order', permutations((0, 1, 2)))
+@pytest.mark.parametrize("order", permutations((0, 1, 2)))
 def test_3d_slice_of_2d_image_with_order(order):
     """See https://github.com/napari/napari/issues/4926
 
@@ -26,7 +26,7 @@ def test_3d_slice_of_2d_image_with_order(order):
     np.testing.assert_array_equal((4, 4, 1), scene_size)
 
 
-@pytest.mark.parametrize('order', permutations((0, 1, 2)))
+@pytest.mark.parametrize("order", permutations((0, 1, 2)))
 def test_2d_slice_of_3d_image_with_order(order):
     """See https://github.com/napari/napari/issues/4926
 
@@ -42,7 +42,7 @@ def test_2d_slice_of_3d_image_with_order(order):
     np.testing.assert_array_equal((8, 8, 0), scene_size)
 
 
-@pytest.mark.parametrize('order', permutations((0, 1, 2)))
+@pytest.mark.parametrize("order", permutations((0, 1, 2)))
 def test_3d_slice_of_3d_image_with_order(order):
     """See https://github.com/napari/napari/issues/4926
 
@@ -58,7 +58,7 @@ def test_3d_slice_of_3d_image_with_order(order):
     np.testing.assert_array_equal((8, 8, 8), scene_size)
 
 
-@pytest.mark.parametrize('order', permutations((0, 1, 2, 3)))
+@pytest.mark.parametrize("order", permutations((0, 1, 2, 3)))
 def test_3d_slice_of_4d_image_with_order(order):
     """See https://github.com/napari/napari/issues/4926
 
@@ -79,10 +79,8 @@ def test_no_float32_texture_support(monkeypatch):
 
     See #3988, #3990, #6652.
     """
-    monkeypatch.setattr(
-        'finn._vispy.layers.image.get_gl_extensions', lambda: ''
-    )
-    image = Image(np.zeros((16, 8, 4, 2), dtype='uint8'), scale=(1, 2, 4, 8))
+    monkeypatch.setattr("finn._vispy.layers.image.get_gl_extensions", lambda: "")
+    image = Image(np.zeros((16, 8, 4, 2), dtype="uint8"), scale=(1, 2, 4, 8))
     VispyImageLayer(image)
 
 
@@ -123,33 +121,27 @@ def no_op(layer):
 
 
 @pytest.mark.parametrize(
-    ('translate', 'exp_translate'),
+    ("translate", "exp_translate"),
     [
         (set_translate, (10, 10)),
         (set_affine_translate, (10, 10)),
         (no_op, (0, 0)),
     ],
-    ids=('translate', 'affine_translate', 'no_op'),
+    ids=("translate", "affine_translate", "no_op"),
 )
 @pytest.mark.parametrize(
-    ('rotate', 'exp_rotate'),
+    ("rotate", "exp_rotate"),
     [
         (set_rotate, ((0, -1), (1, 0))),
         (set_affine_rotate, ((0, -1), (1, 0))),
         (no_op, ((1, 0), (0, 1))),
     ],
-    ids=('rotate', 'affine_rotate', 'no_op'),
+    ids=("rotate", "affine_rotate", "no_op"),
 )
-def test_transforming_child_node(
-    im_layer, translate, exp_translate, rotate, exp_rotate
-):
+def test_transforming_child_node(im_layer, translate, exp_translate, rotate, exp_rotate):
     layer = VispyImageLayer(im_layer)
-    npt.assert_array_almost_equal(
-        layer.node.transform.matrix[-1][:2], (-0.5, -0.5)
-    )
-    npt.assert_array_almost_equal(
-        layer.node.transform.matrix[:2, :2], ((1, 0), (0, 1))
-    )
+    npt.assert_array_almost_equal(layer.node.transform.matrix[-1][:2], (-0.5, -0.5))
+    npt.assert_array_almost_equal(layer.node.transform.matrix[:2, :2], ((1, 0), (0, 1)))
     rotate(im_layer)
     translate(im_layer)
     npt.assert_array_almost_equal(
@@ -158,9 +150,7 @@ def test_transforming_child_node(
     npt.assert_array_almost_equal(
         layer.node.children[0].transform.matrix[-1][:2], (0.5, 0.5)
     )
-    npt.assert_array_almost_equal(
-        layer.node.transform.matrix[:2, :2], exp_rotate
-    )
+    npt.assert_array_almost_equal(layer.node.transform.matrix[:2, :2], exp_rotate)
     if translate == set_translate and rotate == set_affine_rotate:
         npt.assert_array_almost_equal(
             layer.node.transform.matrix[-1][:2],
@@ -180,9 +170,7 @@ def test_transforming_child_node(
 def test_transforming_child_node_pyramid(pyramid_layer):
     layer = VispyImageLayer(pyramid_layer)
     corner_pixels_world = np.array([[0, 0], [20, 20]])
-    npt.assert_array_almost_equal(
-        layer.node.transform.matrix[-1][:2], (-0.5, -0.5)
-    )
+    npt.assert_array_almost_equal(layer.node.transform.matrix[-1][:2], (-0.5, -0.5))
     npt.assert_array_almost_equal(
         layer.node.children[0].transform.matrix[-1][:2], (0.5, 0.5)
     )
@@ -193,28 +181,22 @@ def test_transforming_child_node_pyramid(pyramid_layer):
         shape_threshold=(10, 10),
     )
 
-    npt.assert_array_almost_equal(
-        layer.node.transform.matrix[-1][:2], (-0.5, -0.5)
-    )
+    npt.assert_array_almost_equal(layer.node.transform.matrix[-1][:2], (-0.5, -0.5))
     npt.assert_array_almost_equal(
         layer.node.children[0].transform.matrix[-1][:2], (-9.5, -9.5)
     )
 
 
-@pytest.mark.parametrize('scale', [1, 2])
-@pytest.mark.parametrize('ndim', [3, 4])
-@pytest.mark.parametrize('ndisplay', [2, 3])
-def test_node_origin_is_consistent_with_multiscale(
-    scale: int, ndim: int, ndisplay: int
-):
+@pytest.mark.parametrize("scale", [1, 2])
+@pytest.mark.parametrize("ndim", [3, 4])
+@pytest.mark.parametrize("ndisplay", [2, 3])
+def test_node_origin_is_consistent_with_multiscale(scale: int, ndim: int, ndisplay: int):
     """See https://github.com/napari/napari/issues/6320"""
     scales = (scale,) * ndim
 
     # Define multi-scale image data with two levels where the
     # higher resolution is twice as high as the lower resolution.
-    image = Image(
-        data=[np.zeros((8,) * ndim), np.zeros((4,) * ndim)], scale=scales
-    )
+    image = Image(data=[np.zeros((8,) * ndim), np.zeros((4,) * ndim)], scale=scales)
     vispy_image = VispyImageLayer(image)
 
     # Take a full slice at the highest resolution.

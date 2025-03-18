@@ -5,7 +5,6 @@ from enum import IntFlag
 from fnmatch import fnmatch
 from functools import lru_cache
 from pathlib import Path
-from typing import Optional, Union
 
 from npe2 import PluginManifest
 
@@ -56,17 +55,17 @@ def score_specificity(pattern: str) -> tuple[bool, int, list[MatchFlag]]:
     # so we don't need to handle them :)
     for segment in segments:
         # collapse foo/*/*/*.bar or foo*/*.bar but not foo*bar/*.baz
-        if segment and not (ends_with_star and segment.startswith('*')):
+        if segment and not (ends_with_star and segment.startswith("*")):
             score.append(MatchFlag.NONE)
 
-        if '*' in segment:
+        if "*" in segment:
             add(MatchFlag.STAR)
-        if '?' in segment:
+        if "?" in segment:
             add(MatchFlag.ANY)
-        if '[' in segment and ']' in segment[segment.index('[') :]:
+        if "[" in segment and "]" in segment[segment.index("[") :]:
             add(MatchFlag.SET)
 
-        ends_with_star = segment.endswith('*')
+        ends_with_star = segment.endswith("*")
 
     return not osp.isabs(pattern), 1 - len(score), score
 
@@ -98,7 +97,7 @@ def _get_preferred_readers(path: PathLike) -> list[tuple[str, str]]:
     return ret
 
 
-def get_preferred_reader(path: PathLike) -> Optional[str]:
+def get_preferred_reader(path: PathLike) -> str | None:
     """Given filepath, find the best matching reader from the preferences.
 
     Parameters
@@ -158,7 +157,7 @@ def get_all_readers() -> tuple[dict[str, str], dict[str, str]]:
 
     npe1_readers = {}
     for spec, hook_caller in plugin_manager.hooks.items():
-        if spec == 'napari_get_reader':
+        if spec == "napari_get_reader":
             potential_readers = hook_caller.get_hookimpls()
             for get_reader in potential_readers:
                 npe1_readers[get_reader.plugin_name] = get_reader.plugin_name
@@ -171,7 +170,7 @@ def normalized_name(name: str) -> str:
     Normalize a plugin name by replacing underscores and dots by dashes and
     lower casing it.
     """
-    return re.sub(r'[-_.]+', '-', name).lower()
+    return re.sub(r"[-_.]+", "-", name).lower()
 
 
 def get_filename_patterns_for_reader(plugin_name: str):
@@ -191,20 +190,18 @@ def get_filename_patterns_for_reader(plugin_name: str):
         set of filename patterns accepted by all plugin's reader contributions
     """
     all_fn_patterns: set[str] = set()
-    current_plugin: Union[PluginManifest, None] = None
+    current_plugin: PluginManifest | None = None
     for manifest in _npe2.iter_manifests():
         if manifest.name == plugin_name:
             current_plugin = manifest
     if current_plugin:
         readers = current_plugin.contributions.readers or []
         for reader in readers:
-            all_fn_patterns = all_fn_patterns.union(
-                set(reader.filename_patterns)
-            )
+            all_fn_patterns = all_fn_patterns.union(set(reader.filename_patterns))
     # npe1 plugins
     else:
         _, npe1_readers = get_all_readers()
         if plugin_name in npe1_readers:
-            all_fn_patterns = {'*'}
+            all_fn_patterns = {"*"}
 
     return all_fn_patterns

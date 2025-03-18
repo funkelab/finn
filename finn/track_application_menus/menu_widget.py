@@ -1,8 +1,9 @@
-import finn
 from qtpy.QtWidgets import QScrollArea, QTabWidget, QVBoxLayout
 
-from .editing_menu import EditingMenu
+import finn
+from finn.track_application_menus.editing_menu import EditingMenu
 from finn.track_data_views.views_coordinator.tracks_viewer import TracksViewer
+
 # from motile_tracker.motile.menus.motile_widget import MotileWidget
 
 

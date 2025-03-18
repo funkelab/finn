@@ -15,7 +15,7 @@ angles = [[12, 53, 92], [180, -90, 0], [16, 90, 0]]
 # Prepare for input and add corresponding values in radians
 
 
-@pytest.mark.parametrize('angles', angles)
+@pytest.mark.parametrize("angles", angles)
 def test_quaternion2euler_degrees(angles):
     """Test quaternion to euler angle conversion."""
 
@@ -81,16 +81,10 @@ def test_set_cursor(make_napari_viewer):
     viewer = make_napari_viewer()
     viewer.cursor.style = CursorStyle.SQUARE.value
     viewer.cursor.size = 10
-    assert (
-        viewer.window._qt_viewer.canvas.cursor.shape()
-        == Qt.CursorShape.BitmapCursor
-    )
+    assert viewer.window._qt_viewer.canvas.cursor.shape() == Qt.CursorShape.BitmapCursor
 
     viewer.cursor.size = 5
-    assert (
-        viewer.window._qt_viewer.canvas.cursor.shape()
-        == QtCursorVisual['cross'].value
-    )
+    assert viewer.window._qt_viewer.canvas.cursor.shape() == QtCursorVisual["cross"].value
 
     viewer.cursor.style = CursorStyle.CIRCLE.value
     viewer.cursor.size = 100
@@ -99,4 +93,4 @@ def test_set_cursor(make_napari_viewer):
     assert viewer._brush_circle_overlay.size == viewer.cursor.size
 
     with pytest.raises(ValidationError):
-        viewer.cursor.style = 'invalid'
+        viewer.cursor.style = "invalid"

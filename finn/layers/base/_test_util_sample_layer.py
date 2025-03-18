@@ -13,15 +13,15 @@ class SampleLayer(Layer):
         *,
         affine=None,
         axis_labels=None,
-        blending='translucent',
+        blending="translucent",
         cache=True,  # this should move to future "data source" object.
         experimental_clipping_planes=None,
         metadata=None,
-        mode='pan_zoom',
+        mode="pan_zoom",
         multiscale=False,
         name=None,
         opacity=1.0,
-        projection_mode='none',
+        projection_mode="none",
         rotate=None,
         scale=None,
         shear=None,
@@ -74,7 +74,7 @@ class SampleLayer(Layer):
 
     def _get_state(self) -> dict[str, Any]:
         base_state = self._get_base_state()
-        base_state['data'] = self.data
+        base_state["data"] = self.data
         return base_state
 
     def _set_view_slice(self) -> None:

@@ -5,16 +5,16 @@ from finn.utils.misc import StringEnum
 
 
 class LabelDTypes(StrEnum):
-    uint8 = 'uint8'
-    int8 = 'int8'
-    uint16 = 'uint16'
-    int16 = 'int16'
-    uint32 = 'uint32'
-    int32 = 'int32'
-    uint64 = 'uint64'
-    int64 = 'int64'
-    uint = 'uint'
-    int = 'int'
+    uint8 = "uint8"
+    int8 = "int8"
+    uint16 = "uint16"
+    int16 = "int16"
+    uint32 = "uint32"
+    int32 = "int32"
+    uint64 = "uint64"
+    int64 = "int64"
+    uint = "uint"
+    int = "int"
 
 
 class LoopMode(StringEnum):
@@ -37,8 +37,8 @@ class LoopMode(StringEnum):
 
 
 class BrushSizeOnMouseModifiers(StrEnum):
-    ALT = 'Alt'
-    CTRL = 'Control'
-    CTRL_ALT = 'Control+Alt'
-    CTRL_SHIFT = 'Control+Shift'
-    DISABLED = 'Disabled'  # a non-existent modifier that is never activated
+    ALT = "Alt"
+    CTRL = "Control"
+    CTRL_ALT = "Control+Alt"
+    CTRL_SHIFT = "Control+Shift"
+    DISABLED = "Disabled"  # a non-existent modifier that is never activated

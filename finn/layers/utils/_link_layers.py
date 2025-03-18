@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-from collections.abc import Generator, Iterable
+from collections.abc import Callable, Generator, Iterable
 from contextlib import contextmanager
 from functools import partial
 from itertools import combinations, permutations, product
 from typing import (
     TYPE_CHECKING,
-    Callable,
-    Optional,
 )
 from weakref import ReferenceType, ref
 
@@ -24,12 +22,12 @@ from finn.utils.translations import trans
 
 #: Record of already linked layers... to avoid duplicating callbacks
 #  in the form of {(id(layer1), id(layer2), attribute_name) -> callback}
-LinkKey = tuple['ReferenceType[Layer]', 'ReferenceType[Layer]', str]
+LinkKey = tuple["ReferenceType[Layer]", "ReferenceType[Layer]", str]
 Unlinker = Callable[[], None]
 _UNLINKERS: dict[LinkKey, Unlinker] = {}
-_LINKED_LAYERS: defaultdict[
-    ReferenceType[Layer], set[ReferenceType[Layer]]
-] = defaultdict(set)
+_LINKED_LAYERS: defaultdict[ReferenceType[Layer], set[ReferenceType[Layer]]] = (
+    defaultdict(set)
+)
 
 
 def layer_is_linked(layer: Layer) -> bool:
@@ -51,9 +49,7 @@ def get_linked_layers(*layers: Layer) -> set[Layer]:
     return {x for x in linked_layers if x is not None}
 
 
-def link_layers(
-    layers: Iterable[Layer], attributes: Iterable[str] = ()
-) -> list[LinkKey]:
+def link_layers(layers: Iterable[Layer], attributes: Iterable[str] = ()) -> list[LinkKey]:
     """Link ``attributes`` between all layers in ``layers``.
 
     This essentially performs the following operation:
@@ -106,7 +102,7 @@ def link_layers(
         if extra:
             raise ValueError(
                 trans._(
-                    'Cannot link attributes that are not shared by all layers: {extra}. Allowable attrs include:\n{valid_attrs}',
+                    "Cannot link attributes that are not shared by all layers: {extra}. Allowable attrs include:\n{valid_attrs}",
                     deferred=True,
                     extra=extra,
                     valid_attrs=valid_attrs,
@@ -130,14 +126,14 @@ def link_layers(
             # get a suitable equality operator for this attribute type
             eq_op = pick_equality_operator(getattr(l1, attr))
 
-            def setter(event: Optional[Event] = None) -> None:
+            def setter(event: Event | None = None) -> None:
                 new_val = getattr(l1, attr)
                 # this line is the important part for avoiding recursion
                 if not eq_op(getattr(l2, attr), new_val):
                     setattr(l2, attr, new_val)
 
-            setter.__doc__ = f'Set {attr!r} on {l1} to that of {l2}'
-            setter.__qualname__ = f'set_{attr}_on_layer_{id(l2)}'
+            setter.__doc__ = f"Set {attr!r} on {l1} to that of {l2}"
+            setter.__qualname__ = f"set_{attr}_on_layer_{id(l2)}"
             return setter
 
         # actually make the connection
@@ -154,9 +150,7 @@ def link_layers(
     return links
 
 
-def unlink_layers(
-    layers: Iterable[Layer], attributes: Iterable[str] = ()
-) -> None:
+def unlink_layers(layers: Iterable[Layer], attributes: Iterable[str] = ()) -> None:
     """Unlink previously linked ``attributes`` between all layers in ``layers``.
 
     Parameters
@@ -171,7 +165,7 @@ def unlink_layers(
     """
     if not layers:
         raise ValueError(
-            trans._('Must provide at least one layer to unlink', deferred=True)
+            trans._("Must provide at least one layer to unlink", deferred=True)
         )
     layer_refs = [ref(layer) for layer in layers]
     if len(layer_refs) == 1:
@@ -206,22 +200,22 @@ def _get_common_evented_attributes(
     layers: Iterable[Layer],
     exclude: abc.Set[str] = frozenset(
         (
-            'thumbnail',
-            'status',
-            'name',
-            'mode',
-            'data',
-            'features',
-            'properties',
-            'size',
-            'symbol',
-            'edge_width',
-            'border_width',
-            'edge_color',
-            'face_color',
-            'border_color',
-            'extent',
-            'loaded',
+            "thumbnail",
+            "status",
+            "name",
+            "mode",
+            "data",
+            "features",
+            "properties",
+            "size",
+            "symbol",
+            "edge_width",
+            "border_width",
+            "edge_color",
+            "face_color",
+            "border_color",
+            "extent",
+            "loaded",
         )
     ),
     with_private: bool = False,
@@ -253,23 +247,19 @@ def _get_common_evented_attributes(
     except StopIteration:
         raise ValueError(
             trans._(
-                '``layers`` iterable must have at least one layer',
+                "``layers`` iterable must have at least one layer",
                 deferred=True,
             )
         ) from None
 
     layer_events = [
-        {
-            e
-            for e in lay.events
-            if not isinstance(lay.events[e], WarningEmitter)
-        }
+        {e for e in lay.events if not isinstance(lay.events[e], WarningEmitter)}
         for lay in layers
     ]
     common_events = set.intersection(*layer_events)
     common_attrs = set.intersection(*(set(dir(lay)) for lay in layers))
     if not with_private:
-        common_attrs = {x for x in common_attrs if not x.startswith('_')}
+        common_attrs = {x for x in common_attrs if not x.startswith("_")}
     common = common_events & common_attrs - exclude
 
     # lastly, discard any method-only events (we just want attrs)
@@ -296,9 +286,7 @@ def _unlink_keys(keys: Iterable[LinkKey]) -> None:
     _LINKED_LAYERS = _rebuild_link_index()
 
 
-def _rebuild_link_index() -> defaultdict[
-    ReferenceType[Layer], set[ReferenceType[Layer]]
-]:
+def _rebuild_link_index() -> defaultdict[ReferenceType[Layer], set[ReferenceType[Layer]]]:
     links = defaultdict(set)
     for l1, l2, _attr in _UNLINKERS:
         links[l1].add(l2)

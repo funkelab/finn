@@ -13,7 +13,7 @@ from finn.utils.events.event import WarningEmitter
 
 @skip_on_win_ci
 @skip_local_popups
-@pytest.mark.parametrize(('Layer', 'data', 'ndim'), layer_test_data)
+@pytest.mark.parametrize(("Layer", "data", "ndim"), layer_test_data)
 def test_add_all_layers(make_napari_viewer, Layer, data, ndim):
     """Make sure that all layers can show in the viewer."""
     viewer = make_napari_viewer(show=True)
@@ -99,10 +99,8 @@ def test_adding_removing_layer(make_napari_viewer):
     assert viewer.dims.ndim == 4
 
 
-@pytest.mark.parametrize(('Layer', 'data', 'ndim'), layer_test_data)
-def test_add_remove_layer_external_callbacks(
-    make_napari_viewer, Layer, data, ndim
-):
+@pytest.mark.parametrize(("Layer", "data", "ndim"), layer_test_data)
+def test_add_remove_layer_external_callbacks(make_napari_viewer, Layer, data, ndim):
     """Test external callbacks for layer emmitters preserved."""
     viewer = make_napari_viewer()
 

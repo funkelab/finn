@@ -158,7 +158,7 @@ def test_range_one_images_and_points(make_napari_viewer):
 
 
 @pytest.mark.enable_console
-@pytest.mark.filterwarnings('ignore::DeprecationWarning:jupyter_client')
+@pytest.mark.filterwarnings("ignore::DeprecationWarning:jupyter_client")
 def test_update_console(make_napari_viewer):
     """Test updating the console with local variables."""
     viewer = make_napari_viewer()
@@ -166,23 +166,23 @@ def test_update_console(make_napari_viewer):
 
     # Check viewer in console
     assert view.console.kernel_client is not None
-    assert 'viewer' in view.console.shell.user_ns
-    assert view.console.shell.user_ns['viewer'] == viewer
+    assert "viewer" in view.console.shell.user_ns
+    assert view.console.shell.user_ns["viewer"] == viewer
 
     a = 4
     b = 5
     locs = locals()
     viewer.update_console(locs)
-    assert 'a' in view.console.shell.user_ns
-    assert view.console.shell.user_ns['a'] == a
-    assert 'b' in view.console.shell.user_ns
-    assert view.console.shell.user_ns['b'] == b
+    assert "a" in view.console.shell.user_ns
+    assert view.console.shell.user_ns["a"] == a
+    assert "b" in view.console.shell.user_ns
+    assert view.console.shell.user_ns["b"] == b
     for k in locs:
         del viewer.window._qt_viewer.console.shell.user_ns[k]
 
 
 @pytest.mark.enable_console
-@pytest.mark.filterwarnings('ignore::DeprecationWarning:jupyter_client')
+@pytest.mark.filterwarnings("ignore::DeprecationWarning:jupyter_client")
 def test_update_lazy_console(make_napari_viewer, caplog):
     """Test updating the console with local variables,
     before console is instantiated."""
@@ -191,14 +191,14 @@ def test_update_lazy_console(make_napari_viewer, caplog):
 
     a = 4
     b = 5
-    viewer.update_console(['a', 'b'])
+    viewer.update_console(["a", "b"])
 
     x = np.arange(5)
-    viewer.update_console('x')
+    viewer.update_console("x")
 
-    viewer.update_console('missing')
+    viewer.update_console("missing")
 
-    assert 'Could not get' in caplog.text
+    assert "Could not get" in caplog.text
     with pytest.raises(TypeError):
         viewer.update_console(x)
 
@@ -208,28 +208,28 @@ def test_update_lazy_console(make_napari_viewer, caplog):
 
     obj1 = Foo()
     obj2 = Foo()
-    viewer.update_console({'obj1': obj1, 'obj2': obj2})
+    viewer.update_console({"obj1": obj1, "obj2": obj2})
     del obj1
 
     # Check viewer in console
     assert view.console.kernel_client is not None
-    assert 'viewer' in view.console.shell.user_ns
-    assert view.console.shell.user_ns['viewer'] == viewer
+    assert "viewer" in view.console.shell.user_ns
+    assert view.console.shell.user_ns["viewer"] == viewer
 
     # Check backlog is cleared
     assert len(view.console_backlog) == 0
 
-    assert 'a' in view.console.shell.user_ns
-    assert view.console.shell.user_ns['a'] == a
-    assert 'b' in view.console.shell.user_ns
-    assert view.console.shell.user_ns['b'] == b
-    assert 'x' in view.console.shell.user_ns
-    assert view.console.shell.user_ns['x'] is x
-    assert 'obj1' not in view.console.shell.user_ns
-    assert 'obj2' in view.console.shell.user_ns
-    assert view.console.shell.user_ns['obj2'] == obj2
-    del viewer.window._qt_viewer.console.shell.user_ns['obj2']
-    del viewer.window._qt_viewer.console.shell.user_ns['x']
+    assert "a" in view.console.shell.user_ns
+    assert view.console.shell.user_ns["a"] == a
+    assert "b" in view.console.shell.user_ns
+    assert view.console.shell.user_ns["b"] == b
+    assert "x" in view.console.shell.user_ns
+    assert view.console.shell.user_ns["x"] is x
+    assert "obj1" not in view.console.shell.user_ns
+    assert "obj2" in view.console.shell.user_ns
+    assert view.console.shell.user_ns["obj2"] == obj2
+    del viewer.window._qt_viewer.console.shell.user_ns["obj2"]
+    del viewer.window._qt_viewer.console.shell.user_ns["x"]
 
 
 def test_changing_display_surface(make_napari_viewer):
@@ -244,7 +244,10 @@ def test_changing_display_surface(make_napari_viewer):
     data = (vertices, faces, values)
     viewer.add_surface(data)
     assert np.all(
-        [np.array_equal(vd, d) for vd, d in zip(viewer.layers[0].data, data)]
+        [
+            np.array_equal(vd, d)
+            for vd, d in zip(viewer.layers[0].data, data, strict=False)
+        ]
     )
 
     assert len(viewer.layers) == 1

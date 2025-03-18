@@ -1,5 +1,3 @@
-from typing import Optional, Union
-
 import numpy as np
 from vispy.gloo import VertexBuffer
 from vispy.visuals.filters.base_filter import Filter
@@ -95,11 +93,9 @@ class TracksFilter(Filter):
         tail_length: float = 30,
         head_length: float = 0,
         use_fade: bool = True,
-        vertex_time: Optional[Union[list, np.ndarray]] = None,
+        vertex_time: list | np.ndarray | None = None,
     ) -> None:
-        super().__init__(
-            vcode=self.VERT_SHADER, vpos=3, fcode=self.FRAG_SHADER, fpos=9
-        )
+        super().__init__(vcode=self.VERT_SHADER, vpos=3, fcode=self.FRAG_SHADER, fpos=9)
 
         self.current_time = current_time
         self.tail_length = tail_length
@@ -116,7 +112,7 @@ class TracksFilter(Filter):
         self._current_time = n
         if isinstance(n, slice):
             n = np.max(self._vertex_time)
-        self.vshader['current_time'] = float(n)
+        self.vshader["current_time"] = float(n)
 
     @property
     def use_fade(self) -> bool:
@@ -125,7 +121,7 @@ class TracksFilter(Filter):
     @use_fade.setter
     def use_fade(self, value: bool):
         self._use_fade = value
-        self.vshader['use_fade'] = float(self._use_fade)
+        self.vshader["use_fade"] = float(self._use_fade)
 
     @property
     def tail_length(self) -> float:
@@ -134,7 +130,7 @@ class TracksFilter(Filter):
     @tail_length.setter
     def tail_length(self, tail_length: float):
         self._tail_length = tail_length
-        self.vshader['tail_length'] = float(self._tail_length)
+        self.vshader["tail_length"] = float(self._tail_length)
 
     @property
     def head_length(self) -> float:
@@ -143,7 +139,7 @@ class TracksFilter(Filter):
     @head_length.setter
     def head_length(self, head_length: float):
         self._head_length = head_length
-        self.vshader['head_length'] = float(self._head_length)
+        self.vshader["head_length"] = float(self._head_length)
 
     def _attach(self, visual):
         super()._attach(visual)
@@ -155,4 +151,4 @@ class TracksFilter(Filter):
     @vertex_time.setter
     def vertex_time(self, v_time):
         self._vertex_time = np.array(v_time).reshape(-1, 1).astype(np.float32)
-        self.vshader['a_vertex_time'] = VertexBuffer(self.vertex_time)
+        self.vshader["a_vertex_time"] = VertexBuffer(self.vertex_time)

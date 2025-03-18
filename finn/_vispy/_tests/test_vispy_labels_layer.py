@@ -12,20 +12,18 @@ from finn.utils.interactions import mouse_press_callbacks
 def make_labels_layer(array_type, shape):
     """Make a labels layer, either NumPy, zarr, or tensorstore."""
     chunks = tuple(s // 2 for s in shape)
-    if array_type == 'numpy':
+    if array_type == "numpy":
         labels = np.zeros(shape, dtype=np.uint32)
-    elif array_type == 'zarr':
+    elif array_type == "zarr":
         labels = zarr.zeros(shape=shape, dtype=np.uint32, chunks=chunks)
-    elif array_type == 'tensorstore':
-        ts = pytest.importorskip('tensorstore')
+    elif array_type == "tensorstore":
+        ts = pytest.importorskip("tensorstore")
         spec = {
-            'driver': 'zarr',
-            'kvstore': {'driver': 'memory'},
-            'metadata': {'chunks': chunks},
+            "driver": "zarr",
+            "kvstore": {"driver": "memory"},
+            "metadata": {"chunks": chunks},
         }
-        labels = ts.open(
-            spec, create=True, dtype='uint32', shape=shape
-        ).result()
+        labels = ts.open(spec, create=True, dtype="uint32", shape=shape).result()
     else:
         pytest.fail("array_type must be 'numpy', 'zarr', or 'tensorstore'")
 
@@ -33,7 +31,7 @@ def make_labels_layer(array_type, shape):
 
 
 @skip_local_popups
-@pytest.mark.parametrize('array_type', ['numpy', 'zarr', 'tensorstore'])
+@pytest.mark.parametrize("array_type", ["numpy", "zarr", "tensorstore"])
 def test_labels_painting(qtbot, array_type, qt_viewer):
     """Check that painting labels paints on the canvas.
 
@@ -50,7 +48,7 @@ def test_labels_painting(qtbot, array_type, qt_viewer):
 
 
 @skip_local_popups
-@pytest.mark.parametrize('array_type', ['numpy', 'zarr', 'tensorstore'])
+@pytest.mark.parametrize("array_type", ["numpy", "zarr", "tensorstore"])
 def test_labels_fill_slice(qtbot, array_type, qt_viewer):
     """Check that painting labels paints only on current slice.
 
@@ -72,7 +70,7 @@ def test_labels_fill_slice(qtbot, array_type, qt_viewer):
 
 
 @skip_local_popups
-@pytest.mark.parametrize('array_type', ['numpy', 'zarr', 'tensorstore'])
+@pytest.mark.parametrize("array_type", ["numpy", "zarr", "tensorstore"])
 def test_labels_painting_with_mouse(MouseEvent, qtbot, array_type, qt_viewer):
     """Check that painting labels paints on the canvas when using mouse.
 
@@ -85,9 +83,9 @@ def test_labels_painting_with_mouse(MouseEvent, qtbot, array_type, qt_viewer):
     layer = viewer.add_labels(labels)
     QCoreApplication.instance().processEvents()
 
-    layer.mode = 'paint'
+    layer.mode = "paint"
     event = MouseEvent(
-        type='mouse_press',
+        type="mouse_press",
         button=1,
         position=(0, 10, 10),
         dims_displayed=(0, 1),
@@ -107,22 +105,22 @@ def test_labels_iso_gradient_modes(qtbot, qt_viewer):
     qt_viewer.show()
     viewer = qt_viewer.viewer
 
-    labels = make_labels_layer('numpy', shape=(32, 32, 32))
+    labels = make_labels_layer("numpy", shape=(32, 32, 32))
     labels[14:18, 14:18, 14:18] = 1
     layer = viewer.add_labels(labels)
     visual = qt_viewer.layer_to_visual[layer]
 
     viewer.dims.ndisplay = 3
     QCoreApplication.instance().processEvents()
-    assert layer.rendering == 'iso_categorical'
+    assert layer.rendering == "iso_categorical"
     assert isinstance(visual.node, VolumeNode)
 
     layer.iso_gradient_mode = IsoCategoricalGradientMode.SMOOTH
     QCoreApplication.instance().processEvents()
-    assert layer.iso_gradient_mode == 'smooth'
-    assert visual.node.iso_gradient_mode == 'smooth'
+    assert layer.iso_gradient_mode == "smooth"
+    assert visual.node.iso_gradient_mode == "smooth"
 
     layer.iso_gradient_mode = IsoCategoricalGradientMode.FAST
     QCoreApplication.instance().processEvents()
-    assert layer.iso_gradient_mode == 'fast'
-    assert visual.node.iso_gradient_mode == 'fast'
+    assert layer.iso_gradient_mode == "fast"
+    assert visual.node.iso_gradient_mode == "fast"

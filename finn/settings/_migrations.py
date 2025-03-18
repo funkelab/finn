@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import sys
 import warnings
+from collections.abc import Callable
 from contextlib import contextmanager
 from importlib.metadata import distributions
-from typing import TYPE_CHECKING, Callable, NamedTuple
+from typing import TYPE_CHECKING, NamedTuple
 
 from finn.settings._fields import Version
 from finn.settings._shortcuts import ShortcutsSettings
@@ -13,7 +14,7 @@ if TYPE_CHECKING:
     from finn.settings._napari_settings import NapariSettings
 
 _MIGRATORS: list[Migrator] = []
-MigratorF = Callable[['NapariSettings'], None]
+MigratorF = Callable[["NapariSettings"], None]
 
 
 class Migrator(NamedTuple):
@@ -35,14 +36,18 @@ def do_migrations(model: NapariSettings):
                     model.schema_version = migration.to_
                 except Exception as e:  # noqa BLE001
                     msg = (
-                        f'Failed to migrate settings from v{migration.from_} '
-                        f'to v{migration.to_}. Error: {e}. '
+                        f"Failed to migrate settings from v{migration.from_} "
+                        f"to v{migration.to_}. Error: {e}. "
                     )
                     try:
                         model.update(backup)
-                        msg += 'You may need to reset your settings with `napari --reset`. '
+                        msg += (
+                            "You may need to reset your settings with `napari --reset`. "
+                        )
                     except Exception:  # noqa BLE001
-                        msg += 'Settings rollback also failed. Please run `napari --reset`.'
+                        msg += (
+                            "Settings rollback also failed. Please run `napari --reset`."
+                        )
                     warnings.warn(msg)
                     return
     model._maybe_save()
@@ -82,14 +87,14 @@ def migrator(from_: str, to_: str) -> Callable[[MigratorF], MigratorF]:
 
     def decorator(migrate_func: MigratorF) -> MigratorF:
         _from, _to = Version.parse(from_), Version.parse(to_)
-        assert _to >= _from, 'Migrator must increase the version.'
+        assert _to >= _from, "Migrator must increase the version."
         _MIGRATORS.append(Migrator(_from, _to, migrate_func))
         return migrate_func
 
     return decorator
 
 
-@migrator('0.3.0', '0.4.0')
+@migrator("0.3.0", "0.4.0")
 def v030_v040(model: NapariSettings):
     """Migrate from v0.3.0 to v0.4.0.
 
@@ -99,11 +104,11 @@ def v030_v040(model: NapariSettings):
     """
     for dist in distributions():
         for ep in dist.entry_points:
-            if ep.group == 'finn.manifest':
-                model.plugins.disabled_plugins.discard(dist.metadata['Name'])
+            if ep.group == "finn.manifest":
+                model.plugins.disabled_plugins.discard(dist.metadata["Name"])
 
 
-@migrator('0.4.0', '0.5.0')
+@migrator("0.4.0", "0.5.0")
 def v040_050(model: NapariSettings):
     """Migrate from v0.4.0 to v0.5.0
 
@@ -128,14 +133,14 @@ def _swap_ctrl_cmd(keybinding):
 
     kb = KeyBinding.from_str(
         str(keybinding)
-        .replace('Ctrl', 'Temp')
-        .replace('Meta', 'Ctrl')
-        .replace('Temp', 'Meta')
+        .replace("Ctrl", "Temp")
+        .replace("Meta", "Ctrl")
+        .replace("Temp", "Meta")
     )
     return kb
 
 
-@migrator('0.5.0', '0.6.0')
+@migrator("0.5.0", "0.6.0")
 def v050_060(model: NapariSettings):
     """Migrate from v0.5.0 to v0.6.0.
 
@@ -158,7 +163,7 @@ def v050_060(model: NapariSettings):
     This migrator solves the final problem, by detecting whether the current
     OS is macOS, and swapping Control and Meta in all key bindings if so.
     """
-    if sys.platform == 'darwin':
+    if sys.platform == "darwin":
         current_keybinds = model.shortcuts.shortcuts
         default_shortcuts = ShortcutsSettings().shortcuts
         new_keybinds = {}

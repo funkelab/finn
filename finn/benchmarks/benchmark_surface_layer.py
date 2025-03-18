@@ -93,7 +93,7 @@ class Surface3DSuite:
         return self.data
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from utils import run_benchmark
 
     run_benchmark()

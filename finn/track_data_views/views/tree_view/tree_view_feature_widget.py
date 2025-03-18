@@ -10,7 +10,9 @@ from qtpy.QtWidgets import (
 
 
 class TreeViewFeatureWidget(QWidget):
-    """Widget to switch between viewing all nodes versus nodes of one or more lineages in the tree widget"""
+    """Widget to switch between viewing all nodes versus nodes of one or more lineages
+    in the tree widget
+    """
 
     change_feature = Signal(str)
 
@@ -43,9 +45,7 @@ class TreeViewFeatureWidget(QWidget):
     def _toggle_feature_mode(self, event=None) -> None:
         """Toggle display mode"""
 
-        if (
-            self.show_area_radio.isEnabled
-        ):  # if button is disabled, toggle is not allowed
+        if self.show_area_radio.isEnabled:  # if button is disabled, toggle is not allowed
             if self.feature == "area":
                 self._set_feature("tree")
                 self.show_tree_radio.setChecked(True)

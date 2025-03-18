@@ -49,8 +49,8 @@ def test_disable_qtimer(qtbot):
     assert not th.isRunning()
 
 
-@pytest.mark.usefixtures('_disable_throttling')
-@patch('qtpy.QtCore.QTimer.start')
+@pytest.mark.usefixtures("_disable_throttling")
+@patch("qtpy.QtCore.QTimer.start")
 def test_disable_throttle(start_mock):
     mock = Mock()
 
@@ -68,8 +68,8 @@ def test_lack_disable_throttle(monkeypatch):
     mock = Mock()
     start_mock = Mock()
     active_mock = Mock(return_value=True)
-    monkeypatch.setattr('qtpy.QtCore.QTimer.start', start_mock)
-    monkeypatch.setattr('qtpy.QtCore.QTimer.isActive', active_mock)
+    monkeypatch.setattr("qtpy.QtCore.QTimer.start", start_mock)
+    monkeypatch.setattr("qtpy.QtCore.QTimer.isActive", active_mock)
 
     @qdebounced(timeout=50)
     def f() -> str:

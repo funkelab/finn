@@ -45,7 +45,7 @@ class PolygonBase(Shape):
         ndisplay=2,
         filled=True,
         closed=True,
-        name='polygon',
+        name="polygon",
         interpolation_order=1,
         interpolation_sampling=50,
     ) -> None:
@@ -78,7 +78,7 @@ class PolygonBase(Shape):
         if len(data) < 2:
             raise ValueError(
                 trans._(
-                    'Shape needs at least two unique vertices, {number} provided.',
+                    "Shape needs at least two unique vertices, {number} provided.",
                     deferred=True,
                     number=len(data),
                 )
@@ -130,6 +130,6 @@ class PolygonBase(Shape):
         bbox = self._bounding_box[:, self.dims_displayed]
         self._box = create_box_from_bounding(bbox)
 
-        self.slice_key = np.rint(
-            self._bounding_box[:, self.dims_not_displayed]
-        ).astype(int)
+        self.slice_key = np.rint(self._bounding_box[:, self.dims_not_displayed]).astype(
+            int
+        )

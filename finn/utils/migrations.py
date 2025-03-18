@@ -1,8 +1,9 @@
 import inspect
 import warnings
 from collections import UserDict
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, NamedTuple
+from typing import Any, NamedTuple
 
 from finn.utils.translations import trans
 
@@ -22,7 +23,7 @@ class _RenamedAttribute(NamedTuple):
 
     def message(self) -> str:
         return trans._(
-            '{from_name} is deprecated since {since_version} and will be removed in {version}. Please use {to_name}',
+            "{from_name} is deprecated since {since_version} and will be removed in {version}. Please use {to_name}",
             deferred=True,
             from_name=self.from_name,
             since_version=self.since_version,
@@ -32,7 +33,7 @@ class _RenamedAttribute(NamedTuple):
 
 
 def rename_argument(
-    from_name: str, to_name: str, version: str, since_version: str = ''
+    from_name: str, to_name: str, version: str, since_version: str = ""
 ) -> Callable:
     """
     This is decorator for simple rename function argument
@@ -51,10 +52,10 @@ def rename_argument(
     """
 
     if not since_version:
-        since_version = 'unknown'
+        since_version = "unknown"
         warnings.warn(
             trans._(
-                'The since_version argument was added in napari 0.4.18 and will be mandatory since 0.6.0 release.',
+                "The since_version argument was added in napari 0.4.18 and will be mandatory since 0.6.0 release.",
                 deferred=True,
             ),
             stacklevel=2,
@@ -62,7 +63,7 @@ def rename_argument(
         )
 
     def _wrapper(func):
-        if not hasattr(func, '_rename_argument'):
+        if not hasattr(func, "_rename_argument"):
             func._rename_argument = []
 
         func._rename_argument.append(
@@ -80,14 +81,14 @@ def rename_argument(
                 if to_name in kwargs:
                     raise ValueError(
                         trans._(
-                            'Argument {to_name} already defined, please do not mix {from_name} and {to_name} in one call.',
+                            "Argument {to_name} already defined, please do not mix {from_name} and {to_name} in one call.",
                             from_name=from_name,
                             to_name=to_name,
                         )
                     )
                 warnings.warn(
                     trans._(
-                        'Argument {from_name!r} is deprecated, please use {to_name!r} instead. The argument {from_name!r} was deprecated in {since_version} and it will be removed in {version}.',
+                        "Argument {from_name!r} is deprecated, please use {to_name!r} instead. The argument {from_name!r} was deprecated in {since_version} and it will be removed in {version}.",
                         from_name=from_name,
                         to_name=to_name,
                         version=version,
@@ -132,7 +133,7 @@ def add_deprecated_property(
     if hasattr(obj, previous_name):
         raise RuntimeError(
             trans._(
-                '{previous_name} property already exists.',
+                "{previous_name} property already exists.",
                 deferred=True,
                 previous_name=previous_name,
             )
@@ -141,15 +142,15 @@ def add_deprecated_property(
     if not hasattr(obj, new_name):
         raise RuntimeError(
             trans._(
-                '{new_name} property must exist.',
+                "{new_name} property must exist.",
                 deferred=True,
                 new_name=new_name,
             )
         )
 
-    name = f'{obj.__name__}.{previous_name}'
+    name = f"{obj.__name__}.{previous_name}"
     msg = trans._(
-        '{name} is deprecated since {since_version} and will be removed in {version}. Please use {new_name}',
+        "{name} is deprecated since {since_version} and will be removed in {version}. Please use {new_name}",
         deferred=True,
         name=name,
         since_version=since_version,
@@ -187,7 +188,7 @@ def deprecated_constructor_arg_by_attr(name: str) -> Callable:
     """
 
     def wrapper(func):
-        if not hasattr(func, '_deprecated_constructor_args'):
+        if not hasattr(func, "_deprecated_constructor_args"):
             func._deprecated_constructor_args = []
         func._deprecated_constructor_args.append(name)
 
@@ -225,8 +226,8 @@ def deprecated_class_name(
         )
     """
     msg = (
-        f'{previous_name} is deprecated since {since_version} and will be '
-        f'removed in {version}. Please use {new_class.__name__}.'
+        f"{previous_name} is deprecated since {since_version} and will be "
+        f"removed in {version}. Please use {new_class.__name__}."
     )
     prealloc_signature = inspect.signature(new_class.__new__)
 

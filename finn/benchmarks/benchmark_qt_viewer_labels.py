@@ -19,7 +19,7 @@ from finn.utils.colormaps import DirectLabelColormap
 
 from .utils import Skip
 
-NAPARI_0_4_19 = parse_version(finn.__version__) <= parse_version('0.4.19')
+NAPARI_0_4_19 = parse_version(finn.__version__) <= parse_version("0.4.19")
 
 
 @dataclass
@@ -41,11 +41,11 @@ class QtViewerSingleLabelsSuite:
         self.viewer = finn.view_labels(self.data)
         self.layer = self.viewer.layers[0]
         self.layer.brush_size = 10
-        self.layer.mode = 'paint'
+        self.layer.mode = "paint"
         self.layer.selected_label = 3
         self.layer._last_cursor_coord = (511, 511)
         self.event = MouseEvent(
-            type='mouse_move',
+            type="mouse_move",
             is_dragging=True,
             pos=[500, 500],
             view_direction=None,
@@ -122,11 +122,11 @@ def setup_rendering_data(radius, dtype):
 class LabelRendering:
     """Benchmarks for rendering the Labels layer."""
 
-    param_names = ['radius', 'dtype', 'mode']
+    param_names = ["radius", "dtype", "mode"]
     params = (
         [10, 30, 300, 1500],
         [np.uint8, np.uint16, np.uint32],
-        ['auto', 'direct'],
+        ["auto", "direct"],
     )
     skip_params = Skip(
         if_in_pr=lambda radius, *_: radius > 20,
@@ -134,28 +134,28 @@ class LabelRendering:
     )
 
     def setup(self, radius, dtype, label_mode):
-        self.steps = 4 if 'GITHUB_ACTIONS' in os.environ else 10
+        self.steps = 4 if "GITHUB_ACTIONS" in os.environ else 10
         self.app = QApplication.instance() or QApplication([])
         self.data = setup_rendering_data(radius, dtype)
         scale = self.data.shape[-1] / np.array(self.data.shape)
         self.viewer = ViewerModel()
         self.qt_viewr = QtViewer(self.viewer)
         self.layer = self.viewer.add_labels(self.data, scale=scale)
-        if label_mode == 'direct':
+        if label_mode == "direct":
             colors = dict(
                 zip(
                     range(10, 2000),
-                    cycle(['red', 'green', 'blue', 'pink', 'magenta']),
+                    cycle(["red", "green", "blue", "pink", "magenta"]),
                 )
             )
-            colors[None] = 'yellow'
-            colors[0] = 'transparent'
+            colors[None] = "yellow"
+            colors[0] = "transparent"
             self.layer.colormap = DirectLabelColormap(color_dict=colors)
         self.qt_viewr.show()
 
     @staticmethod
     def teardown(self, *_):
-        if hasattr(self, 'viewer'):
+        if hasattr(self, "viewer"):
             self.qt_viewr.close()
 
     def _time_iterate_components(self, *_):
@@ -221,7 +221,7 @@ class LabelRenderingSuite3D(LabelRendering):
         self._time_zoom_change(*args)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from utils import run_benchmark
 
     run_benchmark()

@@ -14,7 +14,7 @@ class Image2DSuite:
 
     params = [2**i for i in range(4, 13)]
 
-    if 'PR' in os.environ:
+    if "PR" in os.environ:
         skip_params = [(2**i,) for i in range(6, 13)]
 
     def setup(self, n):
@@ -60,10 +60,10 @@ class Image3DSuite:
     """Benchmarks for the Image layer with 3D data."""
 
     params = [2**i for i in range(4, 11)]
-    if 'CI' in os.environ:
+    if "CI" in os.environ:
         skip_params = [(2**i,) for i in range(10, 11)]
         # not enough memory on CI
-    if 'PR' in os.environ:
+    if "PR" in os.environ:
         skip_params = [(2**i,) for i in range(6, 11)]
 
     def setup(self, n):
@@ -105,7 +105,7 @@ class Image3DSuite:
         return self.data
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from utils import run_benchmark
 
     run_benchmark()

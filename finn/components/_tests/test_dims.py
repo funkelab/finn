@@ -52,20 +52,20 @@ def test_order_with_init():
 
 
 def test_labels_with_init():
-    dims = Dims(ndim=3, axis_labels=('x', 'y', 'z'))
-    assert dims.axis_labels == ('x', 'y', 'z')
+    dims = Dims(ndim=3, axis_labels=("x", "y", "z"))
+    assert dims.axis_labels == ("x", "y", "z")
 
 
 def test_bad_order():
     dims = Dims(ndim=3)
-    with pytest.raises(ValidationError, match='Invalid ordering'):
+    with pytest.raises(ValidationError, match="Invalid ordering"):
         dims.order = (0, 0, 1)
 
 
 def test_pad_bad_labels():
     dims = Dims(ndim=3)
-    dims.axis_labels = ('a', 'b')
-    assert dims.axis_labels == ('0', 'a', 'b')
+    dims.axis_labels = ("a", "b")
+    assert dims.axis_labels == ("0", "a", "b")
 
 
 def test_keyword_only_dims():
@@ -77,15 +77,13 @@ def test_sanitize_input_setters():
     dims = Dims()
 
     # axis out of range
-    with pytest.raises(ValueError, match='not defined for dimensionality'):
+    with pytest.raises(ValueError, match="not defined for dimensionality"):
         dims._sanitize_input(axis=2, value=3)
 
     # one value
-    with pytest.raises(ValueError, match='cannot set multiple values'):
+    with pytest.raises(ValueError, match="cannot set multiple values"):
         dims._sanitize_input(axis=0, value=(1, 2, 3))
-    ax, val = dims._sanitize_input(
-        axis=0, value=(1, 2, 3), value_is_sequence=True
-    )
+    ax, val = dims._sanitize_input(axis=0, value=(1, 2, 3), value_is_sequence=True)
     assert ax == [0]
     assert val == [(1, 2, 3)]
 
@@ -140,10 +138,10 @@ def test_point_variable_step_size():
     assert dims.point == (0, 0, 6)
 
     # mismatched len(axis) vs. len(value)
-    with pytest.raises(ValueError, match='must have equal length'):
+    with pytest.raises(ValueError, match="must have equal length"):
         dims.set_point((0, 1), (0, 0, 0))
 
-    with pytest.raises(ValueError, match='must have equal length'):
+    with pytest.raises(ValueError, match="must have equal length"):
         dims.set_current_step((0, 1), (0, 0, 0))
 
 
@@ -158,13 +156,13 @@ def test_range():
     assert dims.range == ((0, 2, 1),) * 3 + ((0, 4, 2),)
 
     # start must be lower than stop
-    with pytest.raises(ValidationError, match='must be strictly increasing'):
+    with pytest.raises(ValidationError, match="must be strictly increasing"):
         dims.set_range(0, (1, 0, 1))
 
     # step must be positive
-    with pytest.raises(ValidationError, match='must be strictly positive'):
+    with pytest.raises(ValidationError, match="must be strictly positive"):
         dims.set_range(0, (0, 2, 0))
-    with pytest.raises(ValidationError, match='must be strictly positive'):
+    with pytest.raises(ValidationError, match="must be strictly positive"):
         dims.set_range(0, (0, 2, -1))
 
 
@@ -187,27 +185,27 @@ def test_range_set_multiple():
     assert dims.range == ((0, 6, 1),) + ((0, 5, 1),) * 2 + ((0, 4, 1),)
 
     # out of range axis raises a ValidationError
-    with pytest.raises(ValueError, match='not defined for dimensionality'):
+    with pytest.raises(ValueError, match="not defined for dimensionality"):
         dims.set_range((dims.ndim, 0), [(0.0, 4.0, 1.0)] * 2)
 
     # sequence lengths for axis and _range do not match
-    with pytest.raises(ValueError, match='must have equal length'):
+    with pytest.raises(ValueError, match="must have equal length"):
         dims.set_range((0, 1), [(0.0, 4.0, 1.0)] * 3)
 
 
 def test_axis_labels():
     dims = Dims(ndim=4)
-    assert dims.axis_labels == ('0', '1', '2', '3')
+    assert dims.axis_labels == ("0", "1", "2", "3")
 
-    dims.set_axis_label(0, 't')
-    assert dims.axis_labels == ('t', '1', '2', '3')
+    dims.set_axis_label(0, "t")
+    assert dims.axis_labels == ("t", "1", "2", "3")
 
-    dims.set_axis_label((0, 1, 3), ('t', 'c', 'last'))
-    assert dims.axis_labels == ('t', 'c', '2', 'last')
+    dims.set_axis_label((0, 1, 3), ("t", "c", "last"))
+    assert dims.axis_labels == ("t", "c", "2", "last")
 
     # mismatched len(axis) vs. len(value)
-    with pytest.raises(ValueError, match='must have equal length'):
-        dims.set_point((0, 1), ('x', 'y', 'z'))
+    with pytest.raises(ValueError, match="must have equal length"):
+        dims.set_point((0, 1), ("x", "y", "z"))
 
 
 def test_order_when_changing_ndim():
@@ -222,7 +220,7 @@ def test_order_when_changing_ndim():
     # Test that new dims get appended to the beginning of lists
     assert dims.point == (0, 2, 0, 0, 0)
     assert dims.order == (0, 1, 2, 3, 4)
-    assert dims.axis_labels == ('0', '1', '2', '3', '4')
+    assert dims.axis_labels == ("0", "1", "2", "3", "4")
 
     dims.set_range(2, (0, 4, 1))
     dims.set_point(2, 3)
@@ -230,33 +228,33 @@ def test_order_when_changing_ndim():
     # Test that dims get removed from the beginning of lists
     assert dims.point == (3, 0, 0)
     assert dims.order == (0, 1, 2)
-    assert dims.axis_labels == ('2', '3', '4')
+    assert dims.axis_labels == ("2", "3", "4")
 
 
 def test_labels_order_when_changing_dims():
     dims = Dims(ndim=4)
     dims.ndim = 5
-    assert dims.axis_labels == ('0', '1', '2', '3', '4')
+    assert dims.axis_labels == ("0", "1", "2", "3", "4")
 
 
 @pytest.mark.parametrize(
-    ('ndim', 'ax_input', 'expected'), [(2, 1, 1), (2, -1, 1), (4, -3, 1)]
+    ("ndim", "ax_input", "expected"), [(2, 1, 1), (2, -1, 1), (4, -3, 1)]
 )
 def test_assert_axis_in_bounds(ndim, ax_input, expected):
     actual = ensure_axis_in_bounds(ax_input, ndim)
     assert actual == expected
 
 
-@pytest.mark.parametrize(('ndim', 'ax_input'), [(2, 2), (2, -3)])
+@pytest.mark.parametrize(("ndim", "ax_input"), [(2, 2), (2, -3)])
 def test_assert_axis_out_of_bounds(ndim, ax_input):
-    with pytest.raises(ValueError, match='not defined for dimensionality'):
+    with pytest.raises(ValueError, match="not defined for dimensionality"):
         ensure_axis_in_bounds(ax_input, ndim)
 
 
 def test_axis_labels_str_to_list():
     dims = Dims()
-    dims.axis_labels = 'TX'
-    assert dims.axis_labels == ('T', 'X')
+    dims.axis_labels = "TX"
+    assert dims.axis_labels == ("T", "X")
 
 
 def test_roll():
@@ -358,7 +356,7 @@ def test_floating_point_edge_case():
 
 
 @pytest.mark.parametrize(
-    ('order', 'expected'),
+    ("order", "expected"),
     [
         ((0, 1), (0, 1)),  # 2D, increasing, default range
         ((3, 7), (0, 1)),  # 2D, increasing, non-default range

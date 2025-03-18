@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import warnings
 from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass
 from functools import cached_property
 from inspect import isgeneratorfunction
-from typing import TYPE_CHECKING, Any, Callable, Optional
+from typing import TYPE_CHECKING, Any
 
 from finn.utils.events import EmitterGroup
 from finn.utils.interactions import Shortcut
@@ -90,10 +91,10 @@ class ActionManager:
         self._tooltip_include_action_name = val
 
     def _validate_action_name(self, name):
-        if len(name.split(':')) != 2:
+        if len(name.split(":")) != 2:
             raise ValueError(
                 trans._(
-                    'Action names need to be in the form `package:name`, got {name!r}',
+                    "Action names need to be in the form `package:name`, got {name!r}",
                     name=name,
                     deferred=True,
                 )
@@ -104,7 +105,7 @@ class ActionManager:
         name: str,
         command: Callable,
         description: str,
-        keymapprovider: Optional[KeymapProvider],
+        keymapprovider: KeymapProvider | None,
         repeatable: bool = False,
     ):
         """
@@ -158,9 +159,7 @@ class ActionManager:
         """
 
         self._validate_action_name(name)
-        self._actions[name] = Action(
-            command, description, keymapprovider, repeatable
-        )
+        self._actions[name] = Action(command, description, keymapprovider, repeatable)
         if keymapprovider:
             self._update_shortcut_bindings(name)
 
@@ -175,7 +174,7 @@ class ActionManager:
             return
         action = self._actions[name]
         km_provider = action.keymapprovider
-        if hasattr(km_provider, 'bind_key'):
+        if hasattr(km_provider, "bind_key"):
             for shortcut in self._shortcuts[name]:
                 # NOTE: it would be better if we could bind `self.trigger` here
                 # as it allow the action manager to be a convenient choke point
@@ -185,9 +184,7 @@ class ActionManager:
                 # generator function (but action.injected is)
                 km_provider.bind_key(shortcut, action.injected, overwrite=True)
 
-    def bind_button(
-        self, name: str, button: Button, extra_tooltip_text=''
-    ) -> None:
+    def bind_button(self, name: str, button: Button, extra_tooltip_text="") -> None:
         """
         Bind `button` to trigger Action `name` on click.
 
@@ -216,11 +213,11 @@ class ActionManager:
         self._validate_action_name(name)
 
         if (action := self._actions.get(name)) and isgeneratorfunction(
-            getattr(action, 'command', None)
+            getattr(action, "command", None)
         ):
             raise ValueError(
                 trans._(
-                    '`bind_button` cannot be used with generator functions',
+                    "`bind_button` cannot be used with generator functions",
                     deferred=True,
                 )
             )
@@ -230,16 +227,14 @@ class ActionManager:
 
         button.clicked.connect(_trigger)
         if name in self._actions:
-            button.setToolTip(
-                f'{self._build_tooltip(name)} {extra_tooltip_text}'
-            )
+            button.setToolTip(f"{self._build_tooltip(name)} {extra_tooltip_text}")
 
         def _update_tt(event: ShortcutEvent):
             if event.name == name:
-                button.setToolTip(f'{event.tooltip} {extra_tooltip_text}')
+                button.setToolTip(f"{event.tooltip} {extra_tooltip_text}")
 
         # if it's a QPushbutton, we'll remove it when it gets destroyed
-        until = getattr(button, 'destroyed', None)
+        until = getattr(button, "destroyed", None)
         self.events.shorcut_changed.connect(_update_tt, until=until)
 
     def bind_shortcut(self, name: str, shortcut: str) -> None:
@@ -267,7 +262,7 @@ class ActionManager:
         self._update_shortcut_bindings(name)
         self._emit_shortcut_change(name, shortcut)
 
-    def unbind_shortcut(self, name: str) -> Optional[list[str]]:
+    def unbind_shortcut(self, name: str) -> list[str] | None:
         """
         Unbind all shortcuts for a given action name.
 
@@ -293,7 +288,7 @@ class ActionManager:
         if action is None:
             warnings.warn(
                 trans._(
-                    'Attempting to unbind an action which does not exists ({name}), this may have no effects. This can happen if your settings are out of date, if you upgraded napari, upgraded or deactivated a plugin, or made a typo in in your custom keybinding.',
+                    "Attempting to unbind an action which does not exists ({name}), this may have no effects. This can happen if your settings are out of date, if you upgraded napari, upgraded or deactivated a plugin, or made a typo in in your custom keybinding.",
                     name=name,
                 ),
                 UserWarning,
@@ -302,7 +297,7 @@ class ActionManager:
 
         shortcuts = self._shortcuts.get(name)
         if shortcuts:
-            if action and hasattr(action.keymapprovider, 'bind_key'):
+            if action and hasattr(action.keymapprovider, "bind_key"):
                 for shortcut in shortcuts:
                     action.keymapprovider.bind_key(shortcut)(None)
             del self._shortcuts[name]
@@ -310,8 +305,8 @@ class ActionManager:
         self._emit_shortcut_change(name)
         return shortcuts
 
-    def _emit_shortcut_change(self, name: str, shortcut=''):
-        tt = self._build_tooltip(name) if name in self._actions else ''
+    def _emit_shortcut_change(self, name: str, shortcut=""):
+        tt = self._build_tooltip(name) if name in self._actions else ""
         self.events.shorcut_changed(name=name, shortcut=shortcut, tooltip=tt)
 
     def _build_tooltip(self, name: str) -> str:
@@ -319,11 +314,11 @@ class ActionManager:
         ttip = self._actions[name].description
 
         if name in self._shortcuts:
-            jstr = ' ' + trans._p('<keysequence> or <keysequence>', 'or') + ' '
-            shorts = jstr.join(f'{Shortcut(s)}' for s in self._shortcuts[name])
-            ttip += f' ({shorts})'
+            jstr = " " + trans._p("<keysequence> or <keysequence>", "or") + " "
+            shorts = jstr.join(f"{Shortcut(s)}" for s in self._shortcuts[name])
+            ttip += f" ({shorts})"
 
-        ttip += f'[{name}]' if self._tooltip_include_action_name else ''
+        ttip += f"[{name}]" if self._tooltip_include_action_name else ""
         return ttip
 
     def _get_layer_shortcuts(self, layers) -> dict:
@@ -348,9 +343,7 @@ class ActionManager:
                 action = self._actions.get(name, None)
                 if action and layer == action.keymapprovider:
                     for shortcut in shortcuts:
-                        layer_shortcuts[layer][str(shortcut)] = (
-                            action.description
-                        )
+                        layer_shortcuts[layer][str(shortcut)] = action.description
 
         return layer_shortcuts
 

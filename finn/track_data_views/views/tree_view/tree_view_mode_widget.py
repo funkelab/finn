@@ -10,7 +10,9 @@ from qtpy.QtWidgets import (
 
 
 class TreeViewModeWidget(QWidget):
-    """Widget to switch between viewing all nodes versus nodes of one or more lineages in the tree widget"""
+    """Widget to switch between viewing all nodes versus nodes of one or more lineages
+    in the tree widget
+    """
 
     change_mode = Signal(str)
 

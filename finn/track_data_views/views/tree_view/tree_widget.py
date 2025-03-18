@@ -2,7 +2,6 @@
 
 from typing import Any
 
-import finn
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
@@ -17,16 +16,18 @@ from qtpy.QtWidgets import (
 )
 from superqt import QCollapsible
 
-from finn.track_data_views.views_coordinator.tracks_viewer import TracksViewer
-
-from .flip_axes_widget import FlipTreeWidget
-from .navigation_widget import NavigationWidget
-from .tree_view_feature_widget import TreeViewFeatureWidget
-from .tree_view_mode_widget import TreeViewModeWidget
-from .tree_widget_utils import (
+import finn
+from finn.track_data_views.views.tree_view.flip_axes_widget import FlipTreeWidget
+from finn.track_data_views.views.tree_view.navigation_widget import NavigationWidget
+from finn.track_data_views.views.tree_view.tree_view_feature_widget import (
+    TreeViewFeatureWidget,
+)
+from finn.track_data_views.views.tree_view.tree_view_mode_widget import TreeViewModeWidget
+from finn.track_data_views.views.tree_view.tree_widget_utils import (
     extract_lineage_tree,
     extract_sorted_tracks,
 )
+from finn.track_data_views.views_coordinator.tracks_viewer import TracksViewer
 
 
 class CustomViewBox(pg.ViewBox):
@@ -53,8 +54,8 @@ class CustomViewBox(pg.ViewBox):
         """Modified mouseDragEvent function to check which mouse mode to use
         and to submit rectangle coordinates for selecting multiple nodes if necessary"""
 
-        #check if SHIFT is pressed
-        shift_down = (ev.modifiers() == QtCore.Qt.ShiftModifier)
+        # check if SHIFT is pressed
+        shift_down = ev.modifiers() == QtCore.Qt.ShiftModifier
 
         if shift_down:
             # if starting a shift-drag, record the scene position
@@ -72,7 +73,7 @@ class CustomViewBox(pg.ViewBox):
                 self.selected_rect.emit(rect)  # emit the rectangle
                 ev.accept()
 
-                if hasattr(self, 'rbScaleBox') and self.rbScaleBox:
+                if hasattr(self, "rbScaleBox") and self.rbScaleBox:
                     self.rbScaleBox.hide()
 
         else:
@@ -80,9 +81,10 @@ class CustomViewBox(pg.ViewBox):
             self.setMouseMode(self.PanMode)
             super().mouseDragEvent(ev, axis)
 
-            #hide the leftover box if any
-            if hasattr(self, 'rbScaleBox') and self.rbScaleBox:
+            # hide the leftover box if any
+            if hasattr(self, "rbScaleBox") and self.rbScaleBox:
                 self.rbScaleBox.hide()
+
 
 class TreePlot(pg.PlotWidget):
     node_clicked = Signal(Any, bool)  # node_id, append
@@ -198,11 +200,7 @@ class TreePlot(pg.PlotWidget):
                 self.getAxis(feature_axis).setStyle(showValues=True)
                 self.autoRange()  # not sure if this is necessary or not
 
-        if (
-            self.view_direction != view_direction
-            or self.feature != feature
-            or reset_view
-        ):
+        if self.view_direction != view_direction or self.feature != feature or reset_view:
             self.autoRange()
         self.view_direction = view_direction
         self.feature = feature
@@ -237,11 +235,12 @@ class TreePlot(pg.PlotWidget):
     def _update_viewed_data(self, view_direction: str):
         """Set the data according to the view direction
         Args:
-            view_direction (str): direction to plot the data, either 'horizontal' or 'vertical'
+            view_direction (str): direction to plot the data, either 'horizontal' or
+                'vertical'
         """
-        self.g.scatter.setPen(
-            pg.mkPen(QColor(150, 150, 150))
-        )  # first reset the pen to avoid problems with length mismatch between the different properties
+        # first reset the pen to avoid problems with length mismatch between the
+        # different properties
+        self.g.scatter.setPen(pg.mkPen(QColor(150, 150, 150)))
         self.g.scatter.setSize(10)
         if len(self._pos) == 0 or view_direction == "vertical":
             pos_data = self._pos
@@ -344,7 +343,8 @@ class TreePlot(pg.PlotWidget):
                     size[index] += 5
                     outlines[index] = pg.mkPen(color="c", width=2)
 
-            # Center point if a single node is selected, center range if multiple nodes are selected
+            # Center point if a single node is selected, center range if multiple nodes
+            # are selected
             if len(selected_nodes) == 1:
                 self._center_view(x_axis_value, t)
             else:
@@ -377,8 +377,7 @@ class TreePlot(pg.PlotWidget):
             and y_range[1] >= max_t
         ):
             return
-        else:
-            view_box.setRange(xRange=(min_x, max_x), yRange=(min_t, max_t))
+        view_box.setRange(xRange=(min_x, max_x), yRange=(min_t, max_t))
 
     def _center_view(self, center_x: int, center_y: int):
         """Center the Viewbox on given coordinates"""
@@ -396,10 +395,7 @@ class TreePlot(pg.PlotWidget):
         y_range = current_range[1]
 
         # Check if the new center is within the current range
-        if (
-            x_range[0] <= center_x <= x_range[1]
-            and y_range[0] <= center_y <= y_range[1]
-        ):
+        if x_range[0] <= center_x <= x_range[1] and y_range[0] <= center_y <= y_range[1]:
             return
 
         # Calculate the width and height of the current view
@@ -629,7 +625,8 @@ class TreeWidget(QWidget):
         else:
             self.feature_widget.show_area_radio.setEnabled(True)
 
-        # if reset_view, we got new data and want to reset display and feature before calling the plot update
+        # if reset_view, we got new data and want to reset display and feature before
+        # calling the plot update
         if reset_view:
             self.lineage_df = pd.DataFrame()
             self.mode = "all"
@@ -724,8 +721,9 @@ class TreeWidget(QWidget):
         """Subset dataframe to include only nodes belonging to the current lineage"""
 
         if len(self.selected_nodes) == 0 and not self.lineage_df.empty:
-            # try to restore lineage df based on previous selection, even if those nodes are now deleted.
-            # this is to prevent that deleting nodes will remove those lineages from the lineage view, which is confusing.
+            # try to restore lineage df based on previous selection, even if those nodes
+            # are now deleted. this is to prevent that deleting nodes will remove those
+            # lineages from the lineage view, which is confusing.
             prev_visible_set = set(self.lineage_df["node_id"])
             prev_visible = [
                 node for node in prev_visible_set if self.graph.has_node(node)

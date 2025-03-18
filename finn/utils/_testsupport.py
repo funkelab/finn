@@ -14,7 +14,7 @@ import pytest
 if TYPE_CHECKING:
     from pytest import FixtureRequest  # noqa: PT013
 
-_SAVE_GRAPH_OPNAME = '--save-leaked-object-graph'
+_SAVE_GRAPH_OPNAME = "--save-leaked-object-graph"
 
 
 def _empty(*_, **__):
@@ -23,18 +23,18 @@ def _empty(*_, **__):
 
 def pytest_addoption(parser):
     parser.addoption(
-        '--show-napari-viewer',
-        action='store_true',
+        "--show-napari-viewer",
+        action="store_true",
         default=False,
         help="don't show viewer during tests",
     )
 
     parser.addoption(
         _SAVE_GRAPH_OPNAME,
-        action='store_true',
+        action="store_true",
         default=False,
         help="Try to save a graph of leaked object's reference (need objgraph"
-        'and graphviz installed',
+        "and graphviz installed",
     )
 
 
@@ -59,9 +59,7 @@ def fail_obj_graph(Klass):  # pragma: no cover
         leaked_objects_count = len(Klass._instances)
 
         gc.collect()
-        file_path = Path(
-            f'{Klass.__name__}-leak-backref-graph-{COUNTER}.pdf'
-        ).absolute()
+        file_path = Path(f"{Klass.__name__}-leak-backref-graph-{COUNTER}.pdf").absolute()
         objgraph.show_backrefs(
             list(Klass._instances),
             max_depth=20,
@@ -75,9 +73,9 @@ def fail_obj_graph(Klass):  # pragma: no cover
         # DO not remove len, this can break as C++ obj are gone, but python objects
         # still hang around and _repr_ would crash.
         pytest.fail(
-            f'Test run fail with leaked {leaked_objects_count} instances of {Klass}.'
-            f'The object graph is saved in {file_path}.'
-            f'{len(Klass._instances)} objects left after cleanup'
+            f"Test run fail with leaked {leaked_objects_count} instances of {Klass}."
+            f"The object graph is saved in {file_path}."
+            f"{len(Klass._instances)} objects left after cleanup"
         )
 
 
@@ -99,13 +97,13 @@ def napari_plugin_manager(monkeypatch):
 
     # make it so that internal requests for the plugin_manager
     # get this test version for the duration of the test.
-    monkeypatch.setattr(finn.plugins, 'plugin_manager', pm)
-    monkeypatch.setattr(finn.plugins.io, 'plugin_manager', pm)
+    monkeypatch.setattr(finn.plugins, "plugin_manager", pm)
+    monkeypatch.setattr(finn.plugins.io, "plugin_manager", pm)
     with suppress(AttributeError):
-        monkeypatch.setattr(finn._qt.qt_main_window, 'plugin_manager', pm)
+        monkeypatch.setattr(finn._qt.qt_main_window, "plugin_manager", pm)
     # prevent discovery of plugins in the environment
     # you can still use `pm.register` to explicitly register something.
-    pm.discovery_blocker = patch.object(pm, 'discover')
+    pm.discovery_blocker = patch.object(pm, "discover")
     pm.discovery_blocker.start()
     pm._initialize()  # register our builtins
     yield pm
@@ -136,7 +134,7 @@ def pytest_runtest_makereport(item, call):
     # set a report attribute for each phase of a call, which can
     # be "setup", "call", "teardown"
 
-    setattr(item, f'rep_{rep.when}', rep)
+    setattr(item, f"rep_{rep.when}", rep)
 
 
 @pytest.fixture
@@ -166,19 +164,19 @@ def mock_app_model():
 
     from finn._app_model._app import NapariApplication, _napari_names
 
-    app = NapariApplication('test_app')
+    app = NapariApplication("test_app")
     app.injection_store.namespace = _napari_names
-    with patch.object(NapariApplication, 'get_app_model', return_value=app):
+    with patch.object(NapariApplication, "get_app_model", return_value=app):
         try:
             yield app
         finally:
-            Application.destroy('test_app')
+            Application.destroy("test_app")
 
 
 @pytest.fixture
 def make_napari_viewer(
     qtbot,
-    request: 'FixtureRequest',
+    request: "FixtureRequest",
     mock_app_model,
     napari_plugin_manager,
     monkeypatch,
@@ -255,10 +253,10 @@ def make_napari_viewer(
         fail_obj_graph(QtViewer)
     QtViewer._instances.clear()
     assert _do_not_inline_below == 0, (
-        'Some instance of QtViewer is not properly cleaned in one of previous test. For easier debug one may '
-        f'use {_SAVE_GRAPH_OPNAME} flag for pytest to get graph of leaked objects. If you use qtbot (from pytest-qt)'
-        ' to clean Qt objects after test you may need to switch to manual clean using '
-        '`deleteLater()` and `qtbot.wait(50)` later.'
+        "Some instance of QtViewer is not properly cleaned in one of previous test. For easier debug one may "
+        f"use {_SAVE_GRAPH_OPNAME} flag for pytest to get graph of leaked objects. If you use qtbot (from pytest-qt)"
+        " to clean Qt objects after test you may need to switch to manual clean using "
+        "`deleteLater()` and `qtbot.wait(50)` later."
     )
 
     settings = get_settings()
@@ -274,25 +272,23 @@ def make_napari_viewer(
     _strict = False
 
     initial = QApplication.topLevelWidgets()
-    prior_exception = getattr(sys, 'last_value', None)
-    is_internal_test = request.module.__name__.startswith('finn.')
+    prior_exception = getattr(sys, "last_value", None)
+    is_internal_test = request.module.__name__.startswith("finn.")
 
     # disable thread for status checker
     monkeypatch.setattr(
-        'finn._qt.threads.status_checker.StatusChecker.start',
+        "finn._qt.threads.status_checker.StatusChecker.start",
         _empty,
     )
 
-    if 'enable_console' not in request.keywords:
+    if "enable_console" not in request.keywords:
 
         def _dummy_widget(*_):
             w = QWidget()
             w._update_theme = _empty
             return w
 
-        monkeypatch.setattr(
-            'finn._qt.qt_viewer.QtViewer._get_console', _dummy_widget
-        )
+        monkeypatch.setattr("finn._qt.qt_viewer.QtViewer._get_console", _dummy_widget)
 
     def actual_factory(
         *model_args,
@@ -302,15 +298,15 @@ def make_napari_viewer(
         **model_kwargs,
     ):
         if strict_qt is None:
-            strict_qt = is_internal_test or os.getenv('NAPARI_STRICT_QT')
+            strict_qt = is_internal_test or os.getenv("NAPARI_STRICT_QT")
         nonlocal _strict
         _strict = strict_qt
 
         if not block_plugin_discovery:
             napari_plugin_manager.discovery_blocker.stop()
 
-        should_show = request.config.getoption('--show-napari-viewer')
-        model_kwargs['show'] = model_kwargs.pop('show', should_show)
+        should_show = request.config.getoption("--show-napari-viewer")
+        model_kwargs["show"] = model_kwargs.pop("show", should_show)
         viewer = ViewerClass(*model_args, **model_kwargs)
         viewers.add(viewer)
 
@@ -325,10 +321,8 @@ def make_napari_viewer(
 
     # close viewers, but don't saving window settings while closing
     for viewer in viewers:
-        if hasattr(viewer.window, '_qt_window'):
-            with patch.object(
-                viewer.window._qt_window, '_save_current_window_settings'
-            ):
+        if hasattr(viewer.window, "_qt_window"):
+            with patch.object(viewer.window._qt_window, "_save_current_window_settings"):
                 viewer.close()
         else:
             viewer.close()
@@ -352,19 +346,19 @@ def make_napari_viewer(
     # do not inline to avoid pytest trying to compute repr of expression.
     # it fails if C++ object gone but not Python object.
     assert _do_not_inline_below == 0, (
-        f'{request.config.getoption(_SAVE_GRAPH_OPNAME)}, {_SAVE_GRAPH_OPNAME}'
+        f"{request.config.getoption(_SAVE_GRAPH_OPNAME)}, {_SAVE_GRAPH_OPNAME}"
     )
 
     # only check for leaked widgets if an exception was raised during the test,
     # and "strict" mode was used.
-    if _strict and getattr(sys, 'last_value', None) is prior_exception:
+    if _strict and getattr(sys, "last_value", None) is prior_exception:
         QApplication.processEvents()
         leak = set(QApplication.topLevelWidgets()).difference(initial)
-        leak = (x for x in leak if x.objectName() != 'handled_widget')
+        leak = (x for x in leak if x.objectName() != "handled_widget")
         # still not sure how to clean up some of the remaining vispy
         # vispy.app.backends._qt.CanvasBackendDesktop widgets...
         # observed in `test_sys_info.py`
-        if any(n.__class__.__name__ != 'CanvasBackendDesktop' for n in leak):
+        if any(n.__class__.__name__ != "CanvasBackendDesktop" for n in leak):
             # just a warning... but this can be converted to test errors
             # in pytest with `-W error`
             msg = f"""The following Widgets leaked!: {leak}.
@@ -379,7 +373,7 @@ def make_napari_viewer(
             # in particular with VisPyCanvas, it looks like if a traceback keeps
             # contains the type, then instances are still attached to the type.
             # I'm not too sure why this is the case though.
-            if _strict == 'raise':
+            if _strict == "raise":
                 raise AssertionError(msg)
             else:
                 warnings.warn(msg)
@@ -405,9 +399,7 @@ def make_napari_viewer_proxy(make_napari_viewer, monkeypatch):
     proxies = []
 
     def actual_factory(*model_args, ensure_main_thread=True, **model_kwargs):
-        monkeypatch.setenv(
-            'NAPARI_ENSURE_PLUGIN_MAIN_THREAD', str(ensure_main_thread)
-        )
+        monkeypatch.setenv("NAPARI_ENSURE_PLUGIN_MAIN_THREAD", str(ensure_main_thread))
         viewer = make_napari_viewer(*model_args, **model_kwargs)
         proxies.append(PublicOnlyProxy(viewer))
         return proxies[-1]

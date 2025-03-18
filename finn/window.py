@@ -6,7 +6,7 @@ could serve to define a window Protocol that a backend would need to implement
 to server as a graphical user interface for finn.
 """
 
-__all__ = ['Window']
+__all__ = ["Window"]
 
 from finn.utils.translations import trans
 
@@ -26,6 +26,7 @@ except ImportError as e:
         def __getattr__(self, name):
             raise type(err)(
                 trans._(
-                    'An error occured when importing Qt dependencies.  Cannot show napari window.  See cause above',
+                    "An error occured when importing Qt dependencies.  Cannot show "
+                    "napari window.  See cause above",
                 )
             ) from err

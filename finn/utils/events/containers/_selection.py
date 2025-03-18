@@ -3,7 +3,6 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Generic,
-    Optional,
     TypeVar,
     Union,
 )
@@ -15,8 +14,8 @@ from finn.utils.translations import trans
 if TYPE_CHECKING:
     from finn._pydantic_compat import ModelField
 
-_T = TypeVar('_T')
-_S = TypeVar('_S')
+_T = TypeVar("_T")
+_S = TypeVar("_S")
 
 
 class Selection(EventedSet[_T]):
@@ -62,16 +61,16 @@ class Selection(EventedSet[_T]):
     """
 
     def __init__(self, data: Iterable[_T] = ()) -> None:
-        self._active: Optional[_T] = None
-        self._current_: Optional[_T] = None
+        self._active: _T | None = None
+        self._current_: _T | None = None
         self.events = EmitterGroup(source=self, _current=None, active=None)
         super().__init__(data=data)
         self._update_active()
 
     def _emit_change(
         self,
-        added: Optional[set[_T]] = None,
-        removed: Optional[set[_T]] = None,
+        added: set[_T] | None = None,
+        removed: set[_T] | None = None,
     ) -> None:
         if added is None:
             added = set()
@@ -81,19 +80,19 @@ class Selection(EventedSet[_T]):
         return super()._emit_change(added=added, removed=removed)
 
     def __repr__(self) -> str:
-        return f'{type(self).__name__}({self._set!r})'
+        return f"{type(self).__name__}({self._set!r})"
 
     def __hash__(self) -> int:
         """Make selection hashable."""
         return id(self)
 
     @property
-    def _current(self) -> Optional[_T]:
+    def _current(self) -> _T | None:
         """Get current item."""
         return self._current_
 
     @_current.setter
-    def _current(self, index: Optional[_T]) -> None:
+    def _current(self, index: _T | None) -> None:
         """Set current item."""
         if index == self._current_:
             return
@@ -101,12 +100,12 @@ class Selection(EventedSet[_T]):
         self.events._current(value=index)
 
     @property
-    def active(self) -> Optional[_T]:
+    def active(self) -> _T | None:
         """Return the currently active item or None."""
         return self._active
 
     @active.setter
-    def active(self, value: Optional[_T]) -> None:
+    def active(self, value: _T | None) -> None:
         """Set the active item.
 
         This make `value` the only selected item, and make it current.
@@ -151,15 +150,15 @@ class Selection(EventedSet[_T]):
     @classmethod
     def validate(
         cls,
-        v: Union['Selection', dict],  # type: ignore[override]
-        field: 'ModelField',
-    ) -> 'Selection':
+        v: Union["Selection", dict],  # type: ignore[override]
+        field: "ModelField",
+    ) -> "Selection":
         """Pydantic validator."""
         from finn._pydantic_compat import sequence_like
 
         if isinstance(v, dict):
-            data = v.get('selection', [])
-            current = v.get('_current', None)
+            data = v.get("selection", [])
+            current = v.get("_current", None)
         elif isinstance(v, Selection):
             data = v._set
             current = v._current
@@ -170,7 +169,7 @@ class Selection(EventedSet[_T]):
         if not sequence_like(data):
             raise TypeError(
                 trans._(
-                    'Value is not a valid sequence: {data}',
+                    "Value is not a valid sequence: {data}",
                     deferred=True,
                     data=data,
                 )
@@ -186,11 +185,11 @@ class Selection(EventedSet[_T]):
         type_field = field.sub_fields[0]
         errors = []
         for i, v_ in enumerate(data):
-            _, error = type_field.validate(v_, {}, loc=f'[{i}]')
+            _, error = type_field.validate(v_, {}, loc=f"[{i}]")
             if error:
                 errors.append(error)
         if current is not None:
-            _, error = type_field.validate(current, {}, loc='current')
+            _, error = type_field.validate(current, {}, loc="current")
             if error:
                 errors.append(error)
 
@@ -206,7 +205,7 @@ class Selection(EventedSet[_T]):
     def _json_encode(self) -> dict:  # type: ignore[override]
         """Return an object that can be used by json.dumps."""
         # we don't serialize active, as it's gleaned from the selection.
-        return {'selection': super()._json_encode(), '_current': self._current}
+        return {"selection": super()._json_encode(), "_current": self._current}
 
 
 class Selectable(Generic[_S]):

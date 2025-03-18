@@ -4,14 +4,13 @@ from collections.abc import Generator, Iterable, Iterator, MutableSet, Sequence
 from typing import (
     TYPE_CHECKING,
     Any,
-    Optional,
     TypeVar,
 )
 
 from finn.utils.events import EmitterGroup
 from finn.utils.translations import trans
 
-_T = TypeVar('_T')
+_T = TypeVar("_T")
 
 if TYPE_CHECKING:
     from finn._pydantic_compat import ModelField
@@ -37,7 +36,7 @@ class EventedSet(MutableSet[_T]):
     def __init__(self, data: Iterable[_T] = ()) -> None:
         changed = None
         # For inheritance: If the mro already provides an EmitterGroup, add...
-        if hasattr(self, 'events') and isinstance(self.events, EmitterGroup):
+        if hasattr(self, "events") and isinstance(self.events, EmitterGroup):
             self.events.add(changed=changed)
         else:
             # otherwise create a new one
@@ -63,8 +62,8 @@ class EventedSet(MutableSet[_T]):
 
     def _emit_change(
         self,
-        added: Optional[set[_T]] = None,
-        removed: Optional[set[_T]] = None,
+        added: set[_T] | None = None,
+        removed: set[_T] | None = None,
     ) -> None:
         # provides a hook for subclasses to update internal state before emit
         if added is None:
@@ -107,7 +106,7 @@ class EventedSet(MutableSet[_T]):
             self._emit_change(added=set(), removed=values)
 
     def __repr__(self) -> str:
-        return f'{type(self).__name__}({self._set!r})'
+        return f"{type(self).__name__}({self._set!r})"
 
     def update(self, others: Iterable[_T] = ()) -> None:
         """Update this set with the union of this set and others"""
@@ -180,7 +179,7 @@ class EventedSet(MutableSet[_T]):
         if not sequence_like(v):
             raise TypeError(
                 trans._(
-                    'Value is not a valid sequence: {value}',
+                    "Value is not a valid sequence: {value}",
                     deferred=True,
                     value=v,
                 )
@@ -191,7 +190,7 @@ class EventedSet(MutableSet[_T]):
         type_field = field.sub_fields[0]
         errors = []
         for i, v_ in enumerate(v):
-            _valid_value, error = type_field.validate(v_, {}, loc=f'[{i}]')
+            _valid_value, error = type_field.validate(v_, {}, loc=f"[{i}]")
             if error:
                 errors.append(error)
         if errors:

@@ -22,11 +22,11 @@ def test_scale_bar_positioning(make_napari_viewer):
     model = ScaleBarOverlay()
     scale_bar = VispyScaleBarOverlay(overlay=model, viewer=viewer)
 
-    assert model.position == 'bottom_right'
+    assert model.position == "bottom_right"
     assert model.font_size == 10
     assert scale_bar.y_offset == 20
 
-    model.position = 'top_right'
+    model.position = "top_right"
     assert scale_bar.y_offset == pytest.approx(20.333, abs=0.1)
 
     # increasing size while at top should increase y_offset to 7 + font_size*1.33
@@ -34,7 +34,7 @@ def test_scale_bar_positioning(make_napari_viewer):
     assert scale_bar.y_offset == pytest.approx(47, abs=0.1)
 
     # moving scale bar back to bottom should reset y_offset to 20
-    model.position = 'bottom_right'
+    model.position = "bottom_right"
     assert scale_bar.y_offset == 20
 
     # changing font_size at bottom should have no effect

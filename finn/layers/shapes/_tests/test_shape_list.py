@@ -95,7 +95,7 @@ def test_shape_list_outline():
 
     # Check return value for `int` and `list` are the same
     for value_by_idx, value_by_idx_list in zip(
-        outline_by_index, outline_by_index_list
+        outline_by_index, outline_by_index_list, strict=False
     ):
         assert np.array_equal(value_by_idx, value_by_idx_list)
 
@@ -105,7 +105,7 @@ def test_shape_list_outline():
 
     # Check return value for `int` and `numpy.int_` are the same
     for value_by_idx, value_by_idx_np in zip(
-        outline_by_index, outline_by_index_np
+        outline_by_index, outline_by_index_np, strict=False
     ):
         assert np.array_equal(value_by_idx, value_by_idx_np)
 
@@ -148,7 +148,7 @@ def test_nD_shapes():
     assert shape_list._mesh.vertices.shape[1] == 3
 
 
-@pytest.mark.parametrize('attribute', ['edge', 'face'])
+@pytest.mark.parametrize("attribute", ["edge", "face"])
 def test_bad_color_array(attribute):
     """Test adding shapes to ShapeList."""
     np.random.seed(0)
@@ -160,8 +160,8 @@ def test_bad_color_array(attribute):
 
     # test setting color with a color array of the wrong shape
     bad_color_array = np.array([[0, 0, 0, 1], [1, 1, 1, 1]])
-    with pytest.raises(ValueError, match='must have shape'):
-        setattr(shape_list, f'{attribute}_color', bad_color_array)
+    with pytest.raises(ValueError, match="must have shape"):
+        setattr(shape_list, f"{attribute}_color", bad_color_array)
 
 
 def test_inside():

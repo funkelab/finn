@@ -13,11 +13,11 @@ from finn._qt.qthreading import (
 
 # all of these might be used by an end-user when subclassing
 __all__ = (
-    'FunctionWorker',
-    'GeneratorWorker',
-    'GeneratorWorkerSignals',
-    'WorkerBase',
-    'WorkerBaseSignals',
-    'create_worker',
-    'thread_worker',
+    "FunctionWorker",
+    "GeneratorWorker",
+    "GeneratorWorkerSignals",
+    "WorkerBase",
+    "WorkerBaseSignals",
+    "create_worker",
+    "thread_worker",
 )

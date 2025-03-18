@@ -8,10 +8,10 @@ from finn.utils.transforms.transforms import (
 )
 
 __all__ = [
-    'Affine',
-    'CompositeAffine',
-    'ScaleTranslate',
-    'Transform',
-    'TransformChain',
-    'shear_matrix_from_angle',
+    "Affine",
+    "CompositeAffine",
+    "ScaleTranslate",
+    "Transform",
+    "TransformChain",
+    "shear_matrix_from_angle",
 ]

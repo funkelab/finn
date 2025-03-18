@@ -22,13 +22,13 @@ def test_selection():
     assert t.sel._current == 1
 
     assert t.json() == r'{"sel": {"selection": [1], "_current": 1}}'
-    assert T(sel={'selection': [1], '_current': 1}) == t
+    assert T(sel={"selection": [1], "_current": 1}) == t
 
     t.sel.remove(1)
     assert not t.sel
 
     with pytest.raises(ValidationError):
-        T(sel=['asdf'])
+        T(sel=["asdf"])
 
     with pytest.raises(ValidationError):
-        T(sel={'selection': [1], '_current': 'asdf'})
+        T(sel={"selection": [1], "_current": "asdf"})

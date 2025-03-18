@@ -1,6 +1,6 @@
 import warnings
 from copy import copy
-from typing import Any, Union
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -198,11 +198,11 @@ class Vectors(Layer):
         *,
         affine=None,
         axis_labels=None,
-        blending='translucent',
+        blending="translucent",
         cache=True,
-        edge_color='red',
+        edge_color="red",
         edge_color_cycle=None,
-        edge_colormap='viridis',
+        edge_colormap="viridis",
         edge_contrast_limits=None,
         edge_width=1,
         experimental_clipping_planes=None,
@@ -214,7 +214,7 @@ class Vectors(Layer):
         ndim=None,
         opacity=0.7,
         out_of_slice_display=False,
-        projection_mode='none',
+        projection_mode="none",
         properties=None,
         property_choices=None,
         rotate=None,
@@ -222,7 +222,7 @@ class Vectors(Layer):
         shear=None,
         translate=None,
         units=None,
-        vector_style='triangle',
+        vector_style="triangle",
         visible=True,
     ) -> None:
         if ndim is None and scale is not None:
@@ -287,16 +287,14 @@ class Vectors(Layer):
             contrast_limits=edge_contrast_limits,
             categorical_colormap=edge_color_cycle,
             properties=(
-                self.properties
-                if self._data.size > 0
-                else self._feature_table.currents()
+                self.properties if self._data.size > 0 else self._feature_table.currents()
             ),
         )
 
         # Data containing vectors in the currently viewed slice
         self._view_data = np.empty((0, 2, 2))
         self._view_indices = np.array([], dtype=int)
-        self._view_alphas: Union[float, np.ndarray] = 1.0
+        self._view_alphas: float | np.ndarray = 1.0
 
         # now that everything is set up, make the layer visible (if set to visible)
         self.refresh()
@@ -321,17 +319,13 @@ class Vectors(Layer):
                 # If there are now fewer points, remove the size and colors of the
                 # extra ones
                 if len(self._edge.colors) > n_vectors:
-                    self._edge._remove(
-                        np.arange(n_vectors, len(self._edge.colors))
-                    )
+                    self._edge._remove(np.arange(n_vectors, len(self._edge.colors)))
 
             elif n_vectors > previous_n_vectors:
                 # If there are now more points, add the size and colors of the
                 # new ones
                 adding = n_vectors - previous_n_vectors
-                self._edge._update_current_properties(
-                    self._feature_table.currents()
-                )
+                self._edge._update_current_properties(self._feature_table.currents())
                 self._edge._add(n_colors=adding)
 
         self._update_dims()
@@ -359,7 +353,7 @@ class Vectors(Layer):
     @features.setter
     def features(
         self,
-        features: Union[dict[str, np.ndarray], pd.DataFrame],
+        features: dict[str, np.ndarray] | pd.DataFrame,
     ) -> None:
         self._feature_table.set_values(features, num_data=len(self.data))
         if self._edge.color_properties is not None:
@@ -368,7 +362,7 @@ class Vectors(Layer):
                 self._edge.color_properties = None
                 warnings.warn(
                     trans._(
-                        'property used for edge_color dropped',
+                        "property used for edge_color dropped",
                         deferred=True,
                     ),
                     RuntimeWarning,
@@ -377,9 +371,9 @@ class Vectors(Layer):
                 edge_color_name = self._edge.color_properties.name
                 property_values = self.features[edge_color_name].to_numpy()
                 self._edge.color_properties = {
-                    'name': edge_color_name,
-                    'values': property_values,
-                    'current_value': self.feature_defaults[edge_color_name][0],
+                    "name": edge_color_name,
+                    "values": property_values,
+                    "current_value": self.feature_defaults[edge_color_name][0],
                 }
         self.events.properties()
         self.events.features()
@@ -402,9 +396,7 @@ class Vectors(Layer):
         return self._feature_table.defaults
 
     @feature_defaults.setter
-    def feature_defaults(
-        self, defaults: Union[dict[str, Any], pd.DataFrame]
-    ) -> None:
+    def feature_defaults(self, defaults: dict[str, Any] | pd.DataFrame) -> None:
         self._feature_table.set_defaults(defaults)
         self.events.feature_defaults()
 
@@ -423,24 +415,22 @@ class Vectors(Layer):
         state = self._get_base_state()
         state.update(
             {
-                'length': self.length,
-                'edge_width': self.edge_width,
-                'vector_style': self.vector_style,
-                'edge_color': (
-                    self.edge_color
-                    if self.data.size
-                    else [self._edge.current_color]
+                "length": self.length,
+                "edge_width": self.edge_width,
+                "vector_style": self.vector_style,
+                "edge_color": (
+                    self.edge_color if self.data.size else [self._edge.current_color]
                 ),
-                'edge_color_cycle': self.edge_color_cycle,
-                'edge_colormap': self.edge_colormap.dict(),
-                'edge_contrast_limits': self.edge_contrast_limits,
-                'data': self.data,
-                'properties': self.properties,
-                'property_choices': self.property_choices,
-                'ndim': self.ndim,
-                'features': self.features,
-                'feature_defaults': self.feature_defaults,
-                'out_of_slice_display': self.out_of_slice_display,
+                "edge_color_cycle": self.edge_color_cycle,
+                "edge_colormap": self.edge_colormap.dict(),
+                "edge_contrast_limits": self.edge_contrast_limits,
+                "data": self.data,
+                "properties": self.properties,
+                "property_choices": self.property_choices,
+                "ndim": self.ndim,
+                "features": self.features,
+                "feature_defaults": self.feature_defaults,
+                "out_of_slice_display": self.out_of_slice_display,
             }
         )
         return state
@@ -568,7 +558,7 @@ class Vectors(Layer):
         return self._edge.color_mode
 
     @edge_color_mode.setter
-    def edge_color_mode(self, edge_color_mode: Union[str, ColorMode]):
+    def edge_color_mode(self, edge_color_mode: str | ColorMode):
         edge_color_mode = ColorMode(edge_color_mode)
 
         if edge_color_mode == ColorMode.DIRECT:
@@ -577,20 +567,18 @@ class Vectors(Layer):
             if self._edge.color_properties is not None:
                 color_property = self._edge.color_properties.name
             else:
-                color_property = ''
-            if color_property == '':
+                color_property = ""
+            if color_property == "":
                 if self.properties:
                     color_property = next(iter(self.properties))
                     self._edge.color_properties = {
-                        'name': color_property,
-                        'values': self.features[color_property].to_numpy(),
-                        'current_value': self.feature_defaults[color_property][
-                            0
-                        ],
+                        "name": color_property,
+                        "values": self.features[color_property].to_numpy(),
+                        "current_value": self.feature_defaults[color_property][0],
                     }
                     warnings.warn(
                         trans._(
-                            'edge_color property was not set, setting to: {color_property}',
+                            "edge_color property was not set, setting to: {color_property}",
                             deferred=True,
                             color_property=color_property,
                         ),
@@ -599,7 +587,7 @@ class Vectors(Layer):
                 else:
                     raise ValueError(
                         trans._(
-                            'There must be a valid Points.properties to use {edge_color_mode}',
+                            "There must be a valid Points.properties to use {edge_color_mode}",
                             deferred=True,
                             edge_color_mode=edge_color_mode,
                         )
@@ -612,7 +600,7 @@ class Vectors(Layer):
             ):
                 raise TypeError(
                     trans._(
-                        'selected property must be numeric to use ColorMode.COLORMAP',
+                        "selected property must be numeric to use ColorMode.COLORMAP",
                         deferred=True,
                     )
                 )
@@ -628,7 +616,7 @@ class Vectors(Layer):
         return self._edge.categorical_colormap.fallback_color.values
 
     @edge_color_cycle.setter
-    def edge_color_cycle(self, edge_color_cycle: Union[list, np.ndarray]):
+    def edge_color_cycle(self, edge_color_cycle: list | np.ndarray):
         self._edge.categorical_colormap = edge_color_cycle
 
     @property
@@ -654,9 +642,7 @@ class Vectors(Layer):
         return self._edge.contrast_limits
 
     @edge_contrast_limits.setter
-    def edge_contrast_limits(
-        self, contrast_limits: Union[None, tuple[float, float]]
-    ):
+    def edge_contrast_limits(self, contrast_limits: None | tuple[float, float]):
         self._edge.contrast_limits = contrast_limits
 
     @property
@@ -672,15 +658,15 @@ class Vectors(Layer):
 
         # Generally, several triangles are drawn for each vector,
         # so we need to duplicate the colors accordingly
-        if self.vector_style == 'line':
+        if self.vector_style == "line":
             # Line vectors are drawn with 2 triangles
             face_color = np.repeat(face_color, 2, axis=0)
 
-        elif self.vector_style == 'triangle':
+        elif self.vector_style == "triangle":
             # Triangle vectors are drawn with 1 triangle
             pass  # No need to duplicate colors
 
-        elif self.vector_style == 'arrow':
+        elif self.vector_style == "arrow":
             # Arrow vectors are drawn with 3 triangles
             face_color = np.repeat(face_color, 3, axis=0)
 
@@ -695,9 +681,7 @@ class Vectors(Layer):
         # The new slicing code makes a request from the existing state and
         # executes the request on the calling thread directly.
         # For async slicing, the calling thread will not be the main thread.
-        request = self._make_slice_request_internal(
-            self._slice_input, self._data_slice
-        )
+        request = self._make_slice_request_internal(self._slice_input, self._data_slice)
         response = request()
         self._update_slice_response(response)
 
@@ -750,9 +734,9 @@ class Vectors(Layer):
             # the offset is needed to ensure that the top left corner of the
             # vectors corresponds to the top left corner of the thumbnail
             de = self._extent_data
-            offset = (
-                np.array([de[0, d] for d in self._slice_input.displayed]) + 0.5
-            )[-2:]
+            offset = (np.array([de[0, d] for d in self._slice_input.displayed]) + 0.5)[
+                -2:
+            ]
             # calculate range of values for the vertices and pad with 1
             # padding ensures the entire vector can be represented in the thumbnail
             # without getting clipped
@@ -770,25 +754,21 @@ class Vectors(Layer):
             else:
                 vectors = copy(self._view_data[:, :, -2:])
                 thumbnail_color_indices = self._view_indices
-            vectors[:, 1, :] = (
-                vectors[:, 0, :] + vectors[:, 1, :] * self.length
-            )
+            vectors[:, 1, :] = vectors[:, 0, :] + vectors[:, 1, :] * self.length
             downsampled = (vectors - offset) * zoom_factor
             downsampled = np.clip(
                 downsampled, 0, np.subtract(self._thumbnail_shape[:2], 1)
             )
             edge_colors = self._edge.colors[thumbnail_color_indices]
-            for v, ec in zip(downsampled, edge_colors):
+            for v, ec in zip(downsampled, edge_colors, strict=False):
                 start = v[0]
                 stop = v[1]
                 step = int(np.ceil(np.max(abs(stop - start))))
                 x_vals = np.linspace(start[0], stop[0], step)
                 y_vals = np.linspace(start[1], stop[1], step)
-                for x, y in zip(x_vals, y_vals):
+                for x, y in zip(x_vals, y_vals, strict=False):
                     colormapped[int(x), int(y), :] = ec
-            colormapped[..., 3] = (colormapped[..., 3] * self.opacity).astype(
-                np.uint8
-            )
+            colormapped[..., 3] = (colormapped[..., 3] * self.opacity).astype(np.uint8)
             self.thumbnail = colormapped
 
     def _get_value(self, position):

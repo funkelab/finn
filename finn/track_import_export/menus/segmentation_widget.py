@@ -44,7 +44,8 @@ class SegmentationWidget(QWidget):
         image_sublayout.addWidget(self.image_browse_button)
 
         label = QLabel(
-            "Segmentation files can either be a single tiff stack, or a directory inside a zarr folder."
+            "Segmentation files can either be a single tiff stack, or a directory inside"
+            " a zarr folder."
         )
         font = label.font()
         font.setItalic(True)
@@ -88,7 +89,8 @@ class SegmentationWidget(QWidget):
 
     def get_scale(self) -> list[float]:
         """Return the scaling values in the spinboxes as a list of floats.
-        Since we currently require a dummy 1 value for the time dimension, add it here."""
+        Since we currently require a dummy 1 value for the time dimension, add it here.
+        """
 
         if self.incl_z:
             scale = [
@@ -118,7 +120,7 @@ class SegmentationWidget(QWidget):
     def _load_segmentation(self) -> None:
         """Load the segmentation image file"""
 
-        # Check if a valid path to a segmentation image file is provided and if so load it
+        # Check if a valid path to a segmentation image file is provided and load it
         if os.path.exists(self.image_path_line.text()):
             if self.image_path_line.text().endswith(".tif"):
                 segmentation = tifffile.imread(

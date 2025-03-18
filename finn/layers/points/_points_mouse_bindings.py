@@ -23,9 +23,7 @@ def select(layer, event):
     points.
     """
     # on press
-    modify_selection = (
-        'Shift' in event.modifiers or 'Control' in event.modifiers
-    )
+    modify_selection = "Shift" in event.modifiers or "Control" in event.modifiers
 
     # Get value under the cursor, for points, this is the index of the highlighted
     # if any, or None.
@@ -60,12 +58,12 @@ def select(layer, event):
     yield
 
     # Undo the toggle selected in case of a mouse move with modifiers
-    if modify_selection and value is not None and event.type == 'mouse_move':
+    if modify_selection and value is not None and event.type == "mouse_move":
         layer.selected_data = _toggle_selected(layer.selected_data, value)
 
     is_moving = False
     # on move
-    while event.type == 'mouse_move':
+    while event.type == "mouse_move":
         coordinates = layer.world_to_data(event.position)
         # If not holding modifying selection and points selected then drag them
         if not modify_selection and len(layer.selected_data) > 0:
@@ -126,7 +124,7 @@ def add(layer, event):
     dist = 0
     yield
 
-    while event.type == 'mouse_move':
+    while event.type == "mouse_move":
         dist = np.linalg.norm(start_pos - event.pos)
         if dist < DRAG_DIST_THRESHOLD:
             # prevent vispy from moving the canvas if we're below threshold
@@ -146,7 +144,7 @@ def highlight(layer, event):
     layer._set_highlight()
 
 
-_T = TypeVar('_T')
+_T = TypeVar("_T")
 
 
 def _toggle_selected(selection: set[_T], value: _T) -> set[_T]:
@@ -231,9 +229,7 @@ def _select_points_from_drag(layer, modify_selection: bool, n_display: int):
 
     # if there is data in view, find the points in the drag box
     if n_display == 2:
-        selection = points_in_box(
-            layer._drag_box, layer._view_data, layer._view_size
-        )
+        selection = points_in_box(layer._drag_box, layer._view_data, layer._view_size)
     else:
         selection = _points_in_box_3d(
             layer._drag_box,
@@ -246,9 +242,7 @@ def _select_points_from_drag(layer, modify_selection: bool, n_display: int):
     # If shift combine drag selection with existing selected ones
     if modify_selection:
         new_selected = layer._indices_view[selection]
-        target = set(layer.selected_data).symmetric_difference(
-            set(new_selected)
-        )
+        target = set(layer.selected_data).symmetric_difference(set(new_selected))
         layer.selected_data = list(target)
     else:
         layer.selected_data = layer._indices_view[selection]

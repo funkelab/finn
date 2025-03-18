@@ -1,5 +1,4 @@
 from collections.abc import Sequence
-from typing import Optional, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -155,9 +154,7 @@ def _points_in_box_3d(
     """
     # the the corners for a bounding box that is has one axis aligned
     # with the camera up direction and is normal to the view direction.
-    bbox_corners = _create_box_from_corners_3d(
-        box_corners, box_normal, up_direction
-    )
+    bbox_corners = _create_box_from_corners_3d(box_corners, box_normal, up_direction)
 
     # project points onto the same plane as the box
     projected_points, _ = project_points_onto_plane(
@@ -215,7 +212,7 @@ def points_in_box(
 
 
 def fix_data_points(
-    points: Optional[np.ndarray], ndim: Optional[int]
+    points: np.ndarray | None, ndim: int | None
 ) -> tuple[np.ndarray, int]:
     """
     Ensure that points array is 2d and have second dimension of size ndim (default 2 for empty arrays)
@@ -249,7 +246,7 @@ def fix_data_points(
         if ndim is not None and ndim != data_ndim:
             raise ValueError(
                 trans._(
-                    'Points dimensions must be equal to ndim',
+                    "Points dimensions must be equal to ndim",
                     deferred=True,
                 )
             )
@@ -257,7 +254,7 @@ def fix_data_points(
     return points, ndim
 
 
-def symbol_conversion(symbol: Union[str, Symbol]) -> Symbol:
+def symbol_conversion(symbol: str | Symbol) -> Symbol:
     """
     Convert a string or Symbol to a Symbol instance.
     """
@@ -266,7 +263,7 @@ def symbol_conversion(symbol: Union[str, Symbol]) -> Symbol:
     return Symbol(symbol)
 
 
-def fast_dict_get(symbols: Union[np.ndarray, list], d: dict) -> np.ndarray:
+def fast_dict_get(symbols: np.ndarray | list, d: dict) -> np.ndarray:
     """
     Get the values from a dictionary using a list of keys.
     """
@@ -276,7 +273,7 @@ def fast_dict_get(symbols: Union[np.ndarray, list], d: dict) -> np.ndarray:
 
 
 def coerce_symbols(
-    symbol: Union[str, Symbol, Sequence[Union[str, Symbol]]],
+    symbol: str | Symbol | Sequence[str | Symbol],
 ) -> np.ndarray:
     """
     Parse an array of symbols and convert it to the correct strings.
@@ -296,7 +293,7 @@ def coerce_symbols(
     """
     # if a symbol is a unique string or Symbol instance, convert it to a
     # proper Symbol instance
-    if isinstance(symbol, (str, Symbol)):
+    if isinstance(symbol, str | Symbol):
         return np.array([symbol_conversion(symbol)], dtype=object)
 
     if not isinstance(symbol, np.ndarray):

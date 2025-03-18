@@ -134,7 +134,7 @@ class Shape(ABC):
     def __init__(
         self,
         *,
-        shape_type='rectangle',
+        shape_type="rectangle",
         edge_width=1,
         z_index=0,
         dims_order=None,
@@ -156,7 +156,7 @@ class Shape(ABC):
         self._use_face_vertices = False
         self.edge_width = edge_width
         self.z_index = z_index
-        self.name = ''
+        self.name = ""
 
         self._data: npt.NDArray
         self._bounding_box = np.empty((0, self.ndisplay))
@@ -293,9 +293,7 @@ class Shape(ABC):
 
         # otherwise, we make individual calls to specialized functions
         if edge:
-            centers, offsets, triangles = triangulate_path_edge_numpy(
-                data, closed=closed
-            )
+            centers, offsets, triangles = triangulate_path_edge_numpy(data, closed=closed)
             self._edge_vertices = centers
             self._edge_offsets = offsets
             self._edge_triangles = triangles
@@ -351,9 +349,7 @@ class Shape(ABC):
             self._edge_triangles = np.empty((0, 3), dtype=np.uint32)
 
         if face:
-            idx = np.concatenate(
-                [[True], ~np.all(data[1:] == data[:-1], axis=-1)]
-            )
+            idx = np.concatenate([[True], ~np.all(data[1:] == data[:-1], axis=-1)])
             clean_data = data[idx].copy()
 
             if not is_collinear(clean_data[:, -2:]):
@@ -410,12 +406,10 @@ class Shape(ABC):
             self._data[:, self.dims_displayed] @ transform.T
         )
         self._face_vertices = self._face_vertices @ transform.T
-        self.__dict__.pop('data_displayed', None)  # clear cache
+        self.__dict__.pop("data_displayed", None)  # clear cache
         points = self.data_displayed
         points = remove_path_duplicates(points, closed=self._closed)
-        centers, offsets, triangles = triangulate_edge(
-            points, closed=self._closed
-        )
+        centers, offsets, triangles = triangulate_edge(points, closed=self._closed)
         self._edge_vertices = centers
         self._edge_offsets = offsets
         self._edge_triangles = triangles
@@ -456,7 +450,7 @@ class Shape(ABC):
         center : list
             length 2 list specifying coordinate of center of scaling.
         """
-        if isinstance(scale, (list, np.ndarray)):
+        if isinstance(scale, list | np.ndarray):
             transform = np.array([[scale[0], 0], [0, scale[1]]])
         else:
             transform = np.array([[scale, 0], [0, scale]])
@@ -545,9 +539,7 @@ class Shape(ABC):
             Boolean array with `True` for points inside the shape
         """
         if mask_shape is None:
-            mask_shape = np.round(self.data_displayed.max(axis=0)).astype(
-                'int'
-            )
+            mask_shape = np.round(self.data_displayed.max(axis=0)).astype("int")
 
         if len(mask_shape) == 2:
             embedded = False
@@ -558,17 +550,14 @@ class Shape(ABC):
         else:
             raise ValueError(
                 trans._(
-                    'mask shape length must either be 2 or the same as the dimensionality of the shape, expected {expected} got {received}.',
+                    "mask shape length must either be 2 or the same as the dimensionality of the shape, expected {expected} got {received}.",
                     deferred=True,
                     expected=self.data.shape[1],
                     received=len(mask_shape),
                 )
             )
 
-        if self._use_face_vertices:
-            data = self._face_vertices
-        else:
-            data = self.data_displayed
+        data = self._face_vertices if self._use_face_vertices else self.data_displayed
 
         data = data[:, -len(shape_plane) :]
 
@@ -586,13 +575,9 @@ class Shape(ABC):
                 if i in self.dims_displayed:
                     slice_key[i] = slice(None)
                 elif self.slice_key is not None:
-                    slice_key[i] = slice(
-                        self.slice_key[0, i], self.slice_key[1, i] + 1
-                    )
+                    slice_key[i] = slice(self.slice_key[0, i], self.slice_key[1, i] + 1)
                 else:
-                    raise RuntimeError(
-                        'Internal error: self.slice_key is None'
-                    )
+                    raise RuntimeError("Internal error: self.slice_key is None")
             displayed_order = argsort(self.dims_displayed)
             mask[tuple(slice_key)] = mask_p.transpose(displayed_order)
         else:
@@ -601,7 +586,7 @@ class Shape(ABC):
         return mask
 
     def _clean_cache(self) -> None:
-        if 'dims_displayed' in self.__dict__:
-            del self.__dict__['dims_displayed']
-        if 'data_displayed' in self.__dict__:
-            del self.__dict__['data_displayed']
+        if "dims_displayed" in self.__dict__:
+            del self.__dict__["dims_displayed"]
+        if "data_displayed" in self.__dict__:
+            del self.__dict__["data_displayed"]

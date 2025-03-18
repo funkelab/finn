@@ -5,12 +5,11 @@ Sends messages to remote clients.
 
 import logging
 import time
-from typing import Optional
 
 from finn.components.experimental.monitor import monitor
 from finn.components.layerlist import LayerList
 
-LOGGER = logging.getLogger('finn.monitor')
+LOGGER = logging.getLogger("finn.monitor")
 
 
 class RemoteMessages:
@@ -25,7 +24,7 @@ class RemoteMessages:
     def __init__(self, layers: LayerList) -> None:
         self.layers = layers
         self._frame_number = 0
-        self._last_time: Optional[float] = None
+        self._last_time: float | None = None
 
     def on_poll(self) -> None:
         """Send messages to clients.
@@ -51,7 +50,7 @@ class RemoteMessages:
 
         layers: dict[int, dict] = {}
 
-        monitor.add_data({'poll': {'layers': layers}})
+        monitor.add_data({"poll": {"layers": layers}})
         self._send_frame_time()
 
     def _send_frame_time(self) -> None:
@@ -61,7 +60,5 @@ class RemoteMessages:
         delta = now - last if last is not None else 0
         delta_ms = delta * 1000
 
-        monitor.send_message(
-            {'frame_time': {'time': now, 'delta_ms': delta_ms}}
-        )
+        monitor.send_message({"frame_time": {"time": now, "delta_ms": delta_ms}})
         self._last_time = now

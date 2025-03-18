@@ -13,16 +13,16 @@ from finn.utils.notebook_display import (
 from finn.utils.progress import cancelable_progress, progrange, progress
 
 __all__ = (
-    'NUMPY_VERSION_IS_THREADSAFE',
-    'Colormap',
-    'CyclicLabelColormap',
-    'DirectLabelColormap',
-    'NotebookScreenshot',
-    'cancelable_progress',
-    'citation_text',
-    'nbscreenshot',
-    'progrange',
-    'progress',
-    'resize_dask_cache',
-    'sys_info',
+    "NUMPY_VERSION_IS_THREADSAFE",
+    "Colormap",
+    "CyclicLabelColormap",
+    "DirectLabelColormap",
+    "NotebookScreenshot",
+    "cancelable_progress",
+    "citation_text",
+    "nbscreenshot",
+    "progrange",
+    "progress",
+    "resize_dask_cache",
+    "sys_info",
 )

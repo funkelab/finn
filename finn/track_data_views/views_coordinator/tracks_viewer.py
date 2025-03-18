@@ -2,20 +2,19 @@ from __future__ import annotations
 
 from typing import Optional
 
-import finn
 import numpy as np
-from finn.track_data_views.graph_attributes import NodeAttr
-from psygnal import Signal
-
 from funtracks.data_model import NodeType, SolutionTracks
 from funtracks.data_model.tracks_controller import TracksController
+from psygnal import Signal
+
+import finn
+from finn.track_data_views.graph_attributes import NodeAttr
 from finn.track_data_views.views.layers.tracks_layer_group import TracksLayerGroup
 from finn.track_data_views.views.tree_view.tree_widget_utils import (
     extract_lineage_tree,
 )
-
-from .node_selection_list import NodeSelectionList
-from .tracks_list import TracksList
+from finn.track_data_views.views_coordinator.node_selection_list import NodeSelectionList
+from finn.track_data_views.views_coordinator.tracks_list import TracksList
 
 
 class TracksViewer:
@@ -26,7 +25,7 @@ class TracksViewer:
     - Store shared rendering information like colormaps (or symbol maps)
     """
 
-    tracks_updated = Signal(Optional[bool])
+    tracks_updated = Signal(Optional[bool])  # noqa: UP007
 
     @classmethod
     def get_instance(cls, viewer=None):
@@ -38,7 +37,7 @@ class TracksViewer:
 
     def __init__(
         self,
-        viewer: finn.viewer,
+        viewer: finn.Viewer,
     ):
         self.viewer = viewer
         self.colormap = finn.utils.colormaps.label_colormap(
@@ -53,8 +52,8 @@ class TracksViewer:
             NodeType.SPLIT: "triangle_up",
         }
         self.mode = "all"
-        self.tracks = None
-        self.visible = None
+        self.tracks: SolutionTracks | None = None
+        self.visible: list | str = []
         self.tracking_layers = TracksLayerGroup(self.viewer, self.tracks, "", self)
         self.selected_nodes = NodeSelectionList()
         self.selected_nodes.list_updated.connect(self.update_selection)
@@ -78,8 +77,8 @@ class TracksViewer:
         self.viewer.bind_key("r")(self.redo)
 
     def _refresh(self, node: str | None = None, refresh_view: bool = False) -> None:
-        """Call refresh function on finn layers and the submit signal that tracks are updated
-        Restore the selected_nodes, if possible
+        """Call refresh function on finn layers and the submit signal that tracks are
+        updated. Restore the selected_nodes, if possible
         """
 
         if len(self.selected_nodes) > 0 and any(
@@ -91,11 +90,14 @@ class TracksViewer:
 
         self.tracks_updated.emit(refresh_view)
 
-        # if a new node was added, we would like to select this one now (call this after emitting the signal, because if the node is a new node, we have to update the table in the tree widget first, or it won't be present)
+        # if a new node was added, we would like to select this one now (call this after
+        # emitting the signal, because if the node is a new node, we have to update the
+        # table in the tree widget first, or it won't be present)
         if node is not None:
             self.selected_nodes.add(node)
 
-        # restore selection and/or highlighting in all finn Views (finn Views do not know about their selection ('all' vs 'lineage'), but TracksViewer does)
+        # restore selection and/or highlighting in all finn Views (finn Views do not
+        # know about their selection ('all' vs 'lineage'), but TracksViewer does)
         self.update_selection()
 
     def update_tracks(self, tracks: SolutionTracks, name: str) -> None:
@@ -136,7 +138,9 @@ class TracksViewer:
             self.set_display_mode("lineage")
 
     def set_display_mode(self, mode: str) -> None:
-        """Update the display mode and call to update colormaps for points, labels, and tracks"""
+        """Update the display mode and call to update colormaps for points, labels, and
+        tracks
+        """
 
         # toggle between 'all' and 'lineage'
         if mode == "lineage":
@@ -156,7 +160,8 @@ class TracksViewer:
         if self.tracks is None or self.tracks.graph is None:
             return []
         if self.mode == "lineage":
-            # if no nodes are selected, check which nodes were previously visible and filter those
+            # if no nodes are selected, check which nodes were previously visible and
+            # filter those
             if len(self.selected_nodes) == 0 and self.visible is not None:
                 prev_visible = [
                     node for node in self.visible if self.tracks.graph.has_node(node)
@@ -177,9 +182,8 @@ class TracksViewer:
                     for node in self.visible
                 }
             )
-        else:
-            self.visible = "all"
-            return "all"
+        self.visible = "all"
+        return "all"
 
     def update_selection(self) -> None:
         """Sets the view and triggers visualization updates in other components"""
@@ -189,7 +193,9 @@ class TracksViewer:
         self.tracking_layers.update_visible(visible_tracks, self.visible)
 
     def set_finn_view(self) -> None:
-        """Adjust the current_step of the viewer to jump to the last item of the selected_nodes list"""
+        """Adjust the current_step of the viewer to jump to the last item of the
+        selected_nodes list
+        """
         if len(self.selected_nodes) > 0:
             node = self.selected_nodes[-1]
             self.tracking_layers.center_view(node)
@@ -200,7 +206,9 @@ class TracksViewer:
         self.tracks_controller.delete_nodes(self.selected_nodes._list)
 
     def delete_edge(self, event=None):
-        """Calls the tracks controller to delete an edge between the two currently selected nodes"""
+        """Calls the tracks controller to delete an edge between the two currently
+        selected nodes
+        """
 
         if len(self.selected_nodes) == 2:
             node1 = self.selected_nodes[0]
@@ -215,7 +223,9 @@ class TracksViewer:
             self.tracks_controller.delete_edges(edges=np.array([[node1, node2]]))
 
     def create_edge(self, event=None):
-        """Calls the tracks controller to add an edge between the two currently selected nodes"""
+        """Calls the tracks controller to add an edge between the two currently selected
+        nodes
+        """
 
         if len(self.selected_nodes) == 2:
             node1 = self.selected_nodes[0]

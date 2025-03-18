@@ -13,7 +13,7 @@ from typing import (
 from finn.utils.translations import trans
 
 _OBJ_NAMES = set(dir(Protocol))
-_OBJ_NAMES.update({'__annotations__', '__dict__', '__weakref__'})
+_OBJ_NAMES.update({"__annotations__", "__dict__", "__weakref__"})
 
 if TYPE_CHECKING:
     from enum import Enum
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
     # https://github.com/python/typing/issues/684#issuecomment-548203158
     class ellipsis(Enum):
-        Ellipsis = '...'
+        Ellipsis = "..."
 
     Ellipsis = ellipsis.Ellipsis  # noqa: A001
 else:
@@ -31,11 +31,11 @@ else:
 
 def _raise_protocol_error(obj: Any, protocol: type) -> None:
     """Raise a more helpful error when required protocol members are missing."""
-    annotations = getattr(protocol, '__annotations__', {})
+    annotations = getattr(protocol, "__annotations__", {})
     needed = set(dir(protocol)).union(annotations) - _OBJ_NAMES
     missing = needed - set(dir(obj))
     message = trans._(
-        'Object of type {type_name} does not implement {protocol_name} Protocol.\nMissing methods: {missing_methods}',
+        "Object of type {type_name} does not implement {protocol_name} Protocol.\nMissing methods: {missing_methods}",
         deferred=True,
         type_name=repr(type(obj).__name__),
         protocol_name=repr(protocol.__name__),
@@ -76,7 +76,7 @@ class LayerDataProtocol(Protocol):
         """Array dimensions."""
 
     def __getitem__(
-        self, key: Union[Index, tuple[Index, ...], LayerDataProtocol]
+        self, key: Index | tuple[Index, ...] | LayerDataProtocol
     ) -> LayerDataProtocol:
         """Returns self[key]."""
 

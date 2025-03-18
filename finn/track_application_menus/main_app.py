@@ -1,12 +1,11 @@
-import finn
 from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
 
+import finn
+from finn.track_application_menus.menu_widget import MenuWidget
 from finn.track_data_views.views.tree_view.tree_widget import TreeWidget
-
-from .menu_widget import MenuWidget
 
 
 class MainApp(QWidget):

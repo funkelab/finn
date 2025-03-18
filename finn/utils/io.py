@@ -9,7 +9,7 @@ from finn.utils.notifications import show_warning
 from finn.utils.translations import trans
 
 
-def imsave(filename: str, data: 'np.ndarray'):
+def imsave(filename: str, data: "np.ndarray"):
     """Custom implementation of imsave to avoid skimage dependency.
 
     Parameters
@@ -21,34 +21,34 @@ def imsave(filename: str, data: 'np.ndarray'):
     """
     ext = os.path.splitext(filename)[1].lower()
     # If no file extension was specified, choose .png by default
-    if ext == '':
+    if ext == "":
         if (
             data.ndim == 2 or (data.ndim == 3 and data.shape[-1] in {3, 4})
         ) and not np.issubdtype(data.dtype, np.floating):
-            ext = '.png'
+            ext = ".png"
         else:
-            ext = '.tif'
+            ext = ".tif"
             filename = filename + ext
     # not all file types can handle float data
     if ext not in [
-        '.tif',
-        '.tiff',
-        '.bsdf',
-        '.im',
-        '.lsm',
-        '.npz',
-        '.stk',
+        ".tif",
+        ".tiff",
+        ".bsdf",
+        ".im",
+        ".lsm",
+        ".npz",
+        ".stk",
     ] and np.issubdtype(data.dtype, np.floating):
         show_warning(
             trans._(
-                'Image was not saved, because image data is of dtype float.\nEither convert dtype or save as different file type (e.g. TIFF).'
+                "Image was not saved, because image data is of dtype float.\nEither convert dtype or save as different file type (e.g. TIFF)."
             )
         )
         return
     # Save screenshot image data to output file
-    if ext in ['.png']:
+    if ext in [".png"]:
         imsave_png(filename, data)
-    elif ext in ['.tif', '.tiff']:
+    elif ext in [".tif", ".tiff"]:
         imsave_tiff(filename, data)
     else:
         import imageio.v3 as iio
@@ -74,14 +74,12 @@ def imsave_png(filename, data):
 
     # Digital watermark, adds info about the napari version to the bytes of the PNG file
     pnginfo = PIL.PngImagePlugin.PngInfo()
-    pnginfo.add_text(
-        'Software', f'napari version {__version__} https://finn.org/'
-    )
+    pnginfo.add_text("Software", f"napari version {__version__} https://finn.org/")
     iio.imwrite(
         filename,
         data,
-        extension='.png',
-        plugin='pillow',
+        extension=".png",
+        plugin="pillow",
         pnginfo=pnginfo,
     )
 
@@ -106,8 +104,8 @@ def imsave_tiff(filename, data):
                 filename,
                 data,
                 # compression arg structure since tifffile 2022.7.28
-                compression='zlib',
-                compressionargs={'level': 1},
+                compression="zlib",
+                compressionargs={"level": 1},
             )
         except struct.error:
             # regular tiffs don't support compressed data >4GB
@@ -117,23 +115,23 @@ def imsave_tiff(filename, data):
             tifffile.imwrite(
                 filename,
                 data,
-                compression='zlib',
-                compressionargs={'level': 1},
+                compression="zlib",
+                compressionargs={"level": 1},
                 bigtiff=True,
             )
 
 
 def __getattr__(name: str):
     if name in {
-        'imsave_extensions',
-        'write_csv',
-        'read_csv',
-        'csv_to_layer_data',
-        'read_zarr_dataset',
+        "imsave_extensions",
+        "write_csv",
+        "read_csv",
+        "csv_to_layer_data",
+        "read_zarr_dataset",
     }:
         warnings.warn(
             trans._(
-                '{name} was moved from finn.utils.io in v0.4.17. Import it from finn_builtins.io instead.',
+                "{name} was moved from finn.utils.io in v0.4.17. Import it from finn_builtins.io instead.",
                 deferred=True,
                 name=name,
             ),
@@ -144,4 +142,4 @@ def __getattr__(name: str):
 
         return getattr(finn_builtins.io, name)
 
-    raise AttributeError(f'module {__name__} has no attribute {name}')
+    raise AttributeError(f"module {__name__} has no attribute {name}")

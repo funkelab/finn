@@ -2,7 +2,7 @@ from finn._pydantic_compat import Field
 from finn.utils.color import ColorValue
 from finn.utils.events import EventedModel
 
-_DEFAULT_COLOR = ColorValue('black')
+_DEFAULT_COLOR = ColorValue("black")
 
 
 class SurfaceWireframe(EventedModel):

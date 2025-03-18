@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import itertools
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -371,12 +372,8 @@ def point_to_lines(point, lines):
 
     # for points not falling inside segment calculate distance to appropriate
     # endpoint
-    line_dist[line_loc < 0] = np.linalg.norm(
-        point_vectors[line_loc < 0], axis=1
-    )
-    line_dist[line_loc > 1] = np.linalg.norm(
-        end_point_vectors[line_loc > 1], axis=1
-    )
+    line_dist[line_loc < 0] = np.linalg.norm(point_vectors[line_loc < 0], axis=1)
+    line_dist[line_loc > 1] = np.linalg.norm(end_point_vectors[line_loc > 1], axis=1)
     line_dist[reject] = np.linalg.norm(point_vectors[reject], axis=1)
     line_loc[reject] = 0.5
 
@@ -479,7 +476,7 @@ def rectangle_to_box(data: npt.NDArray) -> npt.NDArray:
     if not data.shape[0] == 4:
         raise ValueError(
             trans._(
-                'Data shape does not match expected `[4, D]` shape specifying corners for the rectangle',
+                "Data shape does not match expected `[4, D]` shape specifying corners for the rectangle",
                 deferred=True,
             )
         )
@@ -523,9 +520,7 @@ def find_corners(data: npt.NDArray) -> npt.NDArray:
     return corners
 
 
-def center_radii_to_corners(
-    center: npt.NDArray, radii: npt.NDArray
-) -> npt.NDArray:
+def center_radii_to_corners(center: npt.NDArray, radii: npt.NDArray) -> npt.NDArray:
     """Expands a center and radii into a four corner rectangle
 
     Parameters
@@ -589,7 +584,7 @@ def triangulate_ellipse(
     if not corners.shape[0] == 4:
         raise ValueError(
             trans._(
-                'Data shape does not match expected `[4, D]` shape specifying corners for the ellipse',
+                "Data shape does not match expected `[4, D]` shape specifying corners for the ellipse",
                 deferred=True,
             )
         )
@@ -624,9 +619,9 @@ def triangulate_ellipse(
     # Shift back to center
     vertices = vertices + center
 
-    triangles = (
-        np.arange(num_segments) + np.array([[0], [1], [2]])
-    ).T * np.array([0, 1, 1])
+    triangles = (np.arange(num_segments) + np.array([[0], [1], [2]])).T * np.array(
+        [0, 1, 1]
+    )
     triangles[-1, 2] = 1
 
     return vertices, triangles
@@ -658,8 +653,8 @@ def triangulate_face(data: npt.NDArray) -> tuple[npt.NDArray, npt.NDArray]:
         # connect last with first vertex
         edges[-1, 1] = 0
 
-        res = triangulate({'vertices': data, 'segments': edges}, 'p')
-        vertices, triangles = res['vertices'], res['triangles']
+        res = triangulate({"vertices": data, "segments": edges}, "p")
+        vertices, triangles = res["vertices"], res["triangles"]
     elif _is_convex(data):
         vertices, triangles = _fan_triangulation(data)
     else:
@@ -717,9 +712,7 @@ def triangulate_edge(
             np.asarray(clean_path, dtype=np.float32), closed=closed
         )
     else:
-        centers, offsets, triangles = generate_tube_meshes(
-            clean_path, closed=closed
-        )
+        centers, offsets, triangles = generate_tube_meshes(clean_path, closed=closed)
 
     # offsets[2,1] = -0.5
     return centers, offsets, triangles
@@ -803,9 +796,7 @@ def generate_2D_edge_meshes(path, closed=False, limit=3, bevel=False):
     miters = 0.5 * (full_normals[:-1] + full_normals[1:])
 
     # scale miters such that their dot product with normals is 1
-    _mf_dot = np.expand_dims(
-        np.einsum('ij,ij->i', miters, full_normals[:-1]), -1
-    )
+    _mf_dot = np.expand_dims(np.einsum("ij,ij->i", miters, full_normals[:-1]), -1)
 
     miters = np.divide(
         miters,
@@ -826,14 +817,10 @@ def generate_2D_edge_meshes(path, closed=False, limit=3, bevel=False):
     offsets[::2] *= -1
 
     triangles0 = np.tile(np.array([[0, 1, 3], [0, 3, 2]]), (len(path) - 1, 1))
-    triangles = triangles0 + 2 * np.repeat(
-        np.arange(len(path) - 1)[:, np.newaxis], 2, 0
-    )
+    triangles = triangles0 + 2 * np.repeat(np.arange(len(path) - 1)[:, np.newaxis], 2, 0)
 
     # get vertex indices that are to be beveled
-    idx_bevel = np.where(
-        np.bitwise_or(bevel, miter_lengths_squared > (limit**2))
-    )[0]
+    idx_bevel = np.where(np.bitwise_or(bevel, miter_lengths_squared > (limit**2)))[0]
 
     if len(idx_bevel) > 0:
         idx_offset = (miter_signs[idx_bevel] < 0).astype(int)
@@ -846,13 +833,9 @@ def generate_2D_edge_meshes(path, closed=False, limit=3, bevel=False):
         sign_bevel = np.expand_dims(miter_signs[idx_bevel], -1)
 
         # adjust offset of outer offset
-        offsets[idx_bevel_outside] = (
-            -0.5 * full_normals[:-1][idx_bevel] * sign_bevel
-        )
+        offsets[idx_bevel_outside] = -0.5 * full_normals[:-1][idx_bevel] * sign_bevel
         # adjust/normalize length of inner offset
-        offsets[idx_bevel_inside] /= np.sqrt(
-            miter_lengths_squared[idx_bevel, np.newaxis]
-        )
+        offsets[idx_bevel_inside] /= np.sqrt(miter_lengths_squared[idx_bevel, np.newaxis])
 
         # special cases for the last vertex
         _nonspecial = idx_bevel != len(path) - 1
@@ -868,11 +851,9 @@ def generate_2D_edge_meshes(path, closed=False, limit=3, bevel=False):
 
         n_centers = len(centers)
         # change vertices of triangles to the newly added right vertices
-        triangles[2 * idx_bevel, idx_offset] = len(centers) + np.arange(
+        triangles[2 * idx_bevel, idx_offset] = len(centers) + np.arange(len(idx_bevel))
+        triangles[2 * idx_bevel + (1 - idx_offset), idx_offset] = n_centers + np.arange(
             len(idx_bevel)
-        )
-        triangles[2 * idx_bevel + (1 - idx_offset), idx_offset] = (
-            n_centers + np.arange(len(idx_bevel))
         )
 
         # add a new center/bevel triangle
@@ -969,9 +950,7 @@ def generate_tube_meshes(path, closed=False, tube_points=10):
     return centers, offsets, triangles
 
 
-def path_to_mask(
-    mask_shape: npt.NDArray, vertices: npt.NDArray
-) -> npt.NDArray[np.bool_]:
+def path_to_mask(mask_shape: npt.NDArray, vertices: npt.NDArray) -> npt.NDArray[np.bool_]:
     """Converts a path to a boolean mask with `True` for points lying along
     each edge.
 
@@ -999,7 +978,7 @@ def path_to_mask(
     vertices = vertices[~duplicates]
 
     iis, jjs = [], []
-    for v1, v2 in zip(vertices, vertices[1:]):
+    for v1, v2 in itertools.pairwise(vertices):
         ii, jj = line(*v1, *v2)
         iis.extend(ii.tolist())
         jjs.extend(jj.tolist())
@@ -1147,7 +1126,7 @@ def get_default_shape_type(current_type):
     default_type : str
         default shape type
     """
-    default = 'polygon'
+    default = "polygon"
     if not current_type:
         return default
     first_type = current_type[0]
@@ -1209,9 +1188,7 @@ def number_of_shapes(data):
     return n_shapes
 
 
-def validate_num_vertices(
-    data, shape_type, min_vertices=None, valid_vertices=None
-):
+def validate_num_vertices(data, shape_type, min_vertices=None, valid_vertices=None):
     """Raises error if a shape in data has invalid number of vertices.
 
     Checks whether all shapes in data have a valid number of vertices
@@ -1253,7 +1230,7 @@ def validate_num_vertices(
         ):
             raise ValueError(
                 trans._(
-                    '{shape_type} {shape} has invalid number of vertices: {shape_length}.',
+                    "{shape_type} {shape} has invalid number of vertices: {shape_length}.",
                     deferred=True,
                     shape_type=shape_type,
                     shape=shape,
@@ -1291,9 +1268,7 @@ def perpendicular_distance(
     t = np.dot(point - line_end, line_start - line_end) / np.dot(
         line_start - line_end, line_start - line_end
     )
-    return float(
-        np.linalg.norm(t * (line_start - line_end) + line_end - point)
-    )
+    return float(np.linalg.norm(t * (line_start - line_end) + line_end - point))
 
 
 def rdp(vertices: npt.NDArray, epsilon: float) -> npt.NDArray:

@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import finn.layers
 import networkx as nx
 import numpy as np
 import pandas as pd
-from finn.track_data_views.graph_attributes import NodeAttr
-
 from funtracks.data_model import NodeType, Tracks
+
+import finn.layers
+from finn.track_data_views.graph_attributes import NodeAttr
 
 
 def extract_sorted_tracks(
@@ -15,15 +15,17 @@ def extract_sorted_tracks(
     prev_df: pd.DataFrame | None = None,
 ) -> pd.DataFrame | None:
     """
-    Extract the information of individual tracks required for constructing the pyqtgraph plot. Follows the same logic as the relabel_segmentation
-    function from the Motile toolbox.
+    Extract the information of individual tracks required for constructing the pyqtgraph
+    plot. Follows the same logic as the relabel_segmentation function from the Motile
+    toolbox.
 
     Args:
         tracks (funtracks.data_model.Tracks): A tracks object containing a graph
             to be converted into a dataframe.
         colormap (finn.utils.CyclicLabelColormap): The colormap to use to
             extract the color of each node from the track ID
-        prev_df (pd.DataFrame, Optional). Dataframe that holds the previous track_df, including the order of the tracks.
+        prev_df (pd.DataFrame, Optional). Dataframe that holds the previous track_df, i
+            ncluding the order of the tracks.
 
     Returns:
         pd.DataFrame | None: data frame with all the information needed to
@@ -43,7 +45,8 @@ def extract_sorted_tracks(
     parent_nodes = [n for (n, d) in solution_nx_graph.out_degree() if d > 1]
     end_nodes = [n for (n, d) in solution_nx_graph.out_degree() if d == 0]
 
-    # Make a copy of the graph and remove outgoing edges from parent nodes to isolate tracks
+    # Make a copy of the graph and remove outgoing edges from parent nodes to isolate
+    # tracks
     soln_copy = solution_nx_graph.copy()
     for parent_node in parent_nodes:
         out_edges = solution_nx_graph.out_edges(parent_node)
@@ -51,7 +54,8 @@ def extract_sorted_tracks(
 
     # Process each weakly connected component as a separate track
     for node_set in nx.weakly_connected_components(soln_copy):
-        # Sort nodes in each weakly connected component by their time attribute to ensure correct order
+        # Sort nodes in each weakly connected component by their time attribute to
+        # ensure correct order
         sorted_nodes = sorted(
             node_set,
             key=lambda node: tracks.get_time(node),
@@ -144,12 +148,13 @@ def sort_track_ids(
     track_list: list[dict], prev_df: pd.DataFrame | None = None
 ) -> list[dict]:
     """
-    Sort track IDs such to maintain left-first order in the tree formed by parent-child relationships.
-    Used to determine the x-axis order of the tree plot.
+    Sort track IDs such to maintain left-first order in the tree formed by parent-child
+    relationships. Used to determine the x-axis order of the tree plot.
 
     Args:
         track_list (list): List of dictionaries with 'track_id' and 'parent_track_id'.
-        prev_df (pd.DataFrame, Optional). Dataframe that holds the previous track_df, including the order of the tracks.
+        prev_df (pd.DataFrame, Optional). Dataframe that holds the previous track_df,
+            including the order of the tracks.
 
     Returns:
         list: Ordered list of track IDs for the x-axis.
@@ -176,15 +181,18 @@ def sort_track_ids(
             "x_axis_pos"
         ].to_dict()  # node_id -> x_axis_pos
 
-        # Iterate over each new root and place it based on previous positions (to the right of its previous left neighbor)
+        # Iterate over each new root and place it based on previous positions (to the
+        # right of its previous left neighbor)
         for new_root in new_roots:
             new_node_id = track_id_map.get(new_root)
-            # if node_id of new root does not exist in track_id_map, it is a completely new node and we can skip the rest of the code below and add the new track at the end.
+            # if node_id of new root does not exist in track_id_map, it is a completely
+            # new node and we can skip the rest of the code below and add the new track
+            # at the end.
             if new_node_id and new_node_id in position_map:
-                prev_pos = position_map[
-                    new_node_id
-                ]  # Get the previous position of the new root
-                # Find which track was on the left of this new root based on previous x_axis_pos
+                # Get the previous position of the new root
+                prev_pos = position_map[new_node_id]
+                # Find which track was on the left of this new root based on previous
+                # x_axis_pos
                 left_track = prev_df.loc[
                     prev_df["x_axis_pos"] == prev_pos - 1, "track_id"
                 ].unique()
@@ -192,7 +200,7 @@ def sort_track_ids(
                     left_track_id = left_track[0]  # Get the track ID of the left track
                     # Check if the left_track is a root or further downstream
                     if left_track_id not in roots:
-                        # If the left_track is not a root, find the root associated with it
+                        # If the left_track is not a root, find its root
                         left_root = find_root(left_track_id, parent_map)
                     else:
                         # If left_track is already a root, use it as-is
@@ -203,7 +211,8 @@ def sort_track_ids(
                     # If no left track is found, insert the new root at the beginning
                     left_ind = -1
 
-                # Remove the new root from its current position and reinsert it after the left root
+                # Remove the new root from its current position and reinsert it after
+                # the left root
                 roots.remove(new_root)
                 roots.insert(left_ind + 1, new_root)
 

@@ -24,25 +24,19 @@ from finn.utils.geometry import (
 single_point = np.array([10, 10, 10])
 expected_point_single = np.array([[10, 0, 10]])
 expected_distance_single = np.array([10])
-multiple_point = np.array(
-    [[10, 10, 10], [20, 10, 30], [20, 40, 20], [10, -5, 30]]
-)
-expected_multiple_point = np.array(
-    [[10, 0, 10], [20, 0, 30], [20, 0, 20], [10, 0, 30]]
-)
+multiple_point = np.array([[10, 10, 10], [20, 10, 30], [20, 40, 20], [10, -5, 30]])
+expected_multiple_point = np.array([[10, 0, 10], [20, 0, 30], [20, 0, 20], [10, 0, 30]])
 expected_distance_multiple = np.array([10, 10, 40, -5])
 
 
 @pytest.mark.parametrize(
-    ('point', 'expected_projected_point', 'expected_distances'),
+    ("point", "expected_projected_point", "expected_distances"),
     [
         (single_point, expected_point_single, expected_distance_single),
         (multiple_point, expected_multiple_point, expected_distance_multiple),
     ],
 )
-def test_project_point_to_plane(
-    point, expected_projected_point, expected_distances
-):
+def test_project_point_to_plane(point, expected_projected_point, expected_distances):
     plane_point = np.array([20, 0, 0])
     plane_normal = np.array([0, 1, 0])
     projected_point, distance_to_plane = project_points_onto_plane(
@@ -54,7 +48,7 @@ def test_project_point_to_plane(
 
 
 @pytest.mark.parametrize(
-    ('vec_1', 'vec_2'),
+    ("vec_1", "vec_2"),
     [
         (np.array([10, 0]), np.array([0, 5])),
         (np.array([0, 5]), np.array([0, 5])),
@@ -73,7 +67,7 @@ def test_rotation_matrix_from_vectors_2d(vec_1, vec_2):
 
 
 @pytest.mark.parametrize(
-    ('vec_1', 'vec_2'),
+    ("vec_1", "vec_2"),
     [
         (np.array([10, 0, 0]), np.array([0, 5, 0])),
         (np.array([0, 5, 0]), np.array([0, 5, 0])),
@@ -94,11 +88,11 @@ def test_rotation_matrix_from_vectors_3d(vec_1, vec_2):
 
 @pytest.mark.parametrize(
     (
-        'line_position',
-        'line_direction',
-        'plane_position',
-        'plane_normal',
-        'expected',
+        "line_position",
+        "line_direction",
+        "plane_position",
+        "plane_normal",
+        "expected",
     ),
     [
         ([0, 0, 1], [0, 0, -1], [0, 0, 0], [0, 0, 1], [0, 0, 0]),
@@ -133,7 +127,7 @@ def test_intersect_line_with_multiple_planes_3d():
 
 
 @pytest.mark.parametrize(
-    ('point', 'bounding_box', 'expected'),
+    ("point", "bounding_box", "expected"),
     [
         ([5, 5, 5], np.array([[0, 10], [0, 10], [0, 10]]), [5, 5, 5]),
         ([10, 10, 10], np.array([[0, 10], [0, 10], [0, 10]]), [9, 9, 9]),
@@ -161,7 +155,7 @@ def test_clamp_multiple_points_to_bounding_box():
 
 
 @pytest.mark.parametrize(
-    ('bounding_box', 'face_normal', 'expected'),
+    ("bounding_box", "face_normal", "expected"),
     [
         (np.array([[5, 10], [10, 20], [20, 30]]), np.array([1, 0, 0]), 10),
         (np.array([[5, 10], [10, 20], [20, 30]]), np.array([-1, 0, 0]), 5),
@@ -171,27 +165,23 @@ def test_clamp_multiple_points_to_bounding_box():
         (np.array([[5, 10], [10, 20], [20, 30]]), np.array([0, 0, -1]), 20),
     ],
 )
-def test_face_coordinate_from_bounding_box(
-    bounding_box, face_normal, expected
-):
+def test_face_coordinate_from_bounding_box(bounding_box, face_normal, expected):
     """Test that the correct face coordinate is calculated.
 
     Face coordinate is a float which is the value where a face of a bounding box,
     defined by a face normal, intersects the axis the normal vector is aligned with.
     """
-    face_coordinate = face_coordinate_from_bounding_box(
-        bounding_box, face_normal
-    )
+    face_coordinate = face_coordinate_from_bounding_box(bounding_box, face_normal)
     np.testing.assert_allclose(expected, face_coordinate)
 
 
 @pytest.mark.parametrize(
     (
-        'plane_intercept',
-        'plane_normal',
-        'line_start',
-        'line_direction',
-        'expected',
+        "plane_intercept",
+        "plane_normal",
+        "line_start",
+        "line_direction",
+        "expected",
     ),
     [
         (
@@ -243,24 +233,12 @@ def test_bounding_box_to_face_vertices_3d():
     bounding_box = np.array([[5, 10], [15, 20], [25, 30]])
     face_vertices = bounding_box_to_face_vertices(bounding_box)
     expected = {
-        'x_pos': np.array(
-            [[5, 15, 30], [5, 20, 30], [10, 20, 30], [10, 15, 30]]
-        ),
-        'x_neg': np.array(
-            [[5, 15, 25], [5, 20, 25], [10, 20, 25], [10, 15, 25]]
-        ),
-        'y_pos': np.array(
-            [[5, 20, 25], [5, 20, 30], [10, 20, 30], [10, 20, 25]]
-        ),
-        'y_neg': np.array(
-            [[5, 15, 25], [5, 15, 30], [10, 15, 30], [10, 15, 25]]
-        ),
-        'z_pos': np.array(
-            [[10, 15, 25], [10, 15, 30], [10, 20, 30], [10, 20, 25]]
-        ),
-        'z_neg': np.array(
-            [[5, 15, 25], [5, 15, 30], [5, 20, 30], [5, 20, 25]]
-        ),
+        "x_pos": np.array([[5, 15, 30], [5, 20, 30], [10, 20, 30], [10, 15, 30]]),
+        "x_neg": np.array([[5, 15, 25], [5, 20, 25], [10, 20, 25], [10, 15, 25]]),
+        "y_pos": np.array([[5, 20, 25], [5, 20, 30], [10, 20, 30], [10, 20, 25]]),
+        "y_neg": np.array([[5, 15, 25], [5, 15, 30], [10, 15, 30], [10, 15, 25]]),
+        "z_pos": np.array([[10, 15, 25], [10, 15, 30], [10, 20, 30], [10, 20, 25]]),
+        "z_neg": np.array([[5, 15, 25], [5, 15, 30], [5, 20, 30], [5, 20, 25]]),
     }
     for k in face_vertices:
         np.testing.assert_allclose(expected[k], face_vertices[k])
@@ -273,31 +251,19 @@ def test_bounding_box_to_face_vertices_nd():
     bounding_box = np.array([[0, 0], [0, 0], [5, 10], [15, 20], [25, 30]])
     face_vertices = bounding_box_to_face_vertices(bounding_box)
     expected = {
-        'x_pos': np.array(
-            [[5, 15, 30], [5, 20, 30], [10, 20, 30], [10, 15, 30]]
-        ),
-        'x_neg': np.array(
-            [[5, 15, 25], [5, 20, 25], [10, 20, 25], [10, 15, 25]]
-        ),
-        'y_pos': np.array(
-            [[5, 20, 25], [5, 20, 30], [10, 20, 30], [10, 20, 25]]
-        ),
-        'y_neg': np.array(
-            [[5, 15, 25], [5, 15, 30], [10, 15, 30], [10, 15, 25]]
-        ),
-        'z_pos': np.array(
-            [[10, 15, 25], [10, 15, 30], [10, 20, 30], [10, 20, 25]]
-        ),
-        'z_neg': np.array(
-            [[5, 15, 25], [5, 15, 30], [5, 20, 30], [5, 20, 25]]
-        ),
+        "x_pos": np.array([[5, 15, 30], [5, 20, 30], [10, 20, 30], [10, 15, 30]]),
+        "x_neg": np.array([[5, 15, 25], [5, 20, 25], [10, 20, 25], [10, 15, 25]]),
+        "y_pos": np.array([[5, 20, 25], [5, 20, 30], [10, 20, 30], [10, 20, 25]]),
+        "y_neg": np.array([[5, 15, 25], [5, 15, 30], [10, 15, 30], [10, 15, 25]]),
+        "z_pos": np.array([[10, 15, 25], [10, 15, 30], [10, 20, 30], [10, 20, 25]]),
+        "z_neg": np.array([[5, 15, 25], [5, 15, 30], [5, 20, 30], [5, 20, 25]]),
     }
     for k in face_vertices:
         np.testing.assert_allclose(expected[k], face_vertices[k])
 
 
 @pytest.mark.parametrize(
-    ('triangle', 'expected'),
+    ("triangle", "expected"),
     [
         (np.array([[[-1, -1], [-1, 1], [1, 0]]]), True),
         (np.array([[[1, 1], [2, 1], [1.5, 2]]]), False),
@@ -312,7 +278,7 @@ def test_inside_triangles(triangle, expected):
 
 
 @pytest.mark.parametrize(
-    ('point', 'quadrilateral', 'expected'),
+    ("point", "quadrilateral", "expected"),
     [
         (
             np.array([0.5, 0.5]),
@@ -331,7 +297,7 @@ def test_point_in_quadrilateral_2d(point, quadrilateral, expected):
 
 
 @pytest.mark.parametrize(
-    ('click_position', 'quadrilateral', 'view_dir', 'expected'),
+    ("click_position", "quadrilateral", "view_dir", "expected"),
     [
         (
             np.array([0, 0, 0]),
@@ -353,21 +319,17 @@ def test_point_in_quadrilateral_2d(point, quadrilateral, expected):
         ),
     ],
 )
-def test_click_in_quadrilateral_3d(
-    click_position, quadrilateral, view_dir, expected
-):
+def test_click_in_quadrilateral_3d(click_position, quadrilateral, view_dir, expected):
     """Test that click in quadrilateral 3d determines whether the projection
     of a 3D point onto a plane falls within a 3d quadrilateral projected
     onto the same plane
     """
-    in_quadrilateral = line_in_quadrilateral_3d(
-        click_position, view_dir, quadrilateral
-    )
+    in_quadrilateral = line_in_quadrilateral_3d(click_position, view_dir, quadrilateral)
     assert in_quadrilateral == expected
 
 
 @pytest.mark.parametrize(
-    ('click_position', 'bounding_box', 'view_dir', 'expected'),
+    ("click_position", "bounding_box", "view_dir", "expected"),
     [
         (
             np.array([5, 5, 5]),
@@ -395,9 +357,7 @@ def test_click_in_quadrilateral_3d(
         ),
     ],
 )
-def test_find_front_back_face(
-    click_position, bounding_box, view_dir, expected
-):
+def test_find_front_back_face(click_position, bounding_box, view_dir, expected):
     """Test that find front_back face finds the faces of an axis aligned
     bounding box that a ray intersects with.
     """
@@ -411,11 +371,11 @@ def test_find_front_back_face(
 
 @pytest.mark.parametrize(
     (
-        'line_position',
-        'line_direction',
-        'bounding_box',
-        'face_normal',
-        'expected',
+        "line_position",
+        "line_direction",
+        "bounding_box",
+        "face_normal",
+        "expected",
     ),
     [
         (
@@ -474,9 +434,7 @@ def test_distance_between_point_and_line_3d():
     point = point_on_line + expected_distance * np.array([0, 1, 0])
 
     # calculate distance and check that it is correct
-    distance = distance_between_point_and_line_3d(
-        point, line_position, line_direction
-    )
+    distance = distance_between_point_and_line_3d(point, line_position, line_direction)
 
     np.testing.assert_allclose(distance, expected_distance)
 
@@ -496,7 +454,7 @@ def test_line_in_triangles_3d():
 
 
 @pytest.mark.parametrize(
-    ('ray_start', 'ray_direction', 'expected_index', 'expected_position'),
+    ("ray_start", "ray_direction", "expected_index", "expected_position"),
     [
         ([0, 1, 1], [1, 0, 0], 0, [3, 1, 1]),
         ([6, 1, 1], [-1, 0, 0], 1, [5, 1, 1]),

@@ -14,7 +14,7 @@ except ImportError:
 
 from finn.utils.io import imsave_png
 
-__all__ = ['NotebookScreenshot', 'nbscreenshot']
+__all__ = ["NotebookScreenshot", "nbscreenshot"]
 
 
 class NotebookScreenshot:
@@ -79,9 +79,9 @@ class NotebookScreenshot:
         if alt_text is not None:
             if lxml_unavailable:
                 warn(
-                    'The lxml_html_clean library is not installed, and is '
-                    'required to sanitize alt text for napari screenshots. '
-                    'Alt Text will be stripped altogether.'
+                    "The lxml_html_clean library is not installed, and is "
+                    "required to sanitize alt text for napari screenshots. "
+                    "Alt Text will be stripped altogether."
                 )
                 return None
             # cleaner won't recognize escaped script tags, so always unescape
@@ -93,11 +93,11 @@ class NotebookScreenshot:
                 alt_text = cleaner.clean_html(doc).text_content()
             except ParserError:
                 warn(
-                    'The provided alt text does not constitute valid html, so it was discarded.',
+                    "The provided alt text does not constitute valid html, so it was discarded.",
                     stacklevel=3,
                 )
-                alt_text = ''
-            if alt_text == '':
+                alt_text = ""
+            if alt_text == "":
                 alt_text = None
         return alt_text
 
@@ -111,9 +111,7 @@ class NotebookScreenshot:
         from finn._qt.qt_event_loop import get_qapp
 
         get_qapp().processEvents()
-        self.image = self.viewer.screenshot(
-            canvas_only=self.canvas_only, flash=False
-        )
+        self.image = self.viewer.screenshot(canvas_only=self.canvas_only, flash=False)
         with BytesIO() as file_obj:
             imsave_png(file_obj, self.image)
             file_obj.seek(0)
@@ -122,8 +120,8 @@ class NotebookScreenshot:
 
     def _repr_html_(self):
         png = self._repr_png_()
-        url = 'data:image/png;base64,' + base64.b64encode(png).decode('utf-8')
-        _alt = html.escape(self.alt_text) if self.alt_text is not None else ''
+        url = "data:image/png;base64," + base64.b64encode(png).decode("utf-8")
+        _alt = html.escape(self.alt_text) if self.alt_text is not None else ""
         return f'<img src="{url}" alt="{_alt}"></img>'
 
 

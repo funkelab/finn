@@ -1,4 +1,4 @@
-from typing import Callable
+from collections.abc import Callable
 
 from finn.layers.base._base_constants import Mode
 from finn.layers.utils.layer_utils import (
@@ -18,15 +18,15 @@ def register_vectors_action(
 def register_vectors_mode_action(
     description: str,
 ) -> Callable[[Callable], Callable]:
-    return register_layer_attr_action(Vectors, description, 'mode')
+    return register_layer_attr_action(Vectors, description, "mode")
 
 
-@register_vectors_mode_action(trans._('Transform'))
+@register_vectors_mode_action(trans._("Transform"))
 def activate_vectors_transform_mode(layer: Vectors) -> None:
     layer.mode = str(Mode.TRANSFORM)
 
 
-@register_vectors_mode_action(trans._('Pan/zoom'))
+@register_vectors_mode_action(trans._("Pan/zoom"))
 def activate_vectors_pan_zoom_mode(layer: Vectors) -> None:
     layer.mode = str(Mode.PAN_ZOOM)
 

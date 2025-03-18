@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
-
 import numpy as np
 from vispy.color import Colormap as VispyColormap
 from vispy.scene import Node
@@ -22,12 +20,9 @@ from finn.utils.translations import trans
 
 class ImageLayerNode(ScalarFieldLayerNode):
     def __init__(
-        self, custom_node: Node = None, texture_format: Optional[str] = None
+        self, custom_node: Node = None, texture_format: str | None = None
     ) -> None:
-        if (
-            texture_format == 'auto'
-            and 'texture_float' not in get_gl_extensions()
-        ):
+        if texture_format == "auto" and "texture_float" not in get_gl_extensions():
             # if the GPU doesn't support float textures, texture_format auto
             # WILL fail on float dtypes
             # https://github.com/napari/napari/issues/3988
@@ -37,10 +32,10 @@ class ImageLayerNode(ScalarFieldLayerNode):
         self._image_node = ImageNode(
             (
                 None
-                if (texture_format is None or texture_format == 'auto')
+                if (texture_format is None or texture_format == "auto")
                 else np.array([[0.0]], dtype=np.float32)
             ),
-            method='auto',
+            method="auto",
             texture_format=texture_format,
         )
         self._volume_node = VolumeNode(
@@ -49,9 +44,7 @@ class ImageLayerNode(ScalarFieldLayerNode):
             texture_format=texture_format,
         )
 
-    def get_node(
-        self, ndisplay: int, dtype: Optional[np.dtype] = None
-    ) -> Node:
+    def get_node(self, ndisplay: int, dtype: np.dtype | None = None) -> Node:
         # Return custom node if we have one.
         if self._custom_node is not None:
             return self._custom_node
@@ -59,7 +52,7 @@ class ImageLayerNode(ScalarFieldLayerNode):
         # Return Image or Volume node based on 2D or 3D.
         res = self._image_node if ndisplay == 2 else self._volume_node
         if (
-            res.texture_format not in {'auto', None}
+            res.texture_format not in {"auto", None}
             and dtype is not None
             and _VISPY_FORMAT_TO_DTYPE[res.texture_format] != dtype
         ):
@@ -68,7 +61,7 @@ class ImageLayerNode(ScalarFieldLayerNode):
             # textures for our data
             raise ValueError(
                 trans._(
-                    'dtype {dtype} does not match texture_format={texture_format}',
+                    "dtype {dtype} does not match texture_format={texture_format}",
                     dtype=dtype,
                     texture_format=res.texture_format,
                 )
@@ -83,7 +76,7 @@ class VispyImageLayer(VispyScalarFieldBaseLayer):
         self,
         layer: Image,
         node=None,
-        texture_format='auto',
+        texture_format="auto",
         layer_node_class=ImageLayerNode,
     ) -> None:
         super().__init__(
@@ -93,15 +86,9 @@ class VispyImageLayer(VispyScalarFieldBaseLayer):
             layer_node_class=layer_node_class,
         )
 
-        self.layer.events.interpolation2d.connect(
-            self._on_interpolation_change
-        )
-        self.layer.events.interpolation3d.connect(
-            self._on_interpolation_change
-        )
-        self.layer.events.contrast_limits.connect(
-            self._on_contrast_limits_change
-        )
+        self.layer.events.interpolation2d.connect(self._on_interpolation_change)
+        self.layer.events.interpolation3d.connect(self._on_interpolation_change)
+        self.layer.events.contrast_limits.connect(self._on_contrast_limits_change)
         self.layer.events.gamma.connect(self._on_gamma_change)
         self.layer.events.iso_threshold.connect(self._on_iso_threshold_change)
         self.layer.events.attenuation.connect(self._on_attenuation_change)
@@ -164,9 +151,7 @@ class VispyImageLayer(VispyScalarFieldBaseLayer):
         if isinstance(self.node, VolumeNode):
             if self.node._texture.is_normalized:
                 cmin, cmax = self.layer.contrast_limits_range
-                self.node.threshold = (self.layer.iso_threshold - cmin) / (
-                    cmax - cmin
-                )
+                self.node.threshold = (self.layer.iso_threshold - cmin) / (cmax - cmin)
             else:
                 self.node.threshold = self.layer.iso_threshold
 

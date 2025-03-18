@@ -10,7 +10,7 @@ from finn._tests.utils import (
 )
 
 
-@pytest.mark.parametrize(('Layer', 'data', 'ndim'), layer_test_data)
+@pytest.mark.parametrize(("Layer", "data", "ndim"), layer_test_data)
 def test_attrs_arrays(Layer, data, ndim):
     """Test layer attributes and arrays."""
     np.random.seed(0)
@@ -36,12 +36,10 @@ def test_attrs_arrays(Layer, data, ndim):
 
     # Check that new layer matches old on all properties:
     for prop in properties:
-        assert are_objects_equal(
-            getattr(layer, prop), getattr(new_layer, prop)
-        )
+        assert are_objects_equal(getattr(layer, prop), getattr(new_layer, prop))
 
 
-@pytest.mark.parametrize(('Layer', 'data', 'ndim'), layer_test_data)
+@pytest.mark.parametrize(("Layer", "data", "ndim"), layer_test_data)
 def test_no_callbacks(Layer, data, ndim):
     """Test no internal callbacks for layer emitters."""
     layer = Layer(data)

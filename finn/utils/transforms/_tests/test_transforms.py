@@ -14,20 +14,20 @@ REG = pint.get_application_registry()
 PIXEL = REG.pixel
 
 
-@pytest.mark.parametrize('Transform', transform_types)
+@pytest.mark.parametrize("Transform", transform_types)
 def test_scale_translate(Transform):
     coord = [10, 13]
-    transform = Transform(scale=[2, 3], translate=[8, -5], name='st')
+    transform = Transform(scale=[2, 3], translate=[8, -5], name="st")
     assert transform._is_diagonal
     new_coord = transform(coord)
     target_coord = [2 * 10 + 8, 3 * 13 - 5]
-    assert transform.name == 'st'
+    assert transform.name == "st"
     npt.assert_allclose(new_coord, target_coord)
 
 
-@pytest.mark.parametrize('Transform', [Affine, CompositeAffine])
+@pytest.mark.parametrize("Transform", [Affine, CompositeAffine])
 def test_affine_is_diagonal(Transform):
-    transform = Transform(scale=[2, 3], translate=[8, -5], name='st')
+    transform = Transform(scale=[2, 3], translate=[8, -5], name="st")
     assert transform._is_diagonal
     transform.rotate = 5.0
     assert not transform._is_diagonal
@@ -38,37 +38,37 @@ def test_affine_is_diagonal(Transform):
 
 
 def test_diagonal_scale_setter():
-    diag_transform = Affine(scale=[2, 3], name='st')
+    diag_transform = Affine(scale=[2, 3], name="st")
     assert diag_transform._is_diagonal
     diag_transform.scale = [1]
     npt.assert_allclose(diag_transform.scale, [1.0, 1.0])
 
 
-@pytest.mark.parametrize('Transform', transform_types)
+@pytest.mark.parametrize("Transform", transform_types)
 def test_scale_translate_broadcast_scale(Transform):
     coord = [1, 10, 13]
-    transform = Transform(scale=[4, 2, 3], translate=[8, -5], name='st')
+    transform = Transform(scale=[4, 2, 3], translate=[8, -5], name="st")
     new_coord = transform(coord)
     target_coord = [4, 2 * 10 + 8, 3 * 13 - 5]
-    assert transform.name == 'st'
+    assert transform.name == "st"
     npt.assert_allclose(transform.scale, [4, 2, 3])
     npt.assert_allclose(transform.translate, [0, 8, -5])
     npt.assert_allclose(new_coord, target_coord)
 
 
-@pytest.mark.parametrize('Transform', transform_types)
+@pytest.mark.parametrize("Transform", transform_types)
 def test_scale_translate_broadcast_translate(Transform):
     coord = [1, 10, 13]
-    transform = Transform(scale=[2, 3], translate=[5, 8, -5], name='st')
+    transform = Transform(scale=[2, 3], translate=[5, 8, -5], name="st")
     new_coord = transform(coord)
     target_coord = [6, 2 * 10 + 8, 3 * 13 - 5]
-    assert transform.name == 'st'
+    assert transform.name == "st"
     npt.assert_allclose(transform.scale, [1, 2, 3])
     npt.assert_allclose(transform.translate, [5, 8, -5])
     npt.assert_allclose(new_coord, target_coord)
 
 
-@pytest.mark.parametrize('Transform', transform_types)
+@pytest.mark.parametrize("Transform", transform_types)
 def test_scale_translate_inverse(Transform):
     coord = [10, 13]
     transform = Transform(scale=[2, 3], translate=[8, -5])
@@ -80,7 +80,7 @@ def test_scale_translate_inverse(Transform):
     npt.assert_allclose(inverted_new_coord, coord)
 
 
-@pytest.mark.parametrize('Transform', transform_types)
+@pytest.mark.parametrize("Transform", transform_types)
 def test_scale_translate_compose(Transform):
     coord = [10, 13]
     transform_a = Transform(scale=[2, 3], translate=[8, -5])
@@ -92,29 +92,25 @@ def test_scale_translate_compose(Transform):
     npt.assert_allclose(new_coord_1, new_coord_2)
 
 
-@pytest.mark.parametrize('Transform', transform_types)
+@pytest.mark.parametrize("Transform", transform_types)
 def test_scale_translate_slice(Transform):
     transform_a = Transform(scale=[2, 3], translate=[8, -5])
-    transform_b = Transform(scale=[2, 1, 3], translate=[8, 3, -5], name='st')
+    transform_b = Transform(scale=[2, 1, 3], translate=[8, 3, -5], name="st")
     npt.assert_allclose(transform_b.set_slice([0, 2]).scale, transform_a.scale)
-    npt.assert_allclose(
-        transform_b.set_slice([0, 2]).translate, transform_a.translate
-    )
-    assert transform_b.set_slice([0, 2]).name == 'st'
+    npt.assert_allclose(transform_b.set_slice([0, 2]).translate, transform_a.translate)
+    assert transform_b.set_slice([0, 2]).name == "st"
 
 
-@pytest.mark.parametrize('Transform', transform_types)
+@pytest.mark.parametrize("Transform", transform_types)
 def test_scale_translate_expand_dims(Transform):
-    transform_a = Transform(scale=[2, 3], translate=[8, -5], name='st')
+    transform_a = Transform(scale=[2, 3], translate=[8, -5], name="st")
     transform_b = Transform(scale=[2, 1, 3], translate=[8, 0, -5])
     npt.assert_allclose(transform_a.expand_dims([1]).scale, transform_b.scale)
-    npt.assert_allclose(
-        transform_a.expand_dims([1]).translate, transform_b.translate
-    )
-    assert transform_a.expand_dims([1]).name == 'st'
+    npt.assert_allclose(transform_a.expand_dims([1]).translate, transform_b.translate)
+    assert transform_a.expand_dims([1]).name == "st"
 
 
-@pytest.mark.parametrize('Transform', transform_types)
+@pytest.mark.parametrize("Transform", transform_types)
 def test_scale_translate_identity_default(Transform):
     coord = [10, 13]
     transform = Transform()
@@ -203,7 +199,7 @@ def test_scale_translate_rotate_shear_compose():
     npt.assert_allclose(new_coord_1, new_coord_2)
 
 
-@pytest.mark.parametrize('dimensionality', [2, 3])
+@pytest.mark.parametrize("dimensionality", [2, 3])
 def test_affine_matrix(dimensionality):
     np.random.seed(0)
     N = dimensionality
@@ -228,7 +224,7 @@ def test_affine_matrix(dimensionality):
     np.testing.assert_almost_equal(result_transform, result_mat_multiply)
 
 
-@pytest.mark.parametrize('dimensionality', [2, 3])
+@pytest.mark.parametrize("dimensionality", [2, 3])
 def test_affine_matrix_compose(dimensionality):
     np.random.seed(0)
     N = dimensionality
@@ -254,7 +250,7 @@ def test_affine_matrix_compose(dimensionality):
     np.testing.assert_almost_equal(transform_C.affine_matrix, C)
 
 
-@pytest.mark.parametrize('dimensionality', [2, 3])
+@pytest.mark.parametrize("dimensionality", [2, 3])
 def test_numpy_array_protocol(dimensionality):
     N = dimensionality
     A = np.eye(N + 1)
@@ -270,7 +266,7 @@ def test_numpy_array_protocol(dimensionality):
     )
 
 
-@pytest.mark.parametrize('dimensionality', [2, 3])
+@pytest.mark.parametrize("dimensionality", [2, 3])
 def test_affine_matrix_inverse(dimensionality):
     np.random.seed(0)
     N = dimensionality
@@ -285,9 +281,7 @@ def test_affine_matrix_inverse(dimensionality):
     np.testing.assert_almost_equal(transform.affine_matrix, A)
 
     # Check inverse is create correctly
-    np.testing.assert_almost_equal(
-        transform.inverse.affine_matrix, np.linalg.inv(A)
-    )
+    np.testing.assert_almost_equal(transform.inverse.affine_matrix, np.linalg.inv(A))
 
 
 def test_repeat_shear_setting():
@@ -311,7 +305,7 @@ def test_repeat_shear_setting():
     np.testing.assert_almost_equal(mat, transform.shear)
 
 
-@pytest.mark.parametrize('dimensionality', [2, 3])
+@pytest.mark.parametrize("dimensionality", [2, 3])
 def test_composite_affine_equiv_to_affine(dimensionality):
     np.random.seed(0)
     translate = np.random.randn(dimensionality)
@@ -322,13 +316,9 @@ def test_composite_affine_equiv_to_affine(dimensionality):
     composite = CompositeAffine(
         translate=translate, scale=scale, rotate=rotate, shear=shear
     )
-    affine = Affine(
-        translate=translate, scale=scale, rotate=rotate, shear=shear
-    )
+    affine = Affine(translate=translate, scale=scale, rotate=rotate, shear=shear)
 
-    np.testing.assert_almost_equal(
-        composite.affine_matrix, affine.affine_matrix
-    )
+    np.testing.assert_almost_equal(composite.affine_matrix, affine.affine_matrix)
 
 
 def test_replace_slice_independence():
@@ -354,9 +344,7 @@ def test_replace_slice_independence():
 
 
 def test_replace_slice_num_dimensions():
-    with pytest.raises(
-        ValueError, match='provided axes list and transform differ'
-    ):
+    with pytest.raises(ValueError, match="provided axes list and transform differ"):
         Affine().replace_slice([0], Affine())
 
 
@@ -374,7 +362,7 @@ def test_affine_rotate_3d():
     )
 
 
-@pytest.mark.parametrize('AffineType', affine_type)
+@pytest.mark.parametrize("AffineType", affine_type)
 def test_empty_units(AffineType):
     assert AffineType(ndim=2).units == (PIXEL, PIXEL)
     assert AffineType(ndim=3).units == (PIXEL, PIXEL, PIXEL)
@@ -386,67 +374,67 @@ def test_empty_units(AffineType):
     )
 
 
-@pytest.mark.parametrize('AffineType', affine_type)
+@pytest.mark.parametrize("AffineType", affine_type)
 def test_set_units_constructor(AffineType):
-    assert AffineType(ndim=2, units=('mm', 'mm')).units == (REG.mm, REG.mm)
+    assert AffineType(ndim=2, units=("mm", "mm")).units == (REG.mm, REG.mm)
     assert AffineType(ndim=2, units=(REG.m, REG.m)).units == (REG.m, REG.m)
 
     # TODO I think that we should normalize all units of same dimensionality
     # to the same registry, but this is not currently the case.
-    assert AffineType(ndim=2, units=('cm', 'mm')).units == (REG.cm, REG.mm)
+    assert AffineType(ndim=2, units=("cm", "mm")).units == (REG.cm, REG.mm)
 
 
-@pytest.mark.parametrize('AffineType', affine_type)
+@pytest.mark.parametrize("AffineType", affine_type)
 def test_set_units_constructor_error(AffineType):
-    with pytest.raises(ValueError, match='must have length ndim'):
-        AffineType(ndim=2, units=('mm', 'mm', 'mm'))
+    with pytest.raises(ValueError, match="must have length ndim"):
+        AffineType(ndim=2, units=("mm", "mm", "mm"))
 
-    with pytest.raises(ValueError, match='Could not find unit'):
-        AffineType(ndim=2, units=('ugh', 'ugh'))
+    with pytest.raises(ValueError, match="Could not find unit"):
+        AffineType(ndim=2, units=("ugh", "ugh"))
 
 
-@pytest.mark.parametrize('AffineType', affine_type)
+@pytest.mark.parametrize("AffineType", affine_type)
 def test_set_units_error(AffineType):
     affine = AffineType(ndim=2)
-    with pytest.raises(ValueError, match='must have length ndim'):
-        affine.units = ('m', 'm', 'm')
+    with pytest.raises(ValueError, match="must have length ndim"):
+        affine.units = ("m", "m", "m")
 
-    with pytest.raises(ValueError, match='Could not find unit'):
-        affine.units = ('ugh', 'ugh')
+    with pytest.raises(ValueError, match="Could not find unit"):
+        affine.units = ("ugh", "ugh")
 
 
-@pytest.mark.parametrize('AffineType', affine_type)
+@pytest.mark.parametrize("AffineType", affine_type)
 def test_set_units(AffineType):
     affine = AffineType(ndim=2)
-    affine.units = ('mm', 'mm')
+    affine.units = ("mm", "mm")
     assert affine.units == (REG.mm, REG.mm)
 
     affine.units = (REG.m, REG.m)
     assert affine.units == (REG.m, REG.m)
 
 
-@pytest.mark.parametrize('AffineType', affine_type)
+@pytest.mark.parametrize("AffineType", affine_type)
 def test_empty_axis_labels(AffineType):
-    assert AffineType(ndim=2).axis_labels == ('axis -2', 'axis -1')
-    assert AffineType(ndim=3).axis_labels == ('axis -3', 'axis -2', 'axis -1')
+    assert AffineType(ndim=2).axis_labels == ("axis -2", "axis -1")
+    assert AffineType(ndim=3).axis_labels == ("axis -3", "axis -2", "axis -1")
 
 
-@pytest.mark.parametrize('AffineType', affine_type)
+@pytest.mark.parametrize("AffineType", affine_type)
 def test_set_axis_labels(AffineType):
     affine = AffineType(ndim=2)
-    affine.axis_labels = ('x', 'y')
-    assert affine.axis_labels == ('x', 'y')
+    affine.axis_labels = ("x", "y")
+    assert affine.axis_labels == ("x", "y")
 
 
-@pytest.mark.parametrize('AffineType', affine_type)
+@pytest.mark.parametrize("AffineType", affine_type)
 def test_set_axis_labels_error(AffineType):
     affine = AffineType(ndim=2)
-    with pytest.raises(ValueError, match='must have length ndim'):
-        affine.axis_labels = ('x', 'y', 'z')
+    with pytest.raises(ValueError, match="must have length ndim"):
+        affine.axis_labels = ("x", "y", "z")
 
 
-@pytest.mark.parametrize('AffineType', affine_type)
+@pytest.mark.parametrize("AffineType", affine_type)
 def test_set_axis_error(AffineType):
     affine = AffineType(ndim=2)
-    with pytest.raises(ValueError, match='must have length ndim'):
-        affine.axis_labels = ('x', 'y', 'z')
+    with pytest.raises(ValueError, match="must have length ndim"):
+        affine.axis_labels = ("x", "y", "z")

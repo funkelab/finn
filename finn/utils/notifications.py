@@ -5,34 +5,33 @@ import os
 import sys
 import threading
 import warnings
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from datetime import datetime
 from enum import auto
 from types import TracebackType
-from typing import Callable, Optional, Union
 
 from finn.utils.events import Event, EventEmitter
 from finn.utils.misc import StringEnum
 
 name2num = {
-    'error': 40,
-    'warning': 30,
-    'info': 20,
-    'debug': 10,
-    'none': 0,
+    "error": 40,
+    "warning": 30,
+    "info": 20,
+    "debug": 10,
+    "none": 0,
 }
 
 __all__ = [
-    'ErrorNotification',
-    'Notification',
-    'NotificationManager',
-    'NotificationSeverity',
-    'WarningNotification',
-    'show_console_notification',
-    'show_debug',
-    'show_error',
-    'show_info',
-    'show_warning',
+    "ErrorNotification",
+    "Notification",
+    "NotificationManager",
+    "NotificationSeverity",
+    "WarningNotification",
+    "show_console_notification",
+    "show_debug",
+    "show_error",
+    "show_info",
+    "show_warning",
 ]
 
 
@@ -47,11 +46,11 @@ class NotificationSeverity(StringEnum):
 
     def as_icon(self):
         return {
-            self.ERROR: 'ⓧ',
-            self.WARNING: '⚠️',
-            self.INFO: 'ⓘ',
-            self.DEBUG: '🐛',
-            self.NONE: '',
+            self.ERROR: "ⓧ",
+            self.WARNING: "⚠️",
+            self.INFO: "ⓘ",
+            self.DEBUG: "🐛",
+            self.NONE: "",
         }[self]
 
     def __lt__(self, other):
@@ -96,9 +95,7 @@ class Notification(Event):
     def __init__(
         self,
         message: str,
-        severity: Union[
-            str, NotificationSeverity
-        ] = NotificationSeverity.WARNING,
+        severity: str | NotificationSeverity = NotificationSeverity.WARNING,
         actions: ActionSequence = (),
         **kwargs,
     ) -> None:
@@ -127,7 +124,7 @@ class Notification(Event):
         return WarningNotification(warning, **kwargs)
 
     def __str__(self):
-        return f'{str(self.severity).upper()}: {self.message}'
+        return f"{str(self.severity).upper()}: {self.message}"
 
 
 class ErrorNotification(Notification):
@@ -138,8 +135,8 @@ class ErrorNotification(Notification):
     exception: BaseException
 
     def __init__(self, exception: BaseException, *args, **kwargs) -> None:
-        msg = getattr(exception, 'message', str(exception))
-        actions = getattr(exception, 'actions', ())
+        msg = getattr(exception, "message", str(exception))
+        actions = getattr(exception, "actions", ())
         super().__init__(msg, NotificationSeverity.ERROR, actions)
         self.exception = exception
 
@@ -163,7 +160,7 @@ class ErrorNotification(Notification):
             self.exception,
             self.exception.__traceback__,
         )
-        return fmt(exc_info, as_html=False, color='NoColor')
+        return fmt(exc_info, as_html=False, color="NoColor")
 
     def __str__(self):
         from finn.utils._tracebacks import get_tb_formatter
@@ -187,8 +184,8 @@ class WarningNotification(Notification):
     def __init__(
         self, warning: Warning, filename=None, lineno=None, *args, **kwargs
     ) -> None:
-        msg = getattr(warning, 'message', str(warning))
-        actions = getattr(warning, 'actions', ())
+        msg = getattr(warning, "message", str(warning))
+        actions = getattr(warning, "actions", ())
         super().__init__(msg, NotificationSeverity.WARNING, actions)
         self.warning = warning
         self.filename = filename
@@ -196,7 +193,7 @@ class WarningNotification(Notification):
 
     def __str__(self):
         category = type(self.warning).__name__
-        return f'{self.filename}:{self.lineno}: {category}: {self.warning}!'
+        return f"{self.filename}:{self.lineno}: {category}: {self.warning}!"
 
 
 class NotificationManager:
@@ -221,14 +218,14 @@ class NotificationManager:
     """
 
     records: list[Notification]
-    _instance: Optional[NotificationManager] = None
+    _instance: NotificationManager | None = None
 
     def __init__(self) -> None:
         self.records: list[Notification] = []
-        self.exit_on_error = os.getenv('NAPARI_EXIT_ON_ERROR') in ('1', 'True')
-        self.catch_error = os.getenv('NAPARI_CATCH_ERRORS') not in (
-            '0',
-            'False',
+        self.exit_on_error = os.getenv("NAPARI_EXIT_ON_ERROR") in ("1", "True")
+        self.catch_error = os.getenv("NAPARI_CATCH_ERRORS") not in (
+            "0",
+            "False",
         )
         self.notification_ready = self.changed = EventEmitter(
             source=self, event_class=Notification
@@ -251,7 +248,7 @@ class NotificationManager:
         threading.excepthook to display any message in the UI,
         storing the previous hooks to be restored if necessary.
         """
-        if getattr(threading, 'excepthook', None):
+        if getattr(threading, "excepthook", None):
             # TODO: we might want to display the additional thread information
             self._originals_thread_except_hooks.append(threading.excepthook)
             threading.excepthook = self.receive_thread_error
@@ -269,7 +266,7 @@ class NotificationManager:
         """
         Remove hooks installed by `install_hooks` and restore previous hooks.
         """
-        if getattr(threading, 'excepthook', None):
+        if getattr(threading, "excepthook", None):
             # `threading.excepthook` available only for Python >= 3.8
             threading.excepthook = self._originals_thread_except_hooks.pop()
 
@@ -285,8 +282,8 @@ class NotificationManager:
         args: tuple[
             type[BaseException],
             BaseException,
-            Optional[TracebackType],
-            Optional[threading.Thread],
+            TracebackType | None,
+            threading.Thread | None,
         ],
     ):
         self.receive_error(*args)
@@ -295,15 +292,15 @@ class NotificationManager:
         self,
         exctype: type[BaseException],
         value: BaseException,
-        traceback: Optional[TracebackType] = None,
-        thread: Optional[threading.Thread] = None,
+        traceback: TracebackType | None = None,
+        thread: threading.Thread | None = None,
     ):
         if isinstance(value, KeyboardInterrupt):
-            sys.exit('Closed by KeyboardInterrupt')
+            sys.exit("Closed by KeyboardInterrupt")
 
         if self.exit_on_error:
             sys.__excepthook__(exctype, value, traceback)
-            sys.exit('Exit on error')
+            sys.exit("Exit on error")
         if not self.catch_error:
             sys.__excepthook__(exctype, value, traceback)
             return
@@ -323,13 +320,11 @@ class NotificationManager:
             return
         self._seen_warnings.add((msg, category, filename, lineno))
         self.dispatch(
-            Notification.from_warning(
-                message, filename=filename, lineno=lineno
-            )
+            Notification.from_warning(message, filename=filename, lineno=lineno)
         )
 
     def receive_info(self, message: str):
-        self.dispatch(Notification(message, 'INFO'))
+        self.dispatch(Notification(message, "INFO"))
 
 
 notification_manager = NotificationManager()
@@ -378,18 +373,15 @@ def show_console_notification(notification: Notification):
     try:
         from finn.settings import get_settings
 
-        if (
-            notification.severity
-            < get_settings().application.console_notification_level
-        ):
+        if notification.severity < get_settings().application.console_notification_level:
             return
 
         print(notification)  # noqa: T201
     except Exception:
         logging.exception(
-            'An error occurred while trying to format an error and show it in console.\n'
-            'You can try to uninstall IPython to disable rich traceback formatting\n'
-            'And/or report a bug to napari'
+            "An error occurred while trying to format an error and show it in console.\n"
+            "You can try to uninstall IPython to disable rich traceback formatting\n"
+            "And/or report a bug to napari"
         )
         # this will likely get silenced by QT.
         raise

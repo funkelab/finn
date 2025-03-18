@@ -9,11 +9,11 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
-from ..load_tracks import tracks_from_df
-from .csv_widget import CSVWidget
-from .measurement_widget import MeasurementWidget
-from .metadata_menu import MetadataMenu
-from .segmentation_widget import SegmentationWidget
+from finn.track_import_export.load_tracks import tracks_from_df
+from finn.track_import_export.menus.csv_widget import CSVWidget
+from finn.track_import_export.menus.measurement_widget import MeasurementWidget
+from finn.track_import_export.menus.metadata_menu import MetadataMenu
+from finn.track_import_export.menus.segmentation_widget import SegmentationWidget
 
 
 class ImportTracksDialog(QDialog):
@@ -69,13 +69,16 @@ class ImportTracksDialog(QDialog):
         # Optional Page 3 with segmentation information
         self.segmentation_page = None
 
-        # Optional Page 4 with measurement attributes that should be calculated (only if segmentation is provided)
+        # Optional Page 4 with measurement attributes that should be calculated
+        # (only if segmentation is provided)
         self.measurement_widget = None
 
         self._update_buttons()
 
     def _update_measurement_widget(self) -> None:
-        """Update the measurement widget based on the data dimensions and on columns that have not been picked in the csv_field_widget"""
+        """Update the measurement widget based on the data dimensions and on columns that
+        have not been picked in the csv_field_widget
+        """
 
         if (
             self.data_widget.df is not None
@@ -147,7 +150,8 @@ class ImportTracksDialog(QDialog):
     def _update_buttons(self) -> None:
         """Enable or disable buttons based on the current page."""
 
-        # Do not allow to finish if no CSV file is loaded, or if the segmentation checkbox was checked but no seg file path is given.
+        # Do not allow to finish if no CSV file is loaded, or if the segmentation
+        # checkbox was checked but no seg file path is given.
         if self.data_widget.df is None or (
             self.menu_widget.segmentation_checkbox.isChecked()
             and self.segmentation_page.image_path_line.text() == ""
@@ -174,7 +178,8 @@ class ImportTracksDialog(QDialog):
         """Tries to read the CSV file and optional segmentation image,
         and apply the attribute to column mapping to construct a Tracks object"""
 
-        # Retrieve selected columns for each required field, and optional columns for additional attributes
+        # Retrieve selected columns for each required field, and optional columns for
+        # additional attributes
         name_map = self.data_widget.csv_field_widget.get_name_map()
 
         # Create new columns for each feature based on the original column values
@@ -198,7 +203,8 @@ class ImportTracksDialog(QDialog):
         else:
             features = []
 
-        # Try to create a Tracks object with the provided CSV file, the attr:column dictionaries, and the scaling information
+        # Try to create a Tracks object with the provided CSV file, the attr:column
+        # dictionaries, and the scaling information
         self.name = self.menu_widget.name_widget.text()
 
         if self.menu_widget.segmentation_checkbox.isChecked():

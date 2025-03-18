@@ -3,8 +3,8 @@ import os
 import numpy as np
 import pandas as pd
 import pytest
-from finn.track_data_views.graph_attributes import NodeAttr
 
+from finn.track_data_views.graph_attributes import NodeAttr
 from finn.track_import_export.load_tracks import (
     _test_valid,
     ensure_correct_labels,
@@ -25,7 +25,10 @@ class TestLoadTracks:
             "x": [15, 25, 35],
         }
         df = pd.DataFrame(data)
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            ValueError,
+            match="Segmentation ids in dataframe do not match values in segmentation.",
+        ):
             tracks_from_df(df)
 
     def test_string_ids(self):
@@ -98,7 +101,9 @@ class TestLoadTracks:
         df = pd.DataFrame(data)
 
         # test if False when scaling is applied incorrectly
-        with pytest.raises(UserWarning, match="Could not get the segmentation value at index"):
+        with pytest.raises(
+            UserWarning, match="Could not get the segmentation value at index"
+        ):
             _test_valid(df, segmentation, scale=[1, 1, 1])
         # test if True when scaling is applied correctly
         assert _test_valid(df, segmentation, scale=[1, 4, 4])
@@ -233,10 +238,12 @@ class TestLoadTracks:
             "area": [1, 2, 3, 4],
         }
         df = pd.DataFrame(data)
-
+        # Area column provided by the dataframe (import_external_tracks_dialog is in
+        # charge of mapping a custom column to a column named 'area' (to be updated in
+        # future version that supports additional measured features)
         tracks = tracks_from_df(
             df, segmentation, scale=(1, 1, 1), features={"Area": "area"}
-        )  # Area column provided by the dataframe (import_external_tracks_dialog is in charge of mapping a custom column to a column named 'area' (to be updated in future version that supports additional measured features)
+        )
 
         assert tracks._get_node_attr(1, NodeAttr.AREA.value) == 1
         assert tracks._get_node_attr(2, NodeAttr.AREA.value) == 2
@@ -251,7 +258,8 @@ class TestLoadTracks:
 
         df = pd.read_csv(example_csv)
 
-        # Retrieve selected columns for each required field, and optional columns for additional attributes
+        # Retrieve selected columns for each required field, and optional columns for
+        # additional attributes
         name_map = {
             "time": "t",
         }

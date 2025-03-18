@@ -51,10 +51,11 @@ def validate_n_seq(n: int, dtype=None):
 
         if isinstance(obj, Generator):
             return
-        if not (isinstance(obj, Collection) and hasattr(obj, '__getitem__')):
+        if not (isinstance(obj, Collection) and hasattr(obj, "__getitem__")):
             raise TypeError(
                 trans._(
-                    "object '{obj}' is not an indexable collection (list, tuple, or np.array), of length {number}",
+                    "object '{obj}' is not an indexable collection (list, tuple, or "
+                    "np.array), of length {number}",
                     deferred=True,
                     obj=obj,
                     number=n,
@@ -63,7 +64,7 @@ def validate_n_seq(n: int, dtype=None):
         if len(obj) != n:
             raise ValueError(
                 trans._(
-                    'object must have length {number}, got {obj_len}',
+                    "object must have length {number}, got {obj_len}",
                     deferred=True,
                     number=n,
                     obj_len=len(obj),
@@ -74,7 +75,8 @@ def validate_n_seq(n: int, dtype=None):
                 if not isinstance(item, dtype):
                     raise TypeError(
                         trans._(
-                            'Every item in the sequence must be of type {dtype}, but {item} is of type {item_type}',
+                            "Every item in the sequence must be of type {dtype}, but "
+                            "{item} is of type {item_type}",
                             deferred=True,
                             dtype=dtype,
                             item=item,
@@ -102,7 +104,7 @@ def _pairwise(iterable: Iterable):
     # shift b by one position
     next(b, None)
     # create tuple pairs from the values in a and b
-    return zip(a, b)
+    return zip(a, b, strict=False)
 
 
 def _validate_increasing(values: Iterable) -> None:
@@ -125,7 +127,7 @@ def _validate_increasing(values: Iterable) -> None:
     if any(a >= b for a, b in _pairwise(values)):
         raise ValueError(
             trans._(
-                'Sequence {sequence} must be monotonically increasing.',
+                "Sequence {sequence} must be monotonically increasing.",
                 deferred=True,
                 sequence=values,
             )

@@ -4,7 +4,6 @@ File with things that are useful for testing, but not to be fixtures
 
 import inspect
 from dataclasses import dataclass, field
-from typing import Optional, Union
 
 import numpy as np
 from docstring_parser import parse
@@ -19,43 +18,39 @@ class MouseEvent:
     type: str
     is_dragging: bool = False
     modifiers: list[str] = field(default_factory=list)
-    position: Union[tuple[int, int], tuple[int, int, int]] = (
+    position: tuple[int, int] | tuple[int, int, int] = (
         0,
         0,
     )  # world coords
-    pos: np.ndarray = field(
-        default_factory=lambda: np.zeros(2)
-    )  # canvas coords
-    view_direction: Optional[list[float]] = None
-    up_direction: Optional[list[float]] = None
+    pos: np.ndarray = field(default_factory=lambda: np.zeros(2))  # canvas coords
+    view_direction: list[float] | None = None
+    up_direction: list[float] | None = None
     dims_displayed: list[int] = field(default_factory=lambda: [0, 1])
-    delta: Optional[tuple[float, float]] = None
-    native: Optional[bool] = None
+    delta: tuple[float, float] | None = None
+    native: bool | None = None
 
 
 def read_only_mouse_event(*args, **kwargs):
-    return ReadOnlyWrapper(
-        MouseEvent(*args, **kwargs), exceptions=('handled',)
-    )
+    return ReadOnlyWrapper(MouseEvent(*args, **kwargs), exceptions=("handled",))
 
 
 def validate_all_params_in_docstring(func):
     """
     Validate if all the parameters in the function signature are present in the docstring.
     """
-    assert func.__doc__ is not None, f'Function {func} has no docstring'
+    assert func.__doc__ is not None, f"Function {func} has no docstring"
 
     parsed = parse(func.__doc__)
-    params = [x for x in parsed.params if x.args[0] == 'param']
+    params = [x for x in parsed.params if x.args[0] == "param"]
     # get only parameters from docstring
 
     signature = inspect.signature(func)
     assert set(signature.parameters.keys()) == {x.arg_name for x in params}, (
-        'Parameters in signature and docstring do not match'
+        "Parameters in signature and docstring do not match"
     )
-    for sig, doc in zip(signature.parameters.values(), params):
+    for sig, doc in zip(signature.parameters.values(), params, strict=False):
         assert sig.name == doc.arg_name, (
-            'Parameters in signature and docstring are not in the same order.'
+            "Parameters in signature and docstring are not in the same order."
         )
         # assert sig.annotation == doc.type_name, f"Type of parameter {sig.name} in signature and docstring do not match"
 
@@ -71,11 +66,11 @@ def validate_kwargs_sorted(func):
         if x.kind == inspect.Parameter.KEYWORD_ONLY
     ]
     assert kwargs_list == sorted(kwargs_list), (
-        'Keyword arguments are not sorted in function signature'
+        "Keyword arguments are not sorted in function signature"
     )
 
 
-def validate_docstring_parent_class_consistency(klass, skip=('data', 'ndim')):
+def validate_docstring_parent_class_consistency(klass, skip=("data", "ndim")):
     """
     Validate if the docstrings of the class parameters and type information
     are consistent with the parent class.
@@ -97,13 +92,13 @@ def validate_docstring_parent_class_consistency(klass, skip=('data', 'ndim')):
     params = {
         x.arg_name: x
         for x in parsed.params
-        if x.args[0] == 'param' and x.arg_name not in skip
+        if x.args[0] == "param" and x.arg_name not in skip
     }
     for base_klass in klass.__bases__:
         base_parsed = {
             x.arg_name: x
             for x in parse(base_klass.__doc__).params
-            if x.args[0] == 'param'
+            if x.args[0] == "param"
         }
         for name, doc in params.items():
             if name not in base_parsed:

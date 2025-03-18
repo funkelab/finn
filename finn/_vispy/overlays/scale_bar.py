@@ -20,9 +20,7 @@ class VispyScaleBarOverlay(ViewerOverlayMixin, VispyCanvasOverlay):
         self._scale = 1
         self._unit: pint.Unit
 
-        super().__init__(
-            node=ScaleBar(), viewer=viewer, overlay=overlay, parent=parent
-        )
+        super().__init__(node=ScaleBar(), viewer=viewer, overlay=overlay, parent=parent)
         self.x_size = 150  # will be updated on zoom anyways
         # need to change from defaults because the anchor is in the center
         self.y_offset = 20
@@ -91,14 +89,10 @@ class VispyScaleBarOverlay(ViewerOverlayMixin, VispyCanvasOverlay):
         if new_quantity.dimensionless and new_quantity.magnitude < 1:
             # using Decimal is necessary to avoid `4.999999e-6`
             # at really small scale.
-            new_value = float(
-                Decimal(new_value) * Decimal(1000) ** magnitude_1000
-            )
+            new_value = float(Decimal(new_value) * Decimal(1000) ** magnitude_1000)
 
         # get the new pixel length utilizing the user-specified units
-        new_length = (
-            (new_value * factor) / (1 * self._unit).magnitude
-        ).magnitude
+        new_length = ((new_value * factor) / (1 * self._unit).magnitude).magnitude
         new_quantity = new_value * new_quantity.units
         return new_length, new_quantity
 
@@ -125,15 +119,13 @@ class VispyScaleBarOverlay(ViewerOverlayMixin, VispyCanvasOverlay):
             target_world_pixels_rounded, new_dim = self._calculate_best_length(
                 target_world_pixels
             )
-            target_canvas_pixels = (
-                target_world_pixels_rounded / scale_canvas2world
-            )
+            target_canvas_pixels = target_world_pixels_rounded / scale_canvas2world
 
         scale = target_canvas_pixels
 
         # Update scalebar and text
         self.node.transform.scale = [scale, 1, 1, 1]
-        self.node.text.text = f'{new_dim:g~#P}'
+        self.node.text.text = f"{new_dim:g~#P}"
         self.x_size = scale  # needed to offset properly
         super()._on_position_change()
 
@@ -152,15 +144,10 @@ class VispyScaleBarOverlay(ViewerOverlayMixin, VispyCanvasOverlay):
                 # set scale color negative of theme background.
                 # the reason for using the `as_hex` here is to avoid
                 # `UserWarning` which is emitted when RGB values are above 1
-                if (
-                    self.node.parent is not None
-                    and self.node.parent.canvas.bgcolor
-                ):
+                if self.node.parent is not None and self.node.parent.canvas.bgcolor:
                     background_color = self.node.parent.canvas.bgcolor.rgba
                 else:
-                    background_color = get_theme(
-                        self.viewer.theme
-                    ).canvas.as_hex()
+                    background_color = get_theme(self.viewer.theme).canvas.as_hex()
                     background_color = transform_color(background_color)[0]
                 color = np.subtract(1, background_color)
                 color[-1] = background_color[-1]
@@ -183,12 +170,12 @@ class VispyScaleBarOverlay(ViewerOverlayMixin, VispyCanvasOverlay):
 
         self.node.text.font_size = self.overlay.font_size * dpi_scale_factor
         # ensure we recalculate the y_offset from the text size when at top of canvas
-        if 'top' in self.overlay.position:
+        if "top" in self.overlay.position:
             self._on_position_change()
 
     def _on_position_change(self, event=None):
         # prevent the text from being cut off by shifting down
-        if 'top' in self.overlay.position:
+        if "top" in self.overlay.position:
             # convert font_size to logical pixels as vispy does
             # in vispy/visuals/text/text.py
             # 72 is the vispy reference dpi

@@ -18,16 +18,16 @@ class WheelEvent:
 
 
 @pytest.mark.parametrize(
-    ('modifiers', 'native', 'expected_dim'),
+    ("modifiers", "native", "expected_dim"),
     [
         ([], WheelEvent(True), [[5, 5, 5], [5, 5, 5], [5, 5, 5], [5, 5, 5]]),
         (
-            ['Control'],
+            ["Control"],
             WheelEvent(False),
             [[5, 5, 5], [4, 5, 5], [3, 5, 5], [0, 5, 5]],
         ),
         (
-            ['Control'],
+            ["Control"],
             WheelEvent(True),
             [[5, 5, 5], [6, 5, 5], [7, 5, 5], [9, 5, 5]],
         ),
@@ -45,14 +45,14 @@ def test_paint(modifiers, native, expected_dim):
 
     # Simulate tiny scroll
     event = read_only_mouse_event(
-        delta=[0, 0.6], modifiers=modifiers, native=native, type='wheel'
+        delta=[0, 0.6], modifiers=modifiers, native=native, type="wheel"
     )
     mouse_wheel_callbacks(viewer, event)
     assert np.equal(viewer.dims.point, expected_dim[0]).all()
 
     # Simulate tiny scroll
     event = read_only_mouse_event(
-        delta=[0, 0.6], modifiers=modifiers, native=native, type='wheel'
+        delta=[0, 0.6], modifiers=modifiers, native=native, type="wheel"
     )
 
     mouse_wheel_callbacks(viewer, event)
@@ -60,14 +60,14 @@ def test_paint(modifiers, native, expected_dim):
 
     # Simulate tiny scroll
     event = read_only_mouse_event(
-        delta=[0, 0.9], modifiers=modifiers, native=native, type='wheel'
+        delta=[0, 0.9], modifiers=modifiers, native=native, type="wheel"
     )
     mouse_wheel_callbacks(viewer, event)
     assert np.equal(viewer.dims.point, expected_dim[2]).all()
 
     # Simulate large scroll
     event = read_only_mouse_event(
-        delta=[0, 3], modifiers=modifiers, native=native, type='wheel'
+        delta=[0, 3], modifiers=modifiers, native=native, type="wheel"
     )
     mouse_wheel_callbacks(viewer, event)
     assert np.equal(viewer.dims.point, expected_dim[3]).all()
@@ -79,7 +79,7 @@ def test_double_click_to_zoom():
     viewer.add_image(data)
 
     # Ensure `pan_zoom` mode is active
-    assert viewer.layers.selection.active.mode == 'pan_zoom'
+    assert viewer.layers.selection.active.mode == "pan_zoom"
 
     # Mock the mouse event
     event = Mock()
@@ -110,7 +110,7 @@ def test_double_click_to_zoom():
     assert np.allclose(viewer.camera.center, (0, 50, 50))
 
     # Test with Alt key pressed
-    event.modifiers = ['Alt']
+    event.modifiers = ["Alt"]
 
     double_click_to_zoom(viewer, event)
 
@@ -120,8 +120,8 @@ def test_double_click_to_zoom():
     assert np.allclose(viewer.camera.center, (0, 0, 0))
 
     # Test in a mode other than pan_zoom
-    viewer.layers.selection.active.mode = 'transform'
-    assert viewer.layers.selection.active.mode != 'pan_zoom'
+    viewer.layers.selection.active.mode = "transform"
+    assert viewer.layers.selection.active.mode != "pan_zoom"
 
     double_click_to_zoom(viewer, event)
 

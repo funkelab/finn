@@ -183,7 +183,7 @@ build = [
 [project.entry-points.pytest11]
 finn = "finn.utils._testsupport"
 
-[project.entry-points."finn.manifest"]
+[project.entry-points."napari.manifest"]
 finn_builtins = "finn_builtins:builtins.yaml"
 
 [tool.setuptools]
@@ -311,14 +311,53 @@ ignore = [
     "E501", # line too long
     "UP007", "UP038", # update type annotations to native symbols after 3.10
 ]
+"finn_builtins/*" = [
+    "UP007", # update type annotations to native symbols after 3.10
+]
+"finn/utils/*" = [
+    "E501",  # line too long
+    "UP007", "UP038", # update type annotations to native symbols after 3.10
+    "SIM108",  # ternary operator
+    ]
+"finn/types.py" = [
+    "E501",  # line too long
+    "UP007", # update type annotations to native symbols after 3.10
+    ]
+"finn/settings/*" = [
+    "E501",  # line too long
+    "UP007", # update type annotations to native symbols after 3.10
+    ]
+"finn/plugins/*" = [
+    "E501",  # line too long
+    "UP007", # update type annotations to native symbols after 3.10
+    ]
+
+"finn/layers/*" = [
+    "E501",  # line too long
+    "UP007", # update type annotations to native symbols after 3.10
+    ]
+"finn/conftest.py" = ["E501"]
+"finn/components/*" = [
+    "E501",  # line too long
+    "UP007", # update type annotations to native symbols after 3.10
+    ]
+"finn/_vispy/*" = [
+    "E501",  # line too long
+    "UP007", # update type annotations to native symbols after 3.10
+    "SIM108",  # ternary operator
+    ]
+"finn/__main__.py" = [
+    "E501",  # line too long
+    ]
+# original napari ignores
 "finn/_vispy/__init__.py" = ["E402"]
-"**/_tests/*.py" = ["B011", "INP001", "TRY301", "B018", "RUF012"]
+"**/_tests/*.py" = ["B011", "INP001", "TRY301", "B018", "RUF012", "E501"]
 "finn/utils/_testsupport.py" = ["B011"]
 "tools/validate_strings.py" = ["F401"]
-"tools/**" = ["INP001", "T20"]
+"tools/**" = ["INP001", "T20", "E501"]
 "examples/**" = ["ICN001", "INP001", "T20"]
 "**/vendored/**" = ["TID"]
-"finn/benchmarks/**" = ["RUF012", "TID252"]
+"finn/benchmarks/**" = ["RUF012", "TID252", "E501"]
 
 [tool.ruff.lint.flake8-builtins]
 builtins-allowed-modules = ["io", "types", "threading"]

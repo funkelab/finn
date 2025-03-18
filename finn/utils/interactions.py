@@ -84,9 +84,7 @@ def mouse_double_click_callbacks(obj, event) -> None:
         # execute function to run press event code
         if inspect.isgeneratorfunction(mouse_click_func):
             raise ValueError(
-                trans._(
-                    "Double-click actions can't be generators.", deferred=True
-                )
+                trans._("Double-click actions can't be generators.", deferred=True)
             )
         mouse_click_func(obj, event)
 
@@ -220,27 +218,27 @@ def mouse_release_callbacks(obj, event):
 
 
 KEY_SYMBOLS = {
-    'Ctrl': KeyCode.from_string('Ctrl').os_symbol(),
-    'Shift': KeyCode.from_string('Shift').os_symbol(),
-    'Alt': KeyCode.from_string('Alt').os_symbol(),
-    'Meta': KeyCode.from_string('Meta').os_symbol(),
-    'Left': KeyCode.from_string('Left').os_symbol(),
-    'Right': KeyCode.from_string('Right').os_symbol(),
-    'Up': KeyCode.from_string('Up').os_symbol(),
-    'Down': KeyCode.from_string('Down').os_symbol(),
-    'Backspace': KeyCode.from_string('Backspace').os_symbol(),
-    'Delete': KeyCode.from_string('Delete').os_symbol(),
-    'Tab': KeyCode.from_string('Tab').os_symbol(),
-    'Escape': KeyCode.from_string('Escape').os_symbol(),
-    'Return': KeyCode.from_string('Return').os_symbol(),
-    'Enter': KeyCode.from_string('Enter').os_symbol(),
-    'Space': KeyCode.from_string('Space').os_symbol(),
+    "Ctrl": KeyCode.from_string("Ctrl").os_symbol(),
+    "Shift": KeyCode.from_string("Shift").os_symbol(),
+    "Alt": KeyCode.from_string("Alt").os_symbol(),
+    "Meta": KeyCode.from_string("Meta").os_symbol(),
+    "Left": KeyCode.from_string("Left").os_symbol(),
+    "Right": KeyCode.from_string("Right").os_symbol(),
+    "Up": KeyCode.from_string("Up").os_symbol(),
+    "Down": KeyCode.from_string("Down").os_symbol(),
+    "Backspace": KeyCode.from_string("Backspace").os_symbol(),
+    "Delete": KeyCode.from_string("Delete").os_symbol(),
+    "Tab": KeyCode.from_string("Tab").os_symbol(),
+    "Escape": KeyCode.from_string("Escape").os_symbol(),
+    "Return": KeyCode.from_string("Return").os_symbol(),
+    "Enter": KeyCode.from_string("Enter").os_symbol(),
+    "Space": KeyCode.from_string("Space").os_symbol(),
 }
 
 
-JOINCHAR = '+'
-if sys.platform.startswith('darwin'):
-    JOINCHAR = ''
+JOINCHAR = "+"
+if sys.platform.startswith("darwin"):
+    JOINCHAR = ""
 
 
 class Shortcut:
@@ -262,7 +260,7 @@ class Shortcut:
             shortcut to format
         """
         error_msg = trans._(
-            '`{shortcut}` does not seem to be a valid shortcut Key.',
+            "`{shortcut}` does not seem to be a valid shortcut Key.",
             shortcut=shortcut,
         )
         error = False
@@ -292,17 +290,14 @@ class Shortcut:
         # this should be rare as on english keyboard + is Shift-Minus.
         # but not unheard of. In those case `+` is always at the end with `++`
         # as you can't get two non-modifier keys,  or alone.
-        if text == '+':
+        if text == "+":
             return text
-        if JOINCHAR == '+':
-            text = text.replace('++', '+Plus')
-            text = text.replace('+', '')
-            text = text.replace('Plus', '+')
+        if JOINCHAR == "+":
+            text = text.replace("++", "+Plus")
+            text = text.replace("+", "")
+            text = text.replace("Plus", "+")
         for k, v in KEY_SYMBOLS.items():
-            if text.endswith(v):
-                text = text.replace(v, k)
-            else:
-                text = text.replace(v, k + '-')
+            text = text.replace(v, k) if text.endswith(v) else text.replace(v, k + "-")
 
         return text
 
@@ -335,7 +330,7 @@ class Shortcut:
         return self.platform
 
 
-def get_key_bindings_summary(keymap, col='rgb(134, 142, 147)'):
+def get_key_bindings_summary(keymap, col="rgb(134, 142, 147)"):
     """Get summary of key bindings in keymap.
 
     Parameters
@@ -353,24 +348,24 @@ def get_key_bindings_summary(keymap, col='rgb(134, 142, 147)'):
     """
     key_bindings_strs = ['<table border="0" width="100%">']
     for key in keymap:
-        keycodes = [KEY_SYMBOLS.get(k, k) for k in key.split('-')]
-        keycodes = '+'.join(
+        keycodes = [KEY_SYMBOLS.get(k, k) for k in key.split("-")]
+        keycodes = "+".join(
             [f"<span style='color: {col}'><b>{k}</b></span>" for k in keycodes]
         )
         key_bindings_strs.append(
             "<tr><td width='80' style='text-align: right; padding: 4px;'>"
             f"<span style='color: rgb(66, 72, 80)'>{keycodes}</span></td>"
             "<td style='text-align: left; padding: 4px; color: #CCC;'>"
-            f'{keymap[key]}</td></tr>'
+            f"{keymap[key]}</td></tr>"
         )
-    key_bindings_strs.append('</table>')
-    return ''.join(key_bindings_strs)
+    key_bindings_strs.append("</table>")
+    return "".join(key_bindings_strs)
 
 
 def get_function_summary(func):
     """Get summary of doc string of function."""
     doc = FunctionDoc(func)
-    summary = ''
-    for s in doc['Summary']:
+    summary = ""
+    for s in doc["Summary"]:
         summary += s
-    return summary.rstrip('.')
+    return summary.rstrip(".")

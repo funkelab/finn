@@ -4,7 +4,6 @@ from collections import defaultdict
 from collections.abc import Iterator, Sequence
 from typing import (
     TYPE_CHECKING,
-    Optional,
     cast,
 )
 
@@ -32,15 +31,15 @@ class _FakeHookimpl:
 
 
 def read(
-    paths: Sequence[str], plugin: Optional[str] = None, *, stack: bool
-) -> Optional[tuple[list[LayerData], _FakeHookimpl]]:
+    paths: Sequence[str], plugin: str | None = None, *, stack: bool
+) -> tuple[list[LayerData], _FakeHookimpl] | None:
     """Try to return data for `path`, from reader plugins using a manifest."""
 
     # do nothing if `plugin` is not an npe2 reader
     if plugin:
         # user might have passed 'plugin.reader_contrib' as the command
         # so ensure we check vs. just the actual plugin name
-        plugin_name = plugin.partition('.')[0]
+        plugin_name = plugin.partition(".")[0]
         if plugin_name not in get_readers():
             return None
 
@@ -54,12 +53,10 @@ def read(
         assert len(paths) == 1
         npe1_path = paths[0]
     try:
-        layer_data, reader = io_utils.read_get_reader(
-            npe1_path, plugin_name=plugin
-        )
+        layer_data, reader = io_utils.read_get_reader(npe1_path, plugin_name=plugin)
     except ValueError as e:
         # plugin wasn't passed and no reader was found
-        if 'No readers returned data' not in str(e):
+        if "No readers returned data" not in str(e):
             raise
     else:
         return layer_data, _FakeHookimpl(reader.plugin_name)
@@ -69,8 +66,8 @@ def read(
 def write_layers(
     path: str,
     layers: list[Layer],
-    plugin_name: Optional[str] = None,
-    writer: Optional[WriterContribution] = None,
+    plugin_name: str | None = None,
+    writer: WriterContribution | None = None,
 ) -> tuple[list[str], str]:
     """
     Write layers to a file using an NPE2 plugin.
@@ -106,23 +103,21 @@ def write_layers(
                 path=path, layer_data=layer_data, plugin_name=plugin_name
             )
         except ValueError:
-            return [], ''
+            return [], ""
         else:
             return paths, writer.plugin_name
 
     n = sum(ltc.max() for ltc in writer.layer_type_constraints())
     args = (path, *layer_data[0][:2]) if n <= 1 else (path, layer_data)
     res = writer.exec(args=args)
-    if isinstance(
-        res, str
-    ):  # pragma: no cover # it shouldn't be... bad plugin.
+    if isinstance(res, str):  # pragma: no cover # it shouldn't be... bad plugin.
         return [res], writer.plugin_name
     return res or [], writer.plugin_name
 
 
 def get_widget_contribution(
-    plugin_name: str, widget_name: Optional[str] = None
-) -> Optional[tuple[WidgetCreator, str]]:
+    plugin_name: str, widget_name: str | None = None
+) -> tuple[WidgetCreator, str] | None:
     widgets_seen = set()
     for contrib in pm.iter_widgets():
         if contrib.plugin_name == plugin_name:
@@ -131,7 +126,7 @@ def get_widget_contribution(
             widgets_seen.add(contrib.display_name)
     if widget_name and widgets_seen:
         msg = trans._(
-            'Plugin {plugin_name!r} does not provide a widget named {widget_name!r}. It does provide: {seen}',
+            "Plugin {plugin_name!r} does not provide a widget named {widget_name!r}. It does provide: {seen}",
             plugin_name=plugin_name,
             widget_name=widget_name,
             seen=widgets_seen,
@@ -166,7 +161,7 @@ def populate_qmenu(menu: QMenu, menu_key: str):
 
 def file_extensions_string_for_layers(
     layers: Sequence[Layer],
-) -> tuple[Optional[str], list[WriterContribution]]:
+) -> tuple[str | None, list[WriterContribution]]:
     """Create extensions string using npe2.
 
     When npe2 can be imported, returns an extension string and the list
@@ -190,26 +185,22 @@ def file_extensions_string_for_layers(
         """Lookup the command name and its supported extensions."""
         for writer in writers:
             name = pm.get_manifest(writer.command).display_name
-            title = (
-                f'{name} {writer.display_name}'
-                if writer.display_name
-                else name
-            )
+            title = f"{name} {writer.display_name}" if writer.display_name else name
             yield title, writer.filename_extensions
 
     # extension strings are in the format:
     #   "<name> (*<ext1> *<ext2> *<ext3>);;+"
 
     def _fmt_exts(es):
-        return ' '.join(f'*{e}' for e in es if e) if es else '*.*'
+        return " ".join(f"*{e}" for e in es if e) if es else "*.*"
 
     return (
-        ';;'.join(f'{name} ({_fmt_exts(exts)})' for name, exts in _items()),
+        ";;".join(f"{name} ({_fmt_exts(exts)})" for name, exts in _items()),
         writers,
     )
 
 
-def get_readers(path: Optional[str] = None) -> dict[str, str]:
+def get_readers(path: str | None = None) -> dict[str, str]:
     """Get valid reader plugin_name:display_name mapping given path.
 
     Iterate through compatible readers for the given path and return
@@ -233,14 +224,12 @@ def get_readers(path: Optional[str] = None) -> dict[str, str]:
             for reader in pm.iter_compatible_readers([path])
         }
     return {
-        mf.name: mf.display_name
-        for mf in pm.iter_manifests()
-        if mf.contributions.readers
+        mf.name: mf.display_name for mf in pm.iter_manifests() if mf.contributions.readers
     }
 
 
 def iter_manifests(
-    disabled: Optional[bool] = None,
+    disabled: bool | None = None,
 ) -> Iterator[PluginManifest]:
     yield from pm.iter_manifests(disabled=disabled)
 
@@ -250,7 +239,7 @@ def widget_iterator() -> Iterator[tuple[str, tuple[str, Sequence[str]]]]:
     wdgs: defaultdict[str, list[str]] = defaultdict(list)
     for wdg_contrib in pm.iter_widgets():
         wdgs[wdg_contrib.plugin_name].append(wdg_contrib.display_name)
-    return (('dock', x) for x in wdgs.items())
+    return (("dock", x) for x in wdgs.items())
 
 
 def sample_iterator() -> Iterator[tuple[str, dict[str, SampleDict]]]:
@@ -258,10 +247,7 @@ def sample_iterator() -> Iterator[tuple[str, dict[str, SampleDict]]]:
         (
             # use display_name for user facing display
             plugin_name,
-            {
-                c.key: {'data': c.open, 'display_name': c.display_name}
-                for c in contribs
-            },
+            {c.key: {"data": c.open, "display_name": c.display_name} for c in contribs},
         )
         for plugin_name, contribs in pm.iter_sample_data()
     )
@@ -269,7 +255,7 @@ def sample_iterator() -> Iterator[tuple[str, dict[str, SampleDict]]]:
 
 def get_sample_data(
     plugin: str, sample: str
-) -> tuple[Optional[SampleDataCreator], list[tuple[str, str]]]:
+) -> tuple[SampleDataCreator | None, list[tuple[str, str]]]:
     """Get sample data opener from npe2.
 
     Parameters
@@ -350,7 +336,7 @@ def _register_manifest_actions(mf: PluginManifest) -> None:
     app = get_app_model()
     actions, submenus = _npe2_manifest_to_actions(mf)
 
-    context = pm.get_context(cast('PluginName', mf.name))
+    context = pm.get_context(cast("PluginName", mf.name))
 
     # Register and connect dispose callback to plugin deactivate ('unregistered') event
     if actions:
@@ -396,7 +382,7 @@ def _npe2_manifest_to_actions(
     sample_data_ids = {
         contrib.command
         for contrib in mf.contributions.sample_data or ()
-        if hasattr(contrib, 'command')
+        if hasattr(contrib, "command")
     }
     # Filter widgets as are registered via `_safe_register_qt_actions`
     widget_ids = {widget.command for widget in mf.contributions.widgets or ()}
@@ -408,12 +394,12 @@ def _npe2_manifest_to_actions(
             actions.append(
                 Action(
                     id=cmd.id,
-                    title=f'{cmd.title} ({mf.display_name})',
+                    title=f"{cmd.title} ({mf.display_name})",
                     category=cmd.category,
                     tooltip=cmd.short_title or cmd.title,
                     icon=cmd.icon,
                     enablement=cmd.enablement,
-                    callback=cmd.python_name or '',
+                    callback=cmd.python_name or "",
                     menus=menu_cmds.get(cmd.id),
                     keybindings=[],
                 )
@@ -426,12 +412,12 @@ def _when_group_order(
     menu_item: contributions.MenuItem,
 ) -> dict:
     """Extract when/group/order from an npe2 Submenu or MenuCommand."""
-    group, _, _order = (menu_item.group or '').partition('@')
+    group, _, _order = (menu_item.group or "").partition("@")
     try:
-        order: Optional[float] = float(_order)
+        order: float | None = float(_order)
     except ValueError:
         order = None
-    return {'when': menu_item.when, 'group': group or None, 'order': order}
+    return {"when": menu_item.when, "group": group or None, "order": order}
 
 
 def _npe2_submenu_to_app_model(subm: contributions.Submenu) -> SubmenuItem:

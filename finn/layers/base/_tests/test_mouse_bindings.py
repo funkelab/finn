@@ -12,7 +12,7 @@ from finn.layers.base._base_mouse_bindings import (
 from finn.utils.transforms import Affine
 
 
-@pytest.mark.parametrize('dims_displayed', [[0, 1], [1, 2]])
+@pytest.mark.parametrize("dims_displayed", [[0, 1], [1, 2]])
 def test_interaction_box_translation(dims_displayed):
     layer = Mock(affine=Affine())
     layer._slice_input.displayed = [0, 1]
@@ -34,7 +34,7 @@ def test_interaction_box_translation(dims_displayed):
     )
 
 
-@pytest.mark.parametrize('dims_displayed', [[0, 1], [1, 2]])
+@pytest.mark.parametrize("dims_displayed", [[0, 1], [1, 2]])
 def test_interaction_box_rotation(dims_displayed):
     layer = Mock(affine=Affine())
     layer._slice_input.displayed = [0, 1]
@@ -71,7 +71,7 @@ def test_interaction_box_rotation(dims_displayed):
     assert np.allclose(layer.affine.rotate, Affine(rotate=33.69).rotate)
 
 
-@pytest.mark.parametrize('dims_displayed', [[0, 1], [1, 2]])
+@pytest.mark.parametrize("dims_displayed", [[0, 1], [1, 2]])
 def test_interaction_box_fixed_rotation(dims_displayed):
     layer = Mock(affine=Affine())
     layer._slice_input.displayed = [0, 1]
@@ -95,7 +95,7 @@ def test_interaction_box_fixed_rotation(dims_displayed):
     initial_center = np.asarray([3, 3], dtype=np.float32)
     mouse_pos = np.asarray([6, 5], dtype=np.float32)
     # use Shift to snap rotation to steps of 45 degrees
-    event = Mock(dims_displayed=[0, 1], modifiers=['Shift'])
+    event = Mock(dims_displayed=[0, 1], modifiers=["Shift"])
     _rotate_with_box(
         layer,
         initial_affine,
@@ -109,7 +109,7 @@ def test_interaction_box_fixed_rotation(dims_displayed):
     assert np.allclose(layer.affine.rotate, Affine(rotate=45).rotate)
 
 
-@pytest.mark.parametrize('dims_displayed', [[0, 1], [1, 2]])
+@pytest.mark.parametrize("dims_displayed", [[0, 1], [1, 2]])
 def test_interaction_box_scale_with_fixed_aspect(dims_displayed):
     layer = Mock(affine=Affine())
     layer._slice_input.displayed = [0, 1]
@@ -133,7 +133,7 @@ def test_interaction_box_scale_with_fixed_aspect(dims_displayed):
     nearby_handle = InteractionBoxHandle.TOP_LEFT
     initial_center = np.asarray([3, 3], dtype=np.float32)
     mouse_pos = np.asarray([0, 0], dtype=np.float32)
-    event = Mock(dims_displayed=dims_displayed, modifiers=['Shift'])
+    event = Mock(dims_displayed=dims_displayed, modifiers=["Shift"])
     _scale_with_box(
         layer,
         initial_affine,

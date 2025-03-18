@@ -2,7 +2,7 @@
 # from finn.utils.events import Event
 # from finn.utils.colormaps import AVAILABLE_COLORMAPS
 
-from typing import Any, Optional, Union
+from typing import Any
 from warnings import warn
 
 import numpy as np
@@ -112,10 +112,10 @@ class Tracks(Layer):
         *,
         affine=None,
         axis_labels=None,
-        blending='additive',
+        blending="additive",
         cache=True,
-        color_by='track_id',
-        colormap='turbo',
+        color_by="track_id",
+        colormap="turbo",
         colormaps_dict=None,
         experimental_clipping_planes=None,
         features=None,
@@ -124,7 +124,7 @@ class Tracks(Layer):
         metadata=None,
         name=None,
         opacity=1.0,
-        projection_mode='none',
+        projection_mode="none",
         properties=None,
         rotate=None,
         scale=None,
@@ -179,7 +179,7 @@ class Tracks(Layer):
         # track manager deals with data slicing, graph building and properties
         self._manager = TrackManager(data)
 
-        self._track_colors: Optional[np.ndarray] = None
+        self._track_colors: np.ndarray | None = None
         self._colormaps_dict = colormaps_dict or {}  # additional colormaps
         self._color_by = color_by  # default color by ID
         self._colormap = colormap
@@ -246,16 +246,16 @@ class Tracks(Layer):
         state = self._get_base_state()
         state.update(
             {
-                'data': self.data,
-                'properties': self.properties,
-                'graph': self.graph,
-                'color_by': self.color_by,
-                'colormap': self.colormap,
-                'colormaps_dict': self.colormaps_dict,
-                'tail_width': self.tail_width,
-                'tail_length': self.tail_length,
-                'head_length': self.head_length,
-                'features': self.features,
+                "data": self.data,
+                "properties": self.properties,
+                "graph": self.graph,
+                "color_by": self.color_by,
+                "colormap": self.colormap,
+                "colormaps_dict": self.colormaps_dict,
+                "tail_width": self.tail_width,
+                "tail_length": self.tail_length,
+                "head_length": self.head_length,
+                "features": self.features,
             }
         )
         return state
@@ -274,7 +274,7 @@ class Tracks(Layer):
 
         return
 
-    def _get_value(self, position) -> Optional[int]:
+    def _get_value(self, position) -> int | None:
         """Value of the data at a position in data coordinates.
 
         Use a kd-tree to lookup the ID of the nearest tree.
@@ -305,9 +305,7 @@ class Tracks(Layer):
             shape = np.ceil(
                 [de[1, i] - de[0, i] + 1 for i in self._slice_input.displayed]
             ).astype(int)
-            zoom_factor = np.divide(
-                self._thumbnail_shape[:2], shape[-2:]
-            ).min()
+            zoom_factor = np.divide(self._thumbnail_shape[:2], shape[-2:]).min()
             if len(self._view_data) > self._max_tracks_thumbnail:
                 thumbnail_indices = np.random.randint(
                     0, len(self._view_data), self._max_tracks_thumbnail
@@ -318,12 +316,10 @@ class Tracks(Layer):
                 thumbnail_indices = np.array(range(len(self._view_data)))
 
             # get the track coords here
-            coords = np.floor(
-                (points[:, :2] - min_vals[1:] + 0.5) * zoom_factor
-            ).astype(int)
-            coords = np.clip(
-                coords, 0, np.subtract(self._thumbnail_shape[:2], 1)
+            coords = np.floor((points[:, :2] - min_vals[1:] + 0.5) * zoom_factor).astype(
+                int
             )
+            coords = np.clip(coords, 0, np.subtract(self._thumbnail_shape[:2], 1))
 
             # modulate track colors as per colormap/current_time
             assert self.track_times is not None
@@ -360,13 +356,13 @@ class Tracks(Layer):
         # if we're only displaying two dimensions, then pad the display dim
         # with zeros
         if self._slice_input.ndisplay == 2:
-            data = np.pad(data, ((0, 0), (0, 1)), 'constant')
+            data = np.pad(data, ((0, 0), (0, 1)), "constant")
             return data[:, (1, 0, 2)]  # y, x, z -> x, y, z
 
         return data[:, (2, 1, 0)]  # z, y, x -> x, y, z
 
     @property
-    def current_time(self) -> Optional[int]:
+    def current_time(self) -> int | None:
         """current time according to the first dimension"""
         # TODO(arl): get the correct index here
         time_step = self._data_slice.point[0]
@@ -432,7 +428,7 @@ class Tracks(Layer):
     @features.setter
     def features(
         self,
-        features: Union[dict[str, np.ndarray], pd.DataFrame],
+        features: dict[str, np.ndarray] | pd.DataFrame,
     ) -> None:
         self._manager.features = features
         self._check_color_by_in_features()
@@ -454,12 +450,12 @@ class Tracks(Layer):
         return list(self.properties.keys())
 
     @property
-    def graph(self) -> Optional[dict[int, list[int]]]:
+    def graph(self) -> dict[int, list[int]] | None:
         """dict {int: list}: Graph representing associations between tracks."""
         return self._manager.graph
 
     @graph.setter
-    def graph(self, graph: dict[int, Union[int, list[int]]]) -> None:
+    def graph(self, graph: dict[int, int | list[int]]) -> None:
         """Set the track graph."""
         # Ignored type, because mypy can't handle different signatures
         # on getters and setters; see https://github.com/python/mypy/issues/3004
@@ -543,7 +539,7 @@ class Tracks(Layer):
         if color_by not in self.properties_to_color_by:
             raise ValueError(
                 trans._(
-                    '{color_by} is not a valid property key',
+                    "{color_by} is not a valid property key",
                     deferred=True,
                     color_by=color_by,
                 )
@@ -562,7 +558,7 @@ class Tracks(Layer):
         if colormap not in AVAILABLE_COLORMAPS:
             raise ValueError(
                 trans._(
-                    'Colormap {colormap} not available',
+                    "Colormap {colormap} not available",
                     deferred=True,
                     colormap=colormap,
                 )
@@ -589,7 +585,7 @@ class Tracks(Layer):
         # updated before the properties are. properties should always contain
         # a track_id key
         if self.color_by not in self.properties_to_color_by:
-            self._color_by = 'track_id'
+            self._color_by = "track_id"
             self.events.color_by()
 
         # if we change the coloring, rebuild the vertex colors array
@@ -609,28 +605,28 @@ class Tracks(Layer):
         self._track_colors = colormap.map(vertex_properties)
 
     @property
-    def track_connex(self) -> Optional[np.ndarray]:
+    def track_connex(self) -> np.ndarray | None:
         """vertex connections for drawing track lines"""
         return self._manager.track_connex
 
     @property
-    def track_colors(self) -> Optional[np.ndarray]:
+    def track_colors(self) -> np.ndarray | None:
         """return the vertex colors according to the currently selected
         property"""
         return self._track_colors
 
     @property
-    def graph_connex(self) -> Optional[np.ndarray]:
+    def graph_connex(self) -> np.ndarray | None:
         """vertex connections for drawing the graph"""
         return self._manager.graph_connex
 
     @property
-    def track_times(self) -> Optional[np.ndarray]:
+    def track_times(self) -> np.ndarray | None:
         """time points associated with each track vertex"""
         return self._manager.track_times
 
     @property
-    def graph_times(self) -> Optional[np.ndarray]:
+    def graph_times(self) -> np.ndarray | None:
         """time points associated with each graph vertex"""
         return self._manager.graph_times
 
@@ -652,12 +648,12 @@ class Tracks(Layer):
             warn(
                 (
                     trans._(
-                        'Previous color_by key {key!r} not present in features. Falling back to track_id',
+                        "Previous color_by key {key!r} not present in features. Falling back to track_id",
                         deferred=True,
                         key=self._color_by,
                     )
                 ),
                 UserWarning,
             )
-            self._color_by = 'track_id'
+            self._color_by = "track_id"
             self.events.color_by()

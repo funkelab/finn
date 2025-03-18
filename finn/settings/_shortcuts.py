@@ -10,17 +10,17 @@ from finn.utils.translations import trans
 class ShortcutsSettings(EventedModel):
     shortcuts: dict[str, list[KeyBinding]] = Field(
         default_shortcuts,
-        title=trans._('shortcuts'),
+        title=trans._("shortcuts"),
         description=trans._(
-            'Set keyboard shortcuts for actions.',
+            "Set keyboard shortcuts for actions.",
         ),
     )
 
     class NapariConfig:
         # Napari specific configuration
-        preferences_exclude = ('schema_version',)
+        preferences_exclude = ("schema_version",)
 
-    @validator('shortcuts', allow_reuse=True, pre=True)
+    @validator("shortcuts", allow_reuse=True, pre=True)
     def shortcut_validate(
         cls, v: dict[str, list[KeyBinding | str]]
     ) -> dict[str, list[KeyBinding]]:
@@ -29,6 +29,5 @@ class ShortcutsSettings(EventedModel):
                 v[name] = value
 
         return {
-            name: [coerce_keybinding(kb) for kb in value]
-            for name, value in v.items()
+            name: [coerce_keybinding(kb) for kb in value] for name, value in v.items()
         }

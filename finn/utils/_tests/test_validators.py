@@ -12,7 +12,7 @@ def test_sequence_validator():
     with pytest.raises(TypeError):
         validate(8)  # raises TypeError
 
-    with pytest.raises(ValueError, match='must have length'):
+    with pytest.raises(ValueError, match="must have length"):
         validate([1, 2, 3])  # raises ValueError
 
     with pytest.raises(TypeError):
@@ -31,7 +31,5 @@ def test_validate_increasing():
 
     invalid_sources = [[3, 2, 1], [1, 1, 2]]
     for source in invalid_sources:
-        with pytest.raises(
-            ValueError, match='must be monotonically increasing'
-        ):
+        with pytest.raises(ValueError, match="must be monotonically increasing"):
             validators._validate_increasing(source)

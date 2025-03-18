@@ -35,7 +35,7 @@ class VispyVectorsLayer(VispyBaseLayer):
             vertices = vertices[:, ::-1]
 
         if ndisplay == 3 and ndim == 2:
-            vertices = np.pad(vertices, ((0, 0), (0, 1)), mode='constant')
+            vertices = np.pad(vertices, ((0, 0), (0, 1)), mode="constant")
 
         self.node.set_data(
             vertices=vertices,
@@ -88,9 +88,7 @@ def generate_vector_meshes(vectors, width, length, vector_style):
     return vertices, triangles
 
 
-def generate_vector_meshes_2D(
-    vectors, width, length, vector_style, p=(0, 0, 1)
-):
+def generate_vector_meshes_2D(vectors, width, length, vector_style, p=(0, 0, 1)):
     """Generates list of mesh vertices and triangles from a list of vectors
 
     Parameters
@@ -115,20 +113,14 @@ def generate_vector_meshes_2D(
         Vertex indices that form the mesh triangles
     """
 
-    if vector_style == 'line':
-        vertices, triangles = generate_meshes_line_2D(
-            vectors, width, length, p
-        )
+    if vector_style == "line":
+        vertices, triangles = generate_meshes_line_2D(vectors, width, length, p)
 
-    elif vector_style == 'triangle':
-        vertices, triangles = generate_meshes_triangle_2D(
-            vectors, width, length, p
-        )
+    elif vector_style == "triangle":
+        vertices, triangles = generate_meshes_triangle_2D(vectors, width, length, p)
 
-    elif vector_style == 'arrow':
-        vertices, triangles = generate_meshes_arrow_2D(
-            vectors, width, length, p
-        )
+    elif vector_style == "arrow":
+        vertices, triangles = generate_meshes_arrow_2D(vectors, width, length, p)
 
     return vertices, triangles
 
@@ -206,9 +198,7 @@ def generate_meshes_line_2D(vectors, width, length, p):
     # as described in the docstring
     vertices_pattern = np.tile([[0, 1, 2], [1, 2, 3]], (nvectors, 1))
     # 2. Add an offset to differentiate between vectors
-    triangles = (
-        vertices_pattern + np.repeat(4 * np.arange(nvectors), 2)[:, np.newaxis]
-    )
+    triangles = vertices_pattern + np.repeat(4 * np.arange(nvectors), 2)[:, np.newaxis]
 
     triangles = triangles.astype(np.uint32)
 
@@ -387,13 +377,9 @@ def generate_meshes_arrow_2D(vectors, width, length, p):
     #  [1,2,3]
     #  [4,5,6]]
     # as described in the docstring
-    vertices_pattern = np.tile(
-        [[0, 1, 2], [1, 2, 3], [4, 5, 6]], (nvectors, 1)
-    )
+    vertices_pattern = np.tile([[0, 1, 2], [1, 2, 3], [4, 5, 6]], (nvectors, 1))
     # 2. Add an offset to differentiate between vectors
-    triangles = (
-        vertices_pattern + np.repeat(7 * np.arange(nvectors), 3)[:, np.newaxis]
-    )
+    triangles = vertices_pattern + np.repeat(7 * np.arange(nvectors), 3)[:, np.newaxis]
 
     triangles = triangles.astype(np.uint32)
 

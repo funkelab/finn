@@ -21,8 +21,8 @@ session due to mis-represented colors.
 import functools
 import types
 import warnings
-from collections.abc import Sequence
-from typing import Any, Callable, Optional, Union
+from collections.abc import Callable, Sequence
+from typing import Any
 
 import numpy as np
 from vispy.color import ColorArray, get_color_dict, get_color_names
@@ -90,7 +90,7 @@ def _handle_str(color: str) -> np.ndarray:
     if len(color) == 0:
         warnings.warn(
             trans._(
-                'Empty string detected. Returning black instead.',
+                "Empty string detected. Returning black instead.",
                 deferred=True,
             )
         )
@@ -102,7 +102,7 @@ def _handle_str(color: str) -> np.ndarray:
     return colorarray
 
 
-def _handle_list_like(colors: Sequence) -> Optional[np.ndarray]:
+def _handle_list_like(colors: Sequence) -> np.ndarray | None:
     """Parse a list-like container of colors into a numpy Nx4 array.
 
     Handles all list-like containers of colors using recursion (if necessary).
@@ -132,7 +132,7 @@ def _handle_list_like(colors: Sequence) -> Optional[np.ndarray]:
         # dtype to avoid the deprecated behavior described in:
         # https://github.com/napari/napari/issues/2791
         num_str = len([c for c in colors if isinstance(c, str)])
-        dtype = 'O' if 0 < num_str < len(colors) else None
+        dtype = "O" if 0 < num_str < len(colors) else None
         color_array = np.atleast_2d(np.asarray(colors, dtype=dtype))
     except ValueError:
         warnings.warn(
@@ -144,16 +144,16 @@ def _handle_list_like(colors: Sequence) -> Optional[np.ndarray]:
         return np.ones((max(len(colors), 1), 4), dtype=np.float32)
 
     # Happy path - converted to a float\integer array
-    if color_array.dtype.kind in ['f', 'i']:
+    if color_array.dtype.kind in ["f", "i"]:
         return _handle_array(color_array)
 
     # User input was an iterable with strings
-    if color_array.dtype.kind in ['U', 'O']:
+    if color_array.dtype.kind in ["U", "O"]:
         return _handle_str_list_like(color_array.ravel())
     return None
 
 
-def _handle_generator(colors) -> Optional[np.ndarray]:
+def _handle_generator(colors) -> np.ndarray | None:
     """Generators are converted to lists since we need to know their
     length to instantiate a proper array.
     """
@@ -173,23 +173,23 @@ def _handle_array(colors: np.ndarray) -> np.ndarray:
     kind = colors.dtype.kind
 
     # Object arrays aren't handled by napari
-    if kind == 'O':
+    if kind == "O":
         warnings.warn(
             trans._(
-                'An object array was passed as the color input. Please convert its datatype before sending it to finn. Converting input to a white color array.',
+                "An object array was passed as the color input. Please convert its datatype before sending it to finn. Converting input to a white color array.",
                 deferred=True,
             )
         )
         return np.ones((max(len(colors), 1), 4), dtype=np.float32)
 
     # An array of strings will be treated as a list if compatible
-    if kind == 'U':
+    if kind == "U":
         if colors.ndim == 1:
             return _handle_str_list_like(colors)
 
         warnings.warn(
             trans._(
-                'String color arrays should be one-dimensional. Converting input to a white color array.',
+                "String color arrays should be one-dimensional. Converting input to a white color array.",
                 deferred=True,
             )
         )
@@ -203,7 +203,7 @@ def _handle_array(colors: np.ndarray) -> np.ndarray:
     if colors.shape[-1] == 0:
         warnings.warn(
             trans._(
-                'Given color input is empty. Converting input to a white color array.',
+                "Given color input is empty. Converting input to a white color array.",
                 deferred=True,
             )
         )
@@ -216,7 +216,7 @@ def _handle_array(colors: np.ndarray) -> np.ndarray:
     if colors.ndim > 2:
         raise ValueError(
             trans._(
-                'Given colors input should contain one or two dimensions. Received array with {ndim} dimensions.',
+                "Given colors input should contain one or two dimensions. Received array with {ndim} dimensions.",
                 deferred=True,
                 ndim=colors.ndim,
             )
@@ -228,7 +228,7 @@ def _handle_array(colors: np.ndarray) -> np.ndarray:
     if colors.shape[0] == 1 and colors.shape[1] not in {3, 4}:
         raise ValueError(
             trans._(
-                'Given color array has an unsupported format. Received the following array:\n{colors}\nA proper color array should have 3-4 columns with a row per data entry.',
+                "Given color array has an unsupported format. Received the following array:\n{colors}\nA proper color array should have 3-4 columns with a row per data entry.",
                 deferred=True,
                 colors=colors,
             )
@@ -244,7 +244,7 @@ def _handle_array(colors: np.ndarray) -> np.ndarray:
     if not 3 <= colors.shape[1] <= 4:
         warnings.warn(
             trans._(
-                'Given colors input should contain three or four columns. Received array with {shape} columns. Converting input to a white color array.',
+                "Given colors input should contain three or four columns. Received array with {shape} columns. Converting input to a white color array.",
                 deferred=True,
                 shape=colors.shape[1],
             )
@@ -252,12 +252,12 @@ def _handle_array(colors: np.ndarray) -> np.ndarray:
         return np.ones((len(colors), 4), dtype=np.float32)
 
     # Arrays with floats and ints can be safely converted to the proper format
-    if kind in ['f', 'i', 'u']:
+    if kind in ["f", "i", "u"]:
         return _convert_array_to_correct_format(colors)
 
     raise ValueError(
         trans._(
-            'Data type of array ({color_dtype}) not supported.',
+            "Data type of array ({color_dtype}) not supported.",
             deferred=True,
             color_dtype=colors.dtype,
         )
@@ -284,14 +284,12 @@ def _convert_array_to_correct_format(colors: np.ndarray) -> np.ndarray:
         Nx4, float32 color array with values in the range [0, 1]
     """
     if colors.shape[1] == 3:
-        colors = np.column_stack(
-            [colors, np.ones(len(colors), dtype=np.float32)]
-        )
+        colors = np.column_stack([colors, np.ones(len(colors), dtype=np.float32)])
 
     if colors.min() < 0:
         raise ValueError(
             trans._(
-                'Colors input had negative values.',
+                "Colors input had negative values.",
                 deferred=True,
             )
         )
@@ -307,7 +305,7 @@ def _convert_array_to_correct_format(colors: np.ndarray) -> np.ndarray:
     return np.atleast_2d(np.asarray(colors, dtype=np.float32))
 
 
-def _handle_str_list_like(colors: Union[Sequence, np.ndarray]) -> np.ndarray:
+def _handle_str_list_like(colors: Sequence | np.ndarray) -> np.ndarray:
     """Converts lists or arrays filled with strings to the proper color array
     format.
 
@@ -328,7 +326,7 @@ def _handle_str_list_like(colors: Union[Sequence, np.ndarray]) -> np.ndarray:
         except (ValueError, TypeError, KeyError) as e:
             raise ValueError(
                 trans._(
-                    'Invalid color found: {color} at index {idx}.',
+                    "Invalid color found: {color} at index {idx}.",
                     deferred=True,
                     color=c,
                     idx=idx,
@@ -401,7 +399,7 @@ def _create_hex_to_name_dict():
         Mapping from hexadecimal RGB ('#ff0000') to name ('red').
     """
     colordict = get_color_dict()
-    hex_to_name = {f'{v.lower()}ff': k for k, v in colordict.items()}
+    hex_to_name = {f"{v.lower()}ff": k for k, v in colordict.items()}
     return hex_to_name
 
 
@@ -437,10 +435,10 @@ def _check_color_dim(val):
     if val.shape[1] not in (3, 4):
         strval = str(val)
         if len(strval) > 100:
-            strval = strval[:97] + '...'
+            strval = strval[:97] + "..."
         raise RuntimeError(
             trans._(
-                'Value must have second dimension of size 3 or 4. Got `{val}`, shape={shape}',
+                "Value must have second dimension of size 3 or 4. Got `{val}`, shape={shape}",
                 deferred=True,
                 shape=val.shape,
                 val=strval,
@@ -471,9 +469,6 @@ def rgb_to_hex(rgbs: Sequence) -> np.ndarray:
     """
     rgbs = _check_color_dim(rgbs)
     return np.array(
-        [
-            f'#{"%02x" * 4}' % tuple((255 * rgb).astype(np.uint8))
-            for rgb in rgbs
-        ],
-        '|U9',
+        [f"#{'%02x' * 4}" % tuple((255 * rgb).astype(np.uint8)) for rgb in rgbs],
+        "|U9",
     )

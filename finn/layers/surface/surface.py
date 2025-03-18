@@ -1,6 +1,6 @@
 import copy
 import warnings
-from typing import Any, Optional, Union
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -215,9 +215,9 @@ class Surface(IntensityVisualizationMixin, Layer):
         *,
         affine=None,
         axis_labels=None,
-        blending='translucent',
+        blending="translucent",
         cache=True,
-        colormap='gray',
+        colormap="gray",
         contrast_limits=None,
         experimental_clipping_planes=None,
         feature_defaults=None,
@@ -227,10 +227,10 @@ class Surface(IntensityVisualizationMixin, Layer):
         name=None,
         normals=None,
         opacity=1.0,
-        projection_mode='none',
+        projection_mode="none",
         rotate=None,
         scale=None,
-        shading='flat',
+        shading="flat",
         shear=None,
         texcoords=None,
         texture=None,
@@ -278,7 +278,7 @@ class Surface(IntensityVisualizationMixin, Layer):
         if len(data) not in (2, 3):
             raise ValueError(
                 trans._(
-                    'Surface data tuple must be 2 or 3, specifying vertices, faces, and optionally vertex values, instead got length {length}.',
+                    "Surface data tuple must be 2 or 3, specifying vertices, faces, and optionally vertex values, instead got length {length}.",
                     deferred=True,
                     length=len(data),
                 )
@@ -314,8 +314,8 @@ class Surface(IntensityVisualizationMixin, Layer):
         # Data containing vectors in the currently viewed slice
         self._data_view = np.zeros((0, self._slice_input.ndisplay))
         self._view_faces = np.zeros((0, 3), dtype=int)
-        self._view_vertex_values: Union[list[Any], np.ndarray] = []
-        self._view_vertex_colors: Union[list[Any], np.ndarray] = []
+        self._view_vertex_values: list[Any] | np.ndarray = []
+        self._view_vertex_colors: list[Any] | np.ndarray = []
 
         # Trigger generation of view slice and thumbnail.
         # Use _update_dims instead of refresh here because _get_ndim is
@@ -328,13 +328,13 @@ class Surface(IntensityVisualizationMixin, Layer):
         # initialize normals and wireframe
         self._wireframe = SurfaceWireframe()
         self._normals = SurfaceNormals()
-        connect_no_arg(self.wireframe.events, self.events, 'wireframe')
-        connect_no_arg(self.normals.events, self.events, 'normals')
+        connect_no_arg(self.wireframe.events, self.events, "wireframe")
+        connect_no_arg(self.normals.events, self.events, "normals")
 
         self.wireframe = wireframe
         self.normals = normals
 
-    def _calc_data_range(self, mode='data'):
+    def _calc_data_range(self, mode="data"):
         return calc_data_range(self.vertex_values)
 
     @property
@@ -350,7 +350,7 @@ class Surface(IntensityVisualizationMixin, Layer):
         if len(data) not in (2, 3):
             raise ValueError(
                 trans._(
-                    'Surface data tuple must be 2 or 3, specifying vertices, faces, and optionally vertex values, instead got length {data_length}.',
+                    "Surface data tuple must be 2 or 3, specifying vertices, faces, and optionally vertex values, instead got length {data_length}.",
                     deferred=True,
                     data_length=len(data),
                 )
@@ -399,11 +399,11 @@ class Surface(IntensityVisualizationMixin, Layer):
         self._reset_editable()
 
     @property
-    def vertex_colors(self) -> Optional[np.ndarray]:
+    def vertex_colors(self) -> np.ndarray | None:
         return self._vertex_colors
 
     @vertex_colors.setter
-    def vertex_colors(self, vertex_colors: Optional[np.ndarray]) -> None:
+    def vertex_colors(self, vertex_colors: np.ndarray | None) -> None:
         """Values used to directly color vertices.
 
         Note that dims sliders for this layer are based on vertex_values, so
@@ -412,12 +412,8 @@ class Surface(IntensityVisualizationMixin, Layer):
         (N, C), or completely match the dimensions of vertex_values
         (K0, ..., KL, N, C).
         """
-        if vertex_colors is not None and not isinstance(
-            vertex_colors, np.ndarray
-        ):
-            msg = (
-                f'texture should be None or ndarray; got {type(vertex_colors)}'
-            )
+        if vertex_colors is not None and not isinstance(vertex_colors, np.ndarray):
+            msg = f"texture should be None or ndarray; got {type(vertex_colors)}"
             raise ValueError(msg)
         self._vertex_colors = vertex_colors
         self._update_dims()
@@ -461,9 +457,7 @@ class Surface(IntensityVisualizationMixin, Layer):
             # dimensionality of the vertices themselves
             if self.vertex_values.ndim > 1:
                 mins = [0] * (self.vertex_values.ndim - 1) + list(mins)
-                maxs = [n - 1 for n in self.vertex_values.shape[:-1]] + list(
-                    maxs
-                )
+                maxs = [n - 1 for n in self.vertex_values.shape[:-1]] + list(maxs)
             extrema = np.vstack([mins, maxs])
         return extrema
 
@@ -488,7 +482,7 @@ class Surface(IntensityVisualizationMixin, Layer):
     @features.setter
     def features(
         self,
-        features: Union[dict[str, np.ndarray], pd.DataFrame],
+        features: dict[str, np.ndarray] | pd.DataFrame,
     ) -> None:
         self._feature_table.set_values(features, num_data=len(self.data[0]))
         self.events.features()
@@ -502,9 +496,7 @@ class Surface(IntensityVisualizationMixin, Layer):
         return self._feature_table.defaults
 
     @feature_defaults.setter
-    def feature_defaults(
-        self, defaults: Union[dict[str, Any], pd.DataFrame]
-    ) -> None:
+    def feature_defaults(self, defaults: dict[str, Any] | pd.DataFrame) -> None:
         self._feature_table.set_defaults(defaults)
         self.events.feature_defaults()
 
@@ -513,7 +505,7 @@ class Surface(IntensityVisualizationMixin, Layer):
         return str(self._shading)
 
     @shading.setter
-    def shading(self, shading: Union[str, Shading]) -> None:
+    def shading(self, shading: str | Shading) -> None:
         if isinstance(shading, Shading):
             self._shading = shading
         else:
@@ -525,16 +517,14 @@ class Surface(IntensityVisualizationMixin, Layer):
         return self._wireframe
 
     @wireframe.setter
-    def wireframe(
-        self, wireframe: Union[dict, SurfaceWireframe, None]
-    ) -> None:
+    def wireframe(self, wireframe: dict | SurfaceWireframe | None) -> None:
         if wireframe is None:
             self._wireframe.reset()
-        elif isinstance(wireframe, (SurfaceWireframe, dict)):
+        elif isinstance(wireframe, SurfaceWireframe | dict):
             self._wireframe.update(wireframe)
         else:
             raise ValueError(
-                f'wireframe should be None, a dict, or SurfaceWireframe; got {type(wireframe)}'
+                f"wireframe should be None, a dict, or SurfaceWireframe; got {type(wireframe)}"
             )
         self.events.wireframe(value=self._wireframe)
 
@@ -543,42 +533,42 @@ class Surface(IntensityVisualizationMixin, Layer):
         return self._normals
 
     @normals.setter
-    def normals(self, normals: Union[dict, SurfaceNormals, None]) -> None:
+    def normals(self, normals: dict | SurfaceNormals | None) -> None:
         if normals is None:
             self._normals.reset()
-        elif not isinstance(normals, (SurfaceNormals, dict)):
+        elif not isinstance(normals, SurfaceNormals | dict):
             raise ValueError(
-                f'normals should be None, a dict, or SurfaceNormals; got {type(normals)}'
+                f"normals should be None, a dict, or SurfaceNormals; got {type(normals)}"
             )
         else:
             if isinstance(normals, SurfaceNormals):
                 normals = {k: dict(v) for k, v in normals.dict().items()}
             # ignore modes, they are unmutable cause errors
-            for norm_type in ('face', 'vertex'):
-                normals.get(norm_type, {}).pop('mode', None)
+            for norm_type in ("face", "vertex"):
+                normals.get(norm_type, {}).pop("mode", None)
             self._normals.update(normals)
         self.events.normals(value=self._normals)
 
     @property
-    def texture(self) -> Optional[np.ndarray]:
+    def texture(self) -> np.ndarray | None:
         return self._texture
 
     @texture.setter
     def texture(self, texture: np.ndarray) -> None:
         if texture is not None and not isinstance(texture, np.ndarray):
-            msg = f'texture should be None or ndarray; got {type(texture)}'
+            msg = f"texture should be None or ndarray; got {type(texture)}"
             raise ValueError(msg)
         self._texture = texture
         self.events.texture(value=self._texture)
 
     @property
-    def texcoords(self) -> Optional[np.ndarray]:
+    def texcoords(self) -> np.ndarray | None:
         return self._texcoords
 
     @texcoords.setter
     def texcoords(self, texcoords: np.ndarray) -> None:
         if texcoords is not None and not isinstance(texcoords, np.ndarray):
-            msg = f'texcoords should be None or ndarray; got {type(texcoords)}'
+            msg = f"texcoords should be None or ndarray; got {type(texcoords)}"
             raise ValueError(msg)
         self._texcoords = texcoords
         self.events.texcoords(value=self._texcoords)
@@ -603,18 +593,18 @@ class Surface(IntensityVisualizationMixin, Layer):
         state = self._get_base_state()
         state.update(
             {
-                'colormap': self.colormap.dict(),
-                'contrast_limits': self.contrast_limits,
-                'gamma': self.gamma,
-                'shading': self.shading,
-                'data': self.data,
-                'features': self.features,
-                'feature_defaults': self.feature_defaults,
-                'wireframe': self.wireframe.dict(),
-                'normals': self.normals.dict(),
-                'texture': self.texture,
-                'texcoords': self.texcoords,
-                'vertex_colors': self.vertex_colors,
+                "colormap": self.colormap.dict(),
+                "contrast_limits": self.contrast_limits,
+                "gamma": self.gamma,
+                "shading": self.shading,
+                "data": self.data,
+                "features": self.features,
+                "feature_defaults": self.feature_defaults,
+                "wireframe": self.wireframe.dict(),
+                "normals": self.normals.dict(),
+                "texture": self.texture,
+                "texcoords": self.texcoords,
+                "vertex_colors": self.vertex_colors,
             }
         )
         return state
@@ -624,7 +614,7 @@ class Surface(IntensityVisualizationMixin, Layer):
         data: np.ndarray,
         vertex_ndim: int,
         dims: int = 1,
-    ) -> Union[list[Any], np.ndarray]:
+    ) -> list[Any] | np.ndarray:
         """Return associated layer data (e.g. vertex values, colors) within
         the current slice.
         """
@@ -634,7 +624,7 @@ class Surface(IntensityVisualizationMixin, Layer):
         data_ndim = data.ndim - 1
         if data_ndim >= dims:
             # Get indices for axes corresponding to data dimensions
-            data_indices: tuple[Union[int, slice], ...] = tuple(
+            data_indices: tuple[int | slice, ...] = tuple(
                 slice(None) if np.isnan(idx) else int(np.round(idx))
                 for idx in self._data_slice.point[:-vertex_ndim]
             )
@@ -642,10 +632,10 @@ class Surface(IntensityVisualizationMixin, Layer):
             if data.ndim > dims:
                 warnings.warn(
                     trans._(
-                        'Assigning multiple data per vertex after slicing '
-                        'is not allowed. All dimensions corresponding to '
-                        'vertex data must be non-displayed dimensions. Data '
-                        'may not be visible.',
+                        "Assigning multiple data per vertex after slicing "
+                        "is not allowed. All dimensions corresponding to "
+                        "vertex data must be non-displayed dimensions. Data "
+                        "may not be visible.",
                         deferred=True,
                     ),
                     category=UserWarning,
@@ -678,15 +668,11 @@ class Surface(IntensityVisualizationMixin, Layer):
         if values_ndim > 0:
             indices = np.array(self._data_slice.point[-vertex_ndim:])
             disp = [
-                d
-                for d in np.subtract(self._slice_input.displayed, values_ndim)
-                if d >= 0
+                d for d in np.subtract(self._slice_input.displayed, values_ndim) if d >= 0
             ]
             not_disp = [
                 d
-                for d in np.subtract(
-                    self._slice_input.not_displayed, values_ndim
-                )
+                for d in np.subtract(self._slice_input.not_displayed, values_ndim)
                 if d >= 0
             ]
         else:
@@ -698,7 +684,7 @@ class Surface(IntensityVisualizationMixin, Layer):
         if len(self.vertices) == 0:
             self._view_faces = np.zeros((0, 3), dtype=int)
         elif vertex_ndim > self._slice_input.ndisplay:
-            vertices = self.vertices[:, not_disp].astype('int')
+            vertices = self.vertices[:, not_disp].astype("int")
             triangles = vertices[self.faces]
             matches = np.all(triangles == indices[not_disp], axis=(1, 2))
             matches = np.where(matches)[0]
@@ -732,10 +718,10 @@ class Surface(IntensityVisualizationMixin, Layer):
 
     def _get_value_3d(
         self,
-        start_point: Optional[np.ndarray],
-        end_point: Optional[np.ndarray],
+        start_point: np.ndarray | None,
+        end_point: np.ndarray | None,
         dims_displayed: list[int],
-    ) -> tuple[Union[None, float, int], Optional[int]]:
+    ) -> tuple[None | float | int, int | None]:
         """Get the layer data value along a ray
 
         Parameters

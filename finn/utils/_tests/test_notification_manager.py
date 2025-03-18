@@ -19,9 +19,7 @@ from finn.utils.notifications import (
 # https://docs.pytest.org/en/stable/logging.html#caplog-fixture
 def test_keyboard_interupt_handler(capsys):
     with pytest.raises(SystemExit):
-        notification_manager.receive_error(
-            KeyboardInterrupt, KeyboardInterrupt(), None
-        )
+        notification_manager.receive_error(KeyboardInterrupt, KeyboardInterrupt(), None)
 
 
 class PurposefulException(Exception):
@@ -29,9 +27,7 @@ class PurposefulException(Exception):
 
 
 def test_notification_repr_has_message():
-    assert "='this is the message'" in repr(
-        Notification('this is the message')
-    )
+    assert "='this is the message'" in repr(Notification("this is the message"))
 
 
 def test_notification_manager_no_gui(monkeypatch):
@@ -48,54 +44,48 @@ def test_notification_manager_no_gui(monkeypatch):
         store: list[Notification] = []
         notification_manager.notification_ready.connect(store.append)
 
-        show_info('this is one way of showing an information message')
-        assert len(notification_manager.records) == 1, (
-            notification_manager.records
-        )
-        assert store[-1].type == 'info'
+        show_info("this is one way of showing an information message")
+        assert len(notification_manager.records) == 1, notification_manager.records
+        assert store[-1].type == "info"
 
-        notification_manager.receive_info(
-            'This is another information message'
-        )
+        notification_manager.receive_info("This is another information message")
         assert len(notification_manager.records) == 2
         assert len(store) == 2
-        assert store[-1].type == 'info'
+        assert store[-1].type == "info"
 
         # test that exceptions that go through sys.excepthook are catalogued
 
         with pytest.raises(PurposefulException):
-            raise PurposefulException('this is an exception')
+            raise PurposefulException("this is an exception")
 
         # pytest intercepts the error, so we can manually call sys.excepthook
         assert sys.excepthook == notification_manager.receive_error
         try:
-            raise ValueError('a')
+            raise ValueError("a")
         except ValueError:
             sys.excepthook(*sys.exc_info())
         assert len(notification_manager.records) == 3
         assert len(store) == 3
-        assert store[-1].type == 'error'
+        assert store[-1].type == "error"
 
         # test that warnings that go through showwarning are catalogued
         # again, pytest intercepts this, so just manually trigger:
         assert warnings.showwarning == notification_manager.receive_warning
-        warnings.showwarning(
-            UserWarning('this is a warning'), UserWarning, __file__, 83
-        )
+        warnings.showwarning(UserWarning("this is a warning"), UserWarning, __file__, 83)
         assert len(notification_manager.records) == 4
-        assert store[-1].type == 'warning'
+        assert store[-1].type == "warning"
 
-        show_error('This is an error')
+        show_error("This is an error")
         assert len(notification_manager.records) == 5
-        assert store[-1].type == 'error'
+        assert store[-1].type == "error"
 
-        show_warning('This is a warning')
+        show_warning("This is a warning")
         assert len(notification_manager.records) == 6
-        assert store[-1].type == 'warning'
+        assert store[-1].type == "warning"
 
-        show_debug('This is a debug')
+        show_debug("This is a debug")
         assert len(notification_manager.records) == 7
-        assert store[-1].type == 'debug'
+        assert store[-1].type == "debug"
 
     # make sure we've restored the except hook
     assert sys.excepthook == previous_exhook
@@ -112,13 +102,11 @@ def test_notification_manager_no_gui_with_threading():
     """
 
     def _warn():
-        warnings.showwarning(
-            UserWarning('this is a warning'), UserWarning, __file__, 116
-        )
+        warnings.showwarning(UserWarning("this is a warning"), UserWarning, __file__, 116)
 
     def _raise():
         with pytest.raises(PurposefulException):
-            raise PurposefulException('this is an exception')
+            raise PurposefulException("this is an exception")
 
     previous_threading_exhook = threading.excepthook
 
@@ -129,21 +117,19 @@ def test_notification_manager_no_gui_with_threading():
         notification_manager.notification_ready.connect(store.append)
 
         # Test exception inside threads
-        assert (
-            threading.excepthook == notification_manager.receive_thread_error
-        )
+        assert threading.excepthook == notification_manager.receive_thread_error
 
         exception_thread = threading.Thread(target=_raise)
         exception_thread.start()
         exception_thread.join(timeout=DEFAULT_TIMEOUT_SECS)
 
         try:
-            raise ValueError('a')
+            raise ValueError("a")
         except ValueError:
             threading.excepthook(sys.exc_info())
 
         assert len(notification_manager.records) == 1
-        assert store[-1].type == 'error'
+        assert store[-1].type == "error"
 
         # Test warning inside threads
         assert warnings.showwarning == notification_manager.receive_warning
@@ -152,7 +138,7 @@ def test_notification_manager_no_gui_with_threading():
         warning_thread.join(timeout=DEFAULT_TIMEOUT_SECS)
 
         assert len(notification_manager.records) == 2
-        assert store[-1].type == 'warning'
+        assert store[-1].type == "warning"
 
     # make sure we've restored the threading except hook
     assert threading.excepthook == previous_threading_exhook
@@ -163,7 +149,7 @@ def test_notification_manager_no_gui_with_threading():
 def test_notification_manager_no_warning_duplication():
     def fun():
         warnings.showwarning(
-            UserWarning('This is a warning'),
+            UserWarning("This is a warning"),
             category=UserWarning,
             filename=__file__,
             lineno=166,
@@ -177,7 +163,7 @@ def test_notification_manager_no_warning_duplication():
 
         fun()
         assert len(notification_manager.records) == 1
-        assert store[-1].type == 'warning'
+        assert store[-1].type == "warning"
 
         fun()
         assert len(notification_manager.records) == 1

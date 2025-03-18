@@ -3,7 +3,7 @@
 from collections.abc import Generator
 from contextlib import contextmanager
 from functools import lru_cache
-from typing import Any, Union, cast
+from typing import Any, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -99,12 +99,12 @@ def fix_data_dtype(data: npt.NDArray) -> npt.NDArray:
 
     try:
         dtype_ = cast(
-            'type[Union[np.unsignedinteger[Any], np.floating[Any]]]',
+            "type[np.unsignedinteger[Any] | np.floating[Any]]",
             {
-                'i': np.float32,
-                'f': np.float32,
-                'u': np.uint16,
-                'b': np.uint8,
+                "i": np.float32,
+                "f": np.float32,
+                "u": np.uint16,
+                "b": np.uint8,
             }[dtype.kind],
         )
         if dtype_ == np.uint16 and dtype.itemsize > 2:
@@ -112,7 +112,7 @@ def fix_data_dtype(data: npt.NDArray) -> npt.NDArray:
     except KeyError as e:  # not an int or float
         raise TypeError(
             trans._(
-                'type {dtype} not allowed for texture; must be one of {textures}',
+                "type {dtype} not allowed for texture; must be one of {textures}",
                 deferred=True,
                 dtype=dtype,
                 textures=set(texture_dtypes),
@@ -129,36 +129,36 @@ def fix_data_dtype(data: npt.NDArray) -> npt.NDArray:
 # they do not apply to min/max blending equation
 
 BLENDING_MODES = {
-    'opaque': {
-        'depth_test': True,
-        'cull_face': False,
-        'blend': False,
+    "opaque": {
+        "depth_test": True,
+        "cull_face": False,
+        "blend": False,
     },
-    'translucent': {
-        'depth_test': True,
-        'cull_face': False,
-        'blend': True,
-        'blend_func': ('src_alpha', 'one_minus_src_alpha', 'one', 'one'),
-        'blend_equation': 'func_add',
+    "translucent": {
+        "depth_test": True,
+        "cull_face": False,
+        "blend": True,
+        "blend_func": ("src_alpha", "one_minus_src_alpha", "one", "one"),
+        "blend_equation": "func_add",
     },
-    'translucent_no_depth': {
-        'depth_test': False,
-        'cull_face': False,
-        'blend': True,
-        'blend_func': ('src_alpha', 'one_minus_src_alpha', 'one', 'one'),
-        'blend_equation': 'func_add',  # see vispy/vispy#2324
+    "translucent_no_depth": {
+        "depth_test": False,
+        "cull_face": False,
+        "blend": True,
+        "blend_func": ("src_alpha", "one_minus_src_alpha", "one", "one"),
+        "blend_equation": "func_add",  # see vispy/vispy#2324
     },
-    'additive': {
-        'depth_test': False,
-        'cull_face': False,
-        'blend': True,
-        'blend_func': ('src_alpha', 'dst_alpha', 'one', 'one'),
-        'blend_equation': 'func_add',
+    "additive": {
+        "depth_test": False,
+        "cull_face": False,
+        "blend": True,
+        "blend_func": ("src_alpha", "dst_alpha", "one", "one"),
+        "blend_equation": "func_add",
     },
-    'minimum': {
-        'depth_test': False,
-        'cull_face': False,
-        'blend': True,
-        'blend_equation': 'min',
+    "minimum": {
+        "depth_test": False,
+        "cull_face": False,
+        "blend": True,
+        "blend_equation": "min",
     },
 }
