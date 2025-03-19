@@ -142,7 +142,7 @@ testing = [
     "lxml[html_clean]>5",
     "matplotlib >= 3.6.1",
     "pooch>=1.6.0",
-    "coverage>7",
+    "pytest-cov",
     "docstring_parser>=0.15",
     "pretend>=1.0.9",
     "pyautogui>=0.9.54",
