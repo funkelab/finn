@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import numpy as np
 from qtpy import QtCore
 from qtpy.QtWidgets import (
@@ -15,9 +19,12 @@ from finn.layers.utils.plane import ClippingPlane
 from finn.track_data_views.views.layers.track_labels import TrackLabels
 from finn.track_data_views.views_coordinator.tracks_viewer import TracksViewer
 
+if TYPE_CHECKING:
+    from finn.utils.events import Event
+
 
 class PlaneSliderWidget(QWidget):
-    """Widget implementing sliders for 3D plane and 3D clipping plane visualization"""
+    """Widget implementing sliders for 3D clipping plane visualization"""
 
     def __init__(
         self,
@@ -29,21 +36,25 @@ class PlaneSliderWidget(QWidget):
         self.tracks_viewer = TracksViewer.get_instance(self.viewer)
         self.current_layer = None
 
-        # Add a dropdown menu to select a layer to add a plane view for
+        # Connect to updating the active layer in the layer list
         self.viewer.layers.selection.events.active.connect(self._update_layer)
 
-        # Add buttons to switch between plane and volume mode
-        btn_layout = QHBoxLayout()
+        # Add buttons to switch between slice, clipping plane and volume view mode
         view_mode_box = QGroupBox('View Mode')
+        btn_layout = QHBoxLayout()
+
         self.slice_view_btn = QPushButton('Slice view')
         self.slice_view_btn.clicked.connect(self._set_slice_view)
+        self.slice_view_btn.setEnabled(False)
+
         self.clipping_plane_btn = QPushButton('Clipping Plane')
         self.clipping_plane_btn.clicked.connect(self._set_clipping_plane_mode)
+        self.clipping_plane_btn.setEnabled(False)
+
         self.volume_btn = QPushButton('Volume')
         self.volume_btn.clicked.connect(self._set_volume_mode)
-        self.slice_view_btn.setEnabled(False)
         self.volume_btn.setEnabled(False)
-        self.clipping_plane_btn.setEnabled(False)
+
         btn_layout.addWidget(self.slice_view_btn)
         btn_layout.addWidget(self.clipping_plane_btn)
         btn_layout.addWidget(self.volume_btn)
@@ -101,10 +112,14 @@ class PlaneSliderWidget(QWidget):
         view_mode_widget_layout.addWidget(clipping_plane_box)
 
         self.setLayout(view_mode_widget_layout)
-        self.setMaximumHeight(400)
+        self.setMaximumHeight(300)
 
-    def compute_plane_range(self):
-        """Compute the range of the plane and clipping plane sliders"""
+    def _compute_plane_range(self) -> tuple[float, float]:
+        """Compute the range of the plane and clipping plane sliders
+
+        returns:
+            tuple[float, float], the minimum and maximum values of the slider
+        """
 
         normal = np.array(self.current_layer.plane.normal)
         Lx, Ly, Lz = self.current_layer.data.shape[-3:]
@@ -185,7 +200,7 @@ class PlaneSliderWidget(QWidget):
                         self.viewer.camera.view_direction, [-3, -2, -1]
                     )
                 )
-                clip_range = self.compute_plane_range()
+                clip_range = self._compute_plane_range()
 
                 self.current_layer.experimental_clipping_planes[
                     0
@@ -202,7 +217,7 @@ class PlaneSliderWidget(QWidget):
             max_value = int(clip_range[0] + (2 / 3) * (clip_range[1] - clip_range[0]))
             self.clipping_plane_slider.setValue((min_value, max_value))
 
-    def _update_layer(self, event) -> None:
+    def _update_layer(self, event: Event) -> None:
         """Update the layer to which the plane viewing is applied"""
 
         if (
@@ -251,8 +266,8 @@ class PlaneSliderWidget(QWidget):
             else:
                 self._set_volume_mode()
 
-    def _update_clipping_plane_slider(self):
-        """Updates the values of the clipping plane slider when switching between different layers"""
+    def _update_clipping_plane_slider(self) -> None:
+        """Update the values of the clipping plane slider when switching between different layers"""
 
         new_position = np.array(
             self.current_layer.experimental_clipping_planes[0].position
@@ -275,7 +290,7 @@ class PlaneSliderWidget(QWidget):
         self.clipping_plane_slider.valueChanged.connect(self._set_clipping_plane)
 
     def _set_clipping_plane_mode(self) -> None:
-        """Activate the clipping plane mode on the current layer"""
+        """Activate the clipping plane sliders on the current layer and set the clipping range"""
 
         self.viewer.dims.ndisplay = 3
         self.current_layer.depiction = 'volume'
@@ -286,15 +301,16 @@ class PlaneSliderWidget(QWidget):
         for clip_plane in self.current_layer.experimental_clipping_planes:
             clip_plane.enabled = True
 
-        max_range = self.compute_plane_range()[1]
-        self.clipping_plane_slider.setMaximum(max_range)
+        clip_range = self._compute_plane_range()
+        self.clipping_plane_slider.setMinimum(int(clip_range[0]))
+        self.clipping_plane_slider.setMaximum(int(clip_range[1]))
         if self.clipping_plane_slider.value()[0] == 0:
-            self.clipping_plane_slider.setValue(
-                (int(max_range / 3), int(max_range / 1.5))
-            )
+            min_value = int(clip_range[0] + (1 / 3) * (clip_range[1] - clip_range[0]))
+            max_value = int(clip_range[0] + (2 / 3) * (clip_range[1] - clip_range[0]))
+            self.clipping_plane_slider.setValue((min_value, max_value))
 
     def _set_volume_mode(self) -> None:
-        """Deactive plane viewing and go back to default volume viewing"""
+        """Deactivate plane sliders and go back to default volume viewing"""
 
         self.viewer.dims.ndisplay = 3
         self.clipping_plane_slider.setEnabled(False)
@@ -310,26 +326,13 @@ class PlaneSliderWidget(QWidget):
                 visible_nodes=visible_nodes, plane_nodes='all'
             )
 
-    def _set_slice_view(self):
-        """Set ndisplay to 2, triggering replacement of this widget by the orthogonal views widget"""
+    def _set_slice_view(self) -> None:
+        """Set ndisplay to 2, disabling the plane sliders"""
 
         self.viewer.dims.ndisplay = 2
         self.clipping_plane_slider.setEnabled(False)
         for btn in self.plane_btns:
             btn.setEnabled(False)
-
-    def on_ndisplay_changed(self) -> None:
-        """Update the buttons depending on the display mode of the viewer. Buttons and sliders should only be active in 3D mode"""
-
-        if self.current_layer is not None:
-            if (
-                self.current_layer.depiction == 'volume'
-                and self.current_layer.experimental_clipping_planes[0].enabled
-            ):
-                self._set_clipping_plane_mode()
-                self._update_clipping_plane_slider()
-            else:
-                self._set_volume_mode()
 
     def _set_clipping_plane(self) -> None:
         """Adjust the range of the clipping plane"""
@@ -362,16 +365,11 @@ class PlaneSliderWidget(QWidget):
             scale = self.current_layer.scale[1:]  # skip the time scale
             p1 = [int(p1[0] / scale[0]), p1[1] / scale[1], p1[2] / scale[2]]
             p2 = [int(p2[0] / scale[0]), p2[1] / scale[1], p2[2] / scale[2]]
-            plane_nodes = self.filter_labels_with_clipping_planes(
+            plane_nodes = self._filter_nodes_with_clipping_planes(
                 self.viewer.dims.current_step[0], p1, p2, plane_normal
             )
 
-            plane_nodes += [
-                self.tracks_viewer.tracks.get_track_id(node)
-                for node in self.tracks_viewer.selected_nodes
-                if self.tracks_viewer.tracks.get_time(node)
-                == self.viewer.dims.current_step[0]
-            ]  # also include the selected nodes for clarity, even if they are out of plane.
+            plane_nodes += self.tracks_viewer.selected_nodes._list  # also include the selected nodes for clarity, even if they are out of plane.
 
             visible_nodes = self.tracks_viewer.filter_visible_nodes()
 
@@ -379,27 +377,27 @@ class PlaneSliderWidget(QWidget):
                 visible_nodes=visible_nodes, plane_nodes=plane_nodes
             )
 
-    def filter_labels_with_clipping_planes(
+    def _filter_nodes_with_clipping_planes(
         self, t: int, p1: list[int], p2: list[int], normal: tuple[float], tolerance=10
     ) -> list[int]:
         """
-        Filter labels in a pandas DataFrame based on clipping planes.
+        Filter nodes in a pandas DataFrame based on clipping planes.
 
         Parameters:
         - df: pd.DataFrame, with columns 't', 'x', 'y', 'z' representing coordinates of labels.
-        - p1: tuple or np.ndarray, position of the first clipping plane.
-        - p2: tuple or np.ndarray, position of the second clipping plane.
-        - normal: tuple or np.ndarray, the normal vector of the clipping planes.
+        - p1: list[int], position of the first clipping plane.
+        - p2: list[int], position of the second clipping plane.
+        - normal: tuple[float], the normal vector of the clipping planes.
+        - tolerance [int]: the tolerance in pixels for the clipping plane defined region.
 
         Returns:
-        - A list of node ids that are within the bounds of the clipping planes.
+        - A list of node ids that are within the bounds (+- tolerance) of the clipping planes.
         """
         # Normalize the normal vector
         normal = np.array(normal)
         normal = normal / np.linalg.norm(normal)
 
         # Calculate signed distances to both planes
-
         df = self.tracks_viewer.track_df[self.tracks_viewer.track_df['t'] == t]
         coords = df[
             ['z', 'y', 'x']
