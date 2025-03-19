@@ -1,7 +1,6 @@
 import sys
 
 import numpy.testing as npt
-import pyautogui
 import pytest
 from qtpy.QtCore import QPoint, Qt
 from qtpy.QtWidgets import QApplication
@@ -267,6 +266,7 @@ def test_preferences_dialog_restore(qtbot, pref, monkeypatch):
 
 @skip_local_focus
 @skip_on_mac_ci
+@pytest.mark.skip  # pyautogui doesn't work headless on CI
 @pytest.mark.key_bindings
 @pytest.mark.parametrize(
     "confirm_key",
@@ -285,6 +285,8 @@ def test_preferences_dialog_not_dismissed_by_keybind_confirm(qtbot, pref, confir
         See https://github.com/asweigart/pyautogui/issues/247 and
         https://github.com/asweigart/pyautogui/issues/247#issuecomment-437668855
     """
+    import pyautogui
+
     shortcut_widget = pref._stack.widget(3).widget().widget.widgets["shortcuts"]
     pref._stack.setCurrentIndex(3)
     # ensure the dialog is showing

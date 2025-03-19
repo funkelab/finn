@@ -2,7 +2,6 @@ import itertools
 import sys
 from unittest.mock import patch
 
-import pyautogui
 import pytest
 from qtpy.QtCore import QPoint, Qt
 from qtpy.QtWidgets import QAbstractItemDelegate, QApplication, QMessageBox
@@ -277,6 +276,7 @@ def test_remove_shortcut(shortcut_editor_widget, qtbot, removal_trigger_key, con
 
 @skip_local_focus
 @skip_on_mac_ci
+@pytest.mark.skip  # pyautogui doesn't work on CI
 @pytest.mark.parametrize(
     ("modifier_key", "modifiers", "key_symbols"),
     [
@@ -314,6 +314,8 @@ def test_keybinding_editor_modifier_key_detection(
         See https://github.com/asweigart/pyautogui/issues/247 and
         https://github.com/asweigart/pyautogui/issues/247#issuecomment-437668855
     """
+    import pyautogui
+
     widget = shortcut_editor_widget()
     shortcut = widget._table.item(0, widget._shortcut_col).text()
     assert shortcut == KEY_SYMBOLS["Ctrl"]

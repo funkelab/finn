@@ -1,6 +1,7 @@
 import threading
 
 import numpy as np
+import pytest
 from qtpy.QtCore import QModelIndex, QPoint, Qt
 from qtpy.QtWidgets import QLineEdit, QStyleOptionViewItem
 
@@ -233,6 +234,7 @@ def test_drag_and_drop_layers(qtbot):
     qtbot.waitUntil(check_drag_and_drop)
 
 
+@pytest.mark.skip  # pyautogui doesn't work on CI
 def drag_and_drop(start_x, start_y, end_x, end_y):
     # simulate a drag and drop action with pyautogui
     import pyautogui
