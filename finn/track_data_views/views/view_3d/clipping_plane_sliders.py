@@ -1,6 +1,7 @@
 import numpy as np
 from qtpy import QtCore
 from qtpy.QtWidgets import (
+    QGroupBox,
     QHBoxLayout,
     QLabel,
     QPushButton,
@@ -32,20 +33,24 @@ class PlaneSliderWidget(QWidget):
         self.viewer.layers.selection.events.active.connect(self._update_layer)
 
         # Add buttons to switch between plane and volume mode
-        button_layout = QVBoxLayout()
-        plane_volume_layout = QHBoxLayout()
+        btn_layout = QHBoxLayout()
+        view_mode_box = QGroupBox('View Mode')
         self.slice_view_btn = QPushButton('Slice view')
         self.slice_view_btn.clicked.connect(self._set_slice_view)
         self.clipping_plane_btn = QPushButton('Clipping Plane')
         self.clipping_plane_btn.clicked.connect(self._set_clipping_plane_mode)
         self.volume_btn = QPushButton('Volume')
         self.volume_btn.clicked.connect(self._set_volume_mode)
-        plane_volume_layout.addWidget(self.slice_view_btn)
-        plane_volume_layout.addWidget(self.clipping_plane_btn)
-        plane_volume_layout.addWidget(self.volume_btn)
-        button_layout.addLayout(plane_volume_layout)
+        self.slice_view_btn.setEnabled(False)
+        self.volume_btn.setEnabled(False)
+        self.clipping_plane_btn.setEnabled(False)
+        btn_layout.addWidget(self.slice_view_btn)
+        btn_layout.addWidget(self.clipping_plane_btn)
+        btn_layout.addWidget(self.volume_btn)
+        view_mode_box.setLayout(btn_layout)
 
-        # Add buttons for the different viewing directions
+        # Add groupbox for all clipping plane related buttons
+        clipping_plane_box = QGroupBox('Clipping Plane Settings')
         plane_labels = QHBoxLayout()
         plane_set_x_btn = QPushButton('X')
         plane_set_x_btn.clicked.connect(self._set_x_orientation)
@@ -55,29 +60,45 @@ class PlaneSliderWidget(QWidget):
         plane_set_z_btn.clicked.connect(self._set_z_orientation)
         plane_set_oblique_btn = QPushButton('Oblique')
         plane_set_oblique_btn.clicked.connect(self._set_oblique_orientation)
+        self.plane_btns = [
+            plane_set_x_btn,
+            plane_set_y_btn,
+            plane_set_z_btn,
+            plane_set_oblique_btn,
+        ]
+        for btn in self.plane_btns:
+            btn.setEnabled(False)
         plane_labels.addWidget(plane_set_x_btn)
         plane_labels.addWidget(plane_set_y_btn)
         plane_labels.addWidget(plane_set_z_btn)
         plane_labels.addWidget(plane_set_oblique_btn)
 
         self.clipping_plane_slider = QLabeledRangeSlider(QtCore.Qt.Horizontal)
+        self.clipping_plane_slider.setStyleSheet("""
+            QSlider::groove:horizontal:disabled {
+                background: #353B43;  /* gray background */
+            }
+            QSlider::handle:horizontal:disabled {
+                background: #4C545E;  /* Greyed-out handles */
+            }
+        """)
         self.clipping_plane_slider.setValue((0, 1))
         self.clipping_plane_slider.valueChanged.connect(self._set_clipping_plane)
         self.clipping_plane_slider.setSingleStep(1)
         self.clipping_plane_slider.setTickInterval(1)
         self.clipping_plane_slider.setEnabled(False)
 
-        # Combine buttons and sliders
         plane_layout = QVBoxLayout()
         plane_layout.addWidget(QLabel('Plane Normal'))
         plane_layout.addLayout(plane_labels)
-        plane_layout.addWidget(QLabel('Clipping Plane'))
+        plane_layout.addWidget(QLabel('Clipping Plane Range'))
         plane_layout.addWidget(self.clipping_plane_slider)
+        clipping_plane_box.setLayout(plane_layout)
 
         # Assemble main layout
         view_mode_widget_layout = QVBoxLayout()
-        view_mode_widget_layout.addLayout(button_layout)
-        view_mode_widget_layout.addLayout(plane_layout)
+        view_mode_widget_layout.addWidget(view_mode_box)
+        view_mode_widget_layout.addWidget(clipping_plane_box)
 
         self.setLayout(view_mode_widget_layout)
         self.setMaximumHeight(400)
@@ -224,12 +245,13 @@ class PlaneSliderWidget(QWidget):
             self.volume_btn.setEnabled(False)
             self.clipping_plane_btn.setEnabled(False)
             self.clipping_plane_slider.setEnabled(False)
+            for btn in self.plane_btns:
+                btn.setEnabled(False)
             self.current_layer = None
             return
         self.slice_view_btn.setEnabled(True)
         self.volume_btn.setEnabled(True)
         self.clipping_plane_btn.setEnabled(True)
-        self.clipping_plane_slider.setEnabled(True)
         self.current_layer = event.value
         if len(self.current_layer.experimental_clipping_planes) == 0:
             plane = self.current_layer.plane
@@ -286,7 +308,8 @@ class PlaneSliderWidget(QWidget):
 
         self.viewer.dims.ndisplay = 3
         self.current_layer.depiction = 'volume'
-
+        for btn in self.plane_btns:
+            btn.setEnabled(True)
         self.clipping_plane_slider.setEnabled(True)
 
         for clip_plane in self.current_layer.experimental_clipping_planes:
@@ -304,6 +327,8 @@ class PlaneSliderWidget(QWidget):
 
         self.viewer.dims.ndisplay = 3
         self.clipping_plane_slider.setEnabled(False)
+        for btn in self.plane_btns:
+            btn.setEnabled(False)
         self.current_layer.depiction = 'volume'
         for clip_plane in self.current_layer.experimental_clipping_planes:
             clip_plane.enabled = False
@@ -318,6 +343,9 @@ class PlaneSliderWidget(QWidget):
         """Set ndisplay to 2, triggering replacement of this widget by the orthogonal views widget"""
 
         self.viewer.dims.ndisplay = 2
+        self.clipping_plane_slider.setEnabled(False)
+        for btn in self.plane_btns:
+            btn.setEnabled(False)
 
     def on_ndisplay_changed(self) -> None:
         """Update the buttons depending on the display mode of the viewer. Buttons and sliders should only be active in 3D mode"""
