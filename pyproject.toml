@@ -154,6 +154,7 @@ testing = [
     "qtconsole>=4.5.1",
     "rich>=12.0.0",
     "finn-viewer[optional-base]",
+    "pytest-xvfb",
 ]
 testing_extra = [
     "torch>=1.7",
@@ -390,8 +391,8 @@ console_output_style = "count"
 minversion = "8"
 # log_cli_level = "INFO"
 xfail_strict = true
+qt_api = "pyqt5"
 testpaths = ["finn", "finn_builtins"]
-
 
 # NOTE: only put things that will never change in here.
 # napari deprecation and future warnings should NOT go in here.
