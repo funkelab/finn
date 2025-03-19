@@ -31,7 +31,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: tlambert03/setup-qt-libs@v1
-      - uses: aganders3/headless-gui@v2
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
@@ -54,7 +53,9 @@ jobs:
         shell: powershell
 
       - name: Test
-        run: pytest --color=yes --cov --cov-report=xml
+        uses: aganders3/headless-gui@v2
+        with:
+          run: pytest --color=yes --cov --cov-report=xml
 
       - name: Coverage
         uses: codecov/codecov-action@v5
