@@ -15,7 +15,6 @@ concurrency:
 
 env:
   CI: true
-  DISPLAY: ':99.0'
 
 jobs:
 
