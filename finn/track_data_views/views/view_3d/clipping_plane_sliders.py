@@ -238,8 +238,12 @@ class PlaneSliderWidget(QWidget):
     def _update_layer(self, event) -> None:
         """Update the layer to which the plane viewing is applied"""
 
-        if event.value is None or not isinstance(
-            event.value, (finn.layers.Image, finn.layers.Labels, TrackLabels)
+        if (
+            event.value is None
+            or not isinstance(
+                event.value, (finn.layers.Image, finn.layers.Labels, TrackLabels)
+            )
+            or self.viewer.dims.ndim < 4
         ):
             self.slice_view_btn.setEnabled(False)
             self.volume_btn.setEnabled(False)
