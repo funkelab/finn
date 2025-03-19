@@ -286,7 +286,6 @@ def npe2pm_(npe2pm, monkeypatch):
 
 @pytest.fixture
 def builtins(npe2pm_: TestPluginManager):
-    breakpoint()
     with npe2pm_.tmp_plugin(package="finn") as plugin:
         yield plugin
 
