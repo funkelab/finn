@@ -19,9 +19,7 @@ bools = ['bool']
 pure_py = ['int', 'float']
 
 
-@pytest.mark.parametrize(
-    'dtype_str', ['uint8', *ints, *floats, *complex_types, *bools]
-)
+@pytest.mark.parametrize('dtype_str', ['uint8', *ints, *floats, *complex_types, *bools])
 def test_normalize_dtype_torch(dtype_str):
     """torch doesn't have uint for >8bit, so it gets its own test."""
     # torch doesn't let you specify dtypes as str,
@@ -31,9 +29,7 @@ def test_normalize_dtype_torch(dtype_str):
     assert normalize_dtype(torch_arr.dtype) is np_arr.dtype.type
 
 
-@pytest.mark.parametrize(
-    'dtype_str', uints + ints + floats + complex_types + bools
-)
+@pytest.mark.parametrize('dtype_str', uints + ints + floats + complex_types + bools)
 def test_normalize_dtype_tensorstore(dtype_str):
     np_arr = np.zeros(5, dtype=dtype_str)
     ts_arr = ts.array(np_arr)  # inherit ts dtype from np dtype
@@ -42,9 +38,7 @@ def test_normalize_dtype_tensorstore(dtype_str):
 
 @pytest.mark.parametrize(
     ('module', 'dtype_str'),
-    itertools.product(
-        (np, da, zarr), uints + ints + floats + complex_types + bools
-    ),
+    itertools.product((np, da, zarr), uints + ints + floats + complex_types + bools),
 )
 def test_normalize_dtype_np_noop(module, dtype_str):
     """Check that normalize dtype works as expected for plain NumPy dtypes."""

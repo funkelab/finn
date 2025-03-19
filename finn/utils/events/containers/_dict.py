@@ -3,9 +3,7 @@
 from collections.abc import Iterator, Mapping, MutableMapping, Sequence
 from typing import (
     Any,
-    Optional,
     TypeVar,
-    Union,
 )
 
 _K = TypeVar('_K')
@@ -17,15 +15,13 @@ class TypedMutableMapping(MutableMapping[_K, _T]):
 
     def __init__(
         self,
-        data: Optional[Mapping[_K, _T]] = None,
-        basetype: Union[type[_T], Sequence[type[_T]]] = (),
+        data: Mapping[_K, _T] | None = None,
+        basetype: type[_T] | Sequence[type[_T]] = (),
     ) -> None:
         if data is None:
             data = {}
         self._dict: dict[_K, _T] = {}
-        self._basetypes = (
-            basetype if isinstance(basetype, Sequence) else (basetype,)
-        )
+        self._basetypes = basetype if isinstance(basetype, Sequence) else (basetype,)
         self.update(data)
 
     # #### START Required Abstract Methods
@@ -49,9 +45,7 @@ class TypedMutableMapping(MutableMapping[_K, _T]):
         return str(self._dict)
 
     def _type_check(self, e: Any) -> _T:
-        if self._basetypes and not any(
-            isinstance(e, t) for t in self._basetypes
-        ):
+        if self._basetypes and not any(isinstance(e, t) for t in self._basetypes):
             raise TypeError(
                 f'Cannot add object with type {type(e)} to TypedDict expecting type {self._basetypes}',
             )

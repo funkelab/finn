@@ -23,9 +23,7 @@ class TestQtPopup:
     def test_move_to_error_no_parent(self, qtbot):
         popup = QtPopup(None)
         qtbot.add_widget(popup)
-        with pytest.raises(
-            ValueError, match='Specifying position as a string'
-        ):
+        with pytest.raises(ValueError, match='Specifying position as a string'):
             popup.move_to()
 
     @pytest.mark.parametrize('pos', ['top', 'bottom', 'left', 'right'])

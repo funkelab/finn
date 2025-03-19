@@ -18,14 +18,10 @@ class VispyPointsLayer(VispyBaseLayer):
 
         self.layer.events.symbol.connect(self._on_data_change)
         self.layer.events.border_width.connect(self._on_data_change)
-        self.layer.events.border_width_is_relative.connect(
-            self._on_data_change
-        )
+        self.layer.events.border_width_is_relative.connect(self._on_data_change)
         self.layer.events.border_color.connect(self._on_data_change)
         self.layer._border.events.colors.connect(self._on_data_change)
-        self.layer._border.events.color_properties.connect(
-            self._on_data_change
-        )
+        self.layer._border.events.color_properties.connect(self._on_data_change)
         self.layer.events.face_color.connect(self._on_data_change)
         self.layer._face.events.colors.connect(self._on_data_change)
         self.layer._face.events.color_properties.connect(self._on_data_change)
@@ -33,9 +29,7 @@ class VispyPointsLayer(VispyBaseLayer):
         self.layer.text.events.connect(self._on_text_change)
         self.layer.events.shading.connect(self._on_shading_change)
         self.layer.events.antialiasing.connect(self._on_antialiasing_change)
-        self.layer.events.canvas_size_limits.connect(
-            self._on_canvas_size_limits_change
-        )
+        self.layer.events.canvas_size_limits.connect(self._on_canvas_size_limits_change)
 
         self._on_data_change()
 
@@ -95,13 +89,10 @@ class VispyPointsLayer(VispyBaseLayer):
             if data.ndim == 1:
                 data = np.expand_dims(data, axis=0)
             size = self.layer._view_size[self.layer._highlight_index]
-            border_width = self.layer._view_border_width[
-                self.layer._highlight_index
-            ]
+            border_width = self.layer._view_border_width[self.layer._highlight_index]
             if self.layer.border_width_is_relative:
                 border_width = (
-                    border_width
-                    * self.layer._view_size[self.layer._highlight_index][-1]
+                    border_width * self.layer._view_size[self.layer._highlight_index][-1]
                 )
             symbol = self.layer._view_symbol[self.layer._highlight_index]
         else:
@@ -125,10 +116,7 @@ class VispyPointsLayer(VispyBaseLayer):
             face_color=transform_color('transparent'),
         )
 
-        if (
-            self.layer._highlight_box is None
-            or 0 in self.layer._highlight_box.shape
-        ):
+        if self.layer._highlight_box is None or 0 in self.layer._highlight_box.shape:
             pos = np.zeros((1, self.layer._slice_input.ndisplay))
             highlight_thickness = 0
         else:
@@ -190,12 +178,8 @@ class VispyPointsLayer(VispyBaseLayer):
         self.node.spherical = shading == 'spherical'
 
     def _on_canvas_size_limits_change(self):
-        self.node.points_markers.canvas_size_limits = (
-            self.layer.canvas_size_limits
-        )
-        highlight_thickness = (
-            get_settings().appearance.highlight.highlight_thickness
-        )
+        self.node.points_markers.canvas_size_limits = self.layer.canvas_size_limits
+        highlight_thickness = get_settings().appearance.highlight.highlight_thickness
         low, high = self.layer.canvas_size_limits
         self.node.selection_markers.canvas_size_limits = (
             low + highlight_thickness,

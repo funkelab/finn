@@ -1,14 +1,11 @@
 import typing
 import warnings
 from collections import deque
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from contextlib import contextmanager
 from typing import (
     Any,
-    Callable,
     ClassVar,
-    Optional,
-    Union,
 )
 
 import numpy as np
@@ -273,9 +270,7 @@ class Labels(ScalarFieldBase):
 
     brush_size_on_mouse_move = BrushSizeOnMouseMove(min_brush_size=1)
 
-    _move_modes: ClassVar[
-        dict[StringEnum, Callable[['Labels', Event], None]]
-    ] = {  # type: ignore[assignment]
+    _move_modes: ClassVar[dict[StringEnum, Callable[['Labels', Event], None]]] = {  # type: ignore[assignment]
         Mode.PAN_ZOOM: no_op,
         Mode.TRANSFORM: highlight_box_handles,
         Mode.PICK: no_op,
@@ -331,13 +326,9 @@ class Labels(ScalarFieldBase):
         self._seed = 0.5
         # We use 50 colors (49 + transparency) by default for historical
         # consistency. This may change in future versions.
-        self._random_colormap = label_colormap(
-            49, self._seed, background_value=0
-        )
+        self._random_colormap = label_colormap(49, self._seed, background_value=0)
         self._original_random_colormap = self._random_colormap
-        self._direct_colormap = direct_colormap(
-            {0: 'transparent', None: 'black'}
-        )
+        self._direct_colormap = direct_colormap({0: 'transparent', None: 'black'})
         self._colormap = self._random_colormap
         self._color_mode = LabelColorMode.AUTO
         self._show_selected_label = False
@@ -463,7 +454,7 @@ class Labels(ScalarFieldBase):
         return str(self._iso_gradient_mode)
 
     @iso_gradient_mode.setter
-    def iso_gradient_mode(self, value: Union[IsoCategoricalGradientMode, str]):
+    def iso_gradient_mode(self, value: IsoCategoricalGradientMode | str):
         self._iso_gradient_mode = IsoCategoricalGradientMode(value)
         self.events.iso_gradient_mode()
 
@@ -514,19 +505,15 @@ class Labels(ScalarFieldBase):
         # Convert from brush size in data coordinates to
         # cursor size in world coordinates
         scale = self._data_to_world.scale
-        min_scale = np.min(
-            [abs(scale[d]) for d in self._slice_input.displayed]
-        )
+        min_scale = np.min([abs(scale[d]) for d in self._slice_input.displayed])
         return abs(self.brush_size * min_scale)
 
-    def new_colormap(self, seed: Optional[int] = None):
+    def new_colormap(self, seed: int | None = None):
         if seed is None:
             seed = np.random.default_rng().integers(2**32 - 1)
 
         orig = self._original_random_colormap
-        self.colormap = shuffle_and_extend_colormap(
-            self._original_random_colormap, seed
-        )
+        self.colormap = shuffle_and_extend_colormap(self._original_random_colormap, seed)
         self._original_random_colormap = orig
 
     @property
@@ -568,12 +555,12 @@ class Labels(ScalarFieldBase):
         self.refresh(extent=False)
 
     @property
-    def data(self) -> Union[LayerDataProtocol, MultiScaleData]:
+    def data(self) -> LayerDataProtocol | MultiScaleData:
         """array: Image data."""
         return self._data
 
     @data.setter
-    def data(self, data: Union[LayerDataProtocol, MultiScaleData]):
+    def data(self, data: LayerDataProtocol | MultiScaleData):
         data = self._ensure_int_labels(data)
         self._data = data
         self._ndim = len(self._data.shape)
@@ -602,7 +589,7 @@ class Labels(ScalarFieldBase):
     @features.setter
     def features(
         self,
-        features: Union[dict[str, np.ndarray], pd.DataFrame],
+        features: dict[str, np.ndarray] | pd.DataFrame,
     ) -> None:
         self._feature_table.set_values(features)
         self._label_index = self._make_label_index()
@@ -646,9 +633,7 @@ class Labels(ScalarFieldBase):
         return (
             {None, self.colormap.background_value} == set(color.keys())
             and np.allclose(color[None], [0, 0, 0, 1])
-            and np.allclose(
-                color[self.colormap.background_value], [0, 0, 0, 0]
-            )
+            and np.allclose(color[self.colormap.background_value], [0, 0, 0, 0])
         )
 
     def _ensure_int_labels(self, data):
@@ -835,9 +820,7 @@ class Labels(ScalarFieldBase):
         raw_displayed = self._slice.image.raw
 
         # Keep only the dimensions that correspond to the current view
-        updated_slice = tuple(
-            self._updated_slice[index] for index in dims_displayed
-        )
+        updated_slice = tuple(self._updated_slice[index] for index in dims_displayed)
 
         offset = [axis_slice.start for axis_slice in updated_slice]
 
@@ -860,7 +843,7 @@ class Labels(ScalarFieldBase):
 
     def _calculate_contour(
         self, labels: np.ndarray, data_slice: tuple[slice, ...]
-    ) -> Optional[np.ndarray]:
+    ) -> np.ndarray | None:
         """Calculate the contour of a given label array within the specified data slice.
 
         Parameters
@@ -898,12 +881,12 @@ class Labels(ScalarFieldBase):
         # Remove the latest one-pixel border from the result
         delta_slice = tuple(
             slice(s1.start - s2.start, s1.stop - s2.start)
-            for s1, s2 in zip(data_slice, expanded_slice)
+            for s1, s2 in zip(data_slice, expanded_slice, strict=False)
         )
         return sliced_labels[delta_slice]
 
     def _raw_to_displayed(
-        self, raw, data_slice: Optional[tuple[slice, ...]] = None
+        self, raw, data_slice: tuple[slice, ...] | None = None
     ) -> np.ndarray:
         """Determine displayed image from a saved raw image and a saved seed.
 
@@ -963,9 +946,7 @@ class Labels(ScalarFieldBase):
         thumbshape = np.array(self._thumbnail_shape[:2])
 
         raw_zoom_factor = np.min(thumbshape / imshape)
-        new_shape = np.clip(
-            raw_zoom_factor * imshape, a_min=1, a_max=thumbshape
-        )
+        new_shape = np.clip(raw_zoom_factor * imshape, a_min=1, a_max=thumbshape)
         zoom_factor = tuple(new_shape / imshape)
 
         downsampled = ndi.zoom(image, zoom_factor, prefilter=False, order=0)
@@ -978,9 +959,7 @@ class Labels(ScalarFieldBase):
         """Return the color corresponding to a specific label."""
         if label == self.colormap.background_value:
             col = None
-        elif label is None or (
-            self.show_selected_label and label != self.selected_label
-        ):
+        elif label is None or (self.show_selected_label and label != self.selected_label):
             col = self.colormap.map(self.colormap.background_value)
         else:
             col = self.colormap.map(label)
@@ -1083,14 +1062,10 @@ class Labels(ScalarFieldBase):
         self.refresh()
 
     def undo(self):
-        self._load_history(
-            self._undo_history, self._redo_history, undoing=True
-        )
+        self._load_history(self._undo_history, self._redo_history, undoing=True)
 
     def redo(self):
-        self._load_history(
-            self._redo_history, self._undo_history, undoing=False
-        )
+        self._load_history(self._redo_history, self._undo_history, undoing=False)
 
     def fill(self, coord, new_label, refresh=True):
         """Replace an existing label with a new label, either just at the
@@ -1118,14 +1093,11 @@ class Labels(ScalarFieldBase):
         # If requested new label doesn't change old label then return
         old_label = np.asarray(self.data[int_coord]).item()
         if old_label == new_label or (
-            self.preserve_labels
-            and old_label != self.colormap.background_value
+            self.preserve_labels and old_label != self.colormap.background_value
         ):
             return
 
-        dims_to_fill = sorted(
-            self._slice_input.order[-self.n_edit_dimensions :]
-        )
+        dims_to_fill = sorted(self._slice_input.order[-self.n_edit_dimensions :])
         data_slice_list = list(int_coord)
         for dim in dims_to_fill:
             data_slice_list[dim] = slice(None)
@@ -1139,9 +1111,7 @@ class Labels(ScalarFieldBase):
             labeled_matches, num_features = ndi.label(matches)
             if num_features != 1:
                 match_label = labeled_matches[slice_coord]
-                matches = np.logical_and(
-                    matches, labeled_matches == match_label
-                )
+                matches = np.logical_and(matches, labeled_matches == match_label)
 
         match_indices_local = np.nonzero(matches)
         if self.ndim not in {2, self.n_edit_dimensions}:
@@ -1157,9 +1127,7 @@ class Labels(ScalarFieldBase):
         else:
             match_indices = match_indices_local
 
-        match_indices = _coerce_indices_for_vectorization(
-            self.data, match_indices
-        )
+        match_indices = _coerce_indices_for_vectorization(self.data, match_indices)
 
         self.data_setitem(match_indices, new_label, refresh)
 
@@ -1210,9 +1178,7 @@ class Labels(ScalarFieldBase):
             calls.
         """
         shape, dims_to_paint = self._get_shape_and_dims_to_paint()
-        paint_scale = np.array(
-            [self.scale[i] for i in dims_to_paint], dtype=float
-        )
+        paint_scale = np.array([self.scale[i] for i in dims_to_paint], dtype=float)
 
         slice_coord = [int(np.round(c)) for c in coord]
         if self.n_edit_dimensions < self.ndim:
@@ -1225,9 +1191,7 @@ class Labels(ScalarFieldBase):
         radius = np.floor(self.brush_size / 2) + 0.5
         mask_indices = sphere_indices(radius, tuple(paint_scale))
 
-        mask_indices = mask_indices + np.round(np.array(coord_paint)).astype(
-            int
-        )
+        mask_indices = mask_indices + np.round(np.array(coord_paint)).astype(int)
 
         self._paint_indices(
             mask_indices, new_label, shape, dims_to_paint, slice_coord, refresh
@@ -1246,9 +1210,7 @@ class Labels(ScalarFieldBase):
         shape, dims_to_paint = self._get_shape_and_dims_to_paint()
 
         if len(dims_to_paint) != 2:
-            raise NotImplementedError(
-                'Polygon painting is implemented only in 2D.'
-            )
+            raise NotImplementedError('Polygon painting is implemented only in 2D.')
 
         points = np.array(points, dtype=int)
         slice_coord = points[0].tolist()
@@ -1291,9 +1253,7 @@ class Labels(ScalarFieldBase):
             Whether to refresh view slice or not. Set to False to batch paint
             calls.
         """
-        dims_not_painted = sorted(
-            self._slice_input.order[: -self.n_edit_dimensions]
-        )
+        dims_not_painted = sorted(self._slice_input.order[: -self.n_edit_dimensions])
         # discard candidate coordinates that are out of bounds
         mask_indices = indices_in_shape(mask_indices, shape)
 
@@ -1319,9 +1279,7 @@ class Labels(ScalarFieldBase):
             if new_label == self.colormap.background_value:
                 keep_coords = self.data[slice_coord] == self.selected_label
             else:
-                keep_coords = (
-                    self.data[slice_coord] == self.colormap.background_value
-                )
+                keep_coords = self.data[slice_coord] == self.colormap.background_value
             slice_coord = tuple(sc[keep_coords] for sc in slice_coord)
 
         self.data_setitem(slice_coord, new_label, refresh)
@@ -1343,9 +1301,7 @@ class Labels(ScalarFieldBase):
         Get indices of current visible slice.
         """
         slice_input = self._slice.slice_input
-        point = np.round(
-            self.world_to_data(slice_input.world_slice.point)
-        ).astype(int)
+        point = np.round(self.world_to_data(slice_input.world_slice.point)).astype(int)
         return {dim: point[dim] for dim in slice_input.not_displayed}
 
     def data_setitem(self, indices, value, refresh=True):
@@ -1418,10 +1374,7 @@ class Labels(ScalarFieldBase):
             indices = [np.array(x).flatten() for x in indices]
 
         updated_slice = tuple(
-            [
-                slice(min(axis_indices), max(axis_indices) + 1)
-                for axis_indices in indices
-            ]
+            [slice(min(axis_indices), max(axis_indices) + 1) for axis_indices in indices]
         )
 
         if self.contour > 0:
@@ -1431,8 +1384,8 @@ class Labels(ScalarFieldBase):
             updated_slice = expand_slice(updated_slice, self.data.shape, 1)
         else:
             # update data view
-            self._slice.image.view[displayed_indices] = (
-                self.colormap._data_to_texture(visible_values)
+            self._slice.image.view[displayed_indices] = self.colormap._data_to_texture(
+                visible_values
             )
 
         if self._updated_slice is None:
@@ -1441,7 +1394,7 @@ class Labels(ScalarFieldBase):
             self._updated_slice = tuple(
                 [
                     slice(min(s1.start, s2.start), max(s1.stop, s2.stop))
-                    for s1, s2 in zip(updated_slice, self._updated_slice)
+                    for s1, s2 in zip(updated_slice, self._updated_slice, strict=False)
                 ]
             )
 
@@ -1456,10 +1409,10 @@ class Labels(ScalarFieldBase):
 
     def get_status(
         self,
-        position: Optional[npt.ArrayLike] = None,
+        position: npt.ArrayLike | None = None,
         *,
-        view_direction: Optional[npt.ArrayLike] = None,
-        dims_displayed: Optional[list[int]] = None,
+        view_direction: npt.ArrayLike | None = None,
+        dims_displayed: list[int] | None = None,
         world: bool = False,
     ) -> dict:
         """Status message information of the data at a coordinate position.
@@ -1516,8 +1469,8 @@ class Labels(ScalarFieldBase):
         self,
         position,
         *,
-        view_direction: Optional[np.ndarray] = None,
-        dims_displayed: Optional[list[int]] = None,
+        view_direction: np.ndarray | None = None,
+        dims_displayed: list[int] | None = None,
         world: bool = False,
     ):
         """
@@ -1555,8 +1508,8 @@ class Labels(ScalarFieldBase):
         self,
         position,
         *,
-        view_direction: Optional[np.ndarray] = None,
-        dims_displayed: Optional[list[int]] = None,
+        view_direction: np.ndarray | None = None,
+        dims_displayed: list[int] | None = None,
         world: bool = False,
     ) -> list:
         if len(self._label_index) == 0 or self.features.shape[1] == 0:
@@ -1572,9 +1525,7 @@ class Labels(ScalarFieldBase):
         if value is None:
             return []
 
-        label_value: int = typing.cast(
-            int, value[1] if self.multiscale else value
-        )
+        label_value: int = typing.cast(int, value[1] if self.multiscale else value)
         if label_value not in self._label_index:
             return [trans._('[No Properties]')]
 

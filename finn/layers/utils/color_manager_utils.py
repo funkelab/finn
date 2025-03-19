@@ -1,4 +1,4 @@
-from typing import Any, Union
+from typing import Any
 
 import numpy as np
 
@@ -23,8 +23,7 @@ def guess_continuous(color_map: np.ndarray) -> bool:
     """
     # if the property is a floating type, guess continuous
     return issubclass(color_map.dtype.type, np.floating) or (
-        len(np.unique(color_map)) > 16
-        and issubclass(color_map.dtype.type, np.integer)
+        len(np.unique(color_map)) > 16 and issubclass(color_map.dtype.type, np.integer)
     )
 
 
@@ -48,7 +47,7 @@ def is_color_mapped(color, properties):
 def map_property(
     prop: np.ndarray,
     colormap: Colormap,
-    contrast_limits: Union[None, tuple[float, float]] = None,
+    contrast_limits: None | tuple[float, float] = None,
 ) -> tuple[np.ndarray, tuple[float, float]]:
     """Apply a colormap to a property
 

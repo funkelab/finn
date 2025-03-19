@@ -243,9 +243,7 @@ def test_changing_display_surface(make_napari_viewer):
     values = np.random.random(10)
     data = (vertices, faces, values)
     viewer.add_surface(data)
-    assert np.all(
-        [np.array_equal(vd, d) for vd, d in zip(viewer.layers[0].data, data)]
-    )
+    assert np.all([np.array_equal(vd, d) for vd, d in zip(viewer.layers[0].data, data, strict=False)])
 
     assert len(viewer.layers) == 1
     assert view.layers.model().rowCount() == len(viewer.layers)

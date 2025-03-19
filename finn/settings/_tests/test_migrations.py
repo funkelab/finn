@@ -76,9 +76,7 @@ def test_failed_migration_leaves_version(test_migrator):
     assert 'Failed to migrate settings from v0.1.0 to v0.2.0' in str(e[0])
 
 
-@pytest.mark.skipif(
-    bool(os.environ.get('MIN_REQ')), reason='not relevant for MIN_REQ'
-)
+@pytest.mark.skipif(bool(os.environ.get('MIN_REQ')), reason='not relevant for MIN_REQ')
 def test_030_to_040_migration():
     # Prior to v0.4.0, npe2 plugins were automatically "disabled"
     # 0.3.0 -> 0.4.0 should remove any installed npe2 plugins from the
@@ -87,10 +85,7 @@ def test_030_to_040_migration():
         d = distribution('napari-svg')
         assert 'finn.manifest' in {ep.group for ep in d.entry_points}
     except PackageNotFoundError:
-        pytest.fail(
-            'napari-svg not present as an npe2 plugin. '
-            'This test needs updating'
-        )
+        pytest.fail('napari-svg not present as an npe2 plugin. This test needs updating')
 
     settings = NapariSettings(
         schema_version='0.3.0',
@@ -100,9 +95,7 @@ def test_030_to_040_migration():
     assert 'napari' not in settings.plugins.disabled_plugins
 
 
-@pytest.mark.skipif(
-    bool(os.environ.get('MIN_REQ')), reason='not relevant for MIN_REQ'
-)
+@pytest.mark.skipif(bool(os.environ.get('MIN_REQ')), reason='not relevant for MIN_REQ')
 def test_040_to_050_migration():
     # Prior to 0.5.0 existing preferences may have reader extensions
     # preferences saved without a leading *.

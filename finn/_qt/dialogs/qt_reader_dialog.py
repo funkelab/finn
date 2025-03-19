@@ -1,5 +1,4 @@
 import os
-from typing import Optional, Union
 
 from qtpy.QtWidgets import (
     QButtonGroup,
@@ -25,7 +24,7 @@ class QtReaderDialog(QDialog):
         self,
         pth: str = '',
         parent: QWidget = None,
-        readers: Optional[dict[str, str]] = None,
+        readers: dict[str, str] | None = None,
         error_message: str = '',
         persist_checked: bool = False,
     ) -> None:
@@ -44,9 +43,9 @@ class QtReaderDialog(QDialog):
 
         if os.path.isdir(pth):
             self._extension = os.path.realpath(pth)
-            if not self._extension.endswith(
-                '.zarr'
-            ) and not self._extension.endswith(os.sep):
+            if not self._extension.endswith('.zarr') and not self._extension.endswith(
+                os.sep
+            ):
                 self._extension = self._extension + os.sep
                 self._persist_text = trans._(
                     'Remember this choice for folders labeled as {extension}.',
@@ -63,9 +62,7 @@ class QtReaderDialog(QDialog):
         layout = QVBoxLayout()
         if error_message:
             error_message += '\n'
-        label = QLabel(
-            f'{error_message}Choose reader for {self._current_file}:'
-        )
+        label = QLabel(f'{error_message}Choose reader for {self._current_file}:')
         layout.addWidget(label)
 
         # add radio button for each reader plugin
@@ -82,9 +79,7 @@ class QtReaderDialog(QDialog):
 
         # checkbox to remember the choice
         if os.path.isdir(self._current_file):
-            existing_pref = get_settings().plugins.extension2reader.get(
-                self._extension
-            )
+            existing_pref = get_settings().plugins.extension2reader.get(self._extension)
             isdir = True
         else:
             existing_pref = get_settings().plugins.extension2reader.get(
@@ -131,10 +126,7 @@ class QtReaderDialog(QDialog):
 
     def _get_persist_choice(self):
         """Get persistence checkbox choice"""
-        return (
-            hasattr(self, 'persist_checkbox')
-            and self.persist_checkbox.isChecked()
-        )
+        return hasattr(self, 'persist_checkbox') and self.persist_checkbox.isChecked()
 
     def get_user_choices(self) -> tuple[str, bool]:
         """Execute dialog and get user choices"""
@@ -154,9 +146,9 @@ class QtReaderDialog(QDialog):
 def handle_gui_reading(
     paths: list[str],
     qt_viewer,
-    stack: Union[bool, list[list[str]]],
-    plugin_name: Optional[str] = None,
-    error: Optional[ReaderPluginError] = None,
+    stack: bool | list[list[str]],
+    plugin_name: str | None = None,
+    error: ReaderPluginError | None = None,
     plugin_override: bool = False,
     **kwargs,
 ):
@@ -212,8 +204,8 @@ def handle_gui_reading(
 
 def prepare_remaining_readers(
     paths: list[str],
-    plugin_name: Optional[str] = None,
-    error: Optional[ReaderPluginError] = None,
+    plugin_name: str | None = None,
+    error: ReaderPluginError | None = None,
 ):
     """Remove tried plugin from readers and raise error if no readers remain.
 
@@ -245,9 +237,7 @@ def prepare_remaining_readers(
         raise ReaderPluginError(
             trans._(
                 'Tried to read {path_message} with plugin {plugin}, because it was associated with that file extension/because it is the only plugin capable of reading that path, but it gave an error. Try associating a different plugin or installing a different plugin for this kind of file.',
-                path_message=(
-                    f'[{paths[0]}, ...]' if len(paths) > 1 else paths[0]
-                ),
+                path_message=(f'[{paths[0]}, ...]' if len(paths) > 1 else paths[0]),
                 plugin=plugin_name,
             ),
             plugin_name,

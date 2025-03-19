@@ -77,24 +77,16 @@ class QtImageControls(QtBaseImageControls):
     def __init__(self, layer) -> None:
         super().__init__(layer)
 
-        self.layer.events.interpolation2d.connect(
-            self._on_interpolation_change
-        )
-        self.layer.events.interpolation3d.connect(
-            self._on_interpolation_change
-        )
+        self.layer.events.interpolation2d.connect(self._on_interpolation_change)
+        self.layer.events.interpolation3d.connect(self._on_interpolation_change)
         self.layer.events.rendering.connect(self._on_rendering_change)
         self.layer.events.iso_threshold.connect(self._on_iso_threshold_change)
         self.layer.events.attenuation.connect(self._on_attenuation_change)
         self.layer.events.depiction.connect(self._on_depiction_change)
-        self.layer.plane.events.thickness.connect(
-            self._on_plane_thickness_change
-        )
+        self.layer.plane.events.thickness.connect(self._on_plane_thickness_change)
 
         self.interpComboBox = QComboBox(self)
-        self.interpComboBox.currentTextChanged.connect(
-            self.changeInterpolation
-        )
+        self.interpComboBox.currentTextChanged.connect(self.changeInterpolation)
         self.interpComboBox.setToolTip(
             trans._(
                 'Texture interpolation for display.\nnearest and linear are most performant.'
@@ -143,17 +135,13 @@ class QtImageControls(QtBaseImageControls):
             self.planeNormalButtons.obliqueButton,
         )
 
-        self.planeThicknessSlider = QLabeledDoubleSlider(
-            Qt.Orientation.Horizontal, self
-        )
+        self.planeThicknessSlider = QLabeledDoubleSlider(Qt.Orientation.Horizontal, self)
         self.planeThicknessLabel = QLabel(trans._('plane thickness:'))
         self.planeThicknessSlider.setFocusPolicy(Qt.NoFocus)
         self.planeThicknessSlider.setMinimum(1)
         self.planeThicknessSlider.setMaximum(50)
         self.planeThicknessSlider.setValue(self.layer.plane.thickness)
-        self.planeThicknessSlider.valueChanged.connect(
-            self.changePlaneThickness
-        )
+        self.planeThicknessSlider.valueChanged.connect(self.changePlaneThickness)
 
         sld = QLabeledDoubleSlider(Qt.Orientation.Horizontal, parent=self)
         sld.setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -191,18 +179,14 @@ class QtImageControls(QtBaseImageControls):
         self.layout().addRow(self.button_grid)
         self.layout().addRow(self.opacityLabel, self.opacitySlider)
         self.layout().addRow(trans._('blending:'), self.blendComboBox)
-        self.layout().addRow(
-            trans._('contrast limits:'), self.contrastLimitsSlider
-        )
+        self.layout().addRow(trans._('contrast limits:'), self.contrastLimitsSlider)
         self.layout().addRow(trans._('auto-contrast:'), self.autoScaleBar)
         self.layout().addRow(trans._('gamma:'), self.gammaSlider)
         self.layout().addRow(trans._('colormap:'), colormap_layout)
         self.layout().addRow(self.interpLabel, self.interpComboBox)
         self.layout().addRow(self.depictionLabel, self.depictionComboBox)
         self.layout().addRow(self.planeNormalLabel, self.planeNormalButtons)
-        self.layout().addRow(
-            self.planeThicknessLabel, self.planeThicknessSlider
-        )
+        self.layout().addRow(self.planeThicknessLabel, self.planeThicknessSlider)
         self.layout().addRow(self.renderLabel, self.renderComboBox)
         self.layout().addRow(self.isoThresholdLabel, self.isoThresholdSlider)
         self.layout().addRow(self.attenuationLabel, self.attenuationSlider)

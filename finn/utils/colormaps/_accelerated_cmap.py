@@ -211,12 +211,8 @@ def _labels_raw_to_texture_direct_loop(
         return (data == direct_colormap.selection).astype(np.uint8)
 
     dkt = direct_colormap._get_typed_dict_mapping(data.dtype)
-    target_dtype = minimum_dtype_for_labels(
-        direct_colormap._num_unique_colors + 2
-    )
-    result_array = np.full_like(
-        data, MAPPING_OF_UNKNOWN_VALUE, dtype=target_dtype
-    )
+    target_dtype = minimum_dtype_for_labels(direct_colormap._num_unique_colors + 2)
+    result_array = np.full_like(data, MAPPING_OF_UNKNOWN_VALUE, dtype=target_dtype)
     return _labels_raw_to_texture_direct_inner_loop(data, dkt, result_array)
 
 
@@ -248,9 +244,9 @@ else:
     )
     zero_preserving_modulo = _zero_preserving_modulo_loop
     labels_raw_to_texture_direct = _labels_raw_to_texture_direct_loop
-    _labels_raw_to_texture_direct_inner_loop = numba.njit(
-        parallel=True, cache=True
-    )(_labels_raw_to_texture_direct_inner_loop)
+    _labels_raw_to_texture_direct_inner_loop = numba.njit(parallel=True, cache=True)(
+        _labels_raw_to_texture_direct_inner_loop
+    )
     prange = numba.prange  # type: ignore [misc]
 
     del numba

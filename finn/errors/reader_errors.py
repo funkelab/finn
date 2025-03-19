@@ -96,8 +96,6 @@ class NoAvailableReaderError(ValueError):
         file paths for reading
     """
 
-    def __init__(
-        self, message: str, paths: list[PathLike], *args: object
-    ) -> None:
+    def __init__(self, message: str, paths: list[PathLike], *args: object) -> None:
         super().__init__(message, *args)
         self.paths = paths

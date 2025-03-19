@@ -33,9 +33,7 @@ def crosshair_pixmap():
     painter.drawRect((size - rect_size) // 2, 0, rect_size - 1, size - 1)
 
     # Square
-    painter.drawRect(
-        (size - square) // 2, (size - square) // 2, square - 1, square - 1
-    )
+    painter.drawRect((size - square) // 2, (size - square) // 2, square - 1, square - 1)
 
     pen = QPen(Qt.GlobalColor.black, 2)
     pen.setJoinStyle(Qt.PenJoinStyle.MiterJoin)
@@ -55,23 +53,15 @@ def crosshair_pixmap():
 
     # # # Horizontal lines
     mid_vpoint = QPoint(2, size // 2)
-    painter.drawLine(
-        mid_vpoint, QPoint(((size - center) // 2) - center + 1, size // 2)
-    )
+    painter.drawLine(mid_vpoint, QPoint(((size - center) // 2) - center + 1, size // 2))
     mid_vpoint = QPoint(size - 3, size // 2)
-    painter.drawLine(
-        mid_vpoint, QPoint(((size - center) // 2) + center + 1, size // 2)
-    )
+    painter.drawLine(mid_vpoint, QPoint(((size - center) // 2) + center + 1, size // 2))
 
     # # # Vertical lines
     mid_hpoint = QPoint(size // 2, 2)
-    painter.drawLine(
-        QPoint(size // 2, ((size - center) // 2) - center + 1), mid_hpoint
-    )
+    painter.drawLine(QPoint(size // 2, ((size - center) // 2) - center + 1), mid_hpoint)
     mid_hpoint = QPoint(size // 2, size - 3)
-    painter.drawLine(
-        QPoint(size // 2, ((size - center) // 2) + center + 1), mid_hpoint
-    )
+    painter.drawLine(QPoint(size // 2, ((size - center) // 2) + center + 1), mid_hpoint)
 
     painter.end()
     return pixmap

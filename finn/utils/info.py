@@ -38,9 +38,7 @@ def _linux_sys_name_lsb_release() -> str:
     Try to discover linux system name base on lsb_release command output
     """
     with contextlib.suppress(subprocess.CalledProcessError):
-        res = subprocess.run(
-            ['lsb_release', '-d', '-r'], check=True, capture_output=True
-        )
+        res = subprocess.run(['lsb_release', '-d', '-r'], check=True, capture_output=True)
         text = res.stdout.decode()
         data = {}
         for line in text.split('\n'):
@@ -81,8 +79,7 @@ def sys_info(as_html: bool = False) -> str:
     """
     sys_version = sys.version.replace('\n', ' ')
     text = (
-        f'<b>napari</b>: {finn.__version__}<br>'
-        f'<b>Platform</b>: {platform.platform()}<br>'
+        f'<b>napari</b>: {finn.__version__}<br><b>Platform</b>: {platform.platform()}<br>'
     )
 
     __sys_name = _sys_name()
@@ -101,10 +98,7 @@ def sys_info(as_html: bool = False) -> str:
         else:
             API_VERSION = ''
 
-        text += (
-            f'<b>Qt</b>: {QtCore.__version__}<br>'
-            f'<b>{API_NAME}</b>: {API_VERSION}<br>'
-        )
+        text += f'<b>Qt</b>: {QtCore.__version__}<br><b>{API_NAME}</b>: {API_VERSION}<br>'
 
     except Exception as e:  # noqa BLE001
         text += f'<b>Qt</b>: Import failed ({e})<br>'
@@ -138,10 +132,7 @@ def sys_info(as_html: bool = False) -> str:
 
         sys_info_text = (
             '<br>'.join(
-                [
-                    loaded['vispy'].sys_info().split('\n')[index]
-                    for index in [-4, -3]
-                ]
+                [loaded['vispy'].sys_info().split('\n')[index] for index in [-4, -3]]
             )
             .replace("'", '')
             .replace('<br>', '<br>  - ')
@@ -188,9 +179,7 @@ def sys_info(as_html: bool = False) -> str:
         text += f'  - {os.getenv("NAPARI_CONFIG", user_config_dir())}'
 
     if not as_html:
-        text = (
-            text.replace('<br>', '\n').replace('<b>', '').replace('</b>', '')
-        )
+        text = text.replace('<br>', '\n').replace('<b>', '').replace('</b>', '')
     return text
 
 

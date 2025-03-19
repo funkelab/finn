@@ -26,8 +26,6 @@ class TextOverlay(CanvasOverlay):
         The rendering order of the overlay: lower numbers get rendered first.
     """
 
-    color: ColorValue = Field(
-        default_factory=lambda: ColorValue((0.5, 0.5, 0.5, 1.0))
-    )
+    color: ColorValue = Field(default_factory=lambda: ColorValue((0.5, 0.5, 0.5, 1.0)))
     font_size: float = 10
     text: str = ''

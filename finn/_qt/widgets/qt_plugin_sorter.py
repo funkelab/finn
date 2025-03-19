@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
 from napari_plugin_engine import HookCaller, HookImplementation
 from qtpy.QtCore import QEvent, Qt, Signal, Slot
@@ -99,14 +99,10 @@ class ImplementationListItem(QFrame):
         plugin_name_size_policy.setHorizontalStretch(2)
         self.plugin_name_label.setSizePolicy(plugin_name_size_policy)
 
-        self.function_name_label = QLabel(
-            item.hook_implementation.function.__name__
-        )
+        self.function_name_label = QLabel(item.hook_implementation.function.__name__)
 
         self.enabled_checkbox = QCheckBox(self)
-        self.enabled_checkbox.setToolTip(
-            trans._('Uncheck to disable this plugin')
-        )
+        self.enabled_checkbox.setToolTip(trans._('Uncheck to disable this plugin'))
         self.enabled_checkbox.stateChanged.connect(self._set_enabled)
         self.enabled_checkbox.setChecked(
             getattr(item.hook_implementation, 'enabled', True)
@@ -118,7 +114,7 @@ class ImplementationListItem(QFrame):
         layout.setStretch(2, 1)
         layout.setContentsMargins(0, 0, 0, 0)
 
-    def _set_enabled(self, state: Union[bool, int]):
+    def _set_enabled(self, state: bool | int):
         """Set the enabled state of this hook implementation to ``state``."""
         self.item.hook_implementation.enabled = bool(state)
         self.opacity.setOpacity(1 if state else 0.5)
@@ -163,8 +159,8 @@ class QtHookImplementationListWidget(QListWidget):
 
     def __init__(
         self,
-        parent: Optional[QWidget] = None,
-        hook_caller: Optional[HookCaller] = None,
+        parent: QWidget | None = None,
+        hook_caller: HookCaller | None = None,
     ) -> None:
         super().__init__(parent)
         self.setDefaultDropAction(Qt.DropAction.MoveAction)
@@ -176,10 +172,10 @@ class QtHookImplementationListWidget(QListWidget):
         self.setMinimumHeight(1)
         self.setMaximumHeight(80)
         self.order_changed.connect(self.permute_hook)
-        self.hook_caller: Optional[HookCaller] = None
+        self.hook_caller: HookCaller | None = None
         self.set_hook_caller(hook_caller)
 
-    def set_hook_caller(self, hook_caller: Optional[HookCaller]):
+    def set_hook_caller(self, hook_caller: HookCaller | None):
         """Set the list widget to show hook implementations for ``hook_caller``.
 
         Parameters
@@ -199,9 +195,7 @@ class QtHookImplementationListWidget(QListWidget):
         for hook_implementation in reversed(hook_caller._nonwrappers):
             self.append_hook_implementation(hook_implementation)
 
-    def append_hook_implementation(
-        self, hook_implementation: HookImplementation
-    ):
+    def append_hook_implementation(self, hook_implementation: HookImplementation):
         """Add a list item for ``hook_implementation`` with a custom widget.
 
         Parameters
@@ -290,8 +284,8 @@ class QtPluginSorter(QWidget):
         self,
         plugin_manager: PluginManager = napari_plugin_manager,
         *,
-        parent: Optional[QWidget] = None,
-        initial_hook: Optional[str] = None,
+        parent: QWidget | None = None,
+        initial_hook: str | None = None,
         firstresult_only: bool = True,
     ) -> None:
         super().__init__(parent)
@@ -310,13 +304,9 @@ class QtPluginSorter(QWidget):
             # if the firstresult_only option is set
             # we only want to include hook_specifications that declare the
             # "firstresult" option as True.
-            if firstresult_only and not hook_caller.spec.opts.get(
-                'firstresult', False
-            ):
+            if firstresult_only and not hook_caller.spec.opts.get('firstresult', False):
                 continue
-            self.hook_combo_box.addItem(
-                name.replace('napari_', ''), hook_caller
-            )
+            self.hook_combo_box.addItem(name.replace('napari_', ''), hook_caller)
 
         self.plugin_manager.events.disabled.connect(self._on_disabled)
         self.plugin_manager.events.registered.connect(self.refresh)

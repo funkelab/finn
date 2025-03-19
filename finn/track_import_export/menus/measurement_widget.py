@@ -25,12 +25,12 @@ class MeasurementWidget(QWidget):
 
         # Checkboxes for measurements
         self.measurements = []
-        self.layout.addWidget(QLabel("Choose measurements to calculate"))
+        self.layout.addWidget(QLabel('Choose measurements to calculate'))
 
         if ndim == 2:
-            self.measurements.append("Area")
+            self.measurements.append('Area')
         elif ndim == 3:
-            self.measurements.append("Volume")
+            self.measurements.append('Volume')
 
         self.measurement_checkboxes = {}
         self.radio_buttons = {}
@@ -46,9 +46,9 @@ class MeasurementWidget(QWidget):
             self.measurement_checkboxes[measurement] = checkbox
             row_layout.addWidget(checkbox)
 
-            recompute_radio = QRadioButton("Recompute")
+            recompute_radio = QRadioButton('Recompute')
             recompute_radio.setChecked(True)
-            select_column_radio = QRadioButton("Select from column")
+            select_column_radio = QRadioButton('Select from column')
             button_group = QButtonGroup()
             button_group.addButton(recompute_radio)
             button_group.addButton(select_column_radio)
@@ -89,9 +89,9 @@ class MeasurementWidget(QWidget):
             button_group = self.radio_buttons[measurement]
             checked_button = button_group.checkedButton()
             if checked_button is not None:
-                if checked_button.text() == "Recompute":
-                    measurements[measurement] = "Recompute"
-                elif checked_button.text() == "Select from column":
+                if checked_button.text() == 'Recompute':
+                    measurements[measurement] = 'Recompute'
+                elif checked_button.text() == 'Select from column':
                     # retrieve the column name that was chosen
                     measurements[measurement] = self.column_dropdowns[
                         measurement

@@ -30,9 +30,7 @@ def test_windows_grouping_overwrite(qapp):
 
     def get_app_id():
         mem = ctypes.POINTER(ctypes.c_wchar)()
-        ctypes.windll.shell32.GetCurrentProcessExplicitAppUserModelID(
-            ctypes.byref(mem)
-        )
+        ctypes.windll.shell32.GetCurrentProcessExplicitAppUserModelID(ctypes.byref(mem))
         res = ctypes.wstring_at(mem)
         ctypes.windll.Ole32.CoTaskMemFree(mem)
         return res

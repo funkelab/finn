@@ -21,9 +21,7 @@ def test_empty_text_manager_property():
     This is for creating an empty layer with text initialized.
     """
     properties = {'confidence': np.empty(0, dtype=float)}
-    text_manager = TextManager(
-        text='confidence', n_text=0, properties=properties
-    )
+    text_manager = TextManager(text='confidence', n_text=0, properties=properties)
     assert text_manager.values.size == 0
 
     # add a text element
@@ -102,9 +100,7 @@ def test_text_manager_format():
     text = 'confidence: {confidence:.2f}'
     classes = np.array(['A', 'B', 'C'])
     properties = {'class': classes, 'confidence': np.array([0.5, 0.3, 1])}
-    expected_text = np.array(
-        ['confidence: 0.50', 'confidence: 0.30', 'confidence: 1.00']
-    )
+    expected_text = np.array(['confidence: 0.50', 'confidence: 0.30', 'confidence: 1.00'])
     text_manager = TextManager(text=text, n_text=n_text, properties=properties)
     np.testing.assert_equal(text_manager.values, expected_text)
 
@@ -208,9 +204,7 @@ def test_text_with_invalid_format_string_then_fallback_with_warning():
     properties = {'confidence': np.array([0.5, 0.3, 1])}
 
     with pytest.warns(RuntimeWarning):
-        text_manager = TextManager(
-            text=text, n_text=n_text, properties=properties
-        )
+        text_manager = TextManager(text=text, n_text=n_text, properties=properties)
 
     np.testing.assert_array_equal(text_manager.values, [''] * n_text)
 
@@ -222,9 +216,7 @@ def test_text_with_format_string_missing_property_then_fallback_with_warning():
     properties = {'confidence': np.array([0.5, 0.3, 1])}
 
     with pytest.warns(RuntimeWarning):
-        text_manager = TextManager(
-            text=text, n_text=n_text, properties=properties
-        )
+        text_manager = TextManager(text=text, n_text=n_text, properties=properties)
 
     np.testing.assert_array_equal(text_manager.values, [''] * n_text)
 
@@ -442,9 +434,7 @@ def test_apply_with_manual_string():
     features = pd.DataFrame(index=range(5))
     text_manager.apply(features)
 
-    np.testing.assert_array_equal(
-        text_manager.values, ['A', 'B', 'C', 'D', 'D']
-    )
+    np.testing.assert_array_equal(text_manager.values, ['A', 'B', 'C', 'D', 'D'])
 
 
 def test_apply_with_derived_string():
@@ -510,9 +500,7 @@ def test_copy_paste_with_manual_string():
     copied = text_manager._copy([0, 2])
     text_manager._paste(**copied)
 
-    np.testing.assert_array_equal(
-        text_manager.values, ['A', 'B', 'C', 'A', 'C']
-    )
+    np.testing.assert_array_equal(text_manager.values, ['A', 'B', 'C', 'A', 'C'])
 
 
 def test_copy_paste_with_derived_string():
@@ -529,9 +517,7 @@ def test_copy_paste_with_derived_string():
 
 
 def test_serialization():
-    features = pd.DataFrame(
-        {'class': ['A', 'B', 'C'], 'confidence': [0.5, 0.3, 1]}
-    )
+    features = pd.DataFrame({'class': ['A', 'B', 'C'], 'confidence': [0.5, 0.3, 1]})
     original = TextManager(features=features, string='class', color='red')
 
     serialized = original.dict()
@@ -629,9 +615,7 @@ def test_apply_with_derived_color():
     features = pd.DataFrame({'colors': ['red', 'green', 'blue']})
     text_manager = TextManager(color=color, features=features)
 
-    features = pd.DataFrame(
-        {'colors': ['red', 'green', 'blue', 'yellow', 'cyan']}
-    )
+    features = pd.DataFrame({'colors': ['red', 'green', 'blue', 'yellow', 'cyan']})
     text_manager.apply(features)
 
     actual = text_manager.color._values
@@ -699,9 +683,7 @@ def test_copy_paste_with_manual_color():
     text_manager._paste(**copied)
 
     actual = text_manager.color._values
-    assert_colors_equal(
-        actual, ['magenta', 'red', 'yellow', 'magenta', 'yellow']
-    )
+    assert_colors_equal(actual, ['magenta', 'red', 'yellow', 'magenta', 'yellow'])
 
 
 def test_copy_paste_with_derived_color():
@@ -713,9 +695,7 @@ def test_copy_paste_with_derived_color():
     text_manager._paste(**copied)
 
     actual = text_manager.color._values
-    assert_colors_equal(
-        actual, ['green', 'red', 'magenta', 'green', 'magenta']
-    )
+    assert_colors_equal(actual, ['green', 'red', 'magenta', 'green', 'magenta'])
 
 
 @pytest.mark.parametrize(
@@ -745,9 +725,7 @@ def test_compute_text_coords(ndim, ndisplay, translation):
     # what layers are doing (e.g. see `Points._view_data`).
     coords = np.random.rand(num_points, ndim)[-ndisplay:]
 
-    text_coords, _, _ = text_manager.compute_text_coords(
-        coords, ndisplay=ndisplay
-    )
+    text_coords, _, _ = text_manager.compute_text_coords(coords, ndisplay=ndisplay)
 
     expected_coords = coords + translation
     np.testing.assert_equal(text_coords, expected_coords)

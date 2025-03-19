@@ -58,9 +58,7 @@ class QtSurfaceControls(QtBaseImageControls):
         shading_comboBox = QComboBox(self)
         for display_name, shading in SHADING_TRANSLATION.items():
             shading_comboBox.addItem(display_name, shading)
-        index = shading_comboBox.findData(
-            SHADING_TRANSLATION[self.layer.shading]
-        )
+        index = shading_comboBox.findData(SHADING_TRANSLATION[self.layer.shading])
         shading_comboBox.setCurrentIndex(index)
         shading_comboBox.currentTextChanged.connect(self.changeShading)
         self.shadingComboBox = shading_comboBox
@@ -68,9 +66,7 @@ class QtSurfaceControls(QtBaseImageControls):
         self.layout().addRow(self.button_grid)
         self.layout().addRow(self.opacityLabel, self.opacitySlider)
         self.layout().addRow(trans._('blending:'), self.blendComboBox)
-        self.layout().addRow(
-            trans._('contrast limits:'), self.contrastLimitsSlider
-        )
+        self.layout().addRow(trans._('contrast limits:'), self.contrastLimitsSlider)
         self.layout().addRow(trans._('auto-contrast:'), self.autoScaleBar)
         self.layout().addRow(trans._('gamma:'), self.gammaSlider)
         self.layout().addRow(trans._('colormap:'), colormap_layout)
@@ -89,7 +85,5 @@ class QtSurfaceControls(QtBaseImageControls):
         """Receive layer model shading change event and update combobox."""
         with self.layer.events.shading.blocker():
             self.shadingComboBox.setCurrentIndex(
-                self.shadingComboBox.findData(
-                    SHADING_TRANSLATION[self.layer.shading]
-                )
+                self.shadingComboBox.findData(SHADING_TRANSLATION[self.layer.shading])
             )

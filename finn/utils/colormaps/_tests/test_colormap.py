@@ -49,41 +49,29 @@ def test_linear_colormap_with_control_points():
 
 def test_non_ascending_control_points():
     """Test non ascending control points raises an error."""
-    colors = np.array(
-        [[0, 0, 0, 1], [0, 0.5, 0, 1], [0, 1, 0, 1], [0, 0, 1, 1]]
-    )
-    with pytest.raises(
-        ValidationError, match='need to be sorted in ascending order'
-    ):
+    colors = np.array([[0, 0, 0, 1], [0, 0.5, 0, 1], [0, 1, 0, 1], [0, 0, 1, 1]])
+    with pytest.raises(ValidationError, match='need to be sorted in ascending order'):
         Colormap(colors, name='testing', controls=[0, 0.75, 0.25, 1])
 
 
 def test_wrong_number_control_points():
     """Test wrong number of control points raises an error."""
-    colors = np.array(
-        [[0, 0, 0, 1], [0, 0.5, 0, 1], [0, 1, 0, 1], [0, 0, 1, 1]]
-    )
-    with pytest.raises(
-        ValidationError, match='Wrong number of control points'
-    ):
+    colors = np.array([[0, 0, 0, 1], [0, 0.5, 0, 1], [0, 1, 0, 1], [0, 0, 1, 1]])
+    with pytest.raises(ValidationError, match='Wrong number of control points'):
         Colormap(colors, name='testing', controls=[0, 0.75, 1])
 
 
 def test_wrong_start_control_point():
     """Test wrong start of control points raises an error."""
     colors = np.array([[0, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1, 1]])
-    with pytest.raises(
-        ValidationError, match='must start with 0.0 and end with 1.0'
-    ):
+    with pytest.raises(ValidationError, match='must start with 0.0 and end with 1.0'):
         Colormap(colors, name='testing', controls=[0.1, 0.75, 1])
 
 
 def test_wrong_end_control_point():
     """Test wrong end of control points raises an error."""
     colors = np.array([[0, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1, 1]])
-    with pytest.raises(
-        ValidationError, match='must start with 0.0 and end with 1.0'
-    ):
+    with pytest.raises(ValidationError, match='must start with 0.0 and end with 1.0'):
         Colormap(colors, name='testing', controls=[0, 0.75, 0.9])
 
 
@@ -209,9 +197,7 @@ def test_direct_label_colormap_simple(direct_label_colormap):
     np.testing.assert_array_equal(
         color_dict[label_mapping[0]], direct_label_colormap.color_dict[0]
     )
-    np.testing.assert_array_equal(
-        color_dict[0], direct_label_colormap.color_dict[None]
-    )
+    np.testing.assert_array_equal(color_dict[0], direct_label_colormap.color_dict[None])
 
 
 def test_direct_label_colormap_selection(direct_label_colormap):
@@ -235,12 +221,8 @@ def test_direct_label_colormap_selection(direct_label_colormap):
 @pytest.mark.usefixtures('_disable_jit')
 def test_cast_direct_labels_to_minimum_type(direct_label_colormap):
     data = np.arange(15, dtype=np.uint32)
-    cast = _accelerated_cmap.labels_raw_to_texture_direct(
-        data, direct_label_colormap
-    )
-    label_mapping = (
-        direct_label_colormap._values_mapping_to_minimum_values_set()[0]
-    )
+    cast = _accelerated_cmap.labels_raw_to_texture_direct(data, direct_label_colormap)
+    label_mapping = direct_label_colormap._values_mapping_to_minimum_values_set()[0]
     assert cast.dtype == np.uint8
     np.testing.assert_array_equal(
         cast,
@@ -276,9 +258,7 @@ def test_test_cast_direct_labels_to_minimum_type_no_jit(num, dtype):
             None: np.array([1, 1, 1, 1]),
             **{
                 k: np.array([*v, 1])
-                for k, v in zip(
-                    range(num), product(np.linspace(0, 1, num=256), repeat=3)
-                )
+                for k, v in zip(range(num), product(np.linspace(0, 1, num=256), repeat=3), strict=False)
             },
         },
     )
@@ -313,9 +293,7 @@ def test_label_colormap_map_with_uint8_values(dtype):
 @pytest.mark.parametrize('dtype', [np.int8, np.int16, np.int32, np.int64])
 def test_label_colormap_map_with_selection(selection, dtype):
     cmap = colormap.CyclicLabelColormap(
-        colors=ColorArray(
-            np.array([[0, 0, 0, 0], [1, 0, 0, 1], [0, 1, 0, 1]])
-        ),
+        colors=ColorArray(np.array([[0, 0, 0, 0], [1, 0, 0, 1], [0, 1, 0, 1]])),
         use_selection=True,
         selection=selection,
     )
@@ -328,9 +306,7 @@ def test_label_colormap_map_with_selection(selection, dtype):
 @pytest.mark.parametrize('dtype', [np.int8, np.int16, np.int32, np.int64])
 def test_label_colormap_map_with_background(background, dtype):
     cmap = colormap.CyclicLabelColormap(
-        colors=ColorArray(
-            np.array([[0, 0, 0, 0], [1, 0, 0, 1], [0, 1, 0, 1]])
-        ),
+        colors=ColorArray(np.array([[0, 0, 0, 0], [1, 0, 0, 1], [0, 1, 0, 1]])),
         background_value=background,
     )
     values = np.array([3, background, 2], dtype=dtype)
@@ -347,9 +323,7 @@ def test_label_colormap_using_cache(dtype, monkeypatch):
     expected = np.array([[0, 0, 0, 0], [1, 0, 0, 1], [0, 1, 0, 1]])
     map1 = cmap.map(values)
     npt.assert_array_equal(map1, expected)
-    monkeypatch.setattr(
-        _accelerated_cmap, 'zero_preserving_modulo_numpy', None
-    )
+    monkeypatch.setattr(_accelerated_cmap, 'zero_preserving_modulo_numpy', None)
     map2 = cmap.map(values)
     npt.assert_array_equal(map1, map2)
 
@@ -366,7 +340,7 @@ def test_cast_direct_labels_to_minimum_type_naive(size):
                 k: np.array([*v, 1])
                 for k, v in zip(
                     range(size - 2),
-                    product(np.linspace(0, 1, num=256), repeat=3),
+                    product(np.linspace(0, 1, num=256), repeat=3), strict=False,
                 )
             },
         },
@@ -404,9 +378,7 @@ def test_direct_colormap_with_selection():
         2: np.array([0, 1, 0, 1]),
         None: np.array([0, 0, 0, 0]),
     }
-    cmap = DirectLabelColormap(
-        color_dict=color_dict, use_selection=True, selection=1
-    )
+    cmap = DirectLabelColormap(color_dict=color_dict, use_selection=True, selection=1)
 
     # Map a single value
     mapped = cmap.map(1)
@@ -511,17 +483,13 @@ def test_direct_colormap_negative_values_numpy():
     }
     cmap = DirectLabelColormap(color_dict=color_dict)
 
-    res = _labels_raw_to_texture_direct_numpy(
-        np.array([-1, -2, 5], dtype=np.int8), cmap
-    )
+    res = _labels_raw_to_texture_direct_numpy(np.array([-1, -2, 5], dtype=np.int8), cmap)
     npt.assert_array_equal(res, [1, 2, 0])
 
     cmap.selection = -2
     cmap.use_selection = True
 
-    res = _labels_raw_to_texture_direct_numpy(
-        np.array([-1, -2, 5], dtype=np.int8), cmap
-    )
+    res = _labels_raw_to_texture_direct_numpy(np.array([-1, -2, 5], dtype=np.int8), cmap)
     npt.assert_array_equal(res, [0, 1, 0])
 
 
@@ -534,17 +502,13 @@ def test_direct_colormap_negative_values_numpy():
         {None: [0, 0, 0, 0], 1: [1, 0, 0, 1], 2: [0, 0, 1, 1]},
         defaultdict(lambda: 'transparent', {1: 'red', 2: 'blue'}),
         CyclicLabelColormap(['red', 'blue']),
-        DirectLabelColormap(
-            color_dict={None: 'transparent', 1: 'red', 2: 'blue'}
-        ),
+        DirectLabelColormap(color_dict={None: 'transparent', 1: 'red', 2: 'blue'}),
         5,  # test ValueError
     ],
 )
 def test_normalize_label_colormap(colormap_like):
     if not isinstance(colormap_like, int):
-        assert isinstance(
-            _normalize_label_colormap(colormap_like), LabelColormapBase
-        )
+        assert isinstance(_normalize_label_colormap(colormap_like), LabelColormapBase)
     else:
         with pytest.raises(ValueError, match='Unable to interpret'):
             _normalize_label_colormap(colormap_like)

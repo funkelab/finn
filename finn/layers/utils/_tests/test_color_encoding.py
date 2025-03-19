@@ -134,9 +134,7 @@ def test_nominal_with_missing_feature(features):
 
 def test_quantitative_with_colormap_name(features):
     colormap = 'gray'
-    encoding = QuantitativeColorEncoding(
-        feature='confidence', colormap=colormap
-    )
+    encoding = QuantitativeColorEncoding(feature='confidence', colormap=colormap)
 
     values = encoding(features)
 
@@ -145,9 +143,7 @@ def test_quantitative_with_colormap_name(features):
 
 def test_quantitative_with_colormap_values(features):
     colormap = ['black', 'red']
-    encoding = QuantitativeColorEncoding(
-        feature='confidence', colormap=colormap
-    )
+    encoding = QuantitativeColorEncoding(feature='confidence', colormap=colormap)
     values = encoding(features)
     assert_colors_equal(values, [[c, 0, 0] for c in features['confidence']])
 
@@ -168,9 +164,7 @@ def test_quantitative_with_contrast_limits(features):
 
 def test_quantitative_with_missing_feature(features):
     colormap = 'gray'
-    encoding = QuantitativeColorEncoding(
-        feature='not_confidence', colormap=colormap
-    )
+    encoding = QuantitativeColorEncoding(feature='not_confidence', colormap=colormap)
 
     with pytest.raises(KeyError):
         encoding(features)

@@ -96,9 +96,7 @@ def transform_color_cycle(
     return transformed_color_cycle, transformed_colors
 
 
-def normalize_and_broadcast_colors(
-    num_entries: int, colors: np.ndarray
-) -> np.ndarray:
+def normalize_and_broadcast_colors(num_entries: int, colors: np.ndarray) -> np.ndarray:
     """Takes an input color array and forces into being the length of ``data``.
 
     Used when a single color is supplied for many input objects, but we need

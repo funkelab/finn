@@ -145,9 +145,7 @@ def test_is_theme_available(tmp_path, monkeypatch):
     (tmp_path / 'test_blue').mkdir()
     (tmp_path / 'yellow').mkdir()
     (tmp_path / 'test_blue' / PLUGIN_FILE_NAME).write_text('test-blue')
-    monkeypatch.setattr(
-        'finn.utils.theme._theme_path', lambda x: tmp_path / x
-    )
+    monkeypatch.setattr('finn.utils.theme._theme_path', lambda x: tmp_path / x)
 
     n_themes = len(available_themes())
 
@@ -156,9 +154,7 @@ def test_is_theme_available(tmp_path, monkeypatch):
         theme_dict['id'] = 'test_blue'
         register_theme('test_blue', theme_dict, 'test')
 
-    monkeypatch.setattr(
-        'finn.utils.theme._install_npe2_themes', mock_install_theme
-    )
+    monkeypatch.setattr('finn.utils.theme._install_npe2_themes', mock_install_theme)
 
     assert len(available_themes()) == n_themes
     assert is_theme_available('dark')
@@ -202,9 +198,7 @@ def test_theme_registration(monkeypatch, caplog):
     def mock_iter_manifests(disabled):
         return [manifest]
 
-    monkeypatch.setattr(
-        PluginManager.instance(), 'iter_manifests', mock_iter_manifests
-    )
+    monkeypatch.setattr(PluginManager.instance(), 'iter_manifests', mock_iter_manifests)
     monkeypatch.setattr('finn.utils.theme._themes', data)
     _install_npe2_themes(data)
 

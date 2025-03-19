@@ -3,17 +3,17 @@ from __future__ import annotations
 import random
 from typing import TYPE_CHECKING
 
-import finn
 import numpy as np
+
+import finn
 from finn.utils import DirectLabelColormap
 from finn.utils.action_manager import action_manager
 from finn.utils.notifications import show_info, show_warning
 from finn.utils.translations import trans
 
 if TYPE_CHECKING:
-    from finn.utils.events import Event
-
     from finn.track_data_views.views_coordinator.tracks_viewer import TracksViewer
+    from finn.utils.events import Event
 
 from finn.track_data_views.graph_attributes import NodeAttr
 
@@ -45,8 +45,8 @@ def _new_label(layer: TrackLabels, new_track_id=True):
         if layer.selected_label == new_selected_label:
             show_info(
                 trans._(
-                    "Current selected label is not being used. You will need to use it first "
-                    "to be able to set the current select label to the next one available",
+                    'Current selected label is not being used. You will need to use it first '
+                    'to be able to set the current select label to the next one available',
                 )
             )
         else:
@@ -61,9 +61,7 @@ def _new_label(layer: TrackLabels, new_track_id=True):
                 color_dict=layer.colormap.color_dict
             )  # to refresh, otherwise you paint with a transparent label until you release the mouse
     else:
-        show_info(
-            trans._("Calculating empty label on non-numpy array is not supported")
-        )
+        show_info(trans._('Calculating empty label on non-numpy array is not supported'))
 
 
 class TrackLabels(finn.layers.Labels):
@@ -72,7 +70,9 @@ class TrackLabels(finn.layers.Labels):
 
     @property
     def _type_string(self) -> str:
-        return "labels"  # to make sure that the layer is treated as labels layer for saving
+        return (
+            'labels'  # to make sure that the layer is treated as labels layer for saving
+        )
 
     def __init__(
         self,
@@ -99,25 +99,25 @@ class TrackLabels(finn.layers.Labels):
 
         # Key bindings (should be specified both on the viewer (in tracks_viewer)
         # and on the layer to overwrite finn defaults)
-        self.bind_key("q")(self.tracks_viewer.toggle_display_mode)
-        self.bind_key("a")(self.tracks_viewer.create_edge)
-        self.bind_key("d")(self.tracks_viewer.delete_node)
-        self.bind_key("Delete")(self.tracks_viewer.delete_node)
-        self.bind_key("b")(self.tracks_viewer.delete_edge)
+        self.bind_key('q')(self.tracks_viewer.toggle_display_mode)
+        self.bind_key('a')(self.tracks_viewer.create_edge)
+        self.bind_key('d')(self.tracks_viewer.delete_node)
+        self.bind_key('Delete')(self.tracks_viewer.delete_node)
+        self.bind_key('b')(self.tracks_viewer.delete_edge)
         # self.bind_key("s")(self.tracks_viewer.set_split_node)
         # self.bind_key("e")(self.tracks_viewer.set_endpoint_node)
         # self.bind_key("c")(self.tracks_viewer.set_linear_node)
-        self.bind_key("z")(self.tracks_viewer.undo)
-        self.bind_key("r")(self.tracks_viewer.redo)
+        self.bind_key('z')(self.tracks_viewer.undo)
+        self.bind_key('r')(self.tracks_viewer.redo)
 
         # Connect click events to node selection
         @self.mouse_drag_callbacks.append
         def click(_, event):
             if (
-                event.type == "mouse_press"
-                and self.mode == "pan_zoom"
+                event.type == 'mouse_press'
+                and self.mode == 'pan_zoom'
                 and not (
-                    self.tracks_viewer.mode == "lineage"
+                    self.tracks_viewer.mode == 'lineage'
                     and self.viewer.dims.ndisplay == 3
                 )
             ):  # disable selecting in lineage mode in 3D
@@ -129,18 +129,14 @@ class TrackLabels(finn.layers.Labels):
                 )
 
                 if (
-                    label is not None
-                    and label != 0
-                    and self.colormap.map(label)[-1] != 0
+                    label is not None and label != 0 and self.colormap.map(label)[-1] != 0
                 ):  # check opacity (=visibility) in the colormap
-                    append = "Shift" in event.modifiers
+                    append = 'Shift' in event.modifiers
                     self.tracks_viewer.selected_nodes.add(label, append)
 
         # Listen to paint events and changing the selected label
         self.events.paint.connect(self._on_paint)
-        self.tracks_viewer.selected_nodes.list_updated.connect(
-            self.update_selected_label
-        )
+        self.tracks_viewer.selected_nodes.list_updated.connect(self.update_selected_label)
         self.events.selected_label.connect(self._ensure_valid_label)
         self.events.mode.connect(self._check_mode)
         self.viewer.dims.events.current_step.connect(self._ensure_valid_label)
@@ -173,13 +169,13 @@ class TrackLabels(finn.layers.Labels):
         self.events.mode.disconnect(
             self._check_mode
         )  # here disconnecting the event listener is still necessary because self.mode = paint triggers the event internally and it is not blocked with event.blocker()
-        if self.mode == "polygon":
+        if self.mode == 'polygon':
             show_info(
                 trans._(
-                    "Please use the paint tool to update the label",
+                    'Please use the paint tool to update the label',
                 )
             )
-            self.mode = "paint"
+            self.mode = 'paint'
 
         self._ensure_valid_label()
         self.events.mode.connect(self._check_mode)
@@ -257,9 +253,9 @@ class TrackLabels(finn.layers.Labels):
                     continue
                 time = pixels[0][0]
                 removed_node = old_value
-                assert (
-                    removed_node is not None
-                ), f"Node with label {old_value} in time {time} was not found"
+                assert removed_node is not None, (
+                    f'Node with label {old_value} in time {time} was not found'
+                )
                 # check if all pixels of old_value are removed
                 if np.sum(self.data[time] == old_value) == 0:
                     to_delete.append((removed_node, pixels))
@@ -279,8 +275,8 @@ class TrackLabels(finn.layers.Labels):
 
             if len(to_delete) > 0 and len(to_add) > 0:
                 show_warning(
-                    "This paint or fill operation completely replaced one label with a new label. This is currently not supported."
-                    " If you want to update the track id of the node, please edit the edges directly instead."
+                    'This paint or fill operation completely replaced one label with a new label. This is currently not supported.'
+                    ' If you want to update the track id of the node, please edit the edges directly instead.'
                 )
                 self._revert_paint(event)
                 self.refresh()
@@ -309,7 +305,7 @@ class TrackLabels(finn.layers.Labels):
             highlighted = self.tracks_viewer.selected_nodes
 
             # update the opacity of the cyclic label colormap values according to whether nodes are visible/invisible/highlighted
-            if visible == "all":
+            if visible == 'all':
                 self.colormap.color_dict = {
                     key: np.array(
                         [
@@ -373,10 +369,10 @@ class TrackLabels(finn.layers.Labels):
         4. If a node with the label exists at the current time point, it is valid and can be used to update the existing node in a paint event. No action is needed"""
 
         if self.tracks_viewer.tracks is not None and self.mode in (
-            "fill",
-            "paint",
-            "erase",
-            "pick",
+            'fill',
+            'paint',
+            'erase',
+            'pick',
         ):
             self.events.selected_label.disconnect(self._ensure_valid_label)
 
@@ -396,10 +392,7 @@ class TrackLabels(finn.layers.Labels):
                 else:
                     # if there is already a node in that track in this frame, edit that instead
                     edit = False
-                    if (
-                        self.selected_track
-                        in self.tracks_viewer.tracks.track_id_to_node
-                    ):
+                    if self.selected_track in self.tracks_viewer.tracks.track_id_to_node:
                         for node in self.tracks_viewer.tracks.track_id_to_node[
                             self.selected_track
                         ]:
@@ -453,8 +446,8 @@ class TrackLabels(finn.layers.Labels):
 
 # This is to override the default finn function to get a new label for the labels layer
 action_manager.register_action(
-    name="finn:new_label",
+    name='finn:new_label',
     command=new_label,
     keymapprovider=TrackLabels,
-    description="",
+    description='',
 )

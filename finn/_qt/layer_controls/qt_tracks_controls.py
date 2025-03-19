@@ -155,9 +155,7 @@ class QtTracksControls(QtLayerControls):
         with self.layer.events.color_by.blocker():
             color_by = self.layer.color_by
 
-            idx = self.color_by_combobox.findText(
-                color_by, Qt.MatchFlag.MatchFixedString
-            )
+            idx = self.color_by_combobox.findText(color_by, Qt.MatchFlag.MatchFixedString)
             self.color_by_combobox.setCurrentIndex(idx)
 
     def change_tail_width(self, value):

@@ -226,9 +226,7 @@ def test_add_surface():
     data = (vertices, faces, values)
     viewer.add_surface(data)
     assert len(viewer.layers) == 1
-    assert np.all(
-        [np.array_equal(vd, d) for vd, d in zip(viewer.layers[0].data, data)]
-    )
+    assert np.all([np.array_equal(vd, d) for vd, d in zip(viewer.layers[0].data, data, strict=False)])
     assert viewer.dims.ndim == 3
 
 
@@ -386,9 +384,7 @@ def test_swappable_dims():
     np.random.seed(0)
     image_data = np.random.random((7, 12, 10, 15))
     image_name = viewer.add_image(image_data).name
-    assert np.array_equal(
-        viewer.layers[image_name]._data_view, image_data[3, 5, :, :]
-    )
+    assert np.array_equal(viewer.layers[image_name]._data_view, image_data[3, 5, :, :])
 
     points_data = np.random.randint(6, size=(10, 4))
     viewer.add_points(points_data)
@@ -407,9 +403,7 @@ def test_swappable_dims():
     # Swap dims
     viewer.dims.order = [0, 2, 1, 3]
     assert viewer.dims.order == (0, 2, 1, 3)
-    assert np.array_equal(
-        viewer.layers[image_name]._data_view, image_data[3, :, 4, :]
-    )
+    assert np.array_equal(viewer.layers[image_name]._data_view, image_data[3, :, 4, :])
     assert np.array_equal(
         viewer.layers[labels_name]._slice.image.raw, labels_data[3, :, 4, :]
     )
@@ -514,17 +508,11 @@ def test_add_layer_from_data_raises():
     # unrecognized layer type raises Value Error
     with pytest.raises(ValueError, match='Unrecognized layer_type'):
         # (even though there is an add_layer method)
-        viewer._add_layer_from_data(
-            np.random.random((10, 10)), layer_type='layer'
-        )
+        viewer._add_layer_from_data(np.random.random((10, 10)), layer_type='layer')
 
     # even with the correct meta kwargs, the underlying add_* method may raise
-    with pytest.raises(
-        ValueError, match='data does not have suitable dimensions'
-    ):
-        viewer._add_layer_from_data(
-            np.random.random((10, 10, 6)), {'rgb': True}
-        )
+    with pytest.raises(ValueError, match='data does not have suitable dimensions'):
+        viewer._add_layer_from_data(np.random.random((10, 10, 6)), {'rgb': True})
 
     # using a kwarg in the meta dict that is invalid for the corresponding
     # add_* method raises a TypeError
@@ -637,9 +625,7 @@ def test_active_layer_status_update():
     viewer.cursor.position = [1, 1, 1, 1, 1]
     assert viewer._calc_status_from_cursor()[
         0
-    ] == viewer.layers.selection.active.get_status(
-        viewer.cursor.position, world=True
-    )
+    ] == viewer.layers.selection.active.get_status(viewer.cursor.position, world=True)
 
 
 def test_active_layer_cursor_size():
@@ -683,38 +669,24 @@ def test_sliced_world_extent():
     viewer = ViewerModel()
 
     # Empty data is taken to be 512 x 512
-    np.testing.assert_allclose(
-        viewer._sliced_extent_world_augmented[0], (-0.5, -0.5)
-    )
-    np.testing.assert_allclose(
-        viewer._sliced_extent_world_augmented[1], (511.5, 511.5)
-    )
+    np.testing.assert_allclose(viewer._sliced_extent_world_augmented[0], (-0.5, -0.5))
+    np.testing.assert_allclose(viewer._sliced_extent_world_augmented[1], (511.5, 511.5))
 
     # Add one layer
     viewer.add_image(
         np.random.random((6, 10, 15)), scale=(3, 1, 1), translate=(10, 20, 5)
     )
-    np.testing.assert_allclose(
-        viewer.layers._extent_world_augmented[0], (8.5, 19.5, 4.5)
-    )
+    np.testing.assert_allclose(viewer.layers._extent_world_augmented[0], (8.5, 19.5, 4.5))
     np.testing.assert_allclose(
         viewer.layers._extent_world_augmented[1], (26.5, 29.5, 19.5)
     )
-    np.testing.assert_allclose(
-        viewer._sliced_extent_world_augmented[0], (19.5, 4.5)
-    )
-    np.testing.assert_allclose(
-        viewer._sliced_extent_world_augmented[1], (29.5, 19.5)
-    )
+    np.testing.assert_allclose(viewer._sliced_extent_world_augmented[0], (19.5, 4.5))
+    np.testing.assert_allclose(viewer._sliced_extent_world_augmented[1], (29.5, 19.5))
 
     # Change displayed dims order
     viewer.dims.order = (1, 2, 0)
-    np.testing.assert_allclose(
-        viewer._sliced_extent_world_augmented[0], (4.5, 8.5)
-    )
-    np.testing.assert_allclose(
-        viewer._sliced_extent_world_augmented[1], (19.5, 26.5)
-    )
+    np.testing.assert_allclose(viewer._sliced_extent_world_augmented[0], (4.5, 8.5))
+    np.testing.assert_allclose(viewer._sliced_extent_world_augmented[1], (19.5, 26.5))
 
 
 def test_camera():
@@ -751,9 +723,7 @@ def test_update_scale():
     assert viewer.dims.range == tuple((0.0, x - 1, 1.0) for x in shape)
     scale = (3.0, 2.0, 1.0)
     viewer.layers[0].scale = scale
-    assert viewer.dims.range == tuple(
-        (0.0, (x - 1) * s, s) for x, s in zip(shape, scale)
-    )
+    assert viewer.dims.range == tuple((0.0, (x - 1) * s, s) for x, s in zip(shape, scale, strict=False))
 
 
 @pytest.mark.parametrize(('Layer', 'data', 'ndim'), layer_test_data)
@@ -829,9 +799,7 @@ def test_add_remove_layer_external_callbacks(Layer, data, ndim):
             assert len(em.callbacks) == count_warning_events(em.callbacks) + 1
 
 
-@pytest.mark.parametrize(
-    'field', ['camera', 'cursor', 'dims', 'grid', 'layers']
-)
+@pytest.mark.parametrize('field', ['camera', 'cursor', 'dims', 'grid', 'layers'])
 def test_not_mutable_fields(field):
     """Test appropriate fields are not mutable."""
     viewer = ViewerModel()
@@ -845,9 +813,7 @@ def test_not_mutable_fields(field):
     with pytest.raises((TypeError, ValueError)) as err:
         setattr(viewer, field, 'test')
 
-    assert 'has allow_mutation set to False and cannot be assigned' in str(
-        err.value
-    )
+    assert 'has allow_mutation set to False and cannot be assigned' in str(err.value)
 
 
 @pytest.mark.parametrize(('Layer', 'data', 'ndim'), layer_test_data)
@@ -876,9 +842,7 @@ def test_open_or_get_error_multiple_readers(tmp_plugin: DynamicPlugin):
     @tmp2.contribute.reader(filename_patterns=['*.fake'])
     def _(path): ...
 
-    with pytest.raises(
-        MultipleReaderError, match='Multiple plugins found capable'
-    ):
+    with pytest.raises(MultipleReaderError, match='Multiple plugins found capable'):
         viewer._open_or_raise_error(['my_file.fake'])
 
 
@@ -956,9 +920,7 @@ def test_open_or_get_error_no_prefered_plugin_many_available(
     get_settings().plugins.extension2reader = {'*.fake': 'not-a-plugin'}
 
     with pytest.warns(RuntimeWarning, match="Can't find not-a-plugin plugin"):
-        with pytest.raises(
-            MultipleReaderError, match='Multiple plugins found capable'
-        ):
+        with pytest.raises(MultipleReaderError, match='Multiple plugins found capable'):
             viewer._open_or_raise_error(['my_file.fake'])
 
 
@@ -968,9 +930,7 @@ def test_open_or_get_error_preferred_fails(builtins, tmp_path):
 
     get_settings().plugins.extension2reader = {'*.npy': builtins.name}
 
-    with pytest.raises(
-        ReaderPluginError, match='Tried opening with napari, but failed.'
-    ):
+    with pytest.raises(ReaderPluginError, match='Tried opening with napari, but failed.'):
         viewer._open_or_raise_error([str(pth)])
 
 
@@ -1017,9 +977,7 @@ def test_get_status_text():
     viewer.mouse_over_canvas = True
     assert viewer._calc_status_from_cursor() == ('Ready', '')
     viewer.cursor.position = (1, 2)
-    viewer.add_labels(
-        np.zeros((10, 10), dtype='uint8'), features={'a': [1, 2]}
-    )
+    viewer.add_labels(np.zeros((10, 10), dtype='uint8'), features={'a': [1, 2]})
     viewer.tooltip.visible = False
     assert viewer._calc_status_from_cursor() == (
         {

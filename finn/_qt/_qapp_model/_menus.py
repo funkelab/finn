@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 def build_qmodel_menu(
     menu_id: str,
-    title: Optional[str] = None,
+    title: str | None = None,
     parent: Optional['QWidget'] = None,
 ) -> QModelMenu:
     """Build a QModelMenu from the napari app model
@@ -29,6 +29,4 @@ def build_qmodel_menu(
     """
     from finn._app_model import get_app_model
 
-    return QModelMenu(
-        menu_id=menu_id, app=get_app_model(), title=title, parent=parent
-    )
+    return QModelMenu(menu_id=menu_id, app=get_app_model(), title=title, parent=parent)

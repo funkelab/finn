@@ -52,9 +52,7 @@ def test_increment_unnamed_colormap():
 
     # test that named colormaps are not incremented
     named_colormap = 'perfect_colormap'
-    assert (
-        _increment_unnamed_colormap(names, named_colormap)[0] == named_colormap
-    )
+    assert _increment_unnamed_colormap(names, named_colormap)[0] == named_colormap
 
 
 def test_can_accept_vispy_colormaps():
@@ -178,9 +176,7 @@ def test_colormap_error_suggestion(name, display_name):
     """
     Test that vispy/mpl errors, when using `display_name`, suggest `name`.
     """
-    with pytest.raises(
-        KeyError, match=rf'{display_name}.*you might want to use.*{name}'
-    ):
+    with pytest.raises(KeyError, match=rf'{display_name}.*you might want to use.*{name}'):
         vispy_or_mpl_colormap(display_name)
 
 

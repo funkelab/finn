@@ -1,4 +1,3 @@
-from typing import Optional
 
 from finn.components._viewer_constants import CursorStyle
 from finn.utils.events import EventedModel
@@ -38,4 +37,4 @@ class Cursor(EventedModel):
     scaled: bool = True
     size = 1.0
     style: CursorStyle = CursorStyle.STANDARD
-    _view_direction: Optional[tuple[float, float, float]] = None
+    _view_direction: tuple[float, float, float] | None = None

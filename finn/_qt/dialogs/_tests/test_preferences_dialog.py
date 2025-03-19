@@ -42,15 +42,15 @@ def pref(qtbot):
     # a copy of the initial `shortcuts` dictionary needs to be done since, to trigger an
     # event update from the `ShortcutsSettings` model, the whole `shortcuts` dictionary
     # needs to be reassigned.
-    assert dlg._settings.shortcuts.shortcuts[
-        'napari:reset_scroll_progress'
-    ] == [KeyBinding.from_str('Ctrl')]
+    assert dlg._settings.shortcuts.shortcuts['napari:reset_scroll_progress'] == [
+        KeyBinding.from_str('Ctrl')
+    ]
     shortcuts = dlg._settings.shortcuts.shortcuts.copy()
     shortcuts['napari:reset_scroll_progress'] = [KeyBinding.from_str('U')]
     dlg._settings.shortcuts.shortcuts = shortcuts
-    assert dlg._settings.shortcuts.shortcuts[
-        'napari:reset_scroll_progress'
-    ] == [KeyBinding.from_str('U')]
+    assert dlg._settings.shortcuts.shortcuts['napari:reset_scroll_progress'] == [
+        KeyBinding.from_str('U')
+    ]
     return dlg
 
 
@@ -89,9 +89,7 @@ def test_dask_widget(qtbot, pref):
 
 
 def test_font_size_widget(qtbot, pref):
-    font_size_widget = (
-        pref._stack.widget(1).widget().widget.widgets['font_size']
-    )
+    font_size_widget = pref._stack.widget(1).widget().widget.widgets['font_size']
     def_font_size = 12 if sys.platform == 'darwin' else 9
 
     # check custom widget definition usage for the font size setting
@@ -125,16 +123,12 @@ def test_font_size_widget(qtbot, pref):
     ],
 )
 def test_StrEnum_widgets(qtbot, pref, enum_setting_name, enum_setting_class):
-    enum_widget = (
-        pref._stack.currentWidget().widget().widget.widgets[enum_setting_name]
-    )
+    enum_widget = pref._stack.currentWidget().widget().widget.widgets[enum_setting_name]
     settings = pref._settings
 
     # check custom widget definition and widget value follows setting
     assert isinstance(enum_widget, EnumSchemaWidget)
-    assert enum_widget.state == getattr(
-        settings.application, enum_setting_name
-    )
+    assert enum_widget.state == getattr(settings.application, enum_setting_name)
 
     # check changing setting via widget
     for idx in range(enum_widget.count()):
@@ -151,9 +145,7 @@ def test_StrEnum_widgets(qtbot, pref, enum_setting_name, enum_setting_class):
 
 
 def test_highlight_widget(qtbot, pref):
-    highlight_widget = (
-        pref._stack.widget(1).widget().widget.widgets['highlight']
-    )
+    highlight_widget = pref._stack.widget(1).widget().widget.widgets['highlight']
     settings = pref._settings
 
     # check custom widget definition and widget follows settings values
@@ -188,9 +180,7 @@ def test_highlight_widget(qtbot, pref):
         'highlight_color': [0.5, 0.6, 1.0, 1.0],
     }
 
-    settings.appearance.highlight.highlight_color = new_setting_values[
-        'highlight_color'
-    ]
+    settings.appearance.highlight.highlight_color = new_setting_values['highlight_color']
     npt.assert_allclose(
         highlight_widget.state['highlight_color'],
         new_setting_values['highlight_color'],
@@ -234,53 +224,43 @@ def test_preferences_dialog_cancel(qtbot, pref):
     with qtbot.waitSignal(pref.finished):
         pref._button_cancel.click()
     assert get_settings().appearance.theme == 'dark'
-    assert get_settings().shortcuts.shortcuts[
-        'napari:reset_scroll_progress'
-    ] == [KeyBinding.from_str('Ctrl')]
+    assert get_settings().shortcuts.shortcuts['napari:reset_scroll_progress'] == [
+        KeyBinding.from_str('Ctrl')
+    ]
 
 
 @pytest.mark.key_bindings
 def test_preferences_dialog_restore(qtbot, pref, monkeypatch):
     theme_widget = pref._stack.widget(1).widget().widget.widgets['theme']
-    highlight_widget = (
-        pref._stack.widget(1).widget().widget.widgets['highlight']
-    )
-    shortcut_widget = (
-        pref._stack.widget(3).widget().widget.widgets['shortcuts']
-    )
+    highlight_widget = pref._stack.widget(1).widget().widget.widgets['highlight']
+    shortcut_widget = pref._stack.widget(3).widget().widget.widgets['shortcuts']
 
     assert get_settings().appearance.theme == 'light'
     assert theme_widget.state == 'light'
     assert get_settings().appearance.highlight.highlight_thickness == 5
     assert highlight_widget.state['highlight_thickness'] == 5
-    assert get_settings().shortcuts.shortcuts[
-        'napari:reset_scroll_progress'
-    ] == [KeyBinding.from_str('U')]
+    assert get_settings().shortcuts.shortcuts['napari:reset_scroll_progress'] == [
+        KeyBinding.from_str('U')
+    ]
     assert KeyBinding.from_str(
         Shortcut.parse_platform(
-            shortcut_widget._table.item(
-                0, shortcut_widget._shortcut_col
-            ).text()
+            shortcut_widget._table.item(0, shortcut_widget._shortcut_col).text()
         )
     ) == KeyBinding.from_str('U')
 
-    monkeypatch.setattr(
-        QMessageBox, 'question', lambda *a: QMessageBox.RestoreDefaults
-    )
+    monkeypatch.setattr(QMessageBox, 'question', lambda *a: QMessageBox.RestoreDefaults)
     pref._restore_default_dialog()
 
     assert get_settings().appearance.theme == 'dark'
     assert theme_widget.state == 'dark'
     assert get_settings().appearance.highlight.highlight_thickness == 1
     assert highlight_widget.state['highlight_thickness'] == 1
-    assert get_settings().shortcuts.shortcuts[
-        'napari:reset_scroll_progress'
-    ] == [KeyBinding.from_str('Ctrl')]
+    assert get_settings().shortcuts.shortcuts['napari:reset_scroll_progress'] == [
+        KeyBinding.from_str('Ctrl')
+    ]
     assert KeyBinding.from_str(
         Shortcut.parse_platform(
-            shortcut_widget._table.item(
-                0, shortcut_widget._shortcut_col
-            ).text()
+            shortcut_widget._table.item(0, shortcut_widget._shortcut_col).text()
         )
     ) == KeyBinding.from_str('Ctrl')
 
@@ -292,9 +272,7 @@ def test_preferences_dialog_restore(qtbot, pref, monkeypatch):
     'confirm_key',
     ['enter', 'return', 'tab'],
 )
-def test_preferences_dialog_not_dismissed_by_keybind_confirm(
-    qtbot, pref, confirm_key
-):
+def test_preferences_dialog_not_dismissed_by_keybind_confirm(qtbot, pref, confirm_key):
     """This test ensures that when confirming a keybinding change, the dialog is not dismissed.
 
     Notes:
@@ -307,23 +285,17 @@ def test_preferences_dialog_not_dismissed_by_keybind_confirm(
         See https://github.com/asweigart/pyautogui/issues/247 and
         https://github.com/asweigart/pyautogui/issues/247#issuecomment-437668855
     """
-    shortcut_widget = (
-        pref._stack.widget(3).widget().widget.widgets['shortcuts']
-    )
+    shortcut_widget = pref._stack.widget(3).widget().widget.widgets['shortcuts']
     pref._stack.setCurrentIndex(3)
     # ensure the dialog is showing
     pref.show()
     qtbot.waitExposed(pref)
     assert pref.isVisible()
 
-    shortcut = shortcut_widget._table.item(
-        0, shortcut_widget._shortcut_col
-    ).text()
+    shortcut = shortcut_widget._table.item(0, shortcut_widget._shortcut_col).text()
     assert shortcut == 'U'
 
-    x = shortcut_widget._table.columnViewportPosition(
-        shortcut_widget._shortcut_col
-    )
+    x = shortcut_widget._table.columnViewportPosition(shortcut_widget._shortcut_col)
     y = shortcut_widget._table.rowViewportPosition(0)
 
     item_pos = QPoint(x, y)
@@ -347,7 +319,5 @@ def test_preferences_dialog_not_dismissed_by_keybind_confirm(
     assert pref.isVisible()
 
     # verify that the keybind is changed
-    shortcut = shortcut_widget._table.item(
-        0, shortcut_widget._shortcut_col
-    ).text()
+    shortcut = shortcut_widget._table.item(0, shortcut_widget._shortcut_col).text()
     assert shortcut == ''

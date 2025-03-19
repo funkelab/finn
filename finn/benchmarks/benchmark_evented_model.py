@@ -30,9 +30,7 @@ class Model(EventedModel):
 
     @property
     def e(self):
-        return (fibonacci(self.c) + fibonacci(self.a)) ** fibonacci(
-            ceil(self.b)
-        )
+        return (fibonacci(self.c) + fibonacci(self.a)) ** fibonacci(ceil(self.b))
 
 
 class EventedModelSuite:
