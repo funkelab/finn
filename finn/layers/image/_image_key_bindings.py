@@ -6,6 +6,7 @@ import finn
 from finn.layers.base._base_constants import Mode
 from finn.layers.image.image import Image
 from finn.layers.utils.interactivity_utils import (
+    orient_clipping_plane_normals,
     orient_plane_normal_around_cursor,
 )
 from finn.layers.utils.layer_utils import (
@@ -32,16 +33,19 @@ def register_image_mode_action(
 @register_image_action(trans._("Orient plane normal along z-axis"))
 def orient_plane_normal_along_z(layer: Image) -> None:
     orient_plane_normal_around_cursor(layer, plane_normal=(1, 0, 0))
+    orient_clipping_plane_normals(layer, orientation="z")
 
 
 @register_image_action(trans._("Orient plane normal along y-axis"))
 def orient_plane_normal_along_y(layer: Image) -> None:
     orient_plane_normal_around_cursor(layer, plane_normal=(0, 1, 0))
+    orient_clipping_plane_normals(layer, orientation="y")
 
 
 @register_image_action(trans._("Orient plane normal along x-axis"))
 def orient_plane_normal_along_x(layer: Image) -> None:
     orient_plane_normal_around_cursor(layer, plane_normal=(0, 0, 1))
+    orient_clipping_plane_normals(layer, orientation="x")
 
 
 @register_image_action(
@@ -81,6 +85,13 @@ def orient_plane_normal_along_view_direction_no_gen(layer: Image) -> None:
         return
     layer.plane.normal = layer._world_to_displayed_data_normal(
         viewer.camera.view_direction, [-3, -2, -1]
+    )
+
+    layer.experimental_clipping_planes[0].normal = layer.plane.normal
+    layer.experimental_clipping_planes[1].normal = (
+        -layer.plane.normal[-3],
+        -layer.plane.normal[-2],
+        -layer.plane.normal[-1],
     )
 
 
