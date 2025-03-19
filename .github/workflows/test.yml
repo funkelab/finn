@@ -15,6 +15,7 @@ concurrency:
 
 env:
   CI: true
+  NO_PROXY: '*'
 
 jobs:
 
