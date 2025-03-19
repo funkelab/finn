@@ -14,11 +14,13 @@ if TYPE_CHECKING:
         TracksViewer,
     )
 
+from finn.track_data_views.graph_attributes import NodeAttr
+
 
 def update_finn_tracks(
     tracks: SolutionTracks,
 ):
-    """Function to take a networkx graph with assigned track_ids and return the data 
+    """Function to take a networkx graph with assigned track_ids and return the data
     needed to add to a finn tracks layer.
 
     Args:
@@ -96,14 +98,12 @@ class TrackGraph(finn.layers.Tracks):
         )
 
         self.colormaps_dict['track_id'] = self.tracks_viewer.colormap
-        self.tracks_layer_graph = copy.deepcopy(
-            self.graph
-        )  # for restoring graph later
+        self.tracks_layer_graph = copy.deepcopy(self.graph)  # for restoring graph later
         # just to 'refresh' the track_id colormap, we do not actually use turbo
         self.colormap = 'turbo'
 
     def _refresh(self):
-        """Refreshes the displayed tracks based on the graph in the current 
+        """Refreshes the displayed tracks based on the graph in the current
         tracks_viewer.tracks
         """
 
@@ -118,17 +118,73 @@ class TrackGraph(finn.layers.Tracks):
         # just to 'refresh' the track_id colormap, we do not actually use turbo
         self.colormap = 'turbo'
 
-    def update_track_visibility(self, visible: list[int] | str) -> None:
-        """Optionally show only the tracks of a current lineage"""
+    def update_track_visibility(
+        self,
+        visible: list[int] | str | None = None,
+        plane_nodes: list[int] | str | None = None,
+    ) -> None:
+        """Show the tracks for all nodes or for a selection of nodes
 
-        if visible == 'all':
+        Args:
+            visible (list[int] | str): A list of node ids to be displayed or "all"
+            plane_nodes (list[int] | str): A list of node ids that should be visible because they are in within the bounds of a clipping plane, or 'all' if the clipping plane is not active.
+
+        """
+
+        if (
+            self.tracks_viewer.viewer.dims.ndisplay == 2
+            and self.tracks_viewer.viewer.dims.ndim == 4
+        ):
+            # everything should be invisible for 3D data viewed in 2D, because tracks are not shown at the correct slices.
+            visible = []
+
+        else:
+            if visible is not None:
+                self.visible_tracks = visible
+            if plane_nodes is not None:
+                self.visible_plane_tracks = plane_nodes
+
+            if isinstance(self.visible_tracks, str) and isinstance(
+                self.visible_plane_tracks, str
+            ):
+                visible = 'all'
+            elif not isinstance(self.visible_tracks, str) and isinstance(
+                self.visible_plane_tracks, str
+            ):
+                visible = self.visible_tracks
+            elif isinstance(self.visible_tracks, str) and not isinstance(
+                self.visible_plane_tracks, str
+            ):
+                visible = self.visible_plane_tracks
+            else:
+                visible = list(
+                    set(self.visible_tracks).intersection(set(self.visible_plane_tracks))
+                )
+
+        if isinstance(visible, str):
             self.track_colors[:, 3] = 1
             self.graph = self.tracks_layer_graph
+            self.events.rebuild_tracks()  # to force update colors
         else:
-            track_id_mask = np.isin(
-                self.properties['track_id'],
-                visible,
+            visible_tracks_times = {
+                (
+                    self.tracks_viewer.tracks._get_node_attr(
+                        node, NodeAttr.TRACK_ID.value
+                    ),
+                    self.tracks_viewer.tracks._get_node_attr(node, NodeAttr.TIME.value),
+                )
+                for node in visible
+            }
+
+            track_id_mask = np.array(
+                [
+                    (track_id, time) in visible_tracks_times
+                    for track_id, time in zip(
+                        self.data[:, 0], self.data[:, 1], strict=True
+                    )
+                ]
             )
+
             self.graph = {
                 key: self.tracks_layer_graph[key]
                 for key in visible
@@ -137,9 +193,9 @@ class TrackGraph(finn.layers.Tracks):
 
             self.track_colors[:, 3] = 0
             self.track_colors[track_id_mask, 3] = 1
-            # empty dicts to not trigger update (bug?) so disable the graph entirely as a
-            # workaround
             if len(self.graph.items()) == 0:
-                self.display_graph = False
+                self.display_graph = False  # empty dicts to not trigger update (bug?) so disable the graph entirely as a workaround
             else:
                 self.display_graph = True
+
+        self.events.rebuild_tracks()  # fire the event to update the colors

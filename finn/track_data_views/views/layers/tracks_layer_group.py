@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import finn
-
 from funtracks.data_model.tracks import Tracks
+
+import finn
 
 from .track_graph import TrackGraph
 from .track_labels import TrackLabels
@@ -39,7 +39,7 @@ class TracksLayerGroup:
             self.seg_layer = TrackLabels(
                 viewer=self.viewer,
                 data=self.tracks.segmentation,
-                name=self.name + "_seg",
+                name=self.name + '_seg',
                 opacity=0.9,
                 scale=self.tracks.scale,
                 tracks_viewer=self.tracks_viewer,
@@ -53,12 +53,12 @@ class TracksLayerGroup:
             and self.tracks.graph.number_of_nodes() != 0
         ):
             self.tracks_layer = TrackGraph(
-                name=self.name + "_tracks",
+                name=self.name + '_tracks',
                 tracks_viewer=self.tracks_viewer,
             )
 
             self.points_layer = TrackPoints(
-                name=self.name + "_points",
+                name=self.name + '_points',
                 tracks_viewer=self.tracks_viewer,
             )
         else:
@@ -95,23 +95,34 @@ class TracksLayerGroup:
         if self.points_layer is not None:
             self.points_layer._refresh()
 
-    def update_visible(self, visible_tracks: list[int], visible_nodes: list[int]):
+    def update_visible(
+        self,
+        visible_nodes: list[int] | str,
+        plane_nodes: list[int] | str | None = 'all',
+    ) -> None:
+        """Update the visibility of the nodes in the viewer layers
+
+        Args:
+            visible_nodes (list[int], 'all'): List of node ids belonging to the tracks that should be visible, or 'all'. This filters the nodes based on whether the display mode is set to 'lineage' or to 'all'
+            plane_nodes (list[int], 'all'): List of node ids belonging to the nodes that should be visible because they are in within the bounds of a clipping plane, or 'all' if the clipping plane is not active.
+        """
+
         if self.seg_layer is not None:
             self.seg_layer.update_label_colormap(visible_nodes)
         if self.points_layer is not None:
-            self.points_layer.update_point_outline(visible_tracks)
+            self.points_layer.update_point_outline(visible_nodes, plane_nodes)
         if self.tracks_layer is not None:
-            self.tracks_layer.update_track_visibility(visible_tracks)
+            self.tracks_layer.update_track_visibility(visible_nodes, plane_nodes)
 
     def center_view(self, node):
         """Adjust the current_step and camera center of the viewer to jump to the node
         location, if the node is not already in the field of view"""
 
-        if self.seg_layer is None or self.seg_layer.mode == "pan_zoom":
+        if self.seg_layer is None or self.seg_layer.mode == 'pan_zoom':
             location = self.tracks.get_positions([node], incl_time=True)[0].tolist()
-            assert (
-                len(location) == self.viewer.dims.ndim
-            ), f"Location {location} does not match viewer number of dims {self.viewer.dims.ndim}"
+            assert len(location) == self.viewer.dims.ndim, (
+                f'Location {location} does not match viewer number of dims {self.viewer.dims.ndim}'
+            )
 
             step = list(self.viewer.dims.current_step)
             for dim in self.viewer.dims.not_displayed:
