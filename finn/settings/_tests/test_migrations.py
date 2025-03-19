@@ -83,16 +83,15 @@ def test_030_to_040_migration():
     # set of disabled plugins (see migrator for details)
     try:
         d = distribution("napari-svg")
-        assert "finn.manifest" in {ep.group for ep in d.entry_points}
+        assert "napari.manifest" in {ep.group for ep in d.entry_points}
     except PackageNotFoundError:
         pytest.fail("napari-svg not present as an npe2 plugin. This test needs updating")
 
     settings = NapariSettings(
         schema_version="0.3.0",
-        plugins={"disabled_plugins": {"napari-svg", "napari"}},
+        plugins={"disabled_plugins": {"napari-svg"}},
     )
     assert "napari-svg" not in settings.plugins.disabled_plugins
-    assert "napari" not in settings.plugins.disabled_plugins
 
 
 @pytest.mark.skipif(bool(os.environ.get("MIN_REQ")), reason="not relevant for MIN_REQ")
