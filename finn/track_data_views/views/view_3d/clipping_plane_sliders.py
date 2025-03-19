@@ -12,7 +12,6 @@ from superqt import QLabeledRangeSlider
 import finn.layers
 from finn.layers.utils.plane import ClippingPlane
 from finn.track_data_views.views.layers.track_labels import TrackLabels
-from finn.track_data_views.views.view_3d.layer_dropdown import LayerDropdown
 from finn.track_data_views.views_coordinator.tracks_viewer import TracksViewer
 
 
@@ -30,10 +29,7 @@ class PlaneSliderWidget(QWidget):
         self.current_layer = None
 
         # Add a dropdown menu to select a layer to add a plane view for
-        self.layer_dropdown = LayerDropdown(
-            self.viewer, (finn.layers.Image, finn.layers.Labels)
-        )
-        self.layer_dropdown.layer_changed.connect(self._update_layer)
+        self.viewer.layers.selection.events.active.connect(self._update_layer)
 
         # Add buttons to switch between plane and volume mode
         button_layout = QVBoxLayout()
@@ -80,7 +76,6 @@ class PlaneSliderWidget(QWidget):
 
         # Assemble main layout
         view_mode_widget_layout = QVBoxLayout()
-        view_mode_widget_layout.addWidget(self.layer_dropdown)
         view_mode_widget_layout.addLayout(button_layout)
         view_mode_widget_layout.addLayout(plane_layout)
 
@@ -219,40 +214,49 @@ class PlaneSliderWidget(QWidget):
                 (int(max_range / 3), int(max_range / 1.5))
             )
 
-    def _update_layer(self, selected_layer) -> None:
+    def _update_layer(self, event) -> None:
         """Update the layer to which the plane viewing is applied"""
 
-        if selected_layer == '':
+        if event.value is None or not isinstance(
+            event.value, (finn.layers.Image, finn.layers.Labels, TrackLabels)
+        ):
+            self.slice_view_btn.setEnabled(False)
+            self.volume_btn.setEnabled(False)
+            self.clipping_plane_btn.setEnabled(False)
+            self.clipping_plane_slider.setEnabled(False)
             self.current_layer = None
-        else:
-            self.current_layer = self.viewer.layers[selected_layer]
-            self.layer_dropdown.setCurrentText(selected_layer)
-            if len(self.current_layer.experimental_clipping_planes) == 0:
-                plane = self.current_layer.plane
-                self.current_layer.experimental_clipping_planes.append(
-                    ClippingPlane(
-                        normal=plane.normal,
-                        position=plane.position,
-                        enabled=False,
-                    )
+            return
+        self.slice_view_btn.setEnabled(True)
+        self.volume_btn.setEnabled(True)
+        self.clipping_plane_btn.setEnabled(True)
+        self.clipping_plane_slider.setEnabled(True)
+        self.current_layer = event.value
+        if len(self.current_layer.experimental_clipping_planes) == 0:
+            plane = self.current_layer.plane
+            self.current_layer.experimental_clipping_planes.append(
+                ClippingPlane(
+                    normal=plane.normal,
+                    position=plane.position,
+                    enabled=False,
                 )
-                self.current_layer.experimental_clipping_planes.append(
-                    ClippingPlane(
-                        normal=[-n for n in plane.normal],
-                        position=plane.position,
-                        enabled=False,
-                    )
+            )
+            self.current_layer.experimental_clipping_planes.append(
+                ClippingPlane(
+                    normal=[-n for n in plane.normal],
+                    position=plane.position,
+                    enabled=False,
                 )
+            )
 
-            if self.viewer.dims.ndisplay == 3:
-                if (
-                    self.current_layer.depiction == 'volume'
-                    and self.current_layer.experimental_clipping_planes[0].enabled
-                ):
-                    self._set_clipping_plane_mode()
-                    self._update_clipping_plane_slider()
-                else:
-                    self._set_volume_mode()
+        if self.viewer.dims.ndisplay == 3:
+            if (
+                self.current_layer.depiction == 'volume'
+                and self.current_layer.experimental_clipping_planes[0].enabled
+            ):
+                self._set_clipping_plane_mode()
+                self._update_clipping_plane_slider()
+            else:
+                self._set_volume_mode()
 
     def _update_clipping_plane_slider(self):
         """Updates the values of the clipping plane slider when switching between different layers"""

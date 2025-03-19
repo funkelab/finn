@@ -2,8 +2,8 @@ from psygnal import Signal
 from qtpy.QtWidgets import QVBoxLayout, QWidget
 
 import finn
-
 from finn.track_data_views.views.view_3d.clipping_plane_sliders import PlaneSliderWidget
+
 
 class View3D(QWidget):
     """Widget to combine multiple views and cross widget together."""
