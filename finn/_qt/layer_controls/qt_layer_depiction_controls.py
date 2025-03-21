@@ -259,6 +259,7 @@ class QtLayerDepiction(QFormLayout):
             self.layer.experimental_clipping_planes[0].enabled = False
             self.layer.experimental_clipping_planes[1].enabled = False
             self.clippingPlaneSlider.setEnabled(False)
+        self.layer.events.experimental_clipping_planes()
 
     def changeClippingPlaneRange(self, value):
         viewer = finn.viewer.current_viewer()
