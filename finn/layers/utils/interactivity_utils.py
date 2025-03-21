@@ -12,6 +12,8 @@ from finn.utils.geometry import (
 
 if TYPE_CHECKING:
     from finn.layers.image.image import Image
+    from finn.layers.labels.labels import Labels
+    from finn.track_data_views.views.layers.track_labels import TrackLabels
 
 
 def displayed_plane_from_nd_line_segment(
@@ -100,6 +102,44 @@ def drag_data_to_projected_distance(
 
     # Project the drag vector onto the specified vector(s), return the distance
     return np.einsum("j, ij -> i", drag_vector_canvas, vector).squeeze()
+
+
+def orient_clipping_plane_normals(layer: Image | Labels | TrackLabels, orientation: str):
+    if orientation == "x":
+        layer.experimental_clipping_planes[0].normal = (
+            0,
+            0,
+            1,
+        )
+        layer.experimental_clipping_planes[1].normal = (
+            0,
+            0,
+            -1,
+        )
+
+    elif orientation == "y":
+        layer.experimental_clipping_planes[0].normal = (
+            0,
+            1,
+            0,
+        )
+        layer.experimental_clipping_planes[1].normal = (
+            0,
+            -1,
+            0,
+        )
+
+    elif orientation == "z":
+        layer.experimental_clipping_planes[0].normal = (
+            1,
+            0,
+            0,
+        )
+        layer.experimental_clipping_planes[1].normal = (
+            -1,
+            0,
+            0,
+        )
 
 
 def orient_plane_normal_around_cursor(layer: Image, plane_normal: tuple) -> None:

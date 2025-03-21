@@ -1253,6 +1253,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
             plane = ClippingPlane()
             plane.update(new_plane)
             self._experimental_clipping_planes.append(plane)
+        self.events.experimental_clipping_planes()
 
     @property
     def bounding_box(self) -> Overlay:
