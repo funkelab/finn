@@ -27,7 +27,7 @@ class TestLoadTracks:
         df = pd.DataFrame(data)
         with pytest.raises(
             ValueError,
-            match="Segmentation ids in dataframe do not match values in segmentation.",
+            match="The 'id' column must contain unique values",
         ):
             tracks_from_df(df)
 

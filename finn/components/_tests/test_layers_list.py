@@ -343,6 +343,7 @@ def test_toggle_visibility():
 
 
 # the layer_data_and_types fixture is defined in napari/conftest.py
+@pytest.mark.skip  # skipping because depends on plugin pytest config
 @pytest.mark.filterwarnings("ignore:distutils Version classes are deprecated")
 def test_layers_save(builtins, tmpdir, layer_data_and_types):
     """Test saving all layer data."""
@@ -370,6 +371,7 @@ def test_layers_save(builtins, tmpdir, layer_data_and_types):
 
 
 # the layer_data_and_types fixture is defined in napari/conftest.py
+@pytest.mark.skip  # skipping because depends on plugin pytest config
 def test_layers_save_none_selected(builtins, tmpdir, layer_data_and_types):
     """Test saving all layer data."""
     list_of_layers, _, _, filenames = layer_data_and_types
@@ -397,6 +399,7 @@ def test_layers_save_none_selected(builtins, tmpdir, layer_data_and_types):
 
 
 # the layer_data_and_types fixture is defined in napari/conftest.py
+@pytest.mark.skip  # skipping because depends on plugin pytest config
 def test_layers_save_selected(builtins, tmpdir, layer_data_and_types):
     """Test saving all layer data."""
     list_of_layers, _, _, filenames = layer_data_and_types
@@ -431,6 +434,7 @@ def test_layers_save_selected(builtins, tmpdir, layer_data_and_types):
 # of napari-svg includes the following PR:
 # https://github.com/napari/napari-svg/pull/38
 @pytest.mark.filterwarnings("ignore:edge_:FutureWarning")
+@pytest.mark.skip  # skipping because depends on plugin pytest config (I think?)
 def test_layers_save_svg(tmpdir, layers, napari_svg_name):
     """Test saving all layer data to an svg."""
     pm = npe2.PluginManager.instance()

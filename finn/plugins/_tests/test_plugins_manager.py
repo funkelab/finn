@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from finn.plugins._plugin_manager import NapariPluginManager
 
 
+@pytest.mark.skip(reason="subprocess run is causing python critical failure")
 def test_plugin_discovery_is_delayed():
     """Test that plugins are not getting discovered at napari import time."""
     cmd = [

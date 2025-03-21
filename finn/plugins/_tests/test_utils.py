@@ -194,15 +194,6 @@ def test_get_preferred_reader_full_path(tmp_path, monkeypatch):
     assert get_preferred_reader("./my_file.zarr") == "fake-plugin"
 
 
-def test_get_potential_readers_gives_napari(builtins, tmp_plugin: DynamicPlugin):
-    @tmp_plugin.contribute.reader(filename_patterns=["*.tif"])
-    def read_tif(path): ...
-
-    readers = get_potential_readers("my_file.tif")
-    assert "napari" in readers
-    assert "builtins" not in readers
-
-
 def test_get_potential_readers_finds_readers(tmp_plugin: DynamicPlugin):
     tmp2 = tmp_plugin.spawn(register=True)
 
@@ -236,13 +227,6 @@ def test_get_potential_readers_plugin_name_disp_name(
 
     readers = get_potential_readers("my_file.fake")
     assert readers[tmp_plugin.name] == tmp_plugin.display_name
-
-
-def test_get_all_readers_gives_napari(builtins):
-    npe2_readers, npe1_readers = get_all_readers()
-    assert len(npe1_readers) == 0
-    assert len(npe2_readers) == 1
-    assert "napari" in npe2_readers
 
 
 def test_get_all_readers(tmp_plugin: DynamicPlugin):

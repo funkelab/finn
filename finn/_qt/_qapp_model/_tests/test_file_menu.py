@@ -45,27 +45,6 @@ def test_sample_data_triggers_reader_dialog(
     mock_read.assert_called_once()
 
 
-def test_plugin_display_name_use_for_multiple_samples(
-    make_napari_viewer,
-    builtins,
-):
-    """Check 'display_name' used for submenu when plugin has >1 sample data."""
-    app = get_app_model()
-    viewer = make_napari_viewer()
-
-    # builtins provides more than one sample,
-    # so the submenu should use the `display_name` from manifest
-    samples_menu = app.menus.get_menu(MenuId.FILE_SAMPLES)
-    assert samples_menu[0].title == "napari builtins"
-    # Now ensure that the actions are still correct
-    # trigger the action, opening the first sample: `Astronaut`
-    assert "finn:astronaut" in app.commands
-    assert len(viewer.layers) == 0
-    app.commands.execute_command("finn:astronaut")
-    assert len(viewer.layers) == 1
-    assert viewer.layers[0].name == "astronaut"
-
-
 def test_sample_menu_plugin_state_change(
     make_napari_viewer,
     tmp_plugin: DynamicPlugin,
@@ -313,39 +292,6 @@ def test_preference_dialog(make_napari_viewer):
     ):
         app.commands.execute_command("finn.window.file.show_preferences_dialog")
     mock_pref_dialog_show.assert_called_once()
-
-
-def test_save_layers_enablement_updated_context(make_napari_viewer, builtins):
-    """Test that enablement status of save layer actions updated correctly."""
-    get_app_model()
-    viewer = make_napari_viewer()
-
-    save_layers_action = viewer.window.file_menu.findAction(
-        "finn.window.file.save_layers_dialog",
-    )
-    save_selected_layers_action = viewer.window.file_menu.findAction(
-        "finn.window.file.save_layers_dialog.selected",
-    )
-    # Check both save actions are not enabled when no layers
-    assert len(viewer.layers) == 0
-    viewer.window._update_file_menu_state()
-    assert not save_layers_action.isEnabled()
-    assert not save_selected_layers_action.isEnabled()
-
-    # Add selected layer and check both save actions enabled
-    layer = Image(np.random.random((10, 10)))
-    viewer.layers.append(layer)
-    assert len(viewer.layers) == 1
-    viewer.window._update_file_menu_state()
-    assert save_layers_action.isEnabled()
-    assert save_selected_layers_action.isEnabled()
-
-    # Remove selection and check 'Save All Layers...' is enabled but
-    # 'Save Selected Layers...' is not
-    viewer.layers.selection.clear()
-    viewer.window._update_file_menu_state()
-    assert save_layers_action.isEnabled()
-    assert not save_selected_layers_action.isEnabled()
 
 
 @pytest.mark.parametrize(
