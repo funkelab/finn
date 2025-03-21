@@ -162,7 +162,9 @@ Q_FILE_ACTIONS: list[Action] = [
         title=trans._('Open Folder...'),
         callback=QtViewer._open_folder_dialog,
         menus=[{'id': MenuId.MENUBAR_FILE, 'group': MenuGroup.OPEN}],
-        keybindings=[{'primary': KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyO}],
+        keybindings=[
+            {'primary': KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyO}
+        ],
     ),
     Action(
         id='finn.window.file._open_files_with_plugin',
@@ -217,7 +219,9 @@ Q_FILE_ACTIONS: list[Action] = [
         callback=QtViewer._screenshot_dialog,
         menus=[{'id': MenuId.MENUBAR_FILE, 'group': MenuGroup.SAVE}],
         keybindings=[{'primary': KeyMod.Alt | KeyCode.KeyS}],
-        status_tip=trans._('Save screenshot of current display, default: .png'),
+        status_tip=trans._(
+            'Save screenshot of current display, default: .png'
+        ),
     ),
     Action(
         id='finn.window.file.save_viewer_screenshot_dialog',
@@ -225,7 +229,9 @@ Q_FILE_ACTIONS: list[Action] = [
         callback=Window._screenshot_dialog,
         menus=[{'id': MenuId.MENUBAR_FILE, 'group': MenuGroup.SAVE}],
         keybindings=[{'primary': KeyMod.Alt | KeyMod.Shift | KeyCode.KeyS}],
-        status_tip=trans._('Save screenshot of current display, default: .png'),
+        status_tip=trans._(
+            'Save screenshot of current display, default: .png'
+        ),
     ),
     Action(
         id='finn.window.file.copy_canvas_screenshot',
@@ -233,7 +239,9 @@ Q_FILE_ACTIONS: list[Action] = [
         callback=QtViewer.clipboard,
         menus=[{'id': MenuId.MENUBAR_FILE, 'group': MenuGroup.SAVE}],
         keybindings=[{'primary': KeyMod.Alt | KeyCode.KeyC}],
-        status_tip=trans._('Copy screenshot of current display to the clipboard'),
+        status_tip=trans._(
+            'Copy screenshot of current display to the clipboard'
+        ),
     ),
     Action(
         id='finn.window.file.copy_viewer_screenshot',
@@ -260,7 +268,9 @@ Q_FILE_ACTIONS: list[Action] = [
             {
                 'id': MenuId.MENUBAR_FILE,
                 'group': MenuGroup.CLOSE,
-                'when': (Path(sys.executable).parent / '.napari_is_bundled').exists(),
+                'when': (
+                    Path(sys.executable).parent / '.napari_is_bundled'
+                ).exists(),
             }
         ],
     ),

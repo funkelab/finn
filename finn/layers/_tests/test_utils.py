@@ -14,7 +14,9 @@ def test_uint(dtype):
     assert convert_to_uint8(data_scaled).dtype == np.uint8
     assert_array_equal(data, convert_to_uint8(data_scaled))
     assert_array_equal(img_as_ubyte(data), convert_to_uint8(data))
-    assert_array_equal(img_as_ubyte(data_scaled), convert_to_uint8(data_scaled))
+    assert_array_equal(
+        img_as_ubyte(data_scaled), convert_to_uint8(data_scaled)
+    )
 
 
 @pytest.mark.filterwarnings('ignore:Downcasting int:UserWarning:skimage')
@@ -26,9 +28,13 @@ def test_int(dtype):
     assert convert_to_uint8(data_scaled).dtype == np.uint8
     assert_array_equal(img_as_ubyte(data), convert_to_uint8(data))
     assert_array_equal(2 * data, convert_to_uint8(data_scaled))
-    assert_array_equal(img_as_ubyte(data_scaled), convert_to_uint8(data_scaled))
+    assert_array_equal(
+        img_as_ubyte(data_scaled), convert_to_uint8(data_scaled)
+    )
     assert_array_equal(img_as_ubyte(data - 10), convert_to_uint8(data - 10))
-    assert_array_equal(img_as_ubyte(data_scaled - 10), convert_to_uint8(data_scaled - 10))
+    assert_array_equal(
+        img_as_ubyte(data_scaled - 10), convert_to_uint8(data_scaled - 10)
+    )
 
 
 @pytest.mark.parametrize('dtype', [np.float64, np.float32, float])

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import warnings
 from abc import ABC, abstractmethod
+from typing import Optional
 
 import numpy as np
 from vispy.scene import Node
@@ -22,7 +23,9 @@ class ScalarFieldLayerNode(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_node(self, ndisplay: int, dtype: np.dtype | None = None) -> Node:
+    def get_node(
+        self, ndisplay: int, dtype: Optional[np.dtype] = None
+    ) -> Node:
         """Return the appropriate node for the given ndisplay and dtype."""
         raise NotImplementedError
 
@@ -36,7 +39,9 @@ class VispyScalarFieldBaseLayer(VispyBaseLayer[ScalarFieldBase]):
         layer_node_class=ScalarFieldLayerNode,
     ) -> None:
         # Use custom node from caller, or our standard image/volume nodes.
-        self._layer_node = layer_node_class(node, texture_format=texture_format)
+        self._layer_node = layer_node_class(
+            node, texture_format=texture_format
+        )
 
         # Default to 2D (image) node.
         super().__init__(layer, self._layer_node.get_node(2))
@@ -46,8 +51,12 @@ class VispyScalarFieldBaseLayer(VispyBaseLayer[ScalarFieldBase]):
         self.layer.events.rendering.connect(self._on_rendering_change)
         self.layer.events.depiction.connect(self._on_depiction_change)
         self.layer.events.colormap.connect(self._on_colormap_change)
-        self.layer.plane.events.position.connect(self._on_plane_position_change)
-        self.layer.plane.events.thickness.connect(self._on_plane_thickness_change)
+        self.layer.plane.events.position.connect(
+            self._on_plane_position_change
+        )
+        self.layer.plane.events.thickness.connect(
+            self._on_plane_thickness_change
+        )
         self.layer.plane.events.normal.connect(self._on_plane_normal_change)
         self.layer.events.custom_interpolation_kernel_2d.connect(
             self._on_custom_interpolation_kernel_2d_change
@@ -65,7 +74,9 @@ class VispyScalarFieldBaseLayer(VispyBaseLayer[ScalarFieldBase]):
         parent = self.node.parent
         self.node.parent = None
         ndisplay = self.layer._slice_input.ndisplay
-        self.node = self._layer_node.get_node(ndisplay, getattr(data, 'dtype', None))
+        self.node = self._layer_node.get_node(
+            ndisplay, getattr(data, 'dtype', None)
+        )
 
         if data is None:
             texture_format = self.node.texture_format
@@ -88,7 +99,9 @@ class VispyScalarFieldBaseLayer(VispyBaseLayer[ScalarFieldBase]):
         data = fix_data_dtype(self.layer._data_view)
         ndisplay = self.layer._slice_input.ndisplay
 
-        node = self._layer_node.get_node(ndisplay, getattr(data, 'dtype', None))
+        node = self._layer_node.get_node(
+            ndisplay, getattr(data, 'dtype', None)
+        )
 
         if ndisplay > data.ndim:
             data = data.reshape((1,) * (ndisplay - data.ndim) + data.shape)
@@ -101,7 +114,8 @@ class VispyScalarFieldBaseLayer(VispyBaseLayer[ScalarFieldBase]):
 
         # Check if ndisplay has changed current node type needs updating
         if (ndisplay == 3 and not isinstance(node, VolumeNode)) or (
-            (ndisplay == 2 and not isinstance(node, ImageVisual)) or node != self.node
+            (ndisplay == 2 and not isinstance(node, ImageVisual))
+            or node != self.node
         ):
             self._on_display_change(data)
         else:
@@ -151,7 +165,9 @@ class VispyScalarFieldBaseLayer(VispyBaseLayer[ScalarFieldBase]):
         self._on_plane_thickness_change()
         self._on_custom_interpolation_kernel_2d_change()
 
-    def downsample_texture(self, data: np.ndarray, MAX_TEXTURE_SIZE: int) -> np.ndarray:
+    def downsample_texture(
+        self, data: np.ndarray, MAX_TEXTURE_SIZE: int
+    ) -> np.ndarray:
         """Downsample data based on maximum allowed texture size.
 
         Parameters
@@ -190,7 +206,9 @@ class VispyScalarFieldBaseLayer(VispyBaseLayer[ScalarFieldBase]):
                     ndisplay=self.layer._slice_input.ndisplay,
                 )
             )
-            downsample = np.ceil(np.divide(data.shape, MAX_TEXTURE_SIZE)).astype(int)
+            downsample = np.ceil(
+                np.divide(data.shape, MAX_TEXTURE_SIZE)
+            ).astype(int)
             scale = np.ones(self.layer.ndim)
             for i, d in enumerate(self.layer._slice_input.displayed):
                 scale[d] = downsample[i]
@@ -205,7 +223,7 @@ class VispyScalarFieldBaseLayer(VispyBaseLayer[ScalarFieldBase]):
         return data
 
 
-_VISPY_FORMAT_TO_DTYPE: dict[str | None, np.dtype] = {
+_VISPY_FORMAT_TO_DTYPE: dict[Optional[str], np.dtype] = {
     'r8': np.dtype(np.uint8),
     'r16': np.dtype(np.uint16),
     'r32f': np.dtype(np.float32),

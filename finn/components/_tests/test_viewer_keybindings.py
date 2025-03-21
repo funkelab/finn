@@ -155,7 +155,9 @@ def test_rotate_layers(layer_class, data, ndim):
     """Test rotate layers works with all layer types/data"""
     viewer = ViewerModel()
     layer = add_layer_by_type(viewer, layer_class, data, visible=True)
-    np.testing.assert_array_equal(layer.affine.rotate, np.eye(ndim, dtype=float))
+    np.testing.assert_array_equal(
+        layer.affine.rotate, np.eye(ndim, dtype=float)
+    )
     rotate_layers(viewer)
     np.testing.assert_array_equal(
         layer.affine.rotate[-2:, -2:], np.array([[0, -1], [1, 0]], dtype=float)
@@ -165,13 +167,17 @@ def test_rotate_layers(layer_class, data, ndim):
 def test_rotate_layers_in_3D():
     """Test that rotate layers is disabled in 3D viewer mode"""
     viewer = ViewerModel()
-    layer = add_layer_by_type(viewer, Points, np.array([[1, 2, 3]]), visible=True)
+    layer = add_layer_by_type(
+        viewer, Points, np.array([[1, 2, 3]]), visible=True
+    )
     initial_rotation_matrix = layer.affine.rotate[-2:, -2:]
     viewer.dims.ndisplay = 3
     assert viewer.dims.ndisplay == 3
     rotate_layers(viewer)
     # with ndisplay == 3 rotation is disabled, the matrix should not have changed
-    np.testing.assert_array_equal(layer.affine.rotate[-2:, -2:], initial_rotation_matrix)
+    np.testing.assert_array_equal(
+        layer.affine.rotate[-2:, -2:], initial_rotation_matrix
+    )
 
 
 def make_viewer_with_three_layers():

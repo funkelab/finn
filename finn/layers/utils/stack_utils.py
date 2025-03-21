@@ -113,7 +113,9 @@ def split_channels(
         # make sure that iterable_kwargs are a *sequence* of iterables
         # for the multichannel case.  For example: if scale == (1, 2) &
         # n_channels = 3, then scale should == [(1, 2), (1, 2), (1, 2)]
-        elif key in iterable_kwargs or (key == 'colormap' and isinstance(val, Colormap)):
+        elif key in iterable_kwargs or (
+            key == 'colormap' and isinstance(val, Colormap)
+        ):
             kwargs[key] = iter(
                 ensure_sequence_of_iterables(
                     val,
@@ -251,7 +253,9 @@ def stack_to_images(stack: Image, axis: int, **kwargs) -> list[Image]:
 def split_rgb(stack: Image, with_alpha=False) -> list[Image]:
     """Variant of stack_to_images that splits an RGB with predefined cmap."""
     if not stack.rgb:
-        raise ValueError(trans._('Image must be RGB to use split_rgb', deferred=True))
+        raise ValueError(
+            trans._('Image must be RGB to use split_rgb', deferred=True)
+        )
 
     images = stack_to_images(stack, -1, colormap=('red', 'green', 'blue'))
     return images if with_alpha else images[:3]
@@ -309,7 +313,9 @@ def images_to_stack(images: list[Image], axis: int = 0, **kwargs) -> Image:
     # RGB images do not need extra dimensions inserted into metadata
     # They can use the meta dict from one of the source image layers
     if not meta['rgb']:
-        meta['units'] = (pint.get_application_registry().pixel,) + meta['units']
+        meta['units'] = (pint.get_application_registry().pixel,) + meta[
+            'units'
+        ]
         meta['axis_labels'] = (f'axis -{data.ndim + 1}',) + meta['axis_labels']
 
     return Image(new_data, **meta)
@@ -319,7 +325,9 @@ def merge_rgb(images: list[Image]) -> Image:
     """Variant of images_to_stack that makes an RGB from 3 images."""
     if not (len(images) == 3 and all(isinstance(x, Image) for x in images)):
         raise ValueError(
-            trans._('Merging to RGB requires exactly 3 Image layers', deferred=True)
+            trans._(
+                'Merging to RGB requires exactly 3 Image layers', deferred=True
+            )
         )
     if not all(image.data.shape == images[0].data.shape for image in images):
         all_shapes = [(image.name, image.data.shape) for image in images]
@@ -345,5 +353,10 @@ def merge_rgb(images: list[Image]) -> Image:
         )
 
     # use the R G B colormaps to order the images for merging
-    imgs = [image for color in r_g_b for image in images if image.colormap.name == color]
+    imgs = [
+        image
+        for color in r_g_b
+        for image in images
+        if image.colormap.name == color
+    ]
     return images_to_stack(imgs, axis=-1, rgb=True)

@@ -111,7 +111,11 @@ def test_ndisplay_button_popup(qt_viewer_buttons, qtbot):
     # check perspective slider change affects viewer camera perspective
     assert viewer_buttons.perspective_slider
     viewer_buttons.perspective_slider.setValue(5)
-    assert viewer.camera.perspective == viewer_buttons.perspective_slider.value() == 5
+    assert (
+        viewer.camera.perspective
+        == viewer_buttons.perspective_slider.value()
+        == 5
+    )
 
     # popup needs to be relaunched to get widget controls with the new values
     perspective_popup.close()
@@ -126,7 +130,11 @@ def test_ndisplay_button_popup(qt_viewer_buttons, qtbot):
             perspective_popup = widget
     assert perspective_popup
     assert viewer_buttons.perspective_slider
-    assert viewer.camera.perspective == viewer_buttons.perspective_slider.value() == 10
+    assert (
+        viewer.camera.perspective
+        == viewer_buttons.perspective_slider.value()
+        == 10
+    )
 
 
 def test_toggle_ndisplay(mock_app_model, qt_viewer_buttons, qtbot):
@@ -161,10 +169,14 @@ def test_transpose_rotate_button(monkeypatch, qt_viewer_buttons, qtbot):
         action_manager_mock,
     )
     modifiers = Qt.AltModifier
-    qtbot.mouseClick(viewer_buttons.transposeDimsButton, Qt.LeftButton, modifiers)
+    qtbot.mouseClick(
+        viewer_buttons.transposeDimsButton, Qt.LeftButton, modifiers
+    )
     action_manager_mock.trigger.assert_called_with('napari:rotate_layers')
 
     trigger_mock = Mock()
-    monkeypatch.setattr('finn.utils.action_manager.ActionManager.trigger', trigger_mock)
+    monkeypatch.setattr(
+        'finn.utils.action_manager.ActionManager.trigger', trigger_mock
+    )
     qtbot.mouseClick(viewer_buttons.transposeDimsButton, Qt.LeftButton)
     trigger_mock.assert_called_with('napari:transpose_axes')

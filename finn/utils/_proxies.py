@@ -2,8 +2,7 @@ import os
 import re
 import sys
 import warnings
-from collections.abc import Callable
-from typing import Any, Generic, TypeVar, Union
+from typing import Any, Callable, Generic, TypeVar, Union
 
 import wrapt
 
@@ -39,7 +38,9 @@ class ReadOnlyWrapper(wrapt.ObjectProxy):
 
     def __setitem__(self, name: str, val: Any) -> None:
         if name not in self._self_exceptions:
-            raise TypeError(trans._('cannot set item {name}', deferred=True, name=name))
+            raise TypeError(
+                trans._('cannot set item {name}', deferred=True, name=name)
+            )
         super().__setitem__(name, val)
 
 
@@ -110,7 +111,8 @@ class PublicOnlyProxy(wrapt.ObjectProxy, Generic[_T]):
 
     def __setattr__(self, name: str, value: Any) -> None:
         if (
-            os.environ.get('NAPARI_ENSURE_PLUGIN_MAIN_THREAD', '0') not in ('0', 'False')
+            os.environ.get('NAPARI_ENSURE_PLUGIN_MAIN_THREAD', '0')
+            not in ('0', 'False')
         ) and not in_main_thread():
             raise RuntimeError(
                 'Setting attributes on a napari object is only allowed from the main Qt thread.'
@@ -182,7 +184,8 @@ class CallablePublicOnlyProxy(PublicOnlyProxy[Callable]):
         # - call the unwrapped callable on the unwrapped arguments
         # - wrap the result in a PublicOnlyProxy
         args = tuple(
-            arg.__wrapped__ if isinstance(arg, PublicOnlyProxy) else arg for arg in args
+            arg.__wrapped__ if isinstance(arg, PublicOnlyProxy) else arg
+            for arg in args
         )
         kwargs = {
             k: v.__wrapped__ if isinstance(v, PublicOnlyProxy) else v
@@ -228,7 +231,9 @@ def _in_main_thread() -> bool:
         in_main_thread = in_main_thread_py
         return in_main_thread_py()
     except AttributeError:
-        warnings.warn('Qt libs are available but no QtApplication instance is created')
+        warnings.warn(
+            'Qt libs are available but no QtApplication instance is created'
+        )
         return in_main_thread_py()
     return res
 

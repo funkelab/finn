@@ -58,7 +58,9 @@ def test_viewer_key_bindings(make_napari_viewer):
     mock_shift_release.method.assert_not_called()
 
     # Simulate press only
-    canvas._scene_canvas.events.key_press(key=keys.Key('F'), modifiers=[keys.SHIFT])
+    canvas._scene_canvas.events.key_press(
+        key=keys.Key('F'), modifiers=[keys.SHIFT]
+    )
     mock_press.method.assert_not_called()
     mock_release.method.assert_not_called()
     mock_shift_press.method.assert_called_once()
@@ -66,7 +68,9 @@ def test_viewer_key_bindings(make_napari_viewer):
     mock_shift_release.method.assert_not_called()
 
     # Simulate release only
-    canvas._scene_canvas.events.key_release(key=keys.Key('F'), modifiers=[keys.SHIFT])
+    canvas._scene_canvas.events.key_release(
+        key=keys.Key('F'), modifiers=[keys.SHIFT]
+    )
     mock_press.method.assert_not_called()
     mock_release.method.assert_not_called()
     mock_shift_press.method.assert_not_called()
@@ -127,7 +131,9 @@ def test_layer_key_bindings(make_napari_viewer):
     mock_shift_release.method.assert_not_called()
 
     # Simulate press only
-    canvas._scene_canvas.events.key_press(key=keys.Key('F'), modifiers=[keys.SHIFT])
+    canvas._scene_canvas.events.key_press(
+        key=keys.Key('F'), modifiers=[keys.SHIFT]
+    )
     mock_press.method.assert_not_called()
     mock_release.method.assert_not_called()
     mock_shift_press.method.assert_called_once()
@@ -135,7 +141,9 @@ def test_layer_key_bindings(make_napari_viewer):
     mock_shift_release.method.assert_not_called()
 
     # Simulate release only
-    canvas._scene_canvas.events.key_release(key=keys.Key('F'), modifiers=[keys.SHIFT])
+    canvas._scene_canvas.events.key_release(
+        key=keys.Key('F'), modifiers=[keys.SHIFT]
+    )
     mock_press.method.assert_not_called()
     mock_release.method.assert_not_called()
     mock_shift_press.method.assert_not_called()

@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import sys
 import warnings
-from collections.abc import Callable
 from contextlib import contextmanager
 from importlib.metadata import distributions
-from typing import TYPE_CHECKING, NamedTuple
+from typing import TYPE_CHECKING, Callable, NamedTuple
 
 from finn.settings._fields import Version
 from finn.settings._shortcuts import ShortcutsSettings
@@ -41,13 +40,9 @@ def do_migrations(model: NapariSettings):
                     )
                     try:
                         model.update(backup)
-                        msg += (
-                            'You may need to reset your settings with `napari --reset`. '
-                        )
+                        msg += 'You may need to reset your settings with `napari --reset`. '
                     except Exception:  # noqa BLE001
-                        msg += (
-                            'Settings rollback also failed. Please run `napari --reset`.'
-                        )
+                        msg += 'Settings rollback also failed. Please run `napari --reset`.'
                     warnings.warn(msg)
                     return
     model._maybe_save()

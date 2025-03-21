@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import Optional, Union
 from unittest.mock import MagicMock
 
 import numpy as np
@@ -23,13 +24,15 @@ class Event:
     type: str
     is_dragging: bool = False
     modifiers: list[str] = field(default_factory=list)
-    position: tuple[int, int] | tuple[int, int, int] = (
+    position: Union[tuple[int, int], tuple[int, int, int]] = (
         0,
         0,
     )  # world coords
-    pos: np.ndarray = field(default_factory=lambda: np.zeros(2))  # canvas coords
-    view_direction: list[float] | None = None
-    up_direction: list[float] | None = None
+    pos: np.ndarray = field(
+        default_factory=lambda: np.zeros(2)
+    )  # canvas coords
+    view_direction: Optional[list[float]] = None
+    up_direction: Optional[list[float]] = None
     dims_displayed: list[int] = field(default_factory=lambda: [0, 1])
 
 
@@ -258,7 +261,9 @@ def test_unselect_by_click_point_3d(create_known_points_layer_3d):
     mouse_press_callbacks(layer, event)
 
     # Simulate release
-    event = read_only_event(type='mouse_release', modifiers=['Shift'], position=position)
+    event = read_only_event(
+        type='mouse_release', modifiers=['Shift'], position=position
+    )
     mouse_release_callbacks(layer, event)
 
     # Check clicked point selected
@@ -285,7 +290,9 @@ def test_select_by_shift_click_3d(create_known_points_layer_3d):
     mouse_press_callbacks(layer, event)
 
     # Simulate release
-    event = read_only_event(type='mouse_release', modifiers=['Shift'], position=position)
+    event = read_only_event(
+        type='mouse_release', modifiers=['Shift'], position=position
+    )
     mouse_release_callbacks(layer, event)
 
     # Check clicked point selected
@@ -389,11 +396,15 @@ def test_add_select_point(create_known_points_layer_2d):
     layer.selected_data = {2, 3}
 
     # Simulate click
-    event = read_only_event(type='mouse_press', modifiers=['Shift'], position=position)
+    event = read_only_event(
+        type='mouse_press', modifiers=['Shift'], position=position
+    )
     mouse_press_callbacks(layer, event)
 
     # Simulate release
-    event = read_only_event(type='mouse_release', modifiers=['Shift'], position=position)
+    event = read_only_event(
+        type='mouse_release', modifiers=['Shift'], position=position
+    )
     mouse_release_callbacks(layer, event)
 
     # Check clicked point selected
@@ -410,11 +421,15 @@ def test_remove_select_point(create_known_points_layer_2d):
     layer.selected_data = {0, 2, 3}
 
     # Simulate click
-    event = read_only_event(type='mouse_press', modifiers=['Shift'], position=position)
+    event = read_only_event(
+        type='mouse_press', modifiers=['Shift'], position=position
+    )
     mouse_press_callbacks(layer, event)
 
     # Simulate release
-    event = read_only_event(type='mouse_release', modifiers=['Shift'], position=position)
+    event = read_only_event(
+        type='mouse_release', modifiers=['Shift'], position=position
+    )
     mouse_release_callbacks(layer, event)
 
     # Check clicked point selected
@@ -489,15 +504,21 @@ def test_selecting_all_points_with_drag_2d(create_known_points_layer_2d):
     mouse_press_callbacks(layer, event)
 
     # Simulate drag start
-    event = read_only_event(type='mouse_move', is_dragging=True, position=box_drag_begin)
+    event = read_only_event(
+        type='mouse_move', is_dragging=True, position=box_drag_begin
+    )
     mouse_move_callbacks(layer, event)
 
     # Simulate drag end
-    event = read_only_event(type='mouse_move', is_dragging=True, position=box_drag_end)
+    event = read_only_event(
+        type='mouse_move', is_dragging=True, position=box_drag_end
+    )
     mouse_move_callbacks(layer, event)
 
     # Simulate release
-    event = read_only_event(type='mouse_release', is_dragging=True, position=box_drag_end)
+    event = read_only_event(
+        type='mouse_release', is_dragging=True, position=box_drag_end
+    )
     mouse_release_callbacks(layer, event)
 
     # Check all points selected as drag box contains them
@@ -515,15 +536,21 @@ def test_selecting_no_points_with_drag_2d(create_known_points_layer_2d):
     mouse_press_callbacks(layer, event)
 
     # Simulate drag start
-    event = read_only_event(type='mouse_move', is_dragging=True, position=known_non_point)
+    event = read_only_event(
+        type='mouse_move', is_dragging=True, position=known_non_point
+    )
     mouse_move_callbacks(layer, event)
 
     # Simulate drag end
-    event = read_only_event(type='mouse_move', is_dragging=True, position=(50, 60))
+    event = read_only_event(
+        type='mouse_move', is_dragging=True, position=(50, 60)
+    )
     mouse_move_callbacks(layer, event)
 
     # Simulate release
-    event = read_only_event(type='mouse_release', is_dragging=True, position=(50, 60))
+    event = read_only_event(
+        type='mouse_release', is_dragging=True, position=(50, 60)
+    )
     mouse_release_callbacks(layer, event)
 
     # Check no points selected as drag box doesn't contain them
@@ -788,7 +815,9 @@ def test_drag_start_selection(
         )
 
     # Simulate release
-    event = read_only_event(type='mouse_release', is_dragging=True, modifiers=modifier)
+    event = read_only_event(
+        type='mouse_release', is_dragging=True, modifiers=modifier
+    )
     mouse_release_callbacks(layer, event)
 
     if on_point and 0 in pre_selection and modifier:
@@ -821,7 +850,9 @@ def test_drag_point_with_mouse(create_known_points_layer_2d):
     layer, n_points, _ = create_known_points_layer_2d
     layer.events.data = MagicMock()
     layer.mode = 'select'
-    old_data = layer.data.copy()  # ensure you have old data, not updated in place
+    old_data = (
+        layer.data.copy()
+    )  # ensure you have old data, not updated in place
     layer.selected_data = {1}
     initial_position = tuple(layer.data[1])
 
@@ -854,7 +885,9 @@ def test_drag_point_with_mouse(create_known_points_layer_2d):
     )
     mouse_move_callbacks(layer, event)
 
-    event = read_only_event(type='mouse_release', is_dragging=False, modifiers=modifier)
+    event = read_only_event(
+        type='mouse_release', is_dragging=False, modifiers=modifier
+    )
     mouse_release_callbacks(layer, event)
 
     changed_event = {

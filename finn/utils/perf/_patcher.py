@@ -6,9 +6,8 @@ for any type of patching. See patch_callables() below as the main entrypoint.
 
 import logging
 import types
-from collections.abc import Callable
 from importlib import import_module
-from typing import Union
+from typing import Callable, Union
 
 from finn.utils.translations import trans
 
@@ -84,7 +83,9 @@ def _patch_attribute(
             )
         ) from e
 
-    label = callable_str if class_str is None else f'{class_str}.{callable_str}'
+    label = (
+        callable_str if class_str is None else f'{class_str}.{callable_str}'
+    )
 
     # Patch it with the user-provided patch_func.
     logging.info('patching %s.%s', module.__name__, label)
@@ -93,7 +94,7 @@ def _patch_attribute(
 
 def _import_module(
     target_str: str,
-) -> tuple[types.ModuleType, str] | tuple[None, None]:
+) -> Union[tuple[types.ModuleType, str], tuple[None, None]]:
     """Import the module portion of this target string.
 
     Try importing successively longer segments of the target_str. For example:

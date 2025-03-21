@@ -96,7 +96,9 @@ class BrushSizeOnMouseMove:
                 self.init_brush_size = layer.brush_size
                 layer.cursor = 'circle_frozen'
             else:
-                brush_size_delta = round((pos[0] - self.init_pos[0]) / event.camera_zoom)
+                brush_size_delta = round(
+                    (pos[0] - self.init_pos[0]) / event.camera_zoom
+                )
                 new_brush_size = self.init_brush_size + brush_size_delta
 
                 bounded_brush_size = max(new_brush_size, self.min_brush_size)
@@ -107,5 +109,7 @@ class BrushSizeOnMouseMove:
                 layer.cursor = 'circle'
 
     def _on_modifiers_change(self):
-        modifiers_setting = get_settings().application.brush_size_on_mouse_move_modifiers
+        modifiers_setting = (
+            get_settings().application.brush_size_on_mouse_move_modifiers
+        )
         self.modifiers = modifiers_setting.value.split('+')

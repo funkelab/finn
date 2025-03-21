@@ -32,10 +32,14 @@ def test_add_dock_widget(make_napari_viewer):
         viewer.window.add_dock_widget(widg2, name='test2', area='under')
 
     with pytest.raises(ValueError, match='all allowed_areas argument must be'):
-        viewer.window.add_dock_widget(widg2, name='test2', allowed_areas=['under'])
+        viewer.window.add_dock_widget(
+            widg2, name='test2', allowed_areas=['under']
+        )
 
     with pytest.raises(TypeError, match='`allowed_areas` must be a list'):
-        viewer.window.add_dock_widget(widg2, name='test2', allowed_areas='under')
+        viewer.window.add_dock_widget(
+            widg2, name='test2', allowed_areas='under'
+        )
 
 
 def test_add_dock_widget_from_list(make_napari_viewer):
@@ -44,11 +48,15 @@ def test_add_dock_widget_from_list(make_napari_viewer):
     widg = QPushButton('button')
     widg2 = QPushButton('button')
 
-    dwidg = viewer.window.add_dock_widget([widg, widg2], name='test', area='right')
+    dwidg = viewer.window.add_dock_widget(
+        [widg, widg2], name='test', area='right'
+    )
     assert viewer.window._qt_window.findChild(QDockWidget, 'test')
     assert isinstance(dwidg.widget().layout(), QVBoxLayout)
 
-    dwidg = viewer.window.add_dock_widget([widg, widg2], name='test2', area='bottom')
+    dwidg = viewer.window.add_dock_widget(
+        [widg, widg2], name='test2', area='bottom'
+    )
     assert viewer.window._qt_window.findChild(QDockWidget, 'test2')
     assert isinstance(dwidg.widget().layout(), QHBoxLayout)
 
@@ -68,7 +76,9 @@ def test_remove_dock_widget_orphans_widget(make_napari_viewer, qtbot):
     qtbot.addWidget(widg)
 
     assert not widg.parent()
-    dw = viewer.window.add_dock_widget(widg, name='test', menu=viewer.window.window_menu)
+    dw = viewer.window.add_dock_widget(
+        widg, name='test', menu=viewer.window.window_menu
+    )
     assert widg.parent() is dw
     assert dw.toggleViewAction() in viewer.window.window_menu.actions()
     viewer.window.remove_dock_widget(dw, menu=viewer.window.window_menu)
@@ -137,5 +147,7 @@ def test_adding_stretch(make_napari_viewer):
 
 def test_combine_widgets_error():
     """Check error raised when combining widgets with invalid types."""
-    with pytest.raises(TypeError, match='"widgets" must be a QWidget, a magicgui'):
+    with pytest.raises(
+        TypeError, match='"widgets" must be a QWidget, a magicgui'
+    ):
         combine_widgets(['string'])

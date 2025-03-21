@@ -1,7 +1,9 @@
 import json
 import pathlib
 
-data = json.loads((pathlib.Path(__file__).parent / 'string_list.json').read_text())
+data = json.loads(
+    (pathlib.Path(__file__).parent / 'string_list.json').read_text()
+)
 
 
 SKIP_FOLDERS = data['SKIP_FOLDERS']

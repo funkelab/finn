@@ -12,14 +12,17 @@ import os
 import re
 import sys
 import warnings
-from collections.abc import Callable, Iterable, Iterator, Sequence
+from collections.abc import Iterable, Iterator, Sequence
 from enum import Enum, EnumMeta
 from os import fspath, path as os_path
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
+    Callable,
+    Optional,
     TypeVar,
+    Union,
 )
 
 import numpy as np
@@ -60,7 +63,10 @@ def running_as_bundled_app(*, check_conda: bool = True) -> bool:
         DeprecationWarning,
         stacklevel=2,
     )
-    if check_conda and (Path(sys.executable).parent / '.napari_is_bundled').exists():
+    if (
+        check_conda
+        and (Path(sys.executable).parent / '.napari_is_bundled').exists()
+    ):
         return True
 
     # TODO: Remove from here on?
@@ -82,7 +88,9 @@ def running_as_bundled_app(*, check_conda: bool = True) -> bool:
 
 def running_as_constructor_app() -> bool:
     """Infer whether we are running as a constructor bundle."""
-    return (Path(sys.prefix).parent.parent / '.napari_is_bundled_constructor').exists()
+    return (
+        Path(sys.prefix).parent.parent / '.napari_is_bundled_constructor'
+    ).exists()
 
 
 def in_jupyter() -> bool:
@@ -108,7 +116,9 @@ def in_python_repl() -> bool:
     with contextlib.suppress(ImportError):
         from IPython import get_ipython
 
-        return get_ipython().__class__.__name__ == 'NoneType' and hasattr(sys, 'ps1')
+        return get_ipython().__class__.__name__ == 'NoneType' and hasattr(
+            sys, 'ps1'
+        )
     return False
 
 
@@ -121,7 +131,7 @@ def str_to_rgb(arg: str) -> list[int]:
 
 
 def ensure_iterable(
-    arg: None | str | Enum | float | list | npt.NDArray,
+    arg: Union[None, str, Enum, float, list, npt.NDArray],
     color: object | bool = _sentinel,
 ):
     """Ensure an argument is an iterable. Useful when an input argument
@@ -137,14 +147,16 @@ def ensure_iterable(
             category=DeprecationWarning,
             stacklevel=2,  # not sure what level to use here
         )
-    if is_iterable(arg, color=color):  # argument color is to be removed in 0.6.0
+    if is_iterable(
+        arg, color=color
+    ):  # argument color is to be removed in 0.6.0
         return arg
 
     return itertools.repeat(arg)
 
 
 def is_iterable(
-    arg: None | str | Enum | float | list | npt.NDArray,
+    arg: Union[None, str, Enum, float, list, npt.NDArray],
     color: object | bool = _sentinel,
     allow_none: bool = False,
 ) -> bool:
@@ -187,12 +199,14 @@ def is_sequence(arg: Any) -> bool:
         dict
         set
     """
-    return bool(isinstance(arg, collections.abc.Sequence) and not isinstance(arg, str))
+    return bool(
+        isinstance(arg, collections.abc.Sequence) and not isinstance(arg, str)
+    )
 
 
 def ensure_sequence_of_iterables(
     obj: Any,
-    length: int | None = None,
+    length: Optional[int] = None,
     repeat_empty: bool = False,
     allow_none: bool = False,
 ):
@@ -268,7 +282,9 @@ def formatdoc(obj):
     """Substitute globals and locals into an object's docstring."""
     frame = inspect.currentframe().f_back
     try:
-        obj.__doc__ = obj.__doc__.format(**{**frame.f_globals, **frame.f_locals})
+        obj.__doc__ = obj.__doc__.format(
+            **{**frame.f_globals, **frame.f_locals}
+        )
     finally:
         del frame
     return obj
@@ -347,7 +363,9 @@ class StringEnum(Enum, metaclass=StringEnumMeta):
 
 
 camel_to_snake_pattern = re.compile(r'(.)([A-Z][a-z]+)')
-camel_to_spaces_pattern = re.compile(r'((?<=[a-z])[A-Z]|(?<!\A)[A-R,T-Z](?=[a-z]))')
+camel_to_spaces_pattern = re.compile(
+    r'((?<=[a-z])[A-Z]|(?<!\A)[A-R,T-Z](?=[a-z]))'
+)
 
 
 def camel_to_snake(name: str) -> str:
@@ -384,7 +402,9 @@ def abspath_or_url(relpath: T, *, must_exist: bool = False) -> T:
     from urllib.parse import urlparse
 
     if not isinstance(relpath, (str, Path)):
-        raise TypeError(trans._('Argument must be a string or Path', deferred=True))
+        raise TypeError(
+            trans._('Argument must be a string or Path', deferred=True)
+        )
     OriginType = type(relpath)
 
     relpath_str = fspath(relpath)
@@ -418,7 +438,10 @@ class CallDefault(inspect.Parameter):
         formatted = self.name
 
         # Fill in defaults
-        if self.default is not inspect._empty or kind == inspect.Parameter.KEYWORD_ONLY:
+        if (
+            self.default is not inspect._empty
+            or kind == inspect.Parameter.KEYWORD_ONLY
+        ):
             formatted = f'{formatted}={formatted}'
 
         if kind == inspect.Parameter.VAR_POSITIONAL:
@@ -488,7 +511,9 @@ def ensure_list_of_layer_data_tuple(val: list[tuple]) -> list[tuple]:
     if isinstance(val, list):
         with contextlib.suppress(TypeError):
             return [ensure_layer_data_tuple(v) for v in val]
-    raise TypeError(trans._('Not a valid list of layer data tuples!', deferred=True))
+    raise TypeError(
+        trans._('Not a valid list of layer data tuples!', deferred=True)
+    )
 
 
 def _quiet_array_equal(*a, **k) -> bool:
@@ -571,7 +596,7 @@ def _is_array_type(array: npt.ArrayLike, type_name: str) -> bool:
 
 
 def dir_hash(
-    path: str | Path,
+    path: Union[str, Path],
     include_paths: bool = True,
     ignore_hidden: bool = True,
 ) -> str:
@@ -615,7 +640,7 @@ def dir_hash(
 
 
 def paths_hash(
-    paths: Iterable[str | Path],
+    paths: Iterable[Union[str, Path]],
     include_paths: bool = True,
     ignore_hidden: bool = True,
 ) -> str:
@@ -648,7 +673,9 @@ def paths_hash(
     return _hash.hexdigest()
 
 
-def _file_hash(_hash, file: Path, path: Path, include_paths: bool = True) -> None:
+def _file_hash(
+    _hash, file: Path, path: Path, include_paths: bool = True
+) -> None:
     """Update hash with based on file contents and optionally relative path.
 
     Parameters
@@ -693,7 +720,9 @@ def _combine_signatures(
         Signature object with the combined signature. Reminder, str(signature)
         provides a very nice repr for code generation.
     """
-    params = itertools.chain(*(inspect.signature(o).parameters.values() for o in objects))
+    params = itertools.chain(
+        *(inspect.signature(o).parameters.values() for o in objects)
+    )
     new_params = sorted(
         (p for p in params if p.name not in exclude),
         key=lambda p: p.kind,

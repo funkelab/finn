@@ -2,7 +2,7 @@
 # from finn.utils.events import Event
 # from finn.utils.colormaps import AVAILABLE_COLORMAPS
 
-from typing import Any
+from typing import Any, Optional, Union
 from warnings import warn
 
 import numpy as np
@@ -179,7 +179,7 @@ class Tracks(Layer):
         # track manager deals with data slicing, graph building and properties
         self._manager = TrackManager(data)
 
-        self._track_colors: np.ndarray | None = None
+        self._track_colors: Optional[np.ndarray] = None
         self._colormaps_dict = colormaps_dict or {}  # additional colormaps
         self._color_by = color_by  # default color by ID
         self._colormap = colormap
@@ -274,7 +274,7 @@ class Tracks(Layer):
 
         return
 
-    def _get_value(self, position) -> int | None:
+    def _get_value(self, position) -> Optional[int]:
         """Value of the data at a position in data coordinates.
 
         Use a kd-tree to lookup the ID of the nearest tree.
@@ -305,7 +305,9 @@ class Tracks(Layer):
             shape = np.ceil(
                 [de[1, i] - de[0, i] + 1 for i in self._slice_input.displayed]
             ).astype(int)
-            zoom_factor = np.divide(self._thumbnail_shape[:2], shape[-2:]).min()
+            zoom_factor = np.divide(
+                self._thumbnail_shape[:2], shape[-2:]
+            ).min()
             if len(self._view_data) > self._max_tracks_thumbnail:
                 thumbnail_indices = np.random.randint(
                     0, len(self._view_data), self._max_tracks_thumbnail
@@ -316,10 +318,12 @@ class Tracks(Layer):
                 thumbnail_indices = np.array(range(len(self._view_data)))
 
             # get the track coords here
-            coords = np.floor((points[:, :2] - min_vals[1:] + 0.5) * zoom_factor).astype(
-                int
+            coords = np.floor(
+                (points[:, :2] - min_vals[1:] + 0.5) * zoom_factor
+            ).astype(int)
+            coords = np.clip(
+                coords, 0, np.subtract(self._thumbnail_shape[:2], 1)
             )
-            coords = np.clip(coords, 0, np.subtract(self._thumbnail_shape[:2], 1))
 
             # modulate track colors as per colormap/current_time
             assert self.track_times is not None
@@ -362,7 +366,7 @@ class Tracks(Layer):
         return data[:, (2, 1, 0)]  # z, y, x -> x, y, z
 
     @property
-    def current_time(self) -> int | None:
+    def current_time(self) -> Optional[int]:
         """current time according to the first dimension"""
         # TODO(arl): get the correct index here
         time_step = self._data_slice.point[0]
@@ -428,7 +432,7 @@ class Tracks(Layer):
     @features.setter
     def features(
         self,
-        features: dict[str, np.ndarray] | pd.DataFrame,
+        features: Union[dict[str, np.ndarray], pd.DataFrame],
     ) -> None:
         self._manager.features = features
         self._check_color_by_in_features()
@@ -450,12 +454,12 @@ class Tracks(Layer):
         return list(self.properties.keys())
 
     @property
-    def graph(self) -> dict[int, list[int]] | None:
+    def graph(self) -> Optional[dict[int, list[int]]]:
         """dict {int: list}: Graph representing associations between tracks."""
         return self._manager.graph
 
     @graph.setter
-    def graph(self, graph: dict[int, int | list[int]]) -> None:
+    def graph(self, graph: dict[int, Union[int, list[int]]]) -> None:
         """Set the track graph."""
         # Ignored type, because mypy can't handle different signatures
         # on getters and setters; see https://github.com/python/mypy/issues/3004
@@ -605,28 +609,28 @@ class Tracks(Layer):
         self._track_colors = colormap.map(vertex_properties)
 
     @property
-    def track_connex(self) -> np.ndarray | None:
+    def track_connex(self) -> Optional[np.ndarray]:
         """vertex connections for drawing track lines"""
         return self._manager.track_connex
 
     @property
-    def track_colors(self) -> np.ndarray | None:
+    def track_colors(self) -> Optional[np.ndarray]:
         """return the vertex colors according to the currently selected
         property"""
         return self._track_colors
 
     @property
-    def graph_connex(self) -> np.ndarray | None:
+    def graph_connex(self) -> Optional[np.ndarray]:
         """vertex connections for drawing the graph"""
         return self._manager.graph_connex
 
     @property
-    def track_times(self) -> np.ndarray | None:
+    def track_times(self) -> Optional[np.ndarray]:
         """time points associated with each track vertex"""
         return self._manager.track_times
 
     @property
-    def graph_times(self) -> np.ndarray | None:
+    def graph_times(self) -> Optional[np.ndarray]:
         """time points associated with each graph vertex"""
         return self._manager.graph_times
 

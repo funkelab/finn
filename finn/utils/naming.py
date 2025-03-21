@@ -3,10 +3,11 @@
 import inspect
 import re
 from collections import ChainMap, ChainMap as ChainMapType
-from collections.abc import Callable
 from types import FrameType, TracebackType
 from typing import (
     Any,
+    Callable,
+    Optional,
 )
 
 from finn.utils.misc import ROOT_DIR, formatdoc
@@ -91,7 +92,9 @@ class CallerFrame:
     namespace: ChainMapType[str, Any]
     predicate: Callable[[int, FrameType], bool]
 
-    def __init__(self, skip_predicate: Callable[[int, FrameType], bool]) -> None:
+    def __init__(
+        self, skip_predicate: Callable[[int, FrameType], bool]
+    ) -> None:
         self.predicate = skip_predicate
         self.namespace = ChainMap()
         self.names = ()
@@ -138,15 +141,15 @@ class CallerFrame:
 
     def __exit__(
         self,
-        exc_type: type[BaseException] | None,
-        exc_value: BaseException | None,
-        traceback: TracebackType | None,
+        exc_type: Optional[type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
     ) -> None:
         del self.namespace
         del self.names
 
 
-def magic_name(value: Any, *, path_prefix: str = ROOT_DIR) -> str | None:
+def magic_name(value: Any, *, path_prefix: str = ROOT_DIR) -> Optional[str]:
     """Fetch the name of the variable with the given value passed to the calling function.
 
     Parameters
@@ -168,6 +171,10 @@ def magic_name(value: Any, *, path_prefix: str = ROOT_DIR) -> str | None:
         varmap = w.namespace
         names = w.names
         for name in names:
-            if name.isidentifier() and name in varmap and varmap[name] is value:
+            if (
+                name.isidentifier()
+                and name in varmap
+                and varmap[name] is value
+            ):
                 return name
         return None

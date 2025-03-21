@@ -301,22 +301,46 @@ def twenty_four_corner() -> list[np.ndarray]:
 
 @pytest.fixture
 def single_two_corners() -> list[np.ndarray]:
-    return [np.array([[19.630909, 4.094504], [6.050901, 4.739327]], dtype=np.float32)]
+    return [
+        np.array(
+            [[19.630909, 4.094504], [6.050901, 4.739327]], dtype=np.float32
+        )
+    ]
 
 
 @pytest.fixture
 def ten_two_corners() -> list[np.ndarray]:
     return [
-        np.array([[13.568503, 3.6805813], [19.67907, 2.7589796]], dtype=np.float32),
-        np.array([[0.771308, 7.7354484], [4.8191123, 2.6181173]], dtype=np.float32),
-        np.array([[15.471089, 18.194923], [9.326611, 6.637912]], dtype=np.float32),
-        np.array([[3.8954687, 1.0359402], [11.732754, 2.2416632]], dtype=np.float32),
-        np.array([[4.812966, 1.8201057], [8.283552, 10.809121]], dtype=np.float32),
-        np.array([[18.000807, 17.218533], [8.915606, 16.599905]], dtype=np.float32),
-        np.array([[18.782663, 7.1298103], [18.03142, 16.10713]], dtype=np.float32),
-        np.array([[8.764693, 9.151221], [0.23011725, 11.056407]], dtype=np.float32),
-        np.array([[5.1388326, 14.443498], [4.202188, 14.370723]], dtype=np.float32),
-        np.array([[18.97423, 14.230529], [9.725716, 5.771379]], dtype=np.float32),
+        np.array(
+            [[13.568503, 3.6805813], [19.67907, 2.7589796]], dtype=np.float32
+        ),
+        np.array(
+            [[0.771308, 7.7354484], [4.8191123, 2.6181173]], dtype=np.float32
+        ),
+        np.array(
+            [[15.471089, 18.194923], [9.326611, 6.637912]], dtype=np.float32
+        ),
+        np.array(
+            [[3.8954687, 1.0359402], [11.732754, 2.2416632]], dtype=np.float32
+        ),
+        np.array(
+            [[4.812966, 1.8201057], [8.283552, 10.809121]], dtype=np.float32
+        ),
+        np.array(
+            [[18.000807, 17.218533], [8.915606, 16.599905]], dtype=np.float32
+        ),
+        np.array(
+            [[18.782663, 7.1298103], [18.03142, 16.10713]], dtype=np.float32
+        ),
+        np.array(
+            [[8.764693, 9.151221], [0.23011725, 11.056407]], dtype=np.float32
+        ),
+        np.array(
+            [[5.1388326, 14.443498], [4.202188, 14.370723]], dtype=np.float32
+        ),
+        np.array(
+            [[18.97423, 14.230529], [9.725716, 5.771379]], dtype=np.float32
+        ),
     ]
 
 
@@ -400,7 +424,9 @@ def polygons():
             ],
             dtype=np.float32,
         ),
-        np.array([[2.2108445, 8.827738], [4.913185, 4.5486608]], dtype=np.float32),
+        np.array(
+            [[2.2108445, 8.827738], [4.913185, 4.5486608]], dtype=np.float32
+        ),
         np.array(
             [
                 [13.347389, 0.15637287],

@@ -168,7 +168,9 @@ Q_VIEW_ACTIONS: list[Action] = [
     Action(
         id='finn.window.view.toggle_activity_dock',
         title=trans._('Toggle Activity Dock'),
-        menus=[{'id': MenuId.MENUBAR_VIEW, 'group': MenuGroup.RENDER, 'order': 11}],
+        menus=[
+            {'id': MenuId.MENUBAR_VIEW, 'group': MenuGroup.RENDER, 'order': 11}
+        ],
         callback=_toggle_activity_dock,
         toggled=ToggleRule(get_current=_get_current_activity_dock_status),
     ),

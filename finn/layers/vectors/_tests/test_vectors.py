@@ -265,13 +265,17 @@ def test_adding_properties():
 
     # removing a property that was the _edge_color_property should give a warning
     layer.edge_color = 'vector_type'
-    properties_2 = {'not_vector_type': np.array(['A', 'B'] * int(shape[0] / 2))}
+    properties_2 = {
+        'not_vector_type': np.array(['A', 'B'] * int(shape[0] / 2))
+    }
     with pytest.warns(RuntimeWarning):
         layer.properties = properties_2
 
     # adding properties with the wrong length should raise an exception
     bad_properties = {'vector_type': np.array(['A', 'B'])}
-    with pytest.raises(ValueError, match='(does not match length)|(indices imply)'):
+    with pytest.raises(
+        ValueError, match='(does not match length)|(indices imply)'
+    ):
         layer.properties = bad_properties
 
 

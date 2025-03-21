@@ -258,7 +258,9 @@ def test_submit_exception_subthread_on_result(layer_slicer):
     class FakeAsyncLayerError(FakeAsyncLayer):
         def _make_slice_request(self, dims: Dims) -> FakeSliceRequestError:
             self._slice_request_count += 1
-            return FakeSliceRequestError(id=self._slice_request_count, lock=self.lock)
+            return FakeSliceRequestError(
+                id=self._slice_request_count, lock=self.lock
+            )
 
     layer = FakeAsyncLayerError()
     future = layer_slicer.submit(layers=[layer], dims=Dims())

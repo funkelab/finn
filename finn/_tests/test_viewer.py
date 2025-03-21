@@ -24,14 +24,18 @@ def _get_provider_actions(type_):
     for superclass in type_.mro():
         actions.update(
             action.command
-            for action in action_manager._get_provider_actions(superclass).values()
+            for action in action_manager._get_provider_actions(
+                superclass
+            ).values()
         )
     return actions
 
 
 def _assert_shortcuts_exist_for_each_action(type_):
     actions = _get_provider_actions(type_)
-    shortcuts = {name.partition(':')[-1] for name in get_settings().shortcuts.shortcuts}
+    shortcuts = {
+        name.partition(':')[-1] for name in get_settings().shortcuts.shortcuts
+    }
     shortcuts.update(func.__name__ for func in type_.class_keymap.values())
     for action in actions:
         assert action.__name__ in shortcuts, (
@@ -116,7 +120,9 @@ layer_types = (
 
 
 @pytest.mark.parametrize(('layer_class', 'data', 'ndim'), layer_test_data)
-def test_all_layer_actions_are_accessible_via_shortcut(layer_class, data, ndim):
+def test_all_layer_actions_are_accessible_via_shortcut(
+    layer_class, data, ndim
+):
     """
     Make sure we do find all the actions attached to a layer via keybindings
     """
@@ -125,8 +131,12 @@ def test_all_layer_actions_are_accessible_via_shortcut(layer_class, data, ndim):
     _assert_shortcuts_exist_for_each_action(layer_class)
 
 
-@pytest.mark.parametrize(('layer_class', 'a_unique_name', 'ndim'), layer_test_data)
-def test_add_layer_magic_name(make_napari_viewer, layer_class, a_unique_name, ndim):
+@pytest.mark.parametrize(
+    ('layer_class', 'a_unique_name', 'ndim'), layer_test_data
+)
+def test_add_layer_magic_name(
+    make_napari_viewer, layer_class, a_unique_name, ndim
+):
     """Test magic_name works when using add_* for layers"""
     # Tests for issue #1709
     viewer = make_napari_viewer()  # noqa: F841
@@ -166,7 +176,9 @@ def test_screenshot(make_napari_viewer, qtbot):
     # Take screenshot of the image canvas only
     # Test that flash animation does not occur
     screenshot = viewer.screenshot(canvas_only=True)
-    assert not hasattr(viewer.window._qt_viewer._welcome_widget, '_flash_animation')
+    assert not hasattr(
+        viewer.window._qt_viewer._welcome_widget, '_flash_animation'
+    )
     assert screenshot.ndim == 3
 
     # Take screenshot with the viewer included
@@ -179,13 +191,17 @@ def test_screenshot(make_napari_viewer, qtbot):
 
     # test flash animation works
     screenshot = viewer.screenshot(canvas_only=True, flash=True)
-    assert hasattr(viewer.window._qt_viewer._welcome_widget, '_flash_animation')
+    assert hasattr(
+        viewer.window._qt_viewer._welcome_widget, '_flash_animation'
+    )
 
     # Here we wait until the flash animation will be over for teardown.
     # We cannot wait on finished signal as _flash_animation may be already
     # removed when calling wait.
     qtbot.waitUntil(
-        lambda: not hasattr(viewer.window._qt_viewer._welcome_widget, '_flash_animation')
+        lambda: not hasattr(
+            viewer.window._qt_viewer._welcome_widget, '_flash_animation'
+        )
     )
 
 
@@ -210,7 +226,9 @@ def test_changing_theme(make_napari_viewer):
     # more than 99.5% of the pixels have changed
     assert (np.count_nonzero(equal) / equal.size) < 0.05, 'Themes too similar'
 
-    with pytest.raises(ValidationError, match="Theme 'nonexistent_theme' not found"):
+    with pytest.raises(
+        ValidationError, match="Theme 'nonexistent_theme' not found"
+    ):
         viewer.theme = 'nonexistent_theme'
 
 
@@ -416,8 +434,12 @@ def test_running_status_thread(make_napari_viewer, qtbot, monkeypatch):
     viewer = make_napari_viewer()
     settings = get_settings()
     start_mock, stop_mock = Mock(), Mock()
-    monkeypatch.setattr(viewer.window._qt_window.status_thread, 'start', start_mock)
-    monkeypatch.setattr(viewer.window._qt_window.status_thread, 'terminate', stop_mock)
+    monkeypatch.setattr(
+        viewer.window._qt_window.status_thread, 'start', start_mock
+    )
+    monkeypatch.setattr(
+        viewer.window._qt_window.status_thread, 'terminate', stop_mock
+    )
     assert settings.appearance.update_status_based_on_layer
     settings.appearance.update_status_based_on_layer = False
     stop_mock.assert_called_once()

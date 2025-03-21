@@ -110,11 +110,15 @@ def test_generate_vector_meshes_2D(edge_width, length, style, p):
         ('arrow', 'arrow'),
     ],
 )
-def test_vector_style_change(make_napari_viewer, initial_vector_style, new_vector_style):
+def test_vector_style_change(
+    make_napari_viewer, initial_vector_style, new_vector_style
+):
     # initialize viewer
     viewer = make_napari_viewer()
     # add a vector layer
-    vector_layer = viewer.add_vectors(vector_style=initial_vector_style, name='vectors')
+    vector_layer = viewer.add_vectors(
+        vector_style=initial_vector_style, name='vectors'
+    )
 
     class Counter:
         def __init__(self):

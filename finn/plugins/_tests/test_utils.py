@@ -73,7 +73,9 @@ def test_get_preferred_reader_more_nested():
     reader = get_preferred_reader('/asdf/my-specific-folder/my_file.tif')
     assert reader == 'fake-plugin'
 
-    reader = get_preferred_reader('/asdf/my-specific-folder/nested/my_file.tif')
+    reader = get_preferred_reader(
+        '/asdf/my-specific-folder/nested/my_file.tif'
+    )
     assert reader == 'very-specific-plugin'
 
 
@@ -89,7 +91,9 @@ def test_get_preferred_reader_abs_path():
         '*/my-specific-folder/nested/*.tif': 'very-specific-plugin',
     }
 
-    reader = get_preferred_reader('/asdf/my-specific-folder/nested/my_file.tif')
+    reader = get_preferred_reader(
+        '/asdf/my-specific-folder/nested/my_file.tif'
+    )
     assert reader == 'most-specific-plugin'
 
 
@@ -194,7 +198,9 @@ def test_get_preferred_reader_full_path(tmp_path, monkeypatch):
     assert get_preferred_reader('./my_file.zarr') == 'fake-plugin'
 
 
-def test_get_potential_readers_gives_napari(builtins, tmp_plugin: DynamicPlugin):
+def test_get_potential_readers_gives_napari(
+    builtins, tmp_plugin: DynamicPlugin
+):
     @tmp_plugin.contribute.reader(filename_patterns=['*.tif'])
     def read_tif(path): ...
 

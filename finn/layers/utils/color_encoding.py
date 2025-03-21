@@ -1,6 +1,7 @@
 from typing import (
     Any,
     Literal,
+    Optional,
     Protocol,
     Union,
     runtime_checkable,
@@ -185,15 +186,19 @@ class QuantitativeColorEncoding(_DerivedStyleEncoding[ColorValue, ColorArray]):
         colors fails.
     """
 
-    encoding_type: Literal['QuantitativeColorEncoding'] = 'QuantitativeColorEncoding'
+    encoding_type: Literal['QuantitativeColorEncoding'] = (
+        'QuantitativeColorEncoding'
+    )
     feature: str
     colormap: Colormap
-    contrast_limits: tuple[float, float] | None = None
+    contrast_limits: Optional[tuple[float, float]] = None
     fallback: ColorValue = Field(default_factory=lambda: DEFAULT_COLOR)
 
     def __call__(self, features: Any) -> ColorArray:
         values = features[self.feature]
-        contrast_limits = self.contrast_limits or _calculate_contrast_limits(values)
+        contrast_limits = self.contrast_limits or _calculate_contrast_limits(
+            values
+        )
         if contrast_limits is not None:
             values = np.interp(values, contrast_limits, (0, 1))
         return self.colormap.map(values)
@@ -203,8 +208,12 @@ class QuantitativeColorEncoding(_DerivedStyleEncoding[ColorValue, ColorArray]):
         return ensure_colormap(colormap)
 
     @validator('contrast_limits', pre=True, always=True, allow_reuse=True)
-    def _check_contrast_limits(cls, contrast_limits) -> tuple[float, float] | None:
-        if (contrast_limits is not None) and (contrast_limits[0] >= contrast_limits[1]):
+    def _check_contrast_limits(
+        cls, contrast_limits
+    ) -> Optional[tuple[float, float]]:
+        if (contrast_limits is not None) and (
+            contrast_limits[0] >= contrast_limits[1]
+        ):
             raise ValueError(
                 trans._(
                     'contrast_limits must be a strictly increasing pair of values',
@@ -216,7 +225,7 @@ class QuantitativeColorEncoding(_DerivedStyleEncoding[ColorValue, ColorArray]):
 
 def _calculate_contrast_limits(
     values: np.ndarray,
-) -> tuple[float, float] | None:
+) -> Optional[tuple[float, float]]:
     contrast_limits = None
     if values.size > 0:
         min_value = np.min(values)

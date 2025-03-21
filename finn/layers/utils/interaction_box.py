@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 import numpy as np
 
@@ -81,7 +81,9 @@ def generate_transform_box_from_layer(
 
     # generates in vispy canvas pos, so invert x and y, and then go back
     top_left, bot_right = (tuple(point) for point in bounds.T[:, ::-1])
-    return generate_interaction_box_vertices(top_left, bot_right, handles=True)[:, ::-1]
+    return generate_interaction_box_vertices(
+        top_left, bot_right, handles=True
+    )[:, ::-1]
 
 
 def calculate_bounds_from_contained_points(
@@ -117,7 +119,7 @@ def calculate_bounds_from_contained_points(
 
 def get_nearby_handle(
     position: np.ndarray, handle_coordinates: np.ndarray
-) -> InteractionBoxHandle | None:
+) -> Optional[InteractionBoxHandle]:
     """
     Get the InteractionBoxHandle close to the given position, within tolerance.
 

@@ -100,14 +100,20 @@ class QtPopup(QDialog):
                 width = max(width, min_length)
                 left += (window.width() - width) // 2
                 height = self.sizeHint().height()
-                top += 24 if position == 'top' else (window.height() - height - 12)
+                top += (
+                    24
+                    if position == 'top'
+                    else (window.height() - height - 12)
+                )
             elif position in ('left', 'right'):
                 height = int(window.height() * win_ratio)
                 height = max(height, min_length)
                 # 22 is for the title bar
                 top += 22 + (window.height() - height) // 2
                 width = self.sizeHint().width()
-                left += 12 if position == 'left' else (window.width() - width - 12)
+                left += (
+                    12 if position == 'left' else (window.width() - width - 12)
+                )
             else:
                 raise ValueError(
                     trans._(
@@ -132,10 +138,16 @@ class QtPopup(QDialog):
         # make sure the popup is completely on the screen
         # In Qt ≥5.10 we can use screenAt to know which monitor the mouse is on
 
-        screen_geometry: QRect = QGuiApplication.screenAt(QCursor.pos()).geometry()
+        screen_geometry: QRect = QGuiApplication.screenAt(
+            QCursor.pos()
+        ).geometry()
 
-        left = max(min(screen_geometry.right() - width, left), screen_geometry.left())
-        top = max(min(screen_geometry.bottom() - height, top), screen_geometry.top())
+        left = max(
+            min(screen_geometry.right() - width, left), screen_geometry.left()
+        )
+        top = max(
+            min(screen_geometry.bottom() - height, top), screen_geometry.top()
+        )
         self.setGeometry(left, top, width, height)
 
     def keyPressEvent(self, event):

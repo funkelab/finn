@@ -116,7 +116,7 @@ def test_zarr_multiscale(tmp_path):
         z[:] = multiscale[i]
     multiscale_in = magic_imread([fout])
     assert len(multiscale) == len(multiscale_in)
-    for images, images_in in zip(multiscale, multiscale_in, strict=False):
+    for images, images_in in zip(multiscale, multiscale_in):
         np.testing.assert_array_equal(images, images_in)
 
 
@@ -245,11 +245,17 @@ def test_single_file(spec: ImageSpec, write_spec, stacks: int):
     assert layer_data.dtype == spec.dtype
 
 
-@pytest.mark.parametrize('spec', [PNG, [PNG], [PNG, PNG], TIFF_3D, [TIFF_3D, TIFF_3D]])
+@pytest.mark.parametrize(
+    'spec', [PNG, [PNG], [PNG, PNG], TIFF_3D, [TIFF_3D, TIFF_3D]]
+)
 @pytest.mark.parametrize('stack', [True, False])
 @pytest.mark.parametrize('use_dask', [True, False, None])
 def test_magic_imread(write_spec, spec: ImageSpec, stack, use_dask):
-    fnames = [write_spec(s) for s in spec] if isinstance(spec, list) else write_spec(spec)
+    fnames = (
+        [write_spec(s) for s in spec]
+        if isinstance(spec, list)
+        else write_spec(spec)
+    )
     images = magic_imread(fnames, stack=stack, use_dask=use_dask)
     if isinstance(spec, ImageSpec):
         expect_shape = spec.shape
@@ -259,7 +265,10 @@ def test_magic_imread(write_spec, spec: ImageSpec, stack, use_dask):
 
     expected_arr_type = (
         da.Array
-        if (use_dask or (use_dask is None and isinstance(spec, list) and len(spec) > 1))
+        if (
+            use_dask
+            or (use_dask is None and isinstance(spec, list) and len(spec) > 1)
+        )
         else np.ndarray
     )
     if isinstance(spec, list) and len(spec) > 1 and not stack:
@@ -282,14 +291,16 @@ def test_irregular_images(write_spec, stack):
     # it in first, then we can automatically turn stacking off when shapes
     # are irregular (and create proper dask arrays)
     if stack:
-        with pytest.raises(ValueError, match='input arrays must have the same shape'):
+        with pytest.raises(
+            ValueError, match='input arrays must have the same shape'
+        ):
             magic_imread(fnames, use_dask=False, stack=stack)
         return
 
     images = magic_imread(fnames, use_dask=False, stack=stack)
     assert isinstance(images, list)
     assert len(images) == 2
-    assert all(img.shape == spec.shape for img, spec in zip(images, specs, strict=False))
+    assert all(img.shape == spec.shape for img, spec in zip(images, specs))
 
 
 def test_add_zarr(write_spec):

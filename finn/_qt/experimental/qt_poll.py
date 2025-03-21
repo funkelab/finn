@@ -5,6 +5,7 @@ mouse/camera are not moving. Usually for just a short period of time.
 """
 
 import time
+from typing import Optional
 
 from qtpy.QtCore import QEvent, QObject, QTimer
 
@@ -119,7 +120,7 @@ class IntervalTimer:
     """Time the interval between subsequent calls to our elapsed property."""
 
     def __init__(self) -> None:
-        self._last: float | None = None
+        self._last: Optional[float] = None
 
     @property
     def elapsed_ms(self) -> float:

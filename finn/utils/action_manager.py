@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import warnings
 from collections import defaultdict
-from collections.abc import Callable
 from dataclasses import dataclass
 from functools import cached_property
 from inspect import isgeneratorfunction
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable, Optional
 
 from finn.utils.events import EmitterGroup
 from finn.utils.interactions import Shortcut
@@ -105,7 +104,7 @@ class ActionManager:
         name: str,
         command: Callable,
         description: str,
-        keymapprovider: KeymapProvider | None,
+        keymapprovider: Optional[KeymapProvider],
         repeatable: bool = False,
     ):
         """
@@ -159,7 +158,9 @@ class ActionManager:
         """
 
         self._validate_action_name(name)
-        self._actions[name] = Action(command, description, keymapprovider, repeatable)
+        self._actions[name] = Action(
+            command, description, keymapprovider, repeatable
+        )
         if keymapprovider:
             self._update_shortcut_bindings(name)
 
@@ -184,7 +185,9 @@ class ActionManager:
                 # generator function (but action.injected is)
                 km_provider.bind_key(shortcut, action.injected, overwrite=True)
 
-    def bind_button(self, name: str, button: Button, extra_tooltip_text='') -> None:
+    def bind_button(
+        self, name: str, button: Button, extra_tooltip_text=''
+    ) -> None:
         """
         Bind `button` to trigger Action `name` on click.
 
@@ -227,7 +230,9 @@ class ActionManager:
 
         button.clicked.connect(_trigger)
         if name in self._actions:
-            button.setToolTip(f'{self._build_tooltip(name)} {extra_tooltip_text}')
+            button.setToolTip(
+                f'{self._build_tooltip(name)} {extra_tooltip_text}'
+            )
 
         def _update_tt(event: ShortcutEvent):
             if event.name == name:
@@ -262,7 +267,7 @@ class ActionManager:
         self._update_shortcut_bindings(name)
         self._emit_shortcut_change(name, shortcut)
 
-    def unbind_shortcut(self, name: str) -> list[str] | None:
+    def unbind_shortcut(self, name: str) -> Optional[list[str]]:
         """
         Unbind all shortcuts for a given action name.
 
@@ -343,7 +348,9 @@ class ActionManager:
                 action = self._actions.get(name, None)
                 if action and layer == action.keymapprovider:
                     for shortcut in shortcuts:
-                        layer_shortcuts[layer][str(shortcut)] = action.description
+                        layer_shortcuts[layer][str(shortcut)] = (
+                            action.description
+                        )
 
         return layer_shortcuts
 

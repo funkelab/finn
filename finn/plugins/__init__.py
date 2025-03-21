@@ -34,7 +34,9 @@ def _initialize_plugins() -> None:
     _npe2.on_plugins_registered(set(_npe2pm.iter_manifests()))
 
     # connect enablement/registration events to listeners
-    _npe2pm.events.enablement_changed.connect(_npe2.on_plugin_enablement_change)
+    _npe2pm.events.enablement_changed.connect(
+        _npe2.on_plugin_enablement_change
+    )
     _npe2pm.events.plugins_registered.connect(_npe2.on_plugins_registered)
     _npe2pm.discover(include_npe1=settings.plugins.use_npe2_adaptor)
 

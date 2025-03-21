@@ -44,7 +44,9 @@ def test_dock_widget_toggler(make_napari_viewer):
     app = get_app_model()
     app.register_action(action)
 
-    with app.injection_store.register(providers={Window: lambda: viewer.window}):
+    with app.injection_store.register(
+        providers={Window: lambda: viewer.window}
+    ):
         assert viewer.window._qt_viewer.dockConsole.isVisible() is False
         app.commands.execute_command('some.command.id')
         assert viewer.window._qt_viewer.dockConsole.isVisible() is True

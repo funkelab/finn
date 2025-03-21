@@ -6,7 +6,9 @@ from finn.utils.migrations import rename_argument
 from finn.utils.misc import camel_to_snake
 from finn.utils.translations import trans
 
-tmpl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'add_layer.py_tmpl')
+tmpl_path = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), 'add_layer.py_tmpl'
+)
 
 
 with open(tmpl_path) as f:
@@ -101,6 +103,8 @@ def create_func(cls, name=None, doc=None):
             version,
             since_version,
         ) in cls.__init__._rename_argument:
-            func = rename_argument(from_name, to_name, version, since_version)(func)
+            func = rename_argument(from_name, to_name, version, since_version)(
+                func
+            )
 
     return func

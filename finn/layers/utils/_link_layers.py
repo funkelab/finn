@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Generator, Iterable
+from collections.abc import Generator, Iterable
 from contextlib import contextmanager
 from functools import partial
 from itertools import combinations, permutations, product
 from typing import (
     TYPE_CHECKING,
+    Callable,
+    Optional,
 )
 from weakref import ReferenceType, ref
 
@@ -25,9 +27,9 @@ from finn.utils.translations import trans
 LinkKey = tuple['ReferenceType[Layer]', 'ReferenceType[Layer]', str]
 Unlinker = Callable[[], None]
 _UNLINKERS: dict[LinkKey, Unlinker] = {}
-_LINKED_LAYERS: defaultdict[ReferenceType[Layer], set[ReferenceType[Layer]]] = (
-    defaultdict(set)
-)
+_LINKED_LAYERS: defaultdict[
+    ReferenceType[Layer], set[ReferenceType[Layer]]
+] = defaultdict(set)
 
 
 def layer_is_linked(layer: Layer) -> bool:
@@ -49,7 +51,9 @@ def get_linked_layers(*layers: Layer) -> set[Layer]:
     return {x for x in linked_layers if x is not None}
 
 
-def link_layers(layers: Iterable[Layer], attributes: Iterable[str] = ()) -> list[LinkKey]:
+def link_layers(
+    layers: Iterable[Layer], attributes: Iterable[str] = ()
+) -> list[LinkKey]:
     """Link ``attributes`` between all layers in ``layers``.
 
     This essentially performs the following operation:
@@ -126,7 +130,7 @@ def link_layers(layers: Iterable[Layer], attributes: Iterable[str] = ()) -> list
             # get a suitable equality operator for this attribute type
             eq_op = pick_equality_operator(getattr(l1, attr))
 
-            def setter(event: Event | None = None) -> None:
+            def setter(event: Optional[Event] = None) -> None:
                 new_val = getattr(l1, attr)
                 # this line is the important part for avoiding recursion
                 if not eq_op(getattr(l2, attr), new_val):
@@ -150,7 +154,9 @@ def link_layers(layers: Iterable[Layer], attributes: Iterable[str] = ()) -> list
     return links
 
 
-def unlink_layers(layers: Iterable[Layer], attributes: Iterable[str] = ()) -> None:
+def unlink_layers(
+    layers: Iterable[Layer], attributes: Iterable[str] = ()
+) -> None:
     """Unlink previously linked ``attributes`` between all layers in ``layers``.
 
     Parameters
@@ -253,7 +259,11 @@ def _get_common_evented_attributes(
         ) from None
 
     layer_events = [
-        {e for e in lay.events if not isinstance(lay.events[e], WarningEmitter)}
+        {
+            e
+            for e in lay.events
+            if not isinstance(lay.events[e], WarningEmitter)
+        }
         for lay in layers
     ]
     common_events = set.intersection(*layer_events)
@@ -286,7 +296,9 @@ def _unlink_keys(keys: Iterable[LinkKey]) -> None:
     _LINKED_LAYERS = _rebuild_link_index()
 
 
-def _rebuild_link_index() -> defaultdict[ReferenceType[Layer], set[ReferenceType[Layer]]]:
+def _rebuild_link_index() -> defaultdict[
+    ReferenceType[Layer], set[ReferenceType[Layer]]
+]:
     links = defaultdict(set)
     for l1, l2, _attr in _UNLINKERS:
         links[l1].add(l2)

@@ -28,9 +28,13 @@ class QtViewerViewVectorSuite:
         self.viewer = finn.Viewer()
         self.layer = self.viewer.add_vectors(self.data)
         if NAPARI_0_4_19:
-            self.visual = self.viewer.window._qt_viewer.layer_to_visual[self.layer]
+            self.visual = self.viewer.window._qt_viewer.layer_to_visual[
+                self.layer
+            ]
         else:
-            self.visual = self.viewer.window._qt_viewer.canvas.layer_to_visual[self.layer]
+            self.visual = self.viewer.window._qt_viewer.canvas.layer_to_visual[
+                self.layer
+            ]
 
     def teardown(self, n):
         self.viewer.window.close()

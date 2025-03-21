@@ -95,7 +95,9 @@ class InteractionBoxHandle(IntEnum):
     INSIDE = 9
 
     @classmethod
-    def opposite_handle(cls, handle: 'InteractionBoxHandle') -> 'InteractionBoxHandle':
+    def opposite_handle(
+        cls, handle: 'InteractionBoxHandle'
+    ) -> 'InteractionBoxHandle':
         opposites = {
             InteractionBoxHandle.TOP_LEFT: InteractionBoxHandle.BOTTOM_RIGHT,
             InteractionBoxHandle.TOP_CENTER: InteractionBoxHandle.BOTTOM_CENTER,

@@ -81,7 +81,9 @@ dwidget_args = {
 # napari_plugin_manager from _testsupport.py
 # monkeypatch, request, recwarn fixtures are from pytest
 @pytest.mark.parametrize('arg', dwidget_args.values(), ids=dwidget_args.keys())
-def test_dock_widget_registration(arg, napari_plugin_manager, request, recwarn):
+def test_dock_widget_registration(
+    arg, napari_plugin_manager, request, recwarn
+):
     """Test that dock widgets get validated and registerd correctly."""
 
     class Plugin:
@@ -185,6 +187,8 @@ def test_widget_types_supported(
 
     # `side_effect` required so widget is added to window and then
     # cleaned up, preventing widget leaks
-    viewer.window.add_dock_widget = Mock(side_effect=viewer.window.add_dock_widget)
+    viewer.window.add_dock_widget = Mock(
+        side_effect=viewer.window.add_dock_widget
+    )
     app.commands.execute_command('tmp_plugin:Widget')
     viewer.window.add_dock_widget.assert_called_once()

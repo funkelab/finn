@@ -23,7 +23,9 @@ def make_labels_layer(array_type, shape):
             'kvstore': {'driver': 'memory'},
             'metadata': {'chunks': chunks},
         }
-        labels = ts.open(spec, create=True, dtype='uint32', shape=shape).result()
+        labels = ts.open(
+            spec, create=True, dtype='uint32', shape=shape
+        ).result()
     else:
         pytest.fail("array_type must be 'numpy', 'zarr', or 'tensorstore'")
 

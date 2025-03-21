@@ -14,7 +14,9 @@ class VispyAxesOverlay(ViewerOverlayMixin, VispySceneOverlay):
         # Target axes length in canvas pixels
         self._target_length = 80
 
-        super().__init__(node=Axes(), viewer=viewer, overlay=overlay, parent=parent)
+        super().__init__(
+            node=Axes(), viewer=viewer, overlay=overlay, parent=parent
+        )
         self.overlay.events.colored.connect(self._on_data_change)
         self.overlay.events.dashed.connect(self._on_data_change)
         self.overlay.events.labels.connect(self._on_labels_visible_change)
@@ -25,7 +27,9 @@ class VispyAxesOverlay(ViewerOverlayMixin, VispySceneOverlay):
         self.viewer.dims.events.order.connect(self._on_data_change)
         self.viewer.dims.events.range.connect(self._on_data_change)
         self.viewer.dims.events.ndisplay.connect(self._on_data_change)
-        self.viewer.dims.events.axis_labels.connect(self._on_labels_text_change)
+        self.viewer.dims.events.axis_labels.connect(
+            self._on_labels_text_change
+        )
 
         self.reset()
 

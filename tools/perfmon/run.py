@@ -10,12 +10,16 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
-parser = ArgumentParser(description='Run napari with one of the perfmon configurations.')
+parser = ArgumentParser(
+    description='Run napari with one of the perfmon configurations.'
+)
 parser.add_argument(
     'config',
     help='The name of the sub-directory that contains the perfmon configuration file (e.g. slicing).',
 )
-parser.add_argument('example_script', help='The example script that should run finn.')
+parser.add_argument(
+    'example_script', help='The example script that should run finn.'
+)
 parser.add_argument(
     '--output',
     default='latest',

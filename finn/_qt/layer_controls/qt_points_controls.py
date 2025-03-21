@@ -94,9 +94,15 @@ class QtPointsControls(QtLayerControls):
         self.layer._border.events.current_color.connect(
             self._on_current_border_color_change
         )
-        self.layer.events.current_face_color.connect(self._on_current_face_color_change)
-        self.layer._face.events.current_color.connect(self._on_current_face_color_change)
-        self.layer.events.current_symbol.connect(self._on_current_symbol_change)
+        self.layer.events.current_face_color.connect(
+            self._on_current_face_color_change
+        )
+        self.layer._face.events.current_color.connect(
+            self._on_current_face_color_change
+        )
+        self.layer.events.current_symbol.connect(
+            self._on_current_symbol_change
+        )
         self.layer.text.events.visible.connect(self._on_text_visibility_change)
 
         sld = QLabeledSlider(Qt.Orientation.Horizontal)
@@ -131,7 +137,9 @@ class QtPointsControls(QtLayerControls):
             ),
         )
         self.faceColorEdit.color_changed.connect(self.changeCurrentFaceColor)
-        self.borderColorEdit.color_changed.connect(self.changeCurrentBorderColor)
+        self.borderColorEdit.color_changed.connect(
+            self.changeCurrentBorderColor
+        )
 
         sym_cb = QComboBox()
         sym_cb.setToolTip(
@@ -140,7 +148,9 @@ class QtPointsControls(QtLayerControls):
             )
         )
         current_index = 0
-        for index, (symbol_string, text) in enumerate(SYMBOL_TRANSLATION.items()):
+        for index, (symbol_string, text) in enumerate(
+            SYMBOL_TRANSLATION.items()
+        ):
             symbol_string = symbol_string.value
             sym_cb.addItem(text, symbol_string)
 
@@ -180,7 +190,9 @@ class QtPointsControls(QtLayerControls):
             layer,
             'delete_shape',
         )
-        action_manager.bind_button('napari:delete_selected_points', self.delete_button)
+        action_manager.bind_button(
+            'napari:delete_selected_points', self.delete_button
+        )
         self._EDIT_BUTTONS += (self.delete_button,)
         self._on_editable_or_visible_change()
 
@@ -217,7 +229,9 @@ class QtPointsControls(QtLayerControls):
         value : float
             Size of points.
         """
-        with self.layer.events.current_size.blocker(self._on_current_size_change):
+        with self.layer.events.current_size.blocker(
+            self._on_current_size_change
+        ):
             self.layer.current_size = value
 
     def change_out_of_slice(self, state):
@@ -242,7 +256,9 @@ class QtPointsControls(QtLayerControls):
         state : QCheckBox
             Checkbox indicating if text is visible.
         """
-        with self.layer.text.events.visible.blocker(self._on_text_visibility_change):
+        with self.layer.text.events.visible.blocker(
+            self._on_text_visibility_change
+        ):
             # needs cast to bool for Qt6
             self.layer.text.visible = bool(state)
 

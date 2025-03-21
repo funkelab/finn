@@ -5,7 +5,7 @@ Any non-Qt providers should be added inside `napari/_app_model/injection/`.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from finn import components, layers, viewer
 from finn.utils._proxies import PublicOnlyProxy
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from finn._qt.qt_viewer import QtViewer
 
 
-def _provide_viewer(public_proxy: bool = True) -> viewer.Viewer | None:
+def _provide_viewer(public_proxy: bool = True) -> Optional[viewer.Viewer]:
     """Provide `PublicOnlyProxy` (allows internal napari access) of current viewer."""
     if current_viewer := viewer.current_viewer():
         if public_proxy:
@@ -25,7 +25,9 @@ def _provide_viewer(public_proxy: bool = True) -> viewer.Viewer | None:
     return None
 
 
-def _provide_viewer_or_raise(msg: str = '', public_proxy: bool = False) -> viewer.Viewer:
+def _provide_viewer_or_raise(
+    msg: str = '', public_proxy: bool = False
+) -> viewer.Viewer:
     viewer = _provide_viewer(public_proxy)
     if viewer:
         return viewer
@@ -40,7 +42,7 @@ def _provide_viewer_or_raise(msg: str = '', public_proxy: bool = False) -> viewe
     )
 
 
-def _provide_qt_viewer() -> QtViewer | None:
+def _provide_qt_viewer() -> Optional[QtViewer]:
     from finn._qt.qt_main_window import _QtMainWindow
 
     if _qmainwin := _QtMainWindow.current():
@@ -63,7 +65,7 @@ def _provide_qt_viewer_or_raise(msg: str = '') -> QtViewer:
     )
 
 
-def _provide_window() -> Window | None:
+def _provide_window() -> Optional[Window]:
     from finn._qt.qt_main_window import _QtMainWindow
 
     if _qmainwin := _QtMainWindow.current():
@@ -86,11 +88,11 @@ def _provide_window_or_raise(msg: str = '') -> Window:
     )
 
 
-def _provide_active_layer() -> layers.Layer | None:
+def _provide_active_layer() -> Optional[layers.Layer]:
     return v.layers.selection.active if (v := _provide_viewer()) else None
 
 
-def _provide_active_layer_list() -> components.LayerList | None:
+def _provide_active_layer_list() -> Optional[components.LayerList]:
     return v.layers if (v := _provide_viewer()) else None
 
 

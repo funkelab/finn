@@ -150,7 +150,9 @@ def test_qt_size_slider_preview_widget_value(font_size_preview_widget):
     assert widget.value() == 5
 
 
-def test_qt_size_slider_preview_widget_value_invalid(qtbot, font_size_preview_widget):
+def test_qt_size_slider_preview_widget_value_invalid(
+    qtbot, font_size_preview_widget
+):
     widget = font_size_preview_widget()
     widget.setMaximum(50)
     widget.setValue(51)

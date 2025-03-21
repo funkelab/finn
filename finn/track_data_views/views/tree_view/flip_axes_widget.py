@@ -11,8 +11,8 @@ class FlipTreeWidget(QWidget):
         super().__init__()
 
         flip_layout = QVBoxLayout()
-        display_box = QGroupBox('Plot axes [F]')
-        flip_button = QPushButton('Flip')
+        display_box = QGroupBox("Plot axes [F]")
+        flip_button = QPushButton("Flip")
         flip_button.clicked.connect(self.flip)
         flip_layout.addWidget(flip_button)
         display_box.setLayout(flip_layout)

@@ -11,6 +11,7 @@ from collections import defaultdict
 from collections.abc import Generator, Iterable, MutableSequence
 from typing import (
     NewType,
+    Optional,
     TypeVar,
     Union,
     cast,
@@ -98,7 +99,7 @@ def split_nested_index(index: MaybeNestedIndex) -> tuple[ParentIndex, Index]:
                     deferred=True,
                 )
             )
-        return cast('ParentIndex', tuple(first)), last
+        return cast(ParentIndex, tuple(first)), last
     return ParentIndex(()), -1  # empty tuple appends to self
 
 
@@ -164,7 +165,7 @@ class NestableEventedList(EventedList[_T]):
     @overload  # type: ignore
     def __getitem__(
         self, key: int
-    ) -> _T | NestableEventedList[_T]: ...  # pragma: no cover
+    ) -> Union[_T, NestableEventedList[_T]]: ...  # pragma: no cover
 
     @overload
     def __getitem__(
@@ -172,12 +173,14 @@ class NestableEventedList(EventedList[_T]):
     ) -> NestableEventedList[_T]: ...  # pragma: no cover
 
     @overload
-    def __getitem__(self, key: slice) -> NestableEventedList[_T]: ...  # pragma: no cover
+    def __getitem__(
+        self, key: slice
+    ) -> NestableEventedList[_T]: ...  # pragma: no cover
 
     @overload
     def __getitem__(
         self, key: NestedIndex
-    ) -> _T | NestableEventedList[_T]: ...  # pragma: no cover
+    ) -> Union[_T, NestableEventedList[_T]]: ...  # pragma: no cover
 
     def __getitem__(self, key: MaybeNestedIndex):
         if isinstance(key, tuple):
@@ -191,7 +194,7 @@ class NestableEventedList(EventedList[_T]):
 
     @overload
     def __setitem__(
-        self, key: int | NestedIndex, value: _T
+        self, key: Union[int, NestedIndex], value: _T
     ) -> None: ...  # pragma: no cover
 
     @overload
@@ -219,7 +222,9 @@ class NestableEventedList(EventedList[_T]):
         if isinstance(key, tuple):
             parent_i, index = split_nested_index(key)
             if isinstance(index, slice):
-                indices = sorted(range(*index.indices(len(parent_i))), reverse=True)
+                indices = sorted(
+                    range(*index.indices(len(parent_i))), reverse=True
+                )
             else:
                 indices = [index]
             return [(self[parent_i], i) for i in indices]
@@ -259,7 +264,9 @@ class NestableEventedList(EventedList[_T]):
 
         emitter(event)
 
-    def _non_negative_index(self, parent_index: ParentIndex, dest_index: Index) -> Index:
+    def _non_negative_index(
+        self, parent_index: ParentIndex, dest_index: Index
+    ) -> Index:
         """Make sure dest_index is a positive index inside parent_index."""
         destination_group = self[parent_index]
         # not handling slice indexes
@@ -312,7 +319,7 @@ class NestableEventedList(EventedList[_T]):
                     deferred=True,
                 )
             )
-        dest_i = cast('int', self._non_negative_index(dest_par, dest_i))
+        dest_i = cast(int, self._non_negative_index(dest_par, dest_i))
 
         # need to update indices as we pop, so we keep track of the indices
         # we have previously popped
@@ -376,8 +383,8 @@ class NestableEventedList(EventedList[_T]):
 
     def move(
         self,
-        src_index: int | NestedIndex,
-        dest_index: int | NestedIndex = (0,),
+        src_index: Union[int, NestedIndex],
+        dest_index: Union[int, NestedIndex] = (0,),
     ) -> bool:
         """Move a single item from ``src_index`` to ``dest_index``.
 
@@ -471,9 +478,9 @@ class NestableEventedList(EventedList[_T]):
     def _iter_indices(
         self,
         start: int = 0,
-        stop: int | None = None,
+        stop: Optional[int] = None,
         root: tuple[int, ...] = (),
-    ) -> Generator[int | tuple[int]]:
+    ) -> Generator[Union[int, tuple[int]]]:
         """Iter indices from start to stop.
 
         Depth first traversal of the tree
@@ -483,7 +490,7 @@ class NestableEventedList(EventedList[_T]):
             if isinstance(item, NestableEventedList):
                 yield from item._iter_indices(root=(*root, i))
 
-    def has_index(self, index: int | tuple[int, ...]) -> bool:
+    def has_index(self, index: Union[int, tuple[int, ...]]) -> bool:
         """Return true if `index` is valid for this nestable list."""
         if isinstance(index, int):
             return -len(self) <= index < len(self)

@@ -91,7 +91,9 @@ def test_bbox_lower_right(view_data, expected_coords):
 def test_get_text_anchors(anchor_type, ndisplay, expected_coords):
     """Round trip tests for getting anchor coordinates."""
     coords = [np.array([[0, 0], [10, 0], [0, 10], [10, 10]])]
-    anchor_coords, _, _ = get_text_anchors(coords, anchor=anchor_type, ndisplay=ndisplay)
+    anchor_coords, _, _ = get_text_anchors(
+        coords, anchor=anchor_type, ndisplay=ndisplay
+    )
     np.testing.assert_equal(anchor_coords, expected_coords)
 
 

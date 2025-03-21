@@ -154,7 +154,9 @@ class QtLayerControls(QFrame):
         self.opacitySlider.setEnabled(
             self.layer.blending not in NO_OPACITY_BLENDING_MODES
         )
-        self.opacityLabel.setEnabled(self.layer.blending not in NO_OPACITY_BLENDING_MODES)
+        self.opacityLabel.setEnabled(
+            self.layer.blending not in NO_OPACITY_BLENDING_MODES
+        )
         if self.__class__ == QtLayerControls:
             # This base class is only instantiated in tests. When it's not a
             # concrete subclass, we need to parent the button_grid to the
@@ -187,7 +189,9 @@ class QtLayerControls(QFrame):
         self.opacitySlider.setEnabled(
             self.layer.blending not in NO_OPACITY_BLENDING_MODES
         )
-        self.opacityLabel.setEnabled(self.layer.blending not in NO_OPACITY_BLENDING_MODES)
+        self.opacityLabel.setEnabled(
+            self.layer.blending not in NO_OPACITY_BLENDING_MODES
+        )
 
         blending_tooltip = ''
         if self.layer.blending == str(Blending.MINIMUM):
@@ -273,7 +277,9 @@ class QtLayerControls(QFrame):
         if event.mode in self._MODE_BUTTONS:
             self._MODE_BUTTONS[event.mode].setChecked(True)
         else:
-            raise ValueError(trans._("Mode '{mode}' not recognized", mode=event.mode))
+            raise ValueError(
+                trans._("Mode '{mode}' not recognized", mode=event.mode)
+            )
 
     def _on_editable_or_visible_change(self):
         """Receive layer model editable/visible change event & enable/disable buttons."""

@@ -4,9 +4,9 @@ from warnings import warn
 import networkx as nx
 import numpy as np
 import pandas as pd
-from funtracks.data_model import SolutionTracks
-
 from finn.track_data_views.graph_attributes import NodeAttr
+
+from funtracks.data_model import SolutionTracks
 
 
 def ensure_integer_ids(df: pd.DataFrame) -> pd.DataFrame:
@@ -19,13 +19,14 @@ def ensure_integer_ids(df: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: The same dataframe with the ids remapped to be unique integers.
             Parent id column is also remapped.
     """
-    if not pd.api.types.is_integer_dtype(df['id']):
-        unique_ids = df['id'].unique()
+    if not pd.api.types.is_integer_dtype(df["id"]):
+        unique_ids = df["id"].unique()
         id_mapping = {
-            original_id: new_id for new_id, original_id in enumerate(unique_ids, start=1)
+            original_id: new_id
+            for new_id, original_id in enumerate(unique_ids, start=1)
         }
-        df['id'] = df['id'].map(id_mapping)
-        df['parent_id'] = df['parent_id'].map(id_mapping).astype(pd.Int64Dtype())
+        df["id"] = df["id"].map(id_mapping)
+        df["parent_id"] = df["parent_id"].map(id_mapping).astype(pd.Int64Dtype())
 
     return df
 
@@ -55,7 +56,7 @@ def ensure_correct_labels(df: pd.DataFrame, segmentation: np.ndarray) -> np.ndar
         df_t = df[df[NodeAttr.TIME.value] == t]
 
         # Create a mapping from seg_id to id for the current time point
-        seg_id_to_id = dict(zip(df_t['seg_id'], df_t['id'], strict=True))
+        seg_id_to_id = dict(zip(df_t["seg_id"], df_t["id"], strict=True))
 
         # Apply the mapping to the segmentation image for the current time point
         for seg_id, new_id in seg_id_to_id.items():
@@ -89,8 +90,8 @@ def _test_valid(
     if scale is not None:
         if segmentation.ndim != len(scale):
             warn(
-                f'Dimensions of the segmentation image ({segmentation.ndim}) '
-                f'do not match the number of scale values given ({len(scale)})',
+                f"Dimensions of the segmentation image ({segmentation.ndim}) "
+                f"do not match the number of scale values given ({len(scale)})",
                 stacklevel=2,
             )
             return False
@@ -101,15 +102,15 @@ def _test_valid(
 
     row = df.iloc[0]
     pos = (
-        [row[NodeAttr.TIME.value], row['z'], row['y'], row['x']]
-        if 'z' in df.columns
-        else [row[NodeAttr.TIME.value], row['y'], row['x']]
+        [row[NodeAttr.TIME.value], row["z"], row["y"], row["x"]]
+        if "z" in df.columns
+        else [row[NodeAttr.TIME.value], row["y"], row["x"]]
     )
 
     if segmentation.ndim != len(pos):
         warn(
-            f'Dimensions of the segmentation ({segmentation.ndim}) do not match the '
-            f'number of positional dimensions ({len(pos)})',
+            f"Dimensions of the segmentation ({segmentation.ndim}) do not match the "
+            f"number of positional dimensions ({len(pos)})",
             stacklevel=2,
         )
         return False
@@ -122,7 +123,9 @@ def _test_valid(
     try:
         value = segmentation[tuple(coordinates)]
     except IndexError:
-        warn(f'Could not get the segmentation value at index {coordinates}', stacklevel=2)
+        warn(
+            f"Could not get the segmentation value at index {coordinates}", stacklevel=2
+        )
         return False
 
     return value == seg_id
@@ -165,25 +168,25 @@ def tracks_from_df(
     if features is None:
         features = {}
     # check that the required columns are present
-    required_columns = ['id', NodeAttr.TIME.value, 'y', 'x', 'parent_id']
+    required_columns = ["id", NodeAttr.TIME.value, "y", "x", "parent_id"]
     ndim = None
     if segmentation is not None:
-        required_columns.append('seg_id')
+        required_columns.append("seg_id")
         ndim = segmentation.ndim
         if ndim == 4:
-            required_columns.append('z')
+            required_columns.append("z")
     for column in required_columns:
-        assert column in df.columns, (
-            f'Required column {column} not found in dataframe columns {df.columns}'
-        )
+        assert (
+            column in df.columns
+        ), f"Required column {column} not found in dataframe columns {df.columns}"
 
     if segmentation is not None and not _test_valid(df, segmentation, scale):
         raise ValueError(
-            'Segmentation ids in dataframe do not match values in segmentation.'
-            'Is it possible that you loaded the wrong combination of csv file and '
-            'segmentation, or that the scaling information you provided is incorrect?'
+            "Segmentation ids in dataframe do not match values in segmentation."
+            "Is it possible that you loaded the wrong combination of csv file and "
+            "segmentation, or that the scaling information you provided is incorrect?"
         )
-    if not df['id'].is_unique:
+    if not df["id"].is_unique:
         raise ValueError("The 'id' column must contain unique values")
 
     df = df.map(lambda x: None if pd.isna(x) else x)  # Convert NaN values to None
@@ -193,7 +196,7 @@ def tracks_from_df(
         if col not in required_columns:
             df[col] = df[col].apply(
                 lambda x: ast.literal_eval(x)
-                if isinstance(x, str) and x.startswith('[') and x.endswith(']')
+                if isinstance(x, str) and x.startswith("[") and x.endswith("]")
                 else x
             )
 
@@ -205,17 +208,17 @@ def tracks_from_df(
     graph = nx.DiGraph()
     for _, row in df.iterrows():
         row_dict = row.to_dict()
-        _id = int(row['id'])
-        parent_id = row['parent_id']
-        if 'z' in df.columns:
-            pos = [row['z'], row['y'], row['x']]
+        _id = int(row["id"])
+        parent_id = row["parent_id"]
+        if "z" in df.columns:
+            pos = [row["z"], row["y"], row["x"]]
             ndims = 4
         else:
-            pos = [row['y'], row['x']]
+            pos = [row["y"], row["x"]]
             ndims = 3
 
         attrs = {
-            NodeAttr.TIME.value: int(row['time']),
+            NodeAttr.TIME.value: int(row["time"]),
             NodeAttr.POS.value: pos,
         }
 
@@ -224,8 +227,8 @@ def tracks_from_df(
             del row_dict[attr]
         attrs.update(row_dict)
 
-        if 'track_id' in df.columns:
-            attrs[NodeAttr.TRACK_ID.value] = row['track_id']
+        if "track_id" in df.columns:
+            attrs[NodeAttr.TRACK_ID.value] = row["track_id"]
 
         # add the node to the graph
         graph.add_node(_id, **attrs)
@@ -233,15 +236,15 @@ def tracks_from_df(
         # add the edge to the graph, if the node has a parent
         # note: this loading format does not support edge attributes
         if not pd.isna(parent_id) and parent_id != -1:
-            assert parent_id in graph.nodes, (
-                f'Parent id {parent_id} of node {_id} not in graph yet'
-            )
+            assert (
+                parent_id in graph.nodes
+            ), f"Parent id {parent_id} of node {_id} not in graph yet"
             graph.add_edge(parent_id, _id)
 
     # in the case a different column than the id column was used for the seg_id, we need
     # to update the segmentation to make sure it matches the values in the id column (it
     # should be checked by now that these are unique and integers)
-    if segmentation is not None and row['seg_id'] != row['id']:
+    if segmentation is not None and row["seg_id"] != row["id"]:
         segmentation = ensure_correct_labels(df, segmentation)
 
     tracks = SolutionTracks(

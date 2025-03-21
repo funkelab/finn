@@ -32,7 +32,9 @@ def cd(path: Path):
 
 
 def _setup_git_author():
-    subprocess.run(['git', 'config', '--global', 'user.name', 'napari-bot'], check=True)  # nosec
+    subprocess.run(
+        ['git', 'config', '--global', 'user.name', 'napari-bot'], check=True
+    )  # nosec
     subprocess.run(
         [
             'git',
@@ -133,7 +135,9 @@ def create_pr_with_push(branch_name: str, access_token: str, repo=''):
     push(new_branch_name)
 
     logging.info('Create PR for branch %s', new_branch_name)
-    if pr_number := list_pr_for_branch(new_branch_name, access_token, repo=repo):
+    if pr_number := list_pr_for_branch(
+        new_branch_name, access_token, repo=repo
+    ):
         update_own_pr(pr_number, access_token, branch_name, repo)
     else:
         create_pr(
@@ -185,7 +189,9 @@ def list_pr_for_branch(branch_name: str, access_token: str, repo=''):
     return None
 
 
-def create_pr(base_branch: str, new_branch: str, access_token: str, repo, source_user=''):
+def create_pr(
+    base_branch: str, new_branch: str, access_token: str, repo, source_user=''
+):
     # Prepare the headers with the access token
     headers = {'Authorization': f'token {access_token}'}
 
@@ -200,7 +206,9 @@ def create_pr(base_branch: str, new_branch: str, access_token: str, repo, source
     if source_user:
         payload['head'] = f'{source_user}:{new_branch}'
     pull_request_url = f'{BASE_URL}/repos/{repo}/pulls'
-    logging.info('Create PR with payload: %s in %s', str(payload), pull_request_url)
+    logging.info(
+        'Create PR with payload: %s in %s', str(payload), pull_request_url
+    )
     response = requests.post(pull_request_url, headers=headers, json=payload)
     response.raise_for_status()
     logging.info('PR created: %s', response.json()['html_url'])
@@ -231,7 +239,9 @@ def add_comment_to_pr(
 
     # publish the comment
     payload = {'body': message}
-    comment_url = f'{BASE_URL}/repos/{repo}/issues/{pull_request_number}/comments'
+    comment_url = (
+        f'{BASE_URL}/repos/{repo}/issues/{pull_request_number}/comments'
+    )
     response = requests.post(comment_url, headers=headers, json=payload)
     response.raise_for_status()
 
@@ -260,10 +270,10 @@ def update_pr(branch_name: str):
     except subprocess.CalledProcessError as e:
         if 'create or update workflow' in e.stderr.decode():
             logging.info('Workflow file changed. Skip PR create.')
-            comment_content += '\n\n This PR contains changes to the workflow file. '
             comment_content += (
-                'Please download the artifact and update the constraints files manually. '
+                '\n\n This PR contains changes to the workflow file. '
             )
+            comment_content += 'Please download the artifact and update the constraints files manually. '
             comment_content += f'Artifact: https://github.com/{os.environ.get("GITHUB_REPOSITORY", "napari/napari")}/actions/runs/{os.environ.get("GITHUB_RUN_ID")}'
         else:
             raise
@@ -290,9 +300,7 @@ def update_external_pr_comment(
     comment += '\n\n'
     comment += 'You could also get the updated files from the '
     comment += f'https://github.com/napari-bot/napari/tree/{new_branch_name}/resources/constraints. '
-    comment += (
-        'Or ask the maintainers to provide you the contents of the constraints artifact '
-    )
+    comment += 'Or ask the maintainers to provide you the contents of the constraints artifact '
     comment += f'from the run https://github.com/{os.environ.get("GITHUB_REPOSITORY", "napari/napari")}/actions/runs/{os.environ.get("GITHUB_RUN_ID")}'
     return comment
 

@@ -60,7 +60,9 @@ def test_viewer_mouse_bindings(qtbot, make_napari_viewer):
     mock_move.method.assert_not_called()
 
     # Simulate release only
-    canvas._scene_canvas.events.mouse_release(pos=(0, 0), modifiers=(), button=0)
+    canvas._scene_canvas.events.mouse_release(
+        pos=(0, 0), modifiers=(), button=0
+    )
     mock_press.method.assert_not_called()
     mock_drag.method.assert_not_called()
     mock_release.method.assert_called_once()
@@ -82,7 +84,9 @@ def test_viewer_mouse_bindings(qtbot, make_napari_viewer):
         pos=(0, 0), modifiers=(), button=0, press_event=True
     )
     qtbot.wait(10)
-    canvas._scene_canvas.events.mouse_release(pos=(0, 0), modifiers=(), button=0)
+    canvas._scene_canvas.events.mouse_release(
+        pos=(0, 0), modifiers=(), button=0
+    )
     qtbot.wait(10)
     mock_press.method.assert_called_once()
     mock_drag.method.assert_called_once()
@@ -139,7 +143,9 @@ def test_layer_mouse_bindings(qtbot, make_napari_viewer):
     mock_move.method.assert_not_called()
 
     # Simulate release only
-    canvas._scene_canvas.events.mouse_release(pos=(0, 0), modifiers=(), button=0)
+    canvas._scene_canvas.events.mouse_release(
+        pos=(0, 0), modifiers=(), button=0
+    )
     mock_press.method.assert_not_called()
     mock_drag.method.assert_not_called()
     mock_release.method.assert_called_once()
@@ -161,7 +167,9 @@ def test_layer_mouse_bindings(qtbot, make_napari_viewer):
         pos=(0, 0), modifiers=(), button=0, press_event=True
     )
     qtbot.wait(10)
-    canvas._scene_canvas.events.mouse_release(pos=(0, 0), modifiers=(), button=0)
+    canvas._scene_canvas.events.mouse_release(
+        pos=(0, 0), modifiers=(), button=0
+    )
     qtbot.wait(10)
     mock_press.method.assert_called_once()
     mock_drag.method.assert_called_once()
@@ -217,7 +225,9 @@ def test_unselected_layer_mouse_bindings(qtbot, make_napari_viewer):
     mock_move.method.assert_not_called()
 
     # Simulate release only
-    canvas._scene_canvas.events.mouse_release(pos=(0, 0), modifiers=(), button=0)
+    canvas._scene_canvas.events.mouse_release(
+        pos=(0, 0), modifiers=(), button=0
+    )
     mock_press.method.assert_not_called()
     mock_drag.method.assert_not_called()
     mock_release.method.assert_not_called()
@@ -237,7 +247,9 @@ def test_unselected_layer_mouse_bindings(qtbot, make_napari_viewer):
         pos=(0, 0), modifiers=(), button=0, press_event=True
     )
     qtbot.wait(10)
-    canvas._scene_canvas.events.mouse_release(pos=(0, 0), modifiers=(), button=0)
+    canvas._scene_canvas.events.mouse_release(
+        pos=(0, 0), modifiers=(), button=0
+    )
     qtbot.wait(10)
     mock_press.method.assert_not_called()
     mock_drag.method.assert_not_called()
@@ -260,7 +272,9 @@ def test_unselected_layer_mouse_bindings(qtbot, make_napari_viewer):
 )
 def test_highlight_box_handles(position, dims_displayed, nearby_handle):
     layer = Image(np.empty((10, 10)))
-    event = Mock(position=position, dims_displayed=dims_displayed, modifiers=[None])
+    event = Mock(
+        position=position, dims_displayed=dims_displayed, modifiers=[None]
+    )
     highlight_box_handles(
         layer,
         event,

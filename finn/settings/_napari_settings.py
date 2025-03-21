@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 from finn._pydantic_compat import Field
 from finn.settings._appearance import AppearanceSettings
@@ -67,7 +67,7 @@ class NapariSettings(EventedConfigFileSettings):
     )
 
     # private attributes and ClassVars will not appear in the schema
-    _config_path: Path | None = Path(_CFG_PATH) if _CFG_PATH else None
+    _config_path: Optional[Path] = Path(_CFG_PATH) if _CFG_PATH else None
 
     class Config(EventedConfigFileSettings.Config):
         env_prefix = 'napari_'

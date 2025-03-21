@@ -5,6 +5,8 @@ import npe2
 import numpy as np
 import pytest
 
+from finn_builtins.io import finn_get_reader
+
 if TYPE_CHECKING:
     from finn import layers
 
@@ -32,7 +34,7 @@ def test_layer_save(tmp_path: Path, some_layer: 'layers.Layer', use_ext: bool):
     [(read_data, *rest)] = reader(str(path_with_ext))
 
     if isinstance(some_layer.data, list):
-        for d in zip(read_data, some_layer.data, strict=False):
+        for d in zip(read_data, some_layer.data):
             np.testing.assert_allclose(*d)
     else:
         np.testing.assert_allclose(read_data, some_layer.data)
@@ -52,7 +54,9 @@ def test_no_write_layer_bad_extension(some_layer: 'layers.Layer'):
 
 
 # test_plugin_manager fixture is provided by napari_plugin_engine._testsupport
-def test_get_writer_succeeds(tmp_path: Path, layers_list: 'list[layers.Layer]'):
+def test_get_writer_succeeds(
+    tmp_path: Path, layers_list: 'list[layers.Layer]'
+):
     """Test writing layers data."""
 
     path = tmp_path / 'layers_folder'

@@ -84,7 +84,9 @@ def mouse_double_click_callbacks(obj, event) -> None:
         # execute function to run press event code
         if inspect.isgeneratorfunction(mouse_click_func):
             raise ValueError(
-                trans._("Double-click actions can't be generators.", deferred=True)
+                trans._(
+                    "Double-click actions can't be generators.", deferred=True
+                )
             )
         mouse_click_func(obj, event)
 

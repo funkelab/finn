@@ -4,7 +4,9 @@ from finn.utils.events.migrations import deprecation_warning_event
 
 
 def test_deprecation_warning_event() -> None:
-    event = deprecation_warning_event('obj.events', 'old', 'new', '0.1.0', '0.0.0')
+    event = deprecation_warning_event(
+        'obj.events', 'old', 'new', '0.1.0', '0.0.0'
+    )
 
     class Counter:
         def __init__(self) -> None:

@@ -100,7 +100,9 @@ def test_adding_removing_layer(make_napari_viewer):
 
 
 @pytest.mark.parametrize(('Layer', 'data', 'ndim'), layer_test_data)
-def test_add_remove_layer_external_callbacks(make_napari_viewer, Layer, data, ndim):
+def test_add_remove_layer_external_callbacks(
+    make_napari_viewer, Layer, data, ndim
+):
     """Test external callbacks for layer emmitters preserved."""
     viewer = make_napari_viewer()
 
