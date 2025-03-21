@@ -256,6 +256,7 @@ class ScalarFieldBase(Layer, ABC):
             interpolation3d=Event,
             iso_threshold=Event,
             plane=Event,
+            experimental_clipping_planes=Event,
             rendering=Event,
         )
 

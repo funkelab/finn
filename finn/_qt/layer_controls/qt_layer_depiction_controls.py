@@ -296,6 +296,7 @@ class QtLayerDepiction(QFormLayout):
         )
 
         self.layer.experimental_clipping_planes[1].position = new_position_2
+        self.layer.events.experimental_clipping_planes()
 
     def _on_ndisplay_changed(self):
         """Update widget visibility based on 2D and 3D visualization modes."""
