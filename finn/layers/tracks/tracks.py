@@ -174,6 +174,7 @@ class Tracks(Layer):
             properties=Event,
             rebuild_tracks=Event,
             rebuild_graph=Event,
+            experimental_clipping_planes=Event,
         )
 
         # track manager deals with data slicing, graph building and properties
