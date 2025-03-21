@@ -217,6 +217,8 @@ class QtLayerDepiction(QFormLayout):
                 slide. Can be 'x', 'y', 'z', or 'oblique'.
         """
 
+        if not self.layer.ndim >= 3:
+            return
         if orientation == "x":
             clip_range = (0, self.layer.data.shape[-1])
 
