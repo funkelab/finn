@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
-from scipy.sparse import coo_matrix
+from scipy.sparse import coo_matrix, csr_matrix
 from scipy.spatial import cKDTree
 
 from finn.layers.utils.layer_utils import _FeatureTable
@@ -81,6 +81,8 @@ class TrackManager:
     @staticmethod
     def _fast_points_lookup(sorted_time: np.ndarray) -> dict[int, slice]:
         """Computes a fast lookup table from time to their respective points slicing."""
+        if sorted_time.shape[0] == 0:
+            return {}
 
         # finds where t transitions to t + 1
         transitions = np.nonzero(sorted_time[:-1] - sorted_time[1:])[0] + 1
@@ -131,12 +133,16 @@ class TrackManager:
 
         # make a second lookup table using a sparse matrix to convert track id
         # to the vertex indices
-        self._id2idxs = coo_matrix(
-            (
-                np.broadcast_to(1, self.track_ids.size),  # just dummy ones
-                (self.track_ids, np.arange(self.track_ids.size)),
-            )
-        ).tocsr()
+        if self.data.shape[0] == 0:
+            # make an empty csr matrix
+            self._id2idxs = csr_matrix(np.array([[]]))
+        else:
+            self._id2idxs = coo_matrix(
+                (
+                    np.broadcast_to(1, self.track_ids.size),  # just dummy ones
+                    (self.track_ids, np.arange(self.track_ids.size)),
+                )
+            ).tocsr()
 
     @property
     def features(self) -> pd.DataFrame:
@@ -279,7 +285,8 @@ class TrackManager:
         track_connex = np.ones(self.data.shape[0], dtype=bool)
         track_connex[indices_new_id] = False
         # Add 'False' for the last entry too (end of the last track)
-        track_connex[-1] = False
+        if self.data.shape[0] != 0:
+            track_connex[-1] = False
 
         self._points_id = points_id
         self._track_vertices = track_vertices
