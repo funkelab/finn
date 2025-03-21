@@ -46,7 +46,7 @@ def test_depiction_combobox_changes(qtbot):
     qtctrl = QtImageControls(layer)
     qtctrl.ndisplay = 3
     qtbot.addWidget(qtctrl)
-    combo_box = qtctrl.depictionComboBox
+    combo_box = qtctrl.depictionControls.depictionComboBox
     opts = {combo_box.itemText(i) for i in range(combo_box.count())}
     depiction_options = {
         "volume",
