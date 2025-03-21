@@ -147,7 +147,7 @@ testing = [
     "pytest-qt>=4.3.1",
     "pytest-pretty>=1.1.0",
     "pytest>=8.1.0",
-    "tensorstore>=0.1.13",
+    "tensorstore>=0.1.13,!=0.1.72",
     "virtualenv>=20.17",
     "xarray>=0.16.2",
     "IPython>=7.25.0",
