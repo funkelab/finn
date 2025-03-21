@@ -134,9 +134,9 @@ class QtImageControls(QtBaseImageControls):
         self.layout().addRow(self.interpLabel, self.interpComboBox)
 
         self.depictionControls = QtLayerDepiction(self)
-        for i in range(self.depictionControls.layout().rowCount()):
-            label_item = self.depictionControls.layout().itemAt(i, QFormLayout.LabelRole)
-            field_item = self.depictionControls.layout().itemAt(i, QFormLayout.FieldRole)
+        for i in range(self.depictionControls.rowCount()):
+            label_item = self.depictionControls.itemAt(i, QFormLayout.LabelRole)
+            field_item = self.depictionControls.itemAt(i, QFormLayout.FieldRole)
 
             label_widget = label_item.widget() if label_item else None
             field_widget = field_item.widget() if field_item else None

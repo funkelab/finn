@@ -35,14 +35,14 @@ class QtLayerDepiction(QFormLayout):
 
         self.depictionComboBox.setCurrentIndex(index)
         self.depictionComboBox.currentTextChanged.connect(self.changeDepiction)
-        self.depictionLabel = QLabel(trans._("depiction:"))
+        self.depictionLabel = QLabel(trans._("depiction:"), self.parent)
         self.layer.events.depiction.connect(self._on_depiction_change)
         self.layer.plane.events.thickness.connect(self._on_plane_thickness_change)
         self.layer.events.plane.connect(self._update_plane_slider)
 
         # plane controls
         self.planeNormalButtons = PlaneNormalButtons(self.parent)
-        self.planeNormalLabel = QLabel(trans._("plane normal:"))
+        self.planeNormalLabel = QLabel(trans._("plane normal:"), self.parent)
         action_manager.bind_button(
             "napari:orient_plane_normal_along_z",
             self.planeNormalButtons.zButton,
@@ -73,7 +73,7 @@ class QtLayerDepiction(QFormLayout):
             lambda: self._set_orientation("oblique")
         )
 
-        self.clippingPlaneCheckbox = QCheckBox(trans._("clipping plane"))
+        self.clippingPlaneCheckbox = QCheckBox(trans._("clipping plane"), self.parent)
         self.clippingPlaneCheckbox.setStyleSheet("""
             font-size:11px
         """)
@@ -96,7 +96,7 @@ class QtLayerDepiction(QFormLayout):
         self.clippingPlaneSlider.valueChanged.connect(self.changeClippingPlaneRange)
         self.clippingPlaneSlider.setEnabled(False)
 
-        self.planeSliderLabel = QLabel("plane slider position")
+        self.planeSliderLabel = QLabel("plane slider position", self.parent)
         self.planeSlider = QLabeledDoubleSlider(Qt.Orientation.Horizontal, self.parent)
         self.planeSlider.setMinimum(0)
         self.planeSlider.setMaximum(self.layer.data.shape[-1])
@@ -105,7 +105,7 @@ class QtLayerDepiction(QFormLayout):
         self.planeThicknessSlider = QLabeledDoubleSlider(
             Qt.Orientation.Horizontal, self.parent
         )
-        self.planeThicknessLabel = QLabel(trans._("plane thickness:"))
+        self.planeThicknessLabel = QLabel(trans._("plane thickness:"), self.parent)
         self.planeThicknessSlider.setFocusPolicy(Qt.NoFocus)
         self.planeThicknessSlider.setMinimum(1)
         self.planeThicknessSlider.setMaximum(50)
