@@ -1,134 +1,41 @@
-display_name: napari builtins
-name: finn
+display_name: finn builtins
+name: finn-viewer
 
 contributions:
   commands:
-    - id: finn.get_reader
+    - id: finn-viewer.get_reader
       python_name: finn_builtins.io:napari_get_reader
       title: Builtin Reader
 
-    - id: finn.write_image
+    - id: finn-viewer.write_image
       python_name: finn_builtins.io:napari_write_image
       title: napari built-in image writer
-    - id: finn.write_labels
+    - id: finn-viewer.write_labels
       python_name: finn_builtins.io:napari_write_labels
       title: napari built-in label field writer
-    - id: finn.write_points
+    - id: finn-viewer.write_points
       python_name: finn_builtins.io:napari_write_points
       title: napari built-in points writer
-    - id: finn.write_shapes
+    - id: finn-viewer.write_shapes
       python_name: finn_builtins.io:napari_write_shapes
       title: napari built-in shapes writer
-    - id: finn.write_directory
+    - id: finn-viewer.write_directory
       python_name: finn_builtins.io:write_layer_data_with_plugins
       title: napari built-in save to folder
 
     # samples
-    - id: finn.data.astronaut
-      title: Generate astronaut sample
-      python_name: finn_builtins._skimage_data:astronaut
-    - id: finn.data.binary_blobs
-      title: Generate binary_blobs sample
-      python_name: finn_builtins._skimage_data:binary_blobs
-    - id: finn.data.binary_blobs_3D
-      title: Generate binary_blobs_3D sample
-      python_name: finn_builtins._skimage_data:binary_blobs_3D
-    - id: finn.data.brain
-      title: Generate brain sample
-      python_name: finn_builtins._skimage_data:brain
-    - id: finn.data.brick
-      title: Generate brick sample
-      python_name: finn_builtins._skimage_data:brick
-    - id: finn.data.camera
-      title: Generate camera sample
-      python_name: finn_builtins._skimage_data:camera
-    - id: finn.data.cat
-      title: Generate cat sample
-      python_name: finn_builtins._skimage_data:cat
-    - id: finn.data.cell
-      title: Generate cell sample
-      python_name: finn_builtins._skimage_data:cell
-    - id: finn.data.cells3d
-      title: Generate cells3d sample
-      python_name: finn_builtins._skimage_data:cells3d
-    - id: finn.data.checkerboard
-      title: Generate checkerboard sample
-      python_name: finn_builtins._skimage_data:checkerboard
-    - id: finn.data.clock
-      title: Generate clock sample
-      python_name: finn_builtins._skimage_data:clock
-    - id: finn.data.coffee
-      title: Generate coffee sample
-      python_name: finn_builtins._skimage_data:coffee
-    - id: finn.data.coins
-      title: Generate coins sample
-      python_name: finn_builtins._skimage_data:coins
-    - id: finn.data.colorwheel
-      title: Generate colorwheel sample
-      python_name: finn_builtins._skimage_data:colorwheel
-    - id: finn.data.eagle
-      title: Generate eagle sample
-      python_name: finn_builtins._skimage_data:eagle
-    - id: finn.data.grass
-      title: Generate grass sample
-      python_name: finn_builtins._skimage_data:grass
-    - id: finn.data.gravel
-      title: Generate gravel sample
-      python_name: finn_builtins._skimage_data:gravel
-    - id: finn.data.horse
-      title: Generate horse sample
-      python_name: finn_builtins._skimage_data:horse
-    - id: finn.data.hubble_deep_field
-      title: Generate hubble_deep_field sample
-      python_name: finn_builtins._skimage_data:hubble_deep_field
-    - id: finn.data.human_mitosis
-      title: Generate human_mitosis sample
-      python_name: finn_builtins._skimage_data:human_mitosis
-    - id: finn.data.immunohistochemistry
-      title: Generate immunohistochemistry sample
-      python_name: finn_builtins._skimage_data:immunohistochemistry
-    - id: finn.data.kidney
-      title: Generate kidney sample
-      python_name: finn_builtins._skimage_data:kidney
-    - id: finn.data.lfw_subset
-      title: Generate lfw_subset sample
-      python_name: finn_builtins._skimage_data:lfw_subset
-    - id: finn.data.lily
-      title: Generate lily sample
-      python_name: finn_builtins._skimage_data:lily
-    - id: finn.data.microaneurysms
-      title: Generate microaneurysms sample
-      python_name: finn_builtins._skimage_data:microaneurysms
-    - id: finn.data.moon
-      title: Generate moon sample
-      python_name: finn_builtins._skimage_data:moon
-    - id: finn.data.page
-      title: Generate page sample
-      python_name: finn_builtins._skimage_data:page
-    - id: finn.data.retina
-      title: Generate retina sample
-      python_name: finn_builtins._skimage_data:retina
-    - id: finn.data.rocket
-      title: Generate rocket sample
-      python_name: finn_builtins._skimage_data:rocket
-    - id: finn.data.shepp_logan_phantom
-      title: Generate shepp_logan_phantom sample
-      python_name: finn_builtins._skimage_data:shepp_logan_phantom
-    - id: finn.data.skin
-      title: Generate skin sample
-      python_name: finn_builtins._skimage_data:skin
-    - id: finn.data.text
-      title: Generate text sample
-      python_name: finn_builtins._skimage_data:text
-    - id: finn.data.balls_2d
-      title: Generate 2d_balls sample
-      python_name: finn_builtins._ndims_balls:labeled_particles2d
-    - id: finn.data.balls_3d
-      title: Generate 3d_balls sample
-      python_name: finn_builtins._ndims_balls:labeled_particles3d
+    - id: finn-viewer.Fluo_N2DL_HeLa
+      python_name: finn_builtins.example_data:Fluo_N2DL_HeLa
+      title: "Load Fluo-N2DL-HeLa tracking dataset"
+    - id: finn-viewer.Fluo_N2DL_HeLa_crop
+      python_name: finn_builtins.example_data:Fluo_N2DL_HeLa_crop
+      title: "Load Fluo-N2DL-HeLa tracking dataset (crop)"
+    - id: finn-viewer.Mouse_Embryo_Membrane
+      python_name: finn_builtins.example_data:Mouse_Embryo_Membrane
+      title: "Load Mouse Embryo_Membrane tracking dataset"
 
   readers:
-    - command: finn.get_reader
+    - command: finn-viewer.get_reader
       accepts_directories: true
       filename_patterns:
         [
@@ -158,7 +65,7 @@ contributions:
         ]
 
   writers:
-    - command: finn.write_image
+    - command: finn-viewer.write_image
       display_name: lossless
       layer_types: ["image"]
       filename_extensions:
@@ -168,7 +75,7 @@ contributions:
           ".ppm", ".ps", ".rgb", ".rgba", ".sgi", ".stk", ".tga",
         ]
 
-    - command: finn.write_image
+    - command: finn-viewer.write_image
       display_name: lossy
       layer_types: ["image"]
       filename_extensions:
@@ -177,7 +84,7 @@ contributions:
           ".jpf", ".jpx", ".mpo",
         ]
 
-    - command: finn.write_labels
+    - command: finn-viewer.write_labels
       display_name: labels
       layer_types: ["labels"]
       filename_extensions:
@@ -186,120 +93,27 @@ contributions:
           ".pgm", ".ppm", ".stk",
         ]
 
-    - command: finn.write_points
+    - command: finn-viewer.write_points
       display_name: points
       layer_types: ["points"]
       filename_extensions: [".csv"]
 
-    - command: finn.write_shapes
+    - command: finn-viewer.write_shapes
       display_name: shapes
       layer_types: ["shapes"]
       filename_extensions: [".csv"]
 
-    - command: finn.write_directory
+    - command: finn-viewer.write_directory
       display_name: Save to Folder
       layer_types: ["image*", "labels*", "points*", "shapes*"]
 
   sample_data:
-    - display_name: Astronaut (RGB)
-      key: astronaut
-      command: finn.data.astronaut
-    - display_name: Balls
-      key: balls_2d
-      command: finn.data.balls_2d
-    - display_name: Balls (3D)
-      key: balls_3d
-      command: finn.data.balls_3d
-    - display_name: Binary Blobs
-      key: binary_blobs
-      command: finn.data.binary_blobs
-    - display_name: Binary Blobs (3D)
-      key: binary_blobs_3D
-      command: finn.data.binary_blobs_3D
-    - display_name: Brain (3D)
-      key: brain
-      command: finn.data.brain
-    - display_name: Brick
-      key: brick
-      command: finn.data.brick
-    - display_name: Camera
-      key: camera
-      command: finn.data.camera
-    - display_name: Cat (RGB)
-      key: cat
-      command: finn.data.cat
-    - display_name: Cell
-      key: cell
-      command: finn.data.cell
-    - display_name: Cells (3D+2Ch)
-      key: cells3d
-      command: finn.data.cells3d
-    - display_name: Checkerboard
-      key: checkerboard
-      command: finn.data.checkerboard
-    - display_name: Clock
-      key: clock
-      command: finn.data.clock
-    - display_name: Coffee (RGB)
-      key: coffee
-      command: finn.data.coffee
-    - display_name: Coins
-      key: coins
-      command: finn.data.coins
-    - display_name: Colorwheel (RGB)
-      key: colorwheel
-      command: finn.data.colorwheel
-    - display_name: Eagle
-      key: eagle
-      command: finn.data.eagle
-    - display_name: Grass
-      key: grass
-      command: finn.data.grass
-    - display_name: Gravel
-      key: gravel
-      command: finn.data.gravel
-    - display_name: Horse
-      key: horse
-      command: finn.data.horse
-    - display_name: Hubble Deep Field (RGB)
-      key: hubble_deep_field
-      command: finn.data.hubble_deep_field
-    - display_name: Human Mitosis
-      key: human_mitosis
-      command: finn.data.human_mitosis
-    - display_name: Immunohistochemistry (RGB)
-      key: immunohistochemistry
-      command: finn.data.immunohistochemistry
-    - display_name: Kidney (3D+3Ch)
-      key: kidney
-      command: finn.data.kidney
-    - display_name: Labeled Faces in the Wild
-      key: lfw_subset
-      command: finn.data.lfw_subset
-    - display_name: Lily (4Ch)
-      key: lily
-      command: finn.data.lily
-    - display_name: Microaneurysms
-      key: microaneurysms
-      command: finn.data.microaneurysms
-    - display_name: Moon
-      key: moon
-      command: finn.data.moon
-    - display_name: Page
-      key: page
-      command: finn.data.page
-    - display_name: Retina (RGB)
-      key: retina
-      command: finn.data.retina
-    - display_name: Rocket (RGB)
-      key: rocket
-      command: finn.data.rocket
-    - display_name: Shepp Logan Phantom
-      key: shepp_logan_phantom
-      command: finn.data.shepp_logan_phantom
-    - display_name: Skin (RGB)
-      key: skin
-      command: finn.data.skin
-    - display_name: Text
-      key: text
-      command: finn.data.text
+    - command: finn-viewer.Fluo_N2DL_HeLa
+      key: "Fluo-N2DL-HeLa"
+      display_name: "Fluo-N2DL-HeLa (2D)"
+    - command: finn-viewer.Fluo_N2DL_HeLa_crop
+      key: "Fluo-N2DL-HeLa-crop"
+      display_name: "Fluo-N2DL-HeLa crop (2D)"
+    - command: finn-viewer.Mouse_Embryo_Membrane
+      key: "Mouse_Embryo_Membrane"
+      display_name: "Mouse Embryo Membranes (3D)"
