@@ -18,16 +18,16 @@ class MenuWidget(QScrollArea):
         # motile_widget = MotileWidget(viewer)
         editing_widget = EditingMenu(viewer)
 
-        tabwidget = QTabWidget()
+        self.tabwidget = QTabWidget()
 
         # tabwidget.addTab(motile_widget, "Track with Motile")
-        tabwidget.addTab(tracks_viewer.tracks_list, "Tracks List")
-        tabwidget.addTab(editing_widget, "Edit Tracks")
+        self.tabwidget.addTab(tracks_viewer.tracks_list, "Tracks List")
+        self.tabwidget.addTab(editing_widget, "Edit Tracks")
 
         layout = QVBoxLayout()
-        layout.addWidget(tabwidget)
+        layout.addWidget(self.tabwidget)
 
-        self.setWidget(tabwidget)
+        self.setWidget(self.tabwidget)
         self.setWidgetResizable(True)
 
         self.setLayout(layout)
