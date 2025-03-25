@@ -69,14 +69,20 @@ def test_plane_controls_show_hide_on_depiction_change(qtbot):
     layer.depiction = "volume"
     assert qtctrl.depictionControls.planeThicknessSlider.isHidden()
     assert qtctrl.depictionControls.planeThicknessLabel.isHidden()
-    assert qtctrl.depictionControls.planeNormalButtons.isHidden()
-    assert qtctrl.depictionControls.planeNormalLabel.isHidden()
+    assert not qtctrl.depictionControls.clippingPlaneCheckbox.isHidden()
+    assert not qtctrl.depictionControls.clippingPlaneSlider.isHidden()
+    assert qtctrl.depictionControls.planeSlider.isHidden()
+    assert qtctrl.depictionControls.planeSliderLabel.isHidden()
 
     layer.depiction = "plane"
     assert not qtctrl.depictionControls.planeThicknessSlider.isHidden()
     assert not qtctrl.depictionControls.planeThicknessLabel.isHidden()
     assert not qtctrl.depictionControls.planeNormalButtons.isHidden()
     assert not qtctrl.depictionControls.planeNormalLabel.isHidden()
+    assert not qtctrl.depictionControls.planeSlider.isHidden()
+    assert not qtctrl.depictionControls.planeSliderLabel.isHidden()
+    assert qtctrl.depictionControls.clippingPlaneCheckbox.isHidden()
+    assert qtctrl.depictionControls.clippingPlaneSlider.isHidden()
 
 
 def test_plane_controls_show_hide_on_ndisplay_change(qtbot):
