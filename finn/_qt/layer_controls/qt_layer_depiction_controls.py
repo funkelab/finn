@@ -265,6 +265,9 @@ class QtLayerDepiction(QFormLayout):
     def changeClippingPlaneRange(self, value: tuple[int, int]):
         """Set lower and upper bounds of the clipping plane."""
 
+        if not self.layer.ndim >= 3:
+            return
+
         if len(self.layer.experimental_clipping_planes) == 0:
             plane = self.layer.plane
             self.layer.experimental_clipping_planes.append(
