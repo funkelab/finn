@@ -150,6 +150,8 @@ class QtImageControls(QtBaseImageControls):
         self.layout().addRow(self.isoThresholdLabel, self.isoThresholdSlider)
         self.layout().addRow(self.attenuationLabel, self.attenuationSlider)
 
+        self._on_ndisplay_changed()
+
     def changeInterpolation(self, text):
         """Change interpolation mode for image display.
 
