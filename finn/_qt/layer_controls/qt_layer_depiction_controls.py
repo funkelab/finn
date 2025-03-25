@@ -11,7 +11,6 @@ from qtpy.QtWidgets import (
 )
 from superqt import QLabeledDoubleSlider, QRangeSlider
 
-import finn
 from finn.layers.image._image_constants import (
     VolumeDepiction,
 )
@@ -263,8 +262,8 @@ class QtLayerDepiction(QFormLayout):
             self.clippingPlaneSlider.setEnabled(False)
         self.layer.events.experimental_clipping_planes()
 
-    def changeClippingPlaneRange(self, value):
-        viewer = finn.viewer.current_viewer()
+    def changeClippingPlaneRange(self, value: tuple[int, int]):
+        """Set lower and upper bounds of the clipping plane."""
 
         if len(self.layer.experimental_clipping_planes) == 0:
             plane = self.layer.plane
@@ -286,16 +285,16 @@ class QtLayerDepiction(QFormLayout):
         plane_normal = np.array(self.layer.experimental_clipping_planes[0].normal)
         new_position_1 = np.array([0, 0, 0]) + value[0] * plane_normal
         new_position_1 = (
-            int(new_position_1[0] * viewer.dims.range[-3].step),
-            (new_position_1[1] * viewer.dims.range[-2].step),
-            int(new_position_1[2] * viewer.dims.range[-1].step),
+            int(new_position_1[0] * self.layer.scale[-3]),
+            (new_position_1[1] * self.layer.scale[-2]),
+            int(new_position_1[2] * self.layer.scale[-1]),
         )
         self.layer.experimental_clipping_planes[0].position = new_position_1
         new_position_2 = np.array([0, 0, 0]) + value[1] * plane_normal
         new_position_2 = (
-            int(new_position_2[0] * viewer.dims.range[-3].step),
-            (new_position_2[1] * viewer.dims.range[-2].step),
-            int(new_position_2[2] * viewer.dims.range[-1].step),
+            int(new_position_2[0] * self.layer.scale[-3]),
+            (new_position_2[1] * self.layer.scale[-2]),
+            int(new_position_2[2] * self.layer.scale[-1]),
         )
 
         self.layer.experimental_clipping_planes[1].position = new_position_2
