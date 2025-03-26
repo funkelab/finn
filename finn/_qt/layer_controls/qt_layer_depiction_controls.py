@@ -313,6 +313,12 @@ class QtLayerDepiction(QFormLayout):
             self.depictionComboBox.show()
             self.depictionLabel.show()
 
+    def disconnect(self):
+        """Disconnect all event connections (e.g. when layer is removed)."""
+        self.layer.events.depiction.disconnect(self._on_depiction_change)
+        self.layer.plane.events.thickness.disconnect(self._on_plane_thickness_change)
+        self.layer.events.plane.disconnect(self._update_plane_slider)
+
 
 class PlaneNormalButtons(QWidget):
     """Qt buttons for controlling plane orientation.

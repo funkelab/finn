@@ -269,7 +269,9 @@ class QtLabelsControls(QtLayerControls):
         self.layout().addRow(trans._("show\nselected:"), self.selectedColorCheckbox)
 
         # add the depiction controls
-        self.depictionControls = QtLayerDepiction(self)
+        if not hasattr(self, "depictionControls"):
+            self.depictionControls = QtLayerDepiction(self)
+
         for i in range(self.depictionControls.rowCount()):
             label_item = self.depictionControls.itemAt(i, QFormLayout.LabelRole)
             field_item = self.depictionControls.itemAt(i, QFormLayout.FieldRole)

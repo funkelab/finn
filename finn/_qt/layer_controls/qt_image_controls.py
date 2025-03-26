@@ -133,7 +133,9 @@ class QtImageControls(QtBaseImageControls):
         self.layout().addRow(trans._("colormap:"), colormap_layout)
         self.layout().addRow(self.interpLabel, self.interpComboBox)
 
-        self.depictionControls = QtLayerDepiction(self)
+        if not hasattr(self, "depictionControls"):
+            self.depictionControls = QtLayerDepiction(self)
+
         for i in range(self.depictionControls.rowCount()):
             label_item = self.depictionControls.itemAt(i, QFormLayout.LabelRole)
             field_item = self.depictionControls.itemAt(i, QFormLayout.FieldRole)
