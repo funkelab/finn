@@ -105,6 +105,9 @@ def drag_data_to_projected_distance(
 
 
 def orient_clipping_plane_normals(layer: Image | Labels | TrackLabels, orientation: str):
+    if not layer.ndim >= 3:
+        return
+
     if orientation == "x":
         layer.experimental_clipping_planes[0].normal = (
             0,
