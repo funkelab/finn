@@ -4,6 +4,7 @@ import shutil
 import zipfile
 from pathlib import Path
 from urllib.request import urlretrieve
+from warnings import warn
 
 import numpy as np
 import tifffile
@@ -14,6 +15,22 @@ from skimage.measure import regionprops
 from finn.types import LayerData
 
 logger = logging.getLogger(__name__)
+
+
+def delete_all():
+    """Delete any example datasets downloaded to the appdir.user_data_dir.
+    Useful for testing that re-download works, or just cleaning up disk space if you
+    don't need the data anymore.
+    """
+    appdir = AppDirs("motile-tracker")
+    data_dir = Path(appdir.user_data_dir)
+    data_dir.mkdir(parents=True, exist_ok=True)
+    datasets = ["Mouse_Embryo_Membrane.zarr", "Fluo-N2DL-HeLa.zarr"]
+    for ds in datasets:
+        ds_path = data_dir / ds
+        if ds_path.exists():
+            warn(f"Deleting dataset at {ds_path}")
+            shutil.rmtree(ds_path)
 
 
 def Mouse_Embryo_Membrane() -> list[LayerData]:
