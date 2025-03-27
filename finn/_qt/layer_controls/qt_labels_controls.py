@@ -245,10 +245,6 @@ class QtLabelsControls(QtLayerControls):
         self.isoGradientComboBox = isoGradientComboBox
         self.isoGradientLabel = QLabel(trans._("gradient\nmode:"))
 
-        self.depictionControls = QtLayerDepiction(self)
-
-        self._on_ndisplay_changed()
-
         color_layout = QHBoxLayout()
         self.colorBox = QtColorBox(layer)
         color_layout.addWidget(self.colorBox)
@@ -269,8 +265,7 @@ class QtLabelsControls(QtLayerControls):
         self.layout().addRow(trans._("show\nselected:"), self.selectedColorCheckbox)
 
         # add the depiction controls
-        if not hasattr(self, "depictionControls"):
-            self.depictionControls = QtLayerDepiction(self)
+        self.depictionControls = QtLayerDepiction(self)
 
         for i in range(self.depictionControls.rowCount()):
             label_item = self.depictionControls.itemAt(i, QFormLayout.LabelRole)
@@ -283,6 +278,8 @@ class QtLabelsControls(QtLayerControls):
                 self.layout().addRow(label_widget, field_widget)
             elif field_widget:  # If there's no label, just add the field
                 self.layout().addRow(field_widget)
+
+        self._on_ndisplay_changed()
 
     def change_color_mode(self):
         """Change color mode of label layer"""
