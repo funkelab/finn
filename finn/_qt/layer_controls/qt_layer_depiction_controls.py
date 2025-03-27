@@ -319,6 +319,10 @@ class QtLayerDepiction(QFormLayout):
         self.layer.plane.events.thickness.disconnect(self._on_plane_thickness_change)
         self.layer.events.plane.disconnect(self._update_plane_slider)
 
+        # break circular references
+        self.parent = None
+        self.layer = None
+
 
 class PlaneNormalButtons(QWidget):
     """Qt buttons for controlling plane orientation.
