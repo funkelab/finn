@@ -20,6 +20,42 @@ from finn.utils.translations import trans
 
 
 class QtLayerDepiction(QFormLayout):
+    """Qt controls for the image and labels layer depiction.
+
+    Parameters
+    ----------
+    parent : finn._qt.layer_controls.QtImageControls or finn._qt.layer_controls.QtLabelsControls
+        An instance of QtImageControls or QtLabelsControls holding the napari layer.
+
+    Attributes
+    ----------
+    parent : finn._qt.layer_controls.QtImageControls or finn._qt.layer_controls.QtLabelsControls
+        An instance of QtImageControls or QtLabelsControls holding the napari layer.
+    layer : finn.layers.Image
+        An instance of a napari Image layer.
+
+    depictionComboBox : qtpy.QtWidgets.QComboBox
+        QComboBox for selecting the depiction of the layer.
+    depictionLabel : qtpy.QtWidgets.QLabel
+        Label for the depiction combobox.
+    planeNormalButtons : PlaneNormalButtons
+        QPushButtons for controlling the plane normal.
+    planeNormalLabel : qtpy.QtWidgets.QLabel
+        Label for the plane normal buttons.
+    clippingPlaneCheckbox : qtpy.QtWidgets.QCheckBox
+        Checkbox for enabling the clipping plane.
+    clippingPlaneSlider : superqt.QRangeSlider
+        QRangeSlider for selecting the range of the clipping plane.
+    planeSliderLabel : qtpy.QtWidgets.QLabel
+        Label for the plane slider.
+    planeSlider : superqt.QLabeledDoubleSlider
+        QLabeledDoubleSlider for selecting the position of the plane.
+    planeThicknessSlider : superqt.QLabeledDoubleSlider
+        QLabeledDoubleSlider for selecting the thickness of the plane.
+    planeThicknessLabel : qtpy.QtWidgets.QLabel
+        Label for the plane thickness slider.
+    """
+
     def __init__(self, parent) -> None:
         super().__init__()
         self.parent = parent
