@@ -351,9 +351,11 @@ class QtLayerDepiction(QFormLayout):
 
     def disconnect(self):
         """Disconnect all event connections (e.g. when layer is removed)."""
-        self.layer.events.depiction.disconnect(self._on_depiction_change)
-        self.layer.plane.events.thickness.disconnect(self._on_plane_thickness_change)
-        self.layer.events.plane.disconnect(self._update_plane_slider)
+
+        if self.layer is not None:  # check if layer still exists
+            self.layer.events.depiction.disconnect(self._on_depiction_change)
+            self.layer.plane.events.thickness.disconnect(self._on_plane_thickness_change)
+            self.layer.events.plane.disconnect(self._update_plane_slider)
 
         # break circular references
         self.parent = None
