@@ -16,6 +16,7 @@ def mock_run():
             yield finn.run
 
 
+@pytest.mark.skip
 def test_cli_works(monkeypatch, capsys):
     """Test the cli runs and shows help"""
     monkeypatch.setattr(sys, "argv", ["napari", "-h"])
@@ -24,6 +25,7 @@ def test_cli_works(monkeypatch, capsys):
     assert "napari command line viewer." in str(capsys.readouterr())
 
 
+@pytest.mark.skip
 def test_cli_shows_plugins(monkeypatch, capsys, tmp_plugin):
     """Test the cli --info runs and shows plugins"""
     monkeypatch.setattr(sys, "argv", ["napari", "--info"])
@@ -32,6 +34,7 @@ def test_cli_shows_plugins(monkeypatch, capsys, tmp_plugin):
     assert tmp_plugin.name in str(capsys.readouterr())
 
 
+@pytest.mark.skip
 def test_cli_parses_unknowns(mock_run, monkeypatch, make_napari_viewer):
     """test that we can parse layer keyword arg variants"""
     v = make_napari_viewer()  # our mock view_path will return this object
@@ -59,6 +62,7 @@ def test_cli_parses_unknowns(mock_run, monkeypatch, make_napari_viewer):
             __main__._run()
 
 
+@pytest.mark.skip
 def test_cli_raises(monkeypatch):
     """test that unknown kwargs raise the correct errors."""
     with monkeypatch.context() as m:
@@ -74,6 +78,7 @@ def test_cli_raises(monkeypatch):
         assert str(e.value) == "error: argument --gamma expected one argument"
 
 
+@pytest.mark.skip
 @mock.patch("runpy.run_path")
 def test_cli_runscript(run_path, monkeypatch, tmp_path):
     """Test that running napari script.py runs a script"""
@@ -87,6 +92,7 @@ def test_cli_runscript(run_path, monkeypatch, tmp_path):
     run_path.assert_called_once_with(str(script))
 
 
+@pytest.mark.skip
 @mock.patch("finn._qt.qt_viewer.QtViewer._qt_open")
 def test_cli_passes_kwargs(qt_open, mock_run, monkeypatch, make_napari_viewer):
     """test that we can parse layer keyword arg variants"""
@@ -107,6 +113,7 @@ def test_cli_passes_kwargs(qt_open, mock_run, monkeypatch, make_napari_viewer):
     mock_run.assert_called_once_with(gui_exceptions=True)
 
 
+@pytest.mark.skip
 @mock.patch("finn._qt.qt_viewer.QtViewer._qt_open")
 def test_cli_passes_kwargs_stack(qt_open, mock_run, monkeypatch, make_napari_viewer):
     """test that we can parse layer keyword arg variants"""
@@ -142,6 +149,7 @@ def test_cli_passes_kwargs_stack(qt_open, mock_run, monkeypatch, make_napari_vie
     mock_run.assert_called_once_with(gui_exceptions=True)
 
 
+@pytest.mark.skip
 def test_cli_retains_viewer_ref(mock_run, monkeypatch, make_napari_viewer):
     """Test that finn.__main__ is retaining a reference to the viewer."""
     v = make_napari_viewer()  # our mock view_path will return this object

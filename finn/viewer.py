@@ -56,7 +56,6 @@ class Viewer(ViewerModel):
         )
         # we delay initialization of plugin system to the first instantiation
         # of a viewer... rather than just on import of plugins module
-        # breakpoint()
         from finn.plugins import _initialize_plugins
 
         # having this import here makes all of Qt imported lazily, upon

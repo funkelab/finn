@@ -9,7 +9,7 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
 )
 
-from finn.utils import citation_text, sys_info
+from finn.utils import sys_info
 from finn.utils.translations import trans
 
 
@@ -46,9 +46,7 @@ class QtAbout(QDialog):
         self.layout = QVBoxLayout()
 
         # Description
-        title_label = QLabel(
-            trans._("<b>napari: a multi-dimensional image viewer for python</b>")
-        )
+        title_label = QLabel(trans._("<b>finn: a tracks viewing application</b>"))
         title_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         self.layout.addWidget(title_label)
 
@@ -71,17 +69,6 @@ class QtAbout(QDialog):
             int(self.infoTextBox.document().size().width() + 19),
             int(min(self.infoTextBox.document().size().height() + 10, 500)),
         )
-
-        self.layout.addWidget(QLabel(trans._("<b>citation information:</b>")))
-        self.citationTextBox = QTextEdit(citation_text)
-        self.citationTextBox.setFixedHeight(64)
-        self.citationCopyButton = QtCopyToClipboardButton(self.citationTextBox)
-        self.citation_layout = QHBoxLayout()
-        self.citation_layout.addWidget(self.citationTextBox, 1)
-        self.citation_layout.addWidget(
-            self.citationCopyButton, 0, Qt.AlignmentFlag.AlignTop
-        )
-        self.layout.addLayout(self.citation_layout)
 
         self.setLayout(self.layout)
 

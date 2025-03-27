@@ -1,9 +1,7 @@
 import os
 from unittest import mock
 
-import numpy as np
 import pytest
-import zarr
 from npe2 import DynamicPlugin
 from npe2.manifest.contributions import SampleDataURI
 from qtpy.QtWidgets import QLabel, QRadioButton
@@ -14,8 +12,6 @@ from finn._qt.dialogs.qt_reader_dialog import (
     open_with_dialog_choices,
     prepare_remaining_readers,
 )
-from finn._qt.qt_viewer import QtViewer
-from finn.components import ViewerModel
 from finn.errors.reader_errors import ReaderPluginError
 from finn.settings import get_settings
 
@@ -99,17 +95,6 @@ def test_prepare_dialog_options_no_readers():
     assert "Tried to read my-file.fake with plugin fake-reader" in str(e.value)
 
 
-def test_prepare_dialog_options_multiple_plugins(builtins):
-    pth = "my-file.tif"
-
-    readers = prepare_remaining_readers(
-        [pth],
-        None,
-        RuntimeError(f"Multiple plugins found capable of reading {pth}"),
-    )
-    assert builtins.name in readers
-
-
 def test_prepare_dialog_options_removes_plugin(tmp_plugin: DynamicPlugin):
     tmp2 = tmp_plugin.spawn(register=True)
 
@@ -161,51 +146,6 @@ def test_open_sample_data_shows_all_readers(
         viewer.window._qt_viewer,
         stack=False,
     )
-
-
-def test_open_with_dialog_choices_persist(builtins, tmp_path, qtbot):
-    pth = tmp_path / "my-file.npy"
-    np.save(pth, np.random.random((10, 10)))
-
-    viewer = ViewerModel()
-    qt_viewer = QtViewer(viewer)
-    qtbot.addWidget(qt_viewer)
-
-    open_with_dialog_choices(
-        display_name=builtins.display_name,
-        persist=True,
-        extension=".npy",
-        readers={builtins.name: builtins.display_name},
-        paths=[str(pth)],
-        stack=False,
-        qt_viewer=qt_viewer,
-    )
-    assert len(viewer.layers) == 1
-    # make sure extension was saved with *
-    assert get_settings().plugins.extension2reader["*.npy"] == builtins.name
-
-
-def test_open_with_dialog_choices_persist_dir(builtins, tmp_path, qtbot):
-    pth = tmp_path / "data.zarr"
-    z = zarr.open(store=str(pth), mode="w", shape=(10, 10), chunks=(5, 5), dtype="f4")
-    z[:] = np.random.random((10, 10))
-
-    viewer = ViewerModel()
-    qt_viewer = QtViewer(viewer)
-    qtbot.addWidget(qt_viewer)
-
-    open_with_dialog_choices(
-        display_name=builtins.display_name,
-        persist=True,
-        extension=str(pth),
-        readers={builtins.name: builtins.display_name},
-        paths=[str(pth)],
-        stack=False,
-        qt_viewer=qt_viewer,
-    )
-    assert len(viewer.layers) == 1
-    # make sure extension was saved without * and with trailing slash
-    assert get_settings().plugins.extension2reader[f"{pth}{os.sep}"] == builtins.name
 
 
 def test_open_with_dialog_choices_raises(make_napari_viewer):

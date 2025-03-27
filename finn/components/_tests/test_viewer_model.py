@@ -24,7 +24,7 @@ from finn.utils.events.event import WarningEmitter
 def test_viewer_model():
     """Test instantiating viewer model."""
     viewer = ViewerModel()
-    assert viewer.title == "napari"
+    assert viewer.title == "Motile Tracker"
     assert len(viewer.layers) == 0
     assert viewer.dims.ndim == 2
 
@@ -863,6 +863,7 @@ def test_open_or_get_error_no_plugin():
         viewer._open_or_raise_error(["my_file.fake"])
 
 
+@pytest.mark.skip  # skipping because depends on plugin pytest config
 def test_open_or_get_error_builtins(builtins: DynamicPlugin, tmp_path):
     """Test builtins is available to read npy files."""
     viewer = ViewerModel()
@@ -879,6 +880,7 @@ def test_open_or_get_error_builtins(builtins: DynamicPlugin, tmp_path):
     assert layer.source.reader_plugin == builtins.name
 
 
+@pytest.mark.skip  # skipping because depends on plugin pytest config
 def test_open_or_get_error_prefered_plugin(
     tmp_path, builtins: DynamicPlugin, tmp_plugin: DynamicPlugin
 ):
@@ -897,6 +899,7 @@ def test_open_or_get_error_prefered_plugin(
     assert added[0].source.reader_plugin == builtins.name
 
 
+@pytest.mark.skip  # skipping because depends on plugin pytest config
 def test_open_or_get_error_cant_find_plugin(tmp_path, builtins: DynamicPlugin):
     """Test user is warned and only plugin used if preferred plugin missing."""
     viewer = ViewerModel()
@@ -931,6 +934,7 @@ def test_open_or_get_error_no_prefered_plugin_many_available(
             viewer._open_or_raise_error(["my_file.fake"])
 
 
+@pytest.mark.skip  # skipping because depends on plugin pytest config
 def test_open_or_get_error_preferred_fails(builtins, tmp_path):
     viewer = ViewerModel()
     pth = tmp_path / "my-file.npy"

@@ -123,12 +123,10 @@ all = [
 ]
 optional-base = [
     "zarr>=2.12.0", # needed by `builtins` (dask.array.from_zarr) to open zarr
-    "napari-plugin-manager >=0.1.3, <0.2.0",
 ]
 optional-numba = [
     "numba>=0.57.1",
     "finn-viewer[pyqt,optional]",
-    "napari-plugin-manager >=0.1.0a1, <0.2.0",
 ]
 optional = [
     "finn-viewer[optional-base,optional-numba]",
@@ -142,14 +140,14 @@ testing = [
     "lxml[html_clean]>5",
     "matplotlib >= 3.6.1",
     "pooch>=1.6.0",
-    "coverage>7",
+    "pytest-cov",
     "docstring_parser>=0.15",
     "pretend>=1.0.9",
     "pyautogui>=0.9.54",
     "pytest-qt>=4.3.1",
     "pytest-pretty>=1.1.0",
     "pytest>=8.1.0",
-    "tensorstore>=0.1.13",
+    "tensorstore>=0.1.13,!=0.1.72",
     "virtualenv>=20.17",
     "xarray>=0.16.2",
     "IPython>=7.25.0",
@@ -392,8 +390,8 @@ console_output_style = "count"
 minversion = "8"
 # log_cli_level = "INFO"
 xfail_strict = true
+qt_api = "pyqt5"
 testpaths = ["finn", "finn_builtins"]
-
 
 # NOTE: only put things that will never change in here.
 # napari deprecation and future warnings should NOT go in here.

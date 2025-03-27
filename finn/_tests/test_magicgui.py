@@ -310,7 +310,7 @@ def test_mgui_forward_refs(name, monkeypatch):
     import magicgui.widgets
     from magicgui.type_map import get_widget_class
 
-    monkeypatch.delitem(sys.modules, "napari")
+    monkeypatch.delitem(sys.modules, "finn")
     monkeypatch.delitem(sys.modules, "finn.viewer")
     monkeypatch.delitem(sys.modules, "finn.types")
     monkeypatch.setattr("finn.utils.action_manager.action_manager._actions", {})

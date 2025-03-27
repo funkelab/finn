@@ -258,7 +258,7 @@ def imshow(
     units=None,
     visible=True,
     viewer=None,
-    title="finn",
+    title="Motile Tracker",
     ndisplay=2,
     order=(),
     show=True,

@@ -12,6 +12,7 @@ from finn.viewer import ViewerModel
 LOGO = str(Path(finn.__file__).parent / "resources" / "logo.svg")
 
 
+@pytest.mark.skip  # skipping because depends on plugin pytest config
 def test_sample_hook(builtins, tmp_plugin: DynamicPlugin):
     viewer = ViewerModel()
     NAME = tmp_plugin.name
@@ -45,6 +46,7 @@ def test_sample_hook(builtins, tmp_plugin: DynamicPlugin):
     assert viewer.layers[-1].source == Source(sample=(NAME, KEY))
 
 
+@pytest.mark.skip  # skipping because depends on plugin pytest config
 def test_sample_uses_reader_plugin(builtins, tmp_plugin, tmp_path):
     viewer = ViewerModel()
     NAME = tmp_plugin.name

@@ -159,7 +159,6 @@ def sys_info(as_html: bool = False) -> str:
     optional_modules = (
         ("numba", "numba"),
         ("triangle", "triangle"),
-        ("napari_plugin_manager", "napari-plugin-manager"),
     )
 
     for module, name in optional_modules:

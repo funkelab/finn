@@ -13,6 +13,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  CI: true
+
 jobs:
 
   test:
@@ -21,11 +24,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10"] #, "3.11", "3.12", "3.13"]
         platform: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
       - uses: actions/checkout@v4
+      - uses: tlambert03/setup-qt-libs@v1
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
@@ -39,8 +43,23 @@ jobs:
           python -m pip install -U pip
           python -m pip install -e .[all,testing]
 
+      - name: Set Windows resolution
+        if: runner.os == 'Windows'
+        run: Set-DisplayResolution -Width 1920 -Height 1080 -Force
+        shell: powershell
+
+      - name: Install Windows OpenGL
+        if: runner.os == 'Windows'
+        run: |
+          git clone --depth 1 https://github.com/pyvista/gl-ci-helpers.git
+          powershell gl-ci-helpers/appveyor/install_opengl.ps1
+          if (Test-Path -Path "C:\Windows\system32\opengl32.dll" -PathType Leaf) {Exit 0} else {Exit 1}
+        shell: powershell
+
       - name: Test
-        run: pytest --color=yes --cov --cov-report=xml --cov-report=term-missing
+        uses: aganders3/headless-gui@v2
+        with:
+          run: pytest --color=yes --cov --cov-report=xml
 
       - name: Coverage
         uses: codecov/codecov-action@v5

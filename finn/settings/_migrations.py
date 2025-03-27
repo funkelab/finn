@@ -104,7 +104,7 @@ def v030_v040(model: NapariSettings):
     """
     for dist in distributions():
         for ep in dist.entry_points:
-            if ep.group == "finn.manifest":
+            if ep.group == "napari.manifest":
                 model.plugins.disabled_plugins.discard(dist.metadata["Name"])
 
 
