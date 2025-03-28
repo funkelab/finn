@@ -259,6 +259,7 @@ class Tracks(Layer):
         state.update(
             {
                 "data": self.data,
+                "ndim": self.ndim,
                 "properties": self.properties,
                 "graph": self.graph,
                 "color_by": self.color_by,
