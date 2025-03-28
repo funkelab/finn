@@ -170,6 +170,22 @@ def read_ctc_dataset(ds_name: str, data_dir: Path, crop_region=False) -> list[La
     return [raw_layer_data, seg_layer_data, points_layer_data]
 
 
+def _download_and_unzip(data_dir: Path, zip_name: str, url: str):
+    zip_filename = data_dir / f"{zip_name}.zip"
+    if not zip_filename.is_file():
+        logger.info("Downloading dataset from %s", url)
+        urlretrieve(url, filename=zip_filename)
+    try:
+        with zipfile.ZipFile(zip_filename, "r") as zip_ref:
+            zip_ref.extractall(data_dir)
+    except zipfile.BadZipFile:
+        logger.info("Corrupted zipfile %s, re-downloading", zip_filename)
+        urlretrieve(url, filename=zip_filename)
+        with zipfile.ZipFile(zip_filename, "r") as zip_ref:
+            zip_ref.extractall(data_dir)
+    zip_filename.unlink()
+
+
 def download_zenodo_dataset(
     ds_name: str, raw_name: str, label_name: str, data_dir: Path
 ) -> None:
@@ -187,14 +203,9 @@ def download_zenodo_dataset(
     ds_file_labels = data_dir / label_name
     ds_zarr = data_dir / (ds_name + ".zarr")
     url_raw = "https://zenodo.org/records/13903500/files/imaging.zip"
+    _download_and_unzip(data_dir, ds_name, url_raw)
     url_labels = "https://zenodo.org/records/13903500/files/segmentation.zip"
-    zip_filename_raw = data_dir / "imaging.zip"
-    zip_filename_labels = data_dir / "segmentation.zip"
-
-    if not zip_filename_raw.is_file():
-        urlretrieve(url_raw, filename=zip_filename_raw)
-    if not zip_filename_labels.is_file():
-        urlretrieve(url_labels, filename=zip_filename_labels)
+    _download_and_unzip(data_dir, ds_name, url_labels)
 
     with zipfile.ZipFile(zip_filename_raw, "r") as zip_ref:
         zip_ref.extractall(data_dir)
@@ -220,12 +231,7 @@ def download_ctc_dataset(ds_name: str, data_dir: Path) -> None:
     ds_dir = data_dir / ds_name
     ds_zarr = data_dir / (ds_name + ".zarr")
     ctc_url = f"http://data.celltrackingchallenge.net/training-datasets/{ds_name}.zip"
-    zip_filename = data_dir / f"{ds_name}.zip"
-    if not zip_filename.is_file():
-        urlretrieve(ctc_url, filename=zip_filename)
-    with zipfile.ZipFile(zip_filename, "r") as zip_ref:
-        zip_ref.extractall(data_dir)
-    zip_filename.unlink()
+    _download_and_unzip(data_dir, ds_name, ctc_url)
 
     convert_to_zarr(ds_dir / "01", ds_zarr, "01")
     convert_to_zarr(ds_dir / "01_ST" / "SEG", ds_zarr, "01_ST", relabel=True)
