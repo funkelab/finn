@@ -3,6 +3,7 @@ import numpy as np
 from finn._qt.layer_controls.qt_image_controls import QtImageControls
 from finn.components.dims import Dims
 from finn.layers import Image
+from finn.layers.utils.plane import ClippingPlane
 
 
 def test_interpolation_combobox(qtbot):
@@ -153,6 +154,64 @@ def test_clipping_plane_position_change(qtbot):
 
     assert layer.experimental_clipping_planes[0].position == new_position_1
     assert layer.experimental_clipping_planes[1].position == new_position_2
+
+
+def test_compute_plane_range(qtbot):
+    """Test the _compute_plane_range function."""
+    layer_data = np.random.rand(10, 15, 20)
+    layer = Image(layer_data)
+    qtctrl = QtImageControls(layer)
+    qtbot.addWidget(qtctrl)
+
+    # Set the plane normal
+    layer.plane.normal = [1, 0, 0]  # Normal along the x-axis
+    expected_range = (0, layer_data.shape[-3])  # Range along the x-axis
+
+    # Call _compute_plane_range
+    computed_range = qtctrl.depictionControls._compute_plane_range()
+    assert computed_range == expected_range, (
+        f"Expected {expected_range}, got {computed_range}"
+    )
+
+    # Test with a different plane normal
+    layer.plane.normal = [0, 1, 0]  # Normal along the y-axis
+    expected_range = (0, layer_data.shape[-2])  # Range along the y-axis
+    computed_range = qtctrl.depictionControls._compute_plane_range()
+    assert computed_range == expected_range, (
+        f"Expected {expected_range}, got {computed_range}"
+    )
+
+    # Test with an oblique plane normal
+    layer.plane.normal = [1, 1, 1]  # Oblique normal
+    computed_range = qtctrl.depictionControls._compute_plane_range()
+    expected_range = (np.float64(0.0), np.float64(25.98))
+    np.testing.assert_almost_equal(computed_range[0], expected_range[0], decimal=1)
+
+
+def test_activate_clipping_plane(qtbot):
+    """Test the _activateClippingPlane function."""
+    layer_data = np.random.rand(10, 15, 20)
+    layer = Image(layer_data)
+    qtctrl = QtImageControls(layer)
+    qtbot.addWidget(qtctrl)
+
+    # Ensure the experimental_clipping_planes are initialized
+    layer.experimental_clipping_planes = [
+        ClippingPlane(normal=[1, 0, 0], position=[0, 0, 0], enabled=False),
+        ClippingPlane(normal=[-1, 0, 0], position=[0, 0, 0], enabled=False),
+    ]
+
+    # Activate the clipping plane
+    qtctrl.depictionControls._activateClippingPlane(True)
+    assert layer.experimental_clipping_planes[0].enabled is True
+    assert layer.experimental_clipping_planes[1].enabled is True
+    assert qtctrl.depictionControls.clippingPlaneSlider.isEnabled() is True
+
+    # Deactivate the clipping plane
+    qtctrl.depictionControls._activateClippingPlane(False)
+    assert layer.experimental_clipping_planes[0].enabled is False
+    assert layer.experimental_clipping_planes[1].enabled is False
+    assert qtctrl.depictionControls.clippingPlaneSlider.isEnabled() is False
 
 
 def test_auto_contrast_buttons(qtbot):
