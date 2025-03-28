@@ -105,13 +105,54 @@ def test_plane_controls_show_hide_on_ndisplay_change(qtbot):
     assert not qtctrl.depictionControls.planeNormalLabel.isHidden()
 
 
-def test_plane_slider_value_change(qtbot):
+def test_plane_thickness_slider_value_change(qtbot):
     """Changing the model should update the view."""
     layer = Image(np.random.rand(10, 15, 20))
     qtctrl = QtImageControls(layer)
     qtbot.addWidget(qtctrl)
     layer.plane.thickness *= 2
     assert qtctrl.depictionControls.planeThicknessSlider.value() == layer.plane.thickness
+
+
+def test_plane_slider_value_change(qtbot):
+    """Test if updating the plane position updates the slider value."""
+    layer = Image(np.random.rand(10, 15, 20))
+    qtctrl = QtImageControls(layer)
+    qtbot.addWidget(qtctrl)
+    plane_normal = np.array(layer.plane.normal)
+    new_position = np.array([0, 0, 0]) + 2 * plane_normal
+    layer.plane.position = tuple(new_position)
+    slider_value = np.dot(new_position, plane_normal) / np.dot(plane_normal, plane_normal)
+    assert qtctrl.depictionControls.planeSlider.value() == slider_value
+
+
+def test_plane_position_change(qtbot):
+    """Test if updating the slider updates the plane position."""
+    layer = Image(np.random.rand(10, 15, 20))
+    qtctrl = QtImageControls(layer)
+    qtbot.addWidget(qtctrl)
+
+    test_value = 2
+    qtctrl.depictionControls.planeSlider.setValue(test_value)
+    plane_normal = np.array(layer.plane.normal)
+    new_position = np.array([0, 0, 0]) + test_value * plane_normal
+    assert layer.plane.position == tuple(new_position)
+
+
+def test_clipping_plane_position_change(qtbot):
+    """Test if updating the clipping plane slider updates the clipping plane positions"""
+    layer = Image(np.random.rand(10, 15, 20))
+    qtctrl = QtImageControls(layer)
+    qtbot.addWidget(qtctrl)
+    test_value = (2, 4)
+    qtctrl.depictionControls.changeClippingPlanePositions(test_value)
+
+    plane_normal = np.array(layer.experimental_clipping_planes[0].normal)
+    new_position_1 = tuple(np.array([0, 0, 0]) + test_value[0] * plane_normal)
+    new_position_2 = tuple(np.array([0, 0, 0]) + test_value[1] * plane_normal)
+
+    assert layer.experimental_clipping_planes[0].position == new_position_1
+    assert layer.experimental_clipping_planes[1].position == new_position_2
 
 
 def test_auto_contrast_buttons(qtbot):
