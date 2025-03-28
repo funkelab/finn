@@ -75,6 +75,7 @@ dependencies = [
     "pyqtgraph",
     "fonticon-fontawesome6",
     "zarr<3",
+    "imagecodecs", # for unzipping sample data
 ]
 dynamic = [
     "version",
