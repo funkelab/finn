@@ -1,10 +1,10 @@
 import logging
 import os
 import shutil
+import warnings
 import zipfile
 from pathlib import Path
 from urllib.request import urlretrieve
-from warnings import warn
 
 import numpy as np
 import tifffile
@@ -15,22 +15,6 @@ from skimage.measure import regionprops
 from finn.types import LayerData
 
 logger = logging.getLogger(__name__)
-
-
-def delete_all():
-    """Delete any example datasets downloaded to the appdir.user_data_dir.
-    Useful for testing that re-download works, or just cleaning up disk space if you
-    don't need the data anymore.
-    """
-    appdir = AppDirs("motile-tracker")
-    data_dir = Path(appdir.user_data_dir)
-    data_dir.mkdir(parents=True, exist_ok=True)
-    datasets = ["Mouse_Embryo_Membrane.zarr", "Fluo-N2DL-HeLa.zarr"]
-    for ds in datasets:
-        ds_path = data_dir / ds
-        if ds_path.exists():
-            warn(f"Deleting dataset at {ds_path}")
-            shutil.rmtree(ds_path)
 
 
 def Mouse_Embryo_Membrane() -> list[LayerData]:
@@ -84,7 +68,7 @@ def Fluo_N2DL_HeLa_crop() -> list[LayerData]:
 def read_zenodo_dataset(
     ds_name: str, raw_name: str, label_name: str, data_dir: Path
 ) -> list[LayerData]:
-    """Read a zenodo dataset (assumes pre-downloaded)
+    """Read a zenodo dataset (downloads if not present)
     and returns a list of layer data for making napari layers
 
     Args:
@@ -144,7 +128,7 @@ def read_ctc_dataset(ds_name: str, data_dir: Path, crop_region=False) -> list[La
     # Check if 'points' dataset exists in the zarr file
     points_name = "points_crop" if crop_region else "points"
     if "points_file" not in zarr_store:
-        logger.info("extracting centroids...")
+        logger.debug("Extracting centroids...")
         centroids_list = []
         for t in range(seg_data.shape[0]):  # Iterate over time frames
             frame_seg = seg_data[t]
@@ -158,15 +142,14 @@ def read_ctc_dataset(ds_name: str, data_dir: Path, crop_region=False) -> list[La
 
         # Save the centroids inside the zarr file under the 'points' key
         zarr_store.create_dataset(points_name, data=all_centroids, overwrite=True)
-        logger.info("Centroids extracted and saved")
+        logger.debug("Centroids extracted and saved")
     else:
         # If 'points' dataset exists, load it
-        logger.info("points dataset found, loading...")
+        logger.debug("points dataset found, loading...")
         all_centroids = zarr_store[points_name][:]
 
     # Prepare points layer data for napari
     points_layer_data = (all_centroids, {"name": "centroids"}, "points")
-
     return [raw_layer_data, seg_layer_data, points_layer_data]
 
 
@@ -207,16 +190,8 @@ def download_zenodo_dataset(
     url_labels = "https://zenodo.org/records/13903500/files/segmentation.zip"
     _download_and_unzip(data_dir, ds_name, url_labels)
 
-    with zipfile.ZipFile(zip_filename_raw, "r") as zip_ref:
-        zip_ref.extractall(data_dir)
-    with zipfile.ZipFile(zip_filename_labels, "r") as zip_ref:
-        zip_ref.extractall(data_dir)
-
-    zip_filename_raw.unlink()
-    zip_filename_labels.unlink()
-
-    convert_4d_arr_to_zarr(ds_file_raw, ds_zarr, "01_membrane")
-    convert_4d_arr_to_zarr(ds_file_labels, ds_zarr, "01_labels")
+    _convert_4d_tiff_to_zarr(ds_file_raw, ds_zarr, "01_membrane")
+    _convert_4d_tiff_to_zarr(ds_file_labels, ds_zarr, "01_labels")
 
 
 def download_ctc_dataset(ds_name: str, data_dir: Path) -> None:
@@ -233,12 +208,41 @@ def download_ctc_dataset(ds_name: str, data_dir: Path) -> None:
     ctc_url = f"http://data.celltrackingchallenge.net/training-datasets/{ds_name}.zip"
     _download_and_unzip(data_dir, ds_name, ctc_url)
 
-    convert_to_zarr(ds_dir / "01", ds_zarr, "01")
-    convert_to_zarr(ds_dir / "01_ST" / "SEG", ds_zarr, "01_ST", relabel=True)
+    _convert_tiff_stack_to_zarr(ds_dir / "01", ds_zarr, "01")
+    _convert_tiff_stack_to_zarr(ds_dir / "01_ST" / "SEG", ds_zarr, "01_ST", relabel=True)
     shutil.rmtree(ds_dir)
 
 
-def convert_4d_arr_to_zarr(
+def _create_zarr(zarr_path: str, zarr_group: str, shape: tuple, dtype):
+    """Create a zarr array at a given location with a given shape and dtype.
+
+    Wraps away NestedDirectoryStore implementation in preparation for zarr.v3.
+    Will overwrite any existing data at that group.
+
+    Args:
+        zarr_path (str): path to the zarr file to write the output to
+        zarr_group (str): group within the zarr store to write the data to
+        shape (tuple): desired shape of the zarr array
+        dtype (_type_): desired dtype of the zarr array
+
+    Returns:
+        zarr.Array: The newly created (empty) zarr array
+    """
+    if not os.path.exists(zarr_path):
+        os.mkdir(zarr_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter(action="ignore", category=FutureWarning)
+        store = zarr.NestedDirectoryStore(zarr_path)
+    return zarr.open(
+        store=store,
+        mode="w",
+        path=zarr_group,
+        shape=shape,
+        dtype=dtype,
+    )
+
+
+def _convert_4d_tiff_to_zarr(
     tiff_file: str, zarr_path: str, zarr_group: str, relabel=False
 ):
     """Convert 4D tiff file image data to zarr. Also deletes the tiffs!
@@ -249,20 +253,9 @@ def convert_4d_arr_to_zarr(
         relabel (bool): if true, relabels the segmentations to be unique over time
     """
     img = tifffile.imread(tiff_file)
-    data_shape = img.shape
-    data_dtype = img.dtype
-
     # prepare zarr
-    if not os.path.exists(zarr_path):
-        os.mkdir(zarr_path)
-    store = zarr.NestedDirectoryStore(zarr_path)
-    zarr_array = zarr.open(
-        store=store,
-        mode="w",
-        path=zarr_group,
-        shape=data_shape,
-        dtype=data_dtype,
-    )
+    zarr_array = _create_zarr(zarr_path, zarr_group, img.shape, img.dtype)
+
     # save the time points to the zarr file
     max_label = 0
     for t in range(img.shape[0]):
@@ -274,8 +267,10 @@ def convert_4d_arr_to_zarr(
     os.remove(tiff_file)
 
 
-def convert_to_zarr(tiff_path: Path, zarr_path: Path, zarr_group: str, relabel=False):
-    """Convert tiff file image data to zarr. Also deletes the tiffs!
+def _convert_tiff_stack_to_zarr(
+    tiff_path: Path, zarr_path: Path, zarr_group: str, relabel=False
+):
+    """Convert tiff stack image data to zarr. Also deletes the tiffs!
     Args:
         tif_path (Path): Path to the directory containing the tiff files
         zarr_path (Path): path to the zarr file to write the output to
@@ -286,16 +281,9 @@ def convert_to_zarr(tiff_path: Path, zarr_path: Path, zarr_group: str, relabel=F
     logger.info("%s time points found.", len(files))
     example_image = tifffile.imread(files[0])
     data_shape = (len(files), *example_image.shape)
-    data_dtype = example_image.dtype
     # prepare zarr
-    zarr_path.mkdir(parents=True, exist_ok=True)
-    store = zarr.NestedDirectoryStore(zarr_path)
-    zarr_array = zarr.open(
-        store=store,
-        mode="w",
-        path=zarr_group,
-        shape=data_shape,
-        dtype=data_dtype,
+    zarr_array = _create_zarr(
+        zarr_path, zarr_group, shape=data_shape, dtype=example_image.dtype
     )
     # load and save data in zarr
     max_label = 0
@@ -307,3 +295,27 @@ def convert_to_zarr(tiff_path: Path, zarr_path: Path, zarr_group: str, relabel=F
         zarr_array[t] = frame
         file.unlink()
     tiff_path.rmdir()
+
+
+def delete_all():
+    """Delete any example datasets downloaded to the appdir.user_data_dir.
+    Useful for testing that re-download works, or just cleaning up disk space if you
+    don't need the data anymore.
+    """
+    appdir = AppDirs("motile-tracker")
+    data_dir = Path(appdir.user_data_dir)
+    logger.info("Deleting all sample datasets from %s", data_dir)
+    data_dir.mkdir(parents=True, exist_ok=True)
+    datasets = ["Mouse_Embryo_Membrane.zarr", "Fluo-N2DL-HeLa.zarr"]
+    for ds in datasets:
+        ds_path = data_dir / ds
+        if ds_path.exists():
+            logger.debug("Deleting dataset at %s", ds_path)
+            shutil.rmtree(ds_path)
+
+    zips = ["Mouse_Embryo_Membrane.zip", "Fluo-N2DL-HeLa.zip"]
+    for _zip in zips:
+        zip_path = data_dir / _zip
+        if zip_path.is_file():
+            logger.debug("Deleting zipfile at %s", zip_path)
+            zip_path.unlink()
