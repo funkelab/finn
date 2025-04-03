@@ -1,10 +1,8 @@
 from qtpy.QtWidgets import QVBoxLayout, QWidget
 
 import finn
-from finn.track_data_views.views.view_3d.multiple_view_widget import (
-    CrossWidget,
-    MultipleViewerWidget,
-)
+from finn.track_data_views.views.view_3d.cross_widget import CrossWidget
+from finn.track_data_views.views.view_3d.multiple_view_widget import MultipleViewerWidget
 
 
 class OrthogonalViews(QWidget):
