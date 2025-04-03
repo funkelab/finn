@@ -6,19 +6,20 @@ from finn.track_data_views.views.view_3d.multiple_view_widget import MultipleVie
 
 
 class OrthogonalViews(QWidget):
+    """A widget that combines the multiple viewer widget and cross widget into single widget"""
+
     def __init__(
         self,
         viewer: finn.Viewer,
     ):
         super().__init__()
 
-        self.viewer = viewer
-
-        self.multiple_viewer_widget = MultipleViewerWidget(self.viewer)
-        self.cross_widget = CrossWidget(self.viewer)
+        viewer = viewer
+        multiple_viewer_widget = MultipleViewerWidget(viewer)
+        cross_widget = CrossWidget(viewer)
 
         layout = QVBoxLayout()
-        layout.addWidget(self.multiple_viewer_widget)
-        layout.addWidget(self.cross_widget)
+        layout.addWidget(multiple_viewer_widget)
+        layout.addWidget(cross_widget)
 
         self.setLayout(layout)
