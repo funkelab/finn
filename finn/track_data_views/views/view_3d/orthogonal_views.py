@@ -23,3 +23,4 @@ class OrthogonalViews(QWidget):
         layout.addWidget(cross_widget)
 
         self.setLayout(layout)
+        self.setMinimumWidth(300)

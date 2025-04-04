@@ -28,13 +28,14 @@ class MainApp(QWidget):
         self.splitter = QSplitter(Qt.Horizontal)  # Set orientation to horizontal
         self.splitter.addWidget(self.orth_views)  # Add the orthogonal views
         self.splitter.addWidget(self.menu_widget)  # Add the menu widget
-        self.splitter.setSizes([0, 200])
+        self.splitter.setSizes([0, 300])
         viewer.window.add_dock_widget(tree_widget, area="bottom", name="Tree View")
 
         layout = QVBoxLayout()
 
         self.collapse_btn = QPushButton("Show/hide orthogonal views")
         self.collapse_btn.clicked.connect(self.toggle_orth_views)
+
         if self.viewer.dims.ndim < 3:
             self.collapse_btn.hide()
         layout.addWidget(self.collapse_btn)
@@ -44,18 +45,24 @@ class MainApp(QWidget):
 
     def toggle_orth_views(self):
         """Show/Hide the orthogonal views depending on their current state"""
-        sizes = self.splitter.sizes()
-        if sizes[0] > 0:
-            self.splitter.setSizes([0, 200])
+
+        if self.splitter.sizes()[0] > 0:
+            self.splitter.setSizes([0, 300])
+            self.orth_views.hide()
         else:
-            self.splitter.setSizes([300, 200])
+            self.splitter.setSizes([300, 300])
+            self.orth_views.show()
+            self.adjustSize()
 
     def dims_changed(self):
         """Show/Hide the orthogonal views depending on the amount of dimensions of the viewer"""
 
         if self.viewer.dims.ndim > 2:
             self.collapse_btn.show()
-            self.splitter.setSizes([300, 200])
+            self.splitter.setSizes([300, 300])
+            self.orth_views.show()
+            self.adjustSize()
         else:
             self.collapse_btn.hide()
-            self.splitter.setSizes([0, 200])
+            self.splitter.setSizes([0, 300])
+            self.orth_views.hide()
