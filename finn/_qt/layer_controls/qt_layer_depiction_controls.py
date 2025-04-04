@@ -2,14 +2,13 @@ import numpy as np
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import (
     QCheckBox,
-    QComboBox,
     QFormLayout,
     QHBoxLayout,
     QLabel,
     QPushButton,
     QWidget,
 )
-from superqt import QLabeledDoubleSlider, QRangeSlider
+from superqt import QRangeSlider
 
 from finn.layers.image._image_constants import (
     VolumeDepiction,
@@ -34,10 +33,6 @@ class QtLayerDepiction(QFormLayout):
     layer : finn.layers.Image
         An instance of a napari Image layer.
 
-    depictionComboBox : qtpy.QtWidgets.QComboBox
-        QComboBox for selecting the depiction of the layer.
-    depictionLabel : qtpy.QtWidgets.QLabel
-        Label for the depiction combobox.
     planeNormalButtons : PlaneNormalButtons
         QPushButtons for controlling the plane normal.
     planeNormalLabel : qtpy.QtWidgets.QLabel
@@ -46,34 +41,12 @@ class QtLayerDepiction(QFormLayout):
         Checkbox for enabling the clipping plane.
     clippingPlaneSlider : superqt.QRangeSlider
         QRangeSlider for selecting the range of the clipping plane.
-    planeSliderLabel : qtpy.QtWidgets.QLabel
-        Label for the plane slider.
-    planeSlider : superqt.QLabeledDoubleSlider
-        QLabeledDoubleSlider for selecting the position of the plane.
-    planeThicknessSlider : superqt.QLabeledDoubleSlider
-        QLabeledDoubleSlider for selecting the thickness of the plane.
-    planeThicknessLabel : qtpy.QtWidgets.QLabel
-        Label for the plane thickness slider.
     """
 
     def __init__(self, parent) -> None:
         super().__init__()
         self.parent = parent
         self.layer = parent.layer
-
-        self.depictionComboBox = QComboBox(self.parent)
-        depiction_options = [d.value for d in VolumeDepiction]
-        self.depictionComboBox.addItems(depiction_options)
-        index = self.depictionComboBox.findText(
-            self.layer.depiction, Qt.MatchFlag.MatchFixedString
-        )
-
-        self.depictionComboBox.setCurrentIndex(index)
-        self.depictionComboBox.currentTextChanged.connect(self.changeDepiction)
-        self.depictionLabel = QLabel(trans._("depiction:"), self.parent)
-        self.layer.events.depiction.connect(self._on_depiction_change)
-        self.layer.plane.events.thickness.connect(self._on_plane_thickness_change)
-        self.layer.events.plane.connect(self._update_plane_slider)
 
         # plane normal buttons
         self.planeNormalButtons = PlaneNormalButtons(self.parent)
@@ -136,45 +109,12 @@ class QtLayerDepiction(QFormLayout):
         self.clippingPlaneSlider.valueChanged.connect(self.changeClippingPlanePositions)
         self.clippingPlaneSlider.setEnabled(False)
 
-        # plane slider to set the position of the plane in the 'plane' depiction.
-        self.planeSliderLabel = QLabel("plane slider position", self.parent)
-        self.planeSlider = QLabeledDoubleSlider(
-            Qt.Orientation.Horizontal, self.parent
-        )  # we need a double slider because in the oblique orientation, we can have a negative value for the plane position
-        self.planeSlider.setMinimum(0)
-        self.planeSlider.setMaximum(self.layer.data.shape[-1])
-        self.planeSlider.setFocusPolicy(Qt.NoFocus)
-        self.planeSlider.valueChanged.connect(self.changePlanePosition)
-
-        # plane thickness controls
-        self.planeThicknessSlider = QLabeledDoubleSlider(
-            Qt.Orientation.Horizontal, self.parent
-        )
-        self.planeThicknessLabel = QLabel(trans._("plane thickness:"), self.parent)
-        self.planeThicknessSlider.setFocusPolicy(Qt.NoFocus)
-        self.planeThicknessSlider.setMinimum(1)
-        self.planeThicknessSlider.setMaximum(50)
-        self.planeThicknessSlider.setValue(self.layer.plane.thickness)
-        self.planeThicknessSlider.valueChanged.connect(self.changePlaneThickness)
-
         # combine widgets
-        self.layout().addRow(self.depictionLabel, self.depictionComboBox)
         self.layout().addRow(self.planeNormalLabel, self.planeNormalButtons)
-        self.layout().addRow(self.planeThicknessLabel, self.planeThicknessSlider)
-        self.layout().addRow(self.planeSliderLabel, self.planeSlider)
         self.layout().addRow(self.clippingPlaneCheckbox, self.clippingPlaneSlider)
-
         self._set_plane_slider_min_max(
             "z"
         )  # set initial span of the sliders based on the size of the z axis (which is the default plane normal)
-
-    def changeDepiction(self, text: str):
-        """Change the depiction of the layer between 'plane' and 'volume'.
-        args:
-            text: str, the new depiction of the layer. Can be 'plane' or 'volume'.
-        """
-        self.layer.depiction = text
-        self._update_plane_parameter_visibility()
 
     def changePlaneThickness(self, value: float):
         """Change the number of slices to be rendered in the plane.
@@ -235,52 +175,17 @@ class QtLayerDepiction(QFormLayout):
     def _update_plane_parameter_visibility(self):
         """Hide plane rendering controls if they are not needed."""
         depiction = VolumeDepiction(self.layer.depiction)
-        plane_visible = (
-            depiction == VolumeDepiction.PLANE
-            and self.parent.ndisplay == 3
-            and self.layer.ndim >= 3
-        )
+
         clipping_plane_visible = (
             depiction == VolumeDepiction.VOLUME
             and self.parent.ndisplay == 3
             and self.layer.ndim >= 3
         )
 
-        self.planeNormalButtons.setVisible(plane_visible or clipping_plane_visible)
-        self.planeNormalLabel.setVisible(plane_visible or clipping_plane_visible)
-        self.planeThicknessSlider.setVisible(plane_visible)
-        self.planeThicknessLabel.setVisible(plane_visible)
-        self.planeSlider.setVisible(plane_visible)
-        self.planeSliderLabel.setVisible(plane_visible)
-
+        self.planeNormalButtons.setVisible(clipping_plane_visible)
+        self.planeNormalLabel.setVisible(clipping_plane_visible)
         self.clippingPlaneCheckbox.setVisible(clipping_plane_visible)
         self.clippingPlaneSlider.setVisible(clipping_plane_visible)
-
-    def _on_depiction_change(self):
-        """Receive layer model depiction change event and update combobox."""
-        with self.layer.events.depiction.blocker():
-            index = self.depictionComboBox.findText(
-                self.layer.depiction, Qt.MatchFlag.MatchFixedString
-            )
-            self.depictionComboBox.setCurrentIndex(index)
-            self._update_plane_parameter_visibility()
-
-    def _on_plane_thickness_change(self):
-        """Change the value of the plane thickness slider"""
-        with self.layer.plane.events.blocker():
-            self.planeThicknessSlider.setValue(self.layer.plane.thickness)
-
-    def _update_plane_slider(self):
-        """Updates the value of the plane slider when the user used the shift+drag method to shift the plane or when switching between different layers"""
-
-        new_position = np.array(self.layer.plane.position)
-        plane_normal = np.array(self.layer.plane.normal)
-        slider_value = np.dot(new_position, plane_normal) / np.dot(
-            plane_normal, plane_normal
-        )
-        self.planeSlider.valueChanged.disconnect(self.changePlanePosition)
-        self.planeSlider.setValue(int(slider_value))
-        self.planeSlider.valueChanged.connect(self.changePlanePosition)
 
     def _compute_plane_range(self) -> tuple[float, float]:
         """Compute the total span of the plane and clipping plane sliders. Used in the special case of the oblique view.
@@ -336,16 +241,9 @@ class QtLayerDepiction(QFormLayout):
         else:  # oblique view
             clip_range = self._compute_plane_range()
 
-        # Set the minimum and maximum values of the plane slider
-        self.planeSlider.setMinimum(clip_range[0])
-        self.planeSlider.setMaximum(clip_range[1])
-
         # Set the minimum and maximum values of the clipping plane slider
         self.clippingPlaneSlider.setMinimum(clip_range[0])
         self.clippingPlaneSlider.setMaximum(clip_range[1])
-
-        # Set the initial value of the plane slider to the middle of the range
-        self.planeSlider.setValue(int((clip_range[0] + clip_range[1]) / 2))
 
         # Set the initial values of the clipping plane slider to 1/3 and 2/3 of the range
         min_initial_value = int(clip_range[0] + (1 / 3) * (clip_range[1] - clip_range[0]))
@@ -370,20 +268,9 @@ class QtLayerDepiction(QFormLayout):
     def _on_ndisplay_changed(self):
         """Update widget visibility based on 2D and 3D visualization modes."""
         self._update_plane_parameter_visibility()
-        if self.parent.ndisplay == 2:
-            self.depictionComboBox.hide()
-            self.depictionLabel.hide()
-        else:
-            self.depictionComboBox.show()
-            self.depictionLabel.show()
 
     def disconnect(self):
         """Disconnect all event connections (e.g. when layer is removed)."""
-
-        if self.layer is not None:  # check if layer still exists
-            self.layer.events.depiction.disconnect(self._on_depiction_change)
-            self.layer.plane.events.thickness.disconnect(self._on_plane_thickness_change)
-            self.layer.events.plane.disconnect(self._update_plane_slider)
 
         # break circular references
         self.parent = None
