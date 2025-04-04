@@ -8,18 +8,15 @@ from qtpy.QtWidgets import (
     QPushButton,
     QWidget,
 )
-from superqt import QRangeSlider
+from superqt import QLabeledSlider
 
-from finn.layers.image._image_constants import (
-    VolumeDepiction,
-)
 from finn.layers.utils.plane import ClippingPlane
 from finn.utils.action_manager import action_manager
 from finn.utils.translations import trans
 
 
-class QtLayerDepiction(QFormLayout):
-    """Qt controls for the image and labels layer depiction.
+class QtLayerClippingPlanes(QFormLayout):
+    """Qt controls for the image and labels layer clipping planes.
 
     Parameters
     ----------
@@ -84,108 +81,142 @@ class QtLayerDepiction(QFormLayout):
             lambda: self._set_plane_slider_min_max("oblique")
         )
 
-        # button to activate/deactivate the clipping slider and clipping planes in the 'volume' depiction
-        self.clippingPlaneCheckbox = QCheckBox(trans._("clipping plane"), self.parent)
-        self.clippingPlaneCheckbox.setStyleSheet("""
-            font-size:11px
-        """)
-        self.clippingPlaneCheckbox.stateChanged.connect(self._activateClippingPlane)
+        # make sure the clipping planes are initialized
+        if len(self.layer.experimental_clipping_planes) == 0:
+            self.layer.experimental_clipping_planes.append(
+                ClippingPlane(
+                    normal=(np.float64(1.0), np.float64(0.0), np.float64(0.0)),
+                    position=(0.0, 0.0, 0.0),
+                    enabled=False,
+                )
+            )
+            self.layer.experimental_clipping_planes.append(
+                ClippingPlane(
+                    normal=[
+                        -n for n in self.layer.experimental_clipping_planes[0].normal
+                    ],
+                    position=(0.0, 0.0, 0.0),
+                    enabled=False,
+                )
+            )
 
-        # clipping plane slider to set range of experimental_clipping_planes
-        self.clippingPlaneSlider = QRangeSlider(Qt.Orientation.Horizontal, self.parent)
-        self.clippingPlaneSlider.setStyleSheet("""
+        # clipping plane sliders to set width and position of experimental_clipping_planes
+        self.clippingPlaneWidthLabel = QLabel("Clipping Plane Width")
+        self.clippingPlaneWidthLabel.setEnabled(False)
+        self.clippingPlaneWidthSlider = QLabeledSlider(
+            Qt.Orientation.Horizontal, self.parent
+        )
+        self.clippingPlaneWidthSlider.setMinimum(1)
+        self.clippingPlaneWidthSlider.setMaximum(self.layer.data.shape[-1])
+        self.clippingPlaneWidthSlider.setValue(
+            self.layer.data.shape[-1] // 2
+        )  # half the width of the stack
+        self.clippingPlaneWidthSlider.valueChanged.connect(self.setClippingPlanePositions)
+        self.clippingPlaneWidthSlider.setEnabled(False)
+        self.clippingPlaneWidthSlider.setStyleSheet("""
             QSlider::groove:horizontal:disabled {
                 background: #353B43;  /* gray background */
             }
             QSlider::handle:horizontal:disabled {
                 background: #4C545E;  /* Greyed-out handles */
             }
+            QSlider::sub-page:horizontal:disabled {
+                background: #353B43;  /* Darker gray for the 'bright' part (left of the handle) */
+            }
         """)
-        self.clippingPlaneSlider.setFocusPolicy(Qt.NoFocus)
-        self.clippingPlaneSlider.setMinimum(1)
-        self.clippingPlaneSlider.setMaximum(self.layer.data.shape[-1])
-        self.clippingPlaneSlider.setSingleStep(1)
-        self.clippingPlaneSlider.setTickInterval(1)
-        self.clippingPlaneSlider.valueChanged.connect(self.changeClippingPlanePositions)
-        self.clippingPlaneSlider.setEnabled(False)
+
+        self.clippingPlaneCenterLabel = QLabel("Clipping Plane Center")
+        self.clippingPlaneCenterLabel.setEnabled(False)
+        self.clippingPlaneCenterSlider = QLabeledSlider(
+            Qt.Orientation.Horizontal, self.parent
+        )
+        self.clippingPlaneCenterSlider.setMinimum(1)
+        self.clippingPlaneCenterSlider.setMaximum(self.layer.data.shape[-1])
+        self.clippingPlaneCenterSlider.setValue(
+            self.layer.data.shape[-1] // 2
+        )  # center of the stack
+        self.clippingPlaneCenterSlider.valueChanged.connect(
+            self.setClippingPlanePositions
+        )
+        self.clippingPlaneCenterSlider.setEnabled(False)
+        self.clippingPlaneCenterSlider.setStyleSheet("""
+            QSlider::groove:horizontal:disabled {
+                background: #353B43;  /* gray background */
+            }
+            QSlider::handle:horizontal:disabled {
+                background: #4C545E;  /* Greyed-out handles */
+            }
+            QSlider::sub-page:horizontal:disabled {
+                background: #353B43;  /* Darker gray for the 'bright' part (left of the handle) */
+            }
+        """)
+
+        # button to activate/deactivate the clipping planes and their sliders
+        self.clippingPlaneLabel = QLabel("Activate clipping plane")
+        self.clippingPlaneCheckbox = QCheckBox("", self.parent)
+        self.clippingPlaneCheckbox.stateChanged.connect(self._activateClippingPlane)
 
         # combine widgets
         self.layout().addRow(self.planeNormalLabel, self.planeNormalButtons)
-        self.layout().addRow(self.clippingPlaneCheckbox, self.clippingPlaneSlider)
+        self.layout().addRow(self.clippingPlaneLabel, self.clippingPlaneCheckbox)
+        self.layout().addRow(self.clippingPlaneWidthLabel, self.clippingPlaneWidthSlider)
+        self.layout().addRow(
+            self.clippingPlaneCenterLabel, self.clippingPlaneCenterSlider
+        )
         self._set_plane_slider_min_max(
             "z"
         )  # set initial span of the sliders based on the size of the z axis (which is the default plane normal)
 
-    def changePlaneThickness(self, value: float):
-        """Change the number of slices to be rendered in the plane.
-        args: value: float, the new thickness of the plane.
-        """
-        self.layer.plane.thickness = value
+    def setClippingPlanePositions(self):
+        """Set the positions of the clipping planes based on the slider width and center values."""
 
-    def changePlanePosition(self, value: float):
-        """Change the position of the plane
-        args:
-            value: float, the new position of the plane.
-        """
-        plane_normal = np.array(self.layer.plane.normal)
-        new_position = np.array([0, 0, 0]) + value * plane_normal
-        self.layer.plane.position = tuple(new_position)
+        center = self.clippingPlaneCenterSlider.value()
+        width = self.clippingPlaneWidthSlider.value()
 
-    def changeClippingPlanePositions(self, value: tuple[int, int]):
-        """Set lower and upper positions of the clipping plane."""
+        # Ensure the width is odd (to center around the middle slice)
+        if width % 2 == 0:
+            width += 1
 
-        if not self.layer.ndim >= 3:
-            return
+        position1 = center - width // 2
+        position2 = (center + width // 2) + 1
 
-        if len(self.layer.experimental_clipping_planes) == 0:
-            plane = self.layer.plane
-            self.layer.experimental_clipping_planes.append(
-                ClippingPlane(
-                    normal=plane.normal,
-                    position=plane.position,
-                    enabled=False,
-                )
-            )
-            self.layer.experimental_clipping_planes.append(
-                ClippingPlane(
-                    normal=[-n for n in plane.normal],
-                    position=plane.position,
-                    enabled=False,
-                )
-            )
+        if position1 < self.clippingPlaneCenterSlider.minimum():
+            position1 = self.clippingPlaneCenterSlider.minimum()
+        if position2 > self.clippingPlaneCenterSlider.maximum():
+            position2 = self.clippingPlaneCenterSlider.maximum()
 
         plane_normal = np.array(self.layer.experimental_clipping_planes[0].normal)
-        new_position_1 = np.array([0, 0, 0]) + value[0] * plane_normal
-        new_position_1 = (
-            int(new_position_1[0] * self.layer.scale[-3]),
-            (new_position_1[1] * self.layer.scale[-2]),
-            int(new_position_1[2] * self.layer.scale[-1]),
+        new_position1 = np.array([0, 0, 0]) + position1 * plane_normal
+        new_position1 = (
+            int(new_position1[0] * self.layer.scale[-3]),
+            int(new_position1[1] * self.layer.scale[-2]),
+            int(new_position1[2] * self.layer.scale[-1]),
         )
-        self.layer.experimental_clipping_planes[0].position = new_position_1
-        new_position_2 = np.array([0, 0, 0]) + value[1] * plane_normal
-        new_position_2 = (
-            int(new_position_2[0] * self.layer.scale[-3]),
-            (new_position_2[1] * self.layer.scale[-2]),
-            int(new_position_2[2] * self.layer.scale[-1]),
-        )
+        self.layer.experimental_clipping_planes[0].position = new_position1
 
-        self.layer.experimental_clipping_planes[1].position = new_position_2
+        new_position2 = np.array([0, 0, 0]) + position2 * plane_normal
+        new_position2 = (
+            int(new_position2[0] * self.layer.scale[-3]),
+            int(new_position2[1] * self.layer.scale[-2]),
+            int(new_position2[2] * self.layer.scale[-1]),
+        )
+        self.layer.experimental_clipping_planes[1].position = new_position2
+
         self.layer.events.experimental_clipping_planes()
 
     def _update_plane_parameter_visibility(self):
         """Hide plane rendering controls if they are not needed."""
-        depiction = VolumeDepiction(self.layer.depiction)
 
-        clipping_plane_visible = (
-            depiction == VolumeDepiction.VOLUME
-            and self.parent.ndisplay == 3
-            and self.layer.ndim >= 3
-        )
+        clipping_plane_visible = self.parent.ndisplay == 3 and self.layer.ndim >= 3
 
         self.planeNormalButtons.setVisible(clipping_plane_visible)
         self.planeNormalLabel.setVisible(clipping_plane_visible)
+        self.clippingPlaneLabel.setVisible(clipping_plane_visible)
         self.clippingPlaneCheckbox.setVisible(clipping_plane_visible)
-        self.clippingPlaneSlider.setVisible(clipping_plane_visible)
+        self.clippingPlaneWidthSlider.setVisible(clipping_plane_visible)
+        self.clippingPlaneWidthLabel.setVisible(clipping_plane_visible)
+        self.clippingPlaneCenterLabel.setVisible(clipping_plane_visible)
+        self.clippingPlaneCenterSlider.setVisible(clipping_plane_visible)
 
     def _compute_plane_range(self) -> tuple[float, float]:
         """Compute the total span of the plane and clipping plane sliders. Used in the special case of the oblique view.
@@ -194,7 +225,7 @@ class QtLayerDepiction(QFormLayout):
             tuple[float, float], the minimum and maximum possible values of the slider
         """
 
-        normal = np.array(self.layer.plane.normal)
+        normal = np.array(self.layer.experimental_clipping_planes[0].normal)
         Lx, Ly, Lz = self.layer.data.shape[-3:]
 
         # Define the corners of the 3D image bounding box
@@ -218,7 +249,7 @@ class QtLayerDepiction(QFormLayout):
         min_position = np.min(projections)
         max_position = np.max(projections)
 
-        return (min_position, max_position)
+        return (int(min_position), int(max_position))
 
     def _set_plane_slider_min_max(self, orientation: str) -> None:
         """Set the minimum and maximum values of the plane and clipping plane sliders based on the orientation. Also set the initial values of the slider.
@@ -241,14 +272,16 @@ class QtLayerDepiction(QFormLayout):
         else:  # oblique view
             clip_range = self._compute_plane_range()
 
-        # Set the minimum and maximum values of the clipping plane slider
-        self.clippingPlaneSlider.setMinimum(clip_range[0])
-        self.clippingPlaneSlider.setMaximum(clip_range[1])
+        # Set the minimum and maximum values of the clipping plane sliders
+        self.clippingPlaneCenterSlider.setMinimum(clip_range[0])
+        self.clippingPlaneCenterSlider.setMaximum(clip_range[1] + 1)
+        self.clippingPlaneWidthSlider.setMaximum(clip_range[1] + 1)
 
-        # Set the initial values of the clipping plane slider to 1/3 and 2/3 of the range
-        min_initial_value = int(clip_range[0] + (1 / 3) * (clip_range[1] - clip_range[0]))
-        max_initial_value = int(clip_range[0] + (2 / 3) * (clip_range[1] - clip_range[0]))
-        self.clippingPlaneSlider.setValue((min_initial_value, max_initial_value))
+        width = clip_range[1] // 2
+        center = clip_range[0] + width // 2
+
+        self.clippingPlaneWidthSlider.setValue(width)
+        self.clippingPlaneCenterSlider.setValue(center)
 
     def _activateClippingPlane(self, state):
         """Activate or deactivate the clipping plane based on the checkbox state.
@@ -258,11 +291,17 @@ class QtLayerDepiction(QFormLayout):
         if state:
             self.layer.experimental_clipping_planes[0].enabled = True
             self.layer.experimental_clipping_planes[1].enabled = True
-            self.clippingPlaneSlider.setEnabled(True)
+            self.clippingPlaneWidthSlider.setEnabled(True)
+            self.clippingPlaneCenterSlider.setEnabled(True)
+            self.clippingPlaneWidthLabel.setEnabled(True)
+            self.clippingPlaneCenterLabel.setEnabled(True)
         else:
             self.layer.experimental_clipping_planes[0].enabled = False
             self.layer.experimental_clipping_planes[1].enabled = False
-            self.clippingPlaneSlider.setEnabled(False)
+            self.clippingPlaneWidthSlider.setEnabled(False)
+            self.clippingPlaneCenterSlider.setEnabled(False)
+            self.clippingPlaneWidthLabel.setEnabled(False)
+            self.clippingPlaneCenterLabel.setEnabled(False)
         self.layer.events.experimental_clipping_planes()
 
     def _on_ndisplay_changed(self):

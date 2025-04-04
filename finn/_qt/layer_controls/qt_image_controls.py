@@ -7,7 +7,7 @@ import finn.layers
 from finn._qt.layer_controls.qt_image_controls_base import (
     QtBaseImageControls,
 )
-from finn._qt.layer_controls.qt_layer_depiction_controls import QtLayerDepiction
+from finn._qt.layer_controls.qt_layer_depiction_controls import QtLayerClippingPlanes
 from finn._qt.utils import qt_signals_blocked
 from finn.layers.image._image_constants import (
     ImageRendering,
@@ -133,7 +133,7 @@ class QtImageControls(QtBaseImageControls):
         self.layout().addRow(trans._("colormap:"), colormap_layout)
         self.layout().addRow(self.interpLabel, self.interpComboBox)
 
-        self.depictionControls = QtLayerDepiction(self)
+        self.depictionControls = QtLayerClippingPlanes(self)
 
         for i in range(self.depictionControls.rowCount()):
             label_item = self.depictionControls.itemAt(i, QFormLayout.LabelRole)

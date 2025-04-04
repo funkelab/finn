@@ -7,7 +7,6 @@ from finn.layers.base._base_constants import Mode
 from finn.layers.image.image import Image
 from finn.layers.utils.interactivity_utils import (
     orient_clipping_plane_normals,
-    orient_plane_normal_around_cursor,
 )
 from finn.layers.utils.layer_utils import (
     register_layer_action,
@@ -32,19 +31,16 @@ def register_image_mode_action(
 
 @register_image_action(trans._("Orient plane normal along z-axis"))
 def orient_plane_normal_along_z(layer: Image) -> None:
-    orient_plane_normal_around_cursor(layer, plane_normal=(1, 0, 0))
     orient_clipping_plane_normals(layer, orientation="z")
 
 
 @register_image_action(trans._("Orient plane normal along y-axis"))
 def orient_plane_normal_along_y(layer: Image) -> None:
-    orient_plane_normal_around_cursor(layer, plane_normal=(0, 1, 0))
     orient_clipping_plane_normals(layer, orientation="y")
 
 
 @register_image_action(trans._("Orient plane normal along x-axis"))
 def orient_plane_normal_along_x(layer: Image) -> None:
-    orient_plane_normal_around_cursor(layer, plane_normal=(0, 0, 1))
     orient_clipping_plane_normals(layer, orientation="x")
 
 
@@ -64,8 +60,14 @@ def orient_plane_normal_along_view_direction(
         event: None | Event = None,
     ) -> None:
         """Plane normal syncronisation mouse callback."""
-        layer.plane.normal = layer._world_to_displayed_data_normal(
+        normal = layer._world_to_displayed_data_normal(
             viewer.camera.view_direction, [-3, -2, -1]
+        )
+        layer.experimental_clipping_planes[0].normal = normal
+        layer.experimental_clipping_planes[1].normal = (
+            -normal[-3],
+            -normal[-2],
+            -normal[-1],
         )
 
     # update plane normal and add callback to mouse drag
@@ -83,15 +85,15 @@ def orient_plane_normal_along_view_direction_no_gen(layer: Image) -> None:
     viewer = finn.viewer.current_viewer()
     if viewer is None or viewer.dims.ndisplay != 3:
         return
-    layer.plane.normal = layer._world_to_displayed_data_normal(
+    normal = layer._world_to_displayed_data_normal(
         viewer.camera.view_direction, [-3, -2, -1]
     )
 
-    layer.experimental_clipping_planes[0].normal = layer.plane.normal
+    layer.experimental_clipping_planes[0].normal = normal
     layer.experimental_clipping_planes[1].normal = (
-        -layer.plane.normal[-3],
-        -layer.plane.normal[-2],
-        -layer.plane.normal[-1],
+        -normal[-3],
+        -normal[-2],
+        -normal[-1],
     )
 
 

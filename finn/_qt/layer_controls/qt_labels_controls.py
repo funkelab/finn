@@ -15,7 +15,7 @@ from qtpy.QtWidgets import (
 from superqt import QEnumComboBox, QLabeledSlider, QLargeIntSpinBox
 
 from finn._qt.layer_controls.qt_layer_controls_base import QtLayerControls
-from finn._qt.layer_controls.qt_layer_depiction_controls import QtLayerDepiction
+from finn._qt.layer_controls.qt_layer_depiction_controls import QtLayerClippingPlanes
 from finn._qt.utils import set_widgets_enabled_with_opacity
 from finn._qt.widgets.qt_mode_buttons import QtModePushButton
 from finn.layers.labels._labels_constants import (
@@ -265,7 +265,7 @@ class QtLabelsControls(QtLayerControls):
         self.layout().addRow(trans._("show\nselected:"), self.selectedColorCheckbox)
 
         # add the depiction controls
-        self.depictionControls = QtLayerDepiction(self)
+        self.depictionControls = QtLayerClippingPlanes(self)
 
         for i in range(self.depictionControls.rowCount()):
             label_item = self.depictionControls.itemAt(i, QFormLayout.LabelRole)
