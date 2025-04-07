@@ -265,11 +265,11 @@ class QtLabelsControls(QtLayerControls):
         self.layout().addRow(trans._("show\nselected:"), self.selectedColorCheckbox)
 
         # add the depiction controls
-        self.depictionControls = QtLayerClippingPlanes(self)
+        self.clippingPlaneControls = QtLayerClippingPlanes(self)
 
-        for i in range(self.depictionControls.rowCount()):
-            label_item = self.depictionControls.itemAt(i, QFormLayout.LabelRole)
-            field_item = self.depictionControls.itemAt(i, QFormLayout.FieldRole)
+        for i in range(self.clippingPlaneControls.rowCount()):
+            label_item = self.clippingPlaneControls.itemAt(i, QFormLayout.LabelRole)
+            field_item = self.clippingPlaneControls.itemAt(i, QFormLayout.FieldRole)
 
             label_widget = label_item.widget() if label_item else None
             field_widget = field_item.widget() if field_item else None
@@ -501,7 +501,7 @@ class QtLabelsControls(QtLayerControls):
         self._set_polygon_tool_state()
 
     def _on_ndisplay_changed(self):
-        self.depictionControls._on_ndisplay_changed()
+        self.clippingPlaneControls._on_ndisplay_changed()
         show_3d_widgets = self.ndisplay == 3
         self.renderComboBox.setVisible(show_3d_widgets)
         self.renderLabel.setVisible(show_3d_widgets)

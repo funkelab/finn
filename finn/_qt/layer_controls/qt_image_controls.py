@@ -133,11 +133,11 @@ class QtImageControls(QtBaseImageControls):
         self.layout().addRow(trans._("colormap:"), colormap_layout)
         self.layout().addRow(self.interpLabel, self.interpComboBox)
 
-        self.depictionControls = QtLayerClippingPlanes(self)
+        self.clippingPlaneControls = QtLayerClippingPlanes(self)
 
-        for i in range(self.depictionControls.rowCount()):
-            label_item = self.depictionControls.itemAt(i, QFormLayout.LabelRole)
-            field_item = self.depictionControls.itemAt(i, QFormLayout.FieldRole)
+        for i in range(self.clippingPlaneControls.rowCount()):
+            label_item = self.clippingPlaneControls.itemAt(i, QFormLayout.LabelRole)
+            field_item = self.clippingPlaneControls.itemAt(i, QFormLayout.FieldRole)
 
             label_widget = label_item.widget() if label_item else None
             field_widget = field_item.widget() if field_item else None
@@ -288,7 +288,7 @@ class QtImageControls(QtBaseImageControls):
     def _on_ndisplay_changed(self):
         """Update widget visibility based on 2D and 3D visualization modes."""
         self._update_interpolation_combo()
-        self.depictionControls._on_ndisplay_changed()
+        self.clippingPlaneControls._on_ndisplay_changed()
         if self.ndisplay == 2:
             self.isoThresholdSlider.hide()
             self.isoThresholdLabel.hide()

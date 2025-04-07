@@ -111,7 +111,7 @@ class QtLayerClippingPlanes(QFormLayout):
         self.clippingPlaneWidthSlider.setValue(
             self.layer.data.shape[-1] // 2
         )  # half the width of the stack
-        self.clippingPlaneWidthSlider.valueChanged.connect(self.setClippingPlanePositions)
+        self.clippingPlaneWidthSlider.valueChanged.connect(self.updateWidthCenter)
         self.clippingPlaneWidthSlider.setEnabled(False)
         self.clippingPlaneWidthSlider.setStyleSheet("""
             QSlider::groove:horizontal:disabled {
@@ -135,9 +135,7 @@ class QtLayerClippingPlanes(QFormLayout):
         self.clippingPlaneCenterSlider.setValue(
             self.layer.data.shape[-1] // 2
         )  # center of the stack
-        self.clippingPlaneCenterSlider.valueChanged.connect(
-            self.setClippingPlanePositions
-        )
+        self.clippingPlaneCenterSlider.valueChanged.connect(self.updateWidthCenter)
         self.clippingPlaneCenterSlider.setEnabled(False)
         self.clippingPlaneCenterSlider.setStyleSheet("""
             QSlider::groove:horizontal:disabled {
@@ -167,11 +165,16 @@ class QtLayerClippingPlanes(QFormLayout):
             "z"
         )  # set initial span of the sliders based on the size of the z axis (which is the default plane normal)
 
-    def setClippingPlanePositions(self):
-        """Set the positions of the clipping planes based on the slider width and center values."""
+    def updateWidthCenter(self) -> None:
+        """Update the width and center of the clipping planes based on the current slider values."""
 
         center = self.clippingPlaneCenterSlider.value()
         width = self.clippingPlaneWidthSlider.value()
+
+        self.set_clipping_planepositions(width, center)
+
+    def set_clipping_planepositions(self, width: int, center: int) -> None:
+        """Set the positions of the clipping planes based on the slider width and center values."""
 
         # Ensure the width is odd (to center around the middle slice)
         if width % 2 == 0:
