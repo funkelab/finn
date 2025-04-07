@@ -499,6 +499,7 @@ class Points(Layer):
             canvas_size_limits=Event,
             features=Event,
             feature_defaults=Event,
+            experimental_clipping_planes=Event,
         )
 
         deprecated_events = {}
