@@ -14,8 +14,8 @@ from qtpy.QtWidgets import (
 )
 from superqt import QEnumComboBox, QLabeledSlider, QLargeIntSpinBox
 
+from finn._qt.layer_controls.qt_layer_clipping_plane_controls import QtLayerClippingPlanes
 from finn._qt.layer_controls.qt_layer_controls_base import QtLayerControls
-from finn._qt.layer_controls.qt_layer_depiction_controls import QtLayerClippingPlanes
 from finn._qt.utils import set_widgets_enabled_with_opacity
 from finn._qt.widgets.qt_mode_buttons import QtModePushButton
 from finn.layers.labels._labels_constants import (

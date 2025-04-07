@@ -7,7 +7,7 @@ import finn.layers
 from finn._qt.layer_controls.qt_image_controls_base import (
     QtBaseImageControls,
 )
-from finn._qt.layer_controls.qt_layer_depiction_controls import QtLayerClippingPlanes
+from finn._qt.layer_controls.qt_layer_clipping_plane_controls import QtLayerClippingPlanes
 from finn._qt.utils import qt_signals_blocked
 from finn.layers.image._image_constants import (
     ImageRendering,
