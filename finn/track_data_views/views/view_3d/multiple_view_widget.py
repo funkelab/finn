@@ -7,7 +7,7 @@ from qtpy.QtWidgets import (
 
 import finn
 from finn.components.viewer_model import ViewerModel
-from finn.layers import Labels, Layer, Points, Shapes, Tracks
+from finn.layers import Layer, Points, Shapes
 from finn.qt import QtViewer
 from finn.track_data_views.views.layers.contour_labels import ContourLabels
 from finn.track_data_views.views.layers.track_graph import TrackGraph
@@ -15,6 +15,7 @@ from finn.track_data_views.views.layers.track_labels import TrackLabels
 from finn.track_data_views.views.layers.track_points import TrackPoints
 from finn.track_data_views.views_coordinator.tracks_viewer import TracksViewer
 from finn.utils.action_manager import action_manager
+from finn.utils.events import Event
 from finn.utils.events.event import WarningEmitter
 
 
@@ -23,6 +24,7 @@ def copy_layer(layer: Layer, name: str = ""):
         layer, TrackGraph
     ):  # instead of showing the tracks (not very useful on 3D data because they are collapsed to a single frame), use an empty shapes layer as substitute to ensure that the layer indices in the orthogonal viewer models match with those in the main viewer
         res_layer = Shapes(
+            name=layer.name,
             data=[],
         )
 
@@ -108,352 +110,155 @@ class QtViewerWrap(QtViewer):
         )
 
 
-class MultipleViewerWidget(QSplitter):
-    """The main widget of the example."""
+class DockableViewerModel:
+    """
+    A dockable container that holds a ViewerModel and manages synchronization.
+    """
 
-    def __init__(self, viewer: finn.Viewer):
-        super().__init__()
-        self.viewer = viewer
-        self.tracks_viewer = TracksViewer.get_instance(self.viewer)
-        self.viewer_model1 = ViewerModel(title="model1")
-        self.viewer_model2 = ViewerModel(title="model2")
+    def __init__(self, title: str):
+        self.title = title
+        self.viewer_model = ViewerModel(title)
         self._block = False
-        self.qt_viewer1 = QtViewerWrap(viewer, self.viewer_model1)
-        self.qt_viewer2 = QtViewerWrap(viewer, self.viewer_model2)
-        viewer_splitter = QSplitter()
-        viewer_splitter.setOrientation(Qt.Vertical)
-        viewer_splitter.addWidget(self.qt_viewer1)
-        viewer_splitter.addWidget(self.qt_viewer2)
-        viewer_splitter.setContentsMargins(0, 0, 0, 0)
+        self._blocked_properties = []
+        self._data_block = False
 
-        self.addWidget(viewer_splitter)
+    def add_layer(self, orig_layer: Layer, index: int):
+        """Set the layers of the contained ViewerModel."""
+        self.viewer_model.layers.insert(index, copy_layer(orig_layer, self.title))
+        copied_layer = self.viewer_model.layers[orig_layer.name]
 
-        # add existing layers
-        for i, layer in enumerate(self.viewer.layers):
-            self.viewer_model1.layers.insert(i, copy_layer(layer, "model1"))
-            self.viewer_model2.layers.insert(i, copy_layer(layer, "model2"))
-            for name in get_property_names(layer):
-                getattr(layer.events, name).connect(
-                    own_partial(self._property_sync, name)
-                )
-            if isinstance(layer, Labels):
-                layer.events.set_data.connect(self._set_data_refresh)
-                self.viewer_model1.layers[layer.name].events.set_data.connect(
-                    self._set_data_refresh
-                )
-                self.viewer_model2.layers[layer.name].events.set_data.connect(
-                    self._set_data_refresh
-                )
+        # sync name
+        def sync_name_wrapper(event):
+            return self.sync_name(orig_layer, copied_layer, event)
 
-            # connect data and paint events
-            if layer.name != ".cross" and not isinstance(layer, Tracks):
-                # model 1
-                self.viewer_model1.layers[layer.name].events.data.connect(self._sync_data)
-                self.viewer_model1.layers[layer.name].events.mode.connect(self._sync_mode)
-                if isinstance(self.viewer_model1.layers[layer.name], Labels):
-                    self.viewer_model1.layers[layer.name].events.paint.connect(
-                        self._sync_paint
-                    )
-                    self.viewer_model1.layers[layer.name].events.selected_label.connect(
-                        self._sync_selected_label
-                    )
-                    self.viewer_model1.layers[layer.name].mouse_drag_callbacks.append(
-                        self._sync_click
+        orig_layer.events.name.connect(sync_name_wrapper)
+
+        # sync properties
+        if not isinstance(orig_layer, TrackGraph):  # ignore trackgraph layers
+            for property_name in get_property_names(orig_layer):
+                # sync forward (from original layer to copied layer)
+                if not (
+                    isinstance(orig_layer, TrackPoints) and property_name == "data"
+                ):  # we will sync data separately as we need finer control
+                    getattr(orig_layer.events, property_name).connect(
+                        own_partial(
+                            self.sync_property,
+                            property_name,
+                            orig_layer,
+                            copied_layer,
+                        )
                     )
 
-                # model 2
-                self.viewer_model2.layers[layer.name].events.data.connect(self._sync_data)
-                self.viewer_model2.layers[layer.name].events.mode.connect(self._sync_mode)
-                if isinstance(self.viewer_model2.layers[layer.name], Labels):
-                    self.viewer_model2.layers[layer.name].events.paint.connect(
-                        self._sync_paint
+                # in the case of a TrackLabels or TrackPoints layer, sync only specific properties backwards. Otherwise, sync all properties
+                if not isinstance(
+                    orig_layer, (TrackLabels | TrackPoints)
+                ) or property_name in (
+                    "mode",
+                    "selected_label",
+                    "n_edit_dimensions",
+                    "brush_size",
+                ):
+                    getattr(copied_layer.events, property_name).connect(
+                        own_partial(
+                            self.sync_property,
+                            property_name,
+                            copied_layer,
+                            orig_layer,
+                        )
                     )
-                    self.viewer_model2.layers[layer.name].events.selected_label.connect(
-                        self._sync_selected_label
-                    )
-                    self.viewer_model2.layers[layer.name].mouse_drag_callbacks.append(
-                        self._sync_click
-                    )
-            layer.events.name.connect(self._sync_name)
-            self._order_update()
 
-        # connect to events
-        self.viewer.layers.events.inserted.connect(self._layer_added)
-        self.viewer.layers.events.removed.connect(self._layer_removed)
-        self.viewer.layers.events.moved.connect(self._layer_moved)
-        self.viewer.layers.selection.events.active.connect(self._layer_selection_changed)
-        self.viewer.dims.events.current_step.connect(self._point_update)
-        self.viewer_model1.dims.events.current_step.connect(self._point_update)
-        self.viewer_model2.dims.events.current_step.connect(self._point_update)
-        self.viewer.dims.events.order.connect(self._order_update)
-        self.viewer.events.reset_view.connect(self._reset_view)
-        self.viewer_model1.events.status.connect(self._status_update)
-        self.viewer_model2.events.status.connect(self._status_update)
+        # forward click events and key binds in the case of TrackLabels and TrackPoints layers
+        if isinstance(orig_layer, (TrackLabels | TrackPoints)):
 
-    def update(self):
-        self.tracks_viewer.update_selection()
+            def click_wrapper(layer, event):
+                # Access orig_layer here
+                return self.click(orig_layer, layer, event)
 
-    def _status_update(self, event):
-        self.viewer.status = event.value
+            copied_layer.mouse_drag_callbacks.append(click_wrapper)
 
-    def _reset_view(self):
-        self.viewer_model1.reset_view()
-        self.viewer_model2.reset_view()
+            copied_layer.bind_key("q")(orig_layer.tracks_viewer.toggle_display_mode)
+            copied_layer.bind_key("z")(orig_layer.tracks_viewer.undo)
+            copied_layer.bind_key("r")(orig_layer.tracks_viewer.redo)
 
-    def _reset_layers(self):
-        self.viewer_model1.layers.clear()
-        self.viewer_model2.layers.clear()
+        # if the original layer is a TrackLabels instance, forward paint events on its derived ContourLabels instances to the original layer
+        if isinstance(orig_layer, TrackLabels):
 
-    def _layer_selection_changed(self, event):
+            def paint_wrapper(event):
+                return self.sync_paint(orig_layer, event)
+
+            copied_layer.events.paint.connect(paint_wrapper)
+
+        # if the original layer is a TrackPoints layer, make sure the visible points are synced (when switching between 'all' and 'lineage' mode)
+        # and make sure that moving a point forwards the event to the original layer for processing (or resetting, if a seg_layer is present)
+        if isinstance(orig_layer, TrackPoints):
+
+            def shown_points_wrapper(event):
+                return self.sync_shown_points(orig_layer, copied_layer)
+
+            orig_layer.events.border_color.connect(shown_points_wrapper)
+
+            def receive_data_wrapper():
+                return self.receive_data(orig_layer, copied_layer)
+
+            orig_layer.data_updated.connect(receive_data_wrapper)
+
+            def sync_data_wrapper(event):
+                return self.sync_data_event(orig_layer, copied_layer, event)
+
+            copied_layer._sync_data_wrapper = sync_data_wrapper
+            copied_layer.events.data.connect(sync_data_wrapper)
+
+    def receive_data(self, orig_layer: TrackPoints, copied_layer: Points) -> None:
+        """Respond to signal from the original layer, to update the data"""
+
+        copied_layer.events.data.disconnect(copied_layer._sync_data_wrapper)
+        copied_layer.data = orig_layer.data
+        copied_layer.events.data.connect(copied_layer._sync_data_wrapper)
+
+    def sync_data_event(
+        self, orig_layer: TrackPoints, copied_layer: Points, event: Event
+    ) -> None:
+        """Send the event that is emitted when a point is moved or deleted to the original layer"""
+
+        if hasattr(event, "action") and event.action in ("added", "changed", "removed"):
+            with orig_layer.events.blocker_all():  # try to suppress updating visibility
+                orig_layer.selected_data = (
+                    copied_layer.selected_data
+                )  # make sure the same data is selected
+            orig_layer._update_data(event)
+
+    def sync_shown_points(self, orig_layer: TrackPoints, copied_layer: Points) -> None:
+        """Sync the visible points between original TrackPoints layer and Points layers in ViewerModel instances (this is not a synced property)"""
+
+        with copied_layer.events.blocker_all():
+            copied_layer.size = orig_layer.size
+            copied_layer.shown = orig_layer.shown
+
+        copied_layer.refresh()
+
+    def sync_name(self, orig_layer: Layer, copied_layer: Layer, event: Event):
+        """Forward the renaming event from original layer to copied layer"""
+
+        copied_layer.name = orig_layer.name
+
+    def sync_paint(self, orig_layer: TrackLabels, event: Event):
+        """Sync paint event to original TrackLabels instance"""
+
+        orig_layer._on_paint(event)
+
+    def click(
+        self,
+        orig_layer: TrackLabels | TrackPoints,
+        layer: ContourLabels | Points,
+        event: Event,
+    ):
+        """Forward the click event from the ViewerModel to the original TracksLabels layer
+        args:
+            orig_layer: original TrackLabels or TrackPoints layer
+            layer: the ContourLabels or Points layer on this ViewerModel
+            event: the click event
         """
-        update of current active layer
-        """
-        if self._block:
-            return
-
-        if event.value is None:
-            self.viewer_model1.layers.selection.active = None
-            self.viewer_model2.layers.selection.active = None
-            return
-
-        if event.value.name in self.viewer_model1.layers:
-            self.viewer_model1.layers.selection.active = self.viewer_model1.layers[
-                event.value.name
-            ]
-        if event.value.name in self.viewer_model2.layers:
-            self.viewer_model2.layers.selection.active = self.viewer_model2.layers[
-                event.value.name
-            ]
-
-    def _point_update(self, event):
-        try:
-            for model in [self.viewer, self.viewer_model1, self.viewer_model2]:
-                if model.dims is event.source:
-                    continue
-                model.dims.current_step = event.value
-        except IndexError:
-            "Layer was already removed! This error likely occurs because two actions are called at the same time."
-
-    def _order_update(self):
-        order = list(self.viewer.dims.order)
-        if len(order) <= 2:
-            self.viewer_model1.dims.order = order
-            self.viewer_model2.dims.order = order
-            return
-
-        order[-3:] = order[-2], order[-3], order[-1]
-        self.viewer_model1.dims.order = order
-        order = list(self.viewer.dims.order)
-        order[-3:] = order[-1], order[-2], order[-3]
-        self.viewer_model2.dims.order = order
-
-    def _layer_added(self, event):
-        """add layer to additional viewers and connect all required events"""
-
-        if (
-            event.value.name not in self.viewer_model1.layers
-            and event.value.name not in self.viewer_model2.layers
-        ):
-            self.viewer_model1.layers.insert(
-                event.index, copy_layer(event.value, "model1")
-            )
-            self.viewer_model2.layers.insert(
-                event.index, copy_layer(event.value, "model2")
-            )
-
-            for name in get_property_names(event.value):
-                getattr(event.value.events, name).connect(
-                    own_partial(self._property_sync, name)
-                )
-
-            if isinstance(event.value, Labels):
-                event.value.events.set_data.connect(self._set_data_refresh)
-                self.viewer_model1.layers[event.value.name].events.set_data.connect(
-                    self._set_data_refresh
-                )
-                self.viewer_model2.layers[event.value.name].events.set_data.connect(
-                    self._set_data_refresh
-                )
-
-            if isinstance(event.value, TrackPoints):
-                event.value.events.border_color.connect(self._sync_shown_points)
-
-            # connect data and paint events
-            if event.value.name != ".cross" and not isinstance(event.value, TrackGraph):
-                # model 1
-                self.viewer_model1.layers[event.value.name].events.data.connect(
-                    self._sync_data
-                )
-                self.viewer_model1.layers[event.value.name].events.mode.connect(
-                    self._sync_mode
-                )
-
-                if isinstance(self.viewer_model1.layers[event.value.name], Labels):
-                    self.viewer_model1.layers[
-                        event.value.name
-                    ].events.selected_label.connect(self._sync_selected_label)
-
-                    if isinstance(event.value, TrackLabels):
-                        self.viewer_model1.layers[
-                            event.value.name
-                        ].mouse_drag_callbacks.append(self._sync_click)
-
-                        self.viewer_model1.layers[event.value.name].events.paint.connect(
-                            self._sync_paint
-                        )
-
-                        self.viewer_model1.layers[event.value.name].bind_key("z")(
-                            self.tracks_viewer.undo
-                        )
-                        self.viewer_model1.layers[event.value.name].bind_key("r")(
-                            self.tracks_viewer.redo
-                        )
-                        self.viewer_model1.layers[
-                            event.value.name
-                        ].undo = self.tracks_viewer.undo
-                        self.viewer_model1.layers[
-                            event.value.name
-                        ].redo = self.tracks_viewer.redo
-
-                if isinstance(event.value, TrackPoints):
-                    self.viewer_model1.layers[
-                        event.value.name
-                    ].mouse_drag_callbacks.append(self._sync_point_click)
-                    self.viewer_model1.layers[event.value.name].bind_key("z")(
-                        self.tracks_viewer.undo
-                    )
-                    self.viewer_model1.layers[event.value.name].bind_key("r")(
-                        self.tracks_viewer.redo
-                    )
-                    self.viewer_model1.layers[
-                        event.value.name
-                    ].undo = self.tracks_viewer.undo
-                    self.viewer_model1.layers[
-                        event.value.name
-                    ].redo = self.tracks_viewer.redo
-
-                # model 2
-                self.viewer_model2.layers[event.value.name].events.data.connect(
-                    self._sync_data
-                )
-                self.viewer_model2.layers[event.value.name].events.mode.connect(
-                    self._sync_mode
-                )
-
-                if isinstance(self.viewer_model2.layers[event.value.name], Labels):
-                    self.viewer_model2.layers[
-                        event.value.name
-                    ].events.selected_label.connect(self._sync_selected_label)
-
-                    if isinstance(event.value, TrackLabels):
-                        self.viewer_model2.layers[
-                            event.value.name
-                        ].mouse_drag_callbacks.append(self._sync_click)
-
-                        self.viewer_model2.layers[event.value.name].events.paint.connect(
-                            self._sync_paint
-                        )
-                        self.viewer_model2.layers[event.value.name].bind_key("z")(
-                            self.tracks_viewer.undo
-                        )
-                        self.viewer_model2.layers[event.value.name].bind_key("r")(
-                            self.tracks_viewer.redo
-                        )
-                        self.viewer_model2.layers[
-                            event.value.name
-                        ].undo = self.tracks_viewer.undo
-                        self.viewer_model2.layers[
-                            event.value.name
-                        ].redo = self.tracks_viewer.redo
-
-                if isinstance(event.value, TrackPoints):
-                    self.viewer_model2.layers[
-                        event.value.name
-                    ].mouse_drag_callbacks.append(self._sync_point_click)
-                    self.viewer_model2.layers[event.value.name].bind_key("z")(
-                        self.tracks_viewer.undo
-                    )
-                    self.viewer_model2.layers[event.value.name].bind_key("r")(
-                        self.tracks_viewer.redo
-                    )
-                    self.viewer_model2.layers[
-                        event.value.name
-                    ].undo = self.tracks_viewer.undo
-                    self.viewer_model2.layers[
-                        event.value.name
-                    ].redo = self.tracks_viewer.redo
-
-            event.value.events.name.connect(self._sync_name)
-
-            self._order_update()
-
-    def _sync_selected_label(self, event):
-        """Sync the selected label between Label instances"""
-
-        for model in [self.viewer, self.viewer_model1, self.viewer_model2]:
-            if event.source.name in model.layers:
-                layer = model.layers[event.source.name]
-                if layer is event.source:
-                    return
-                try:
-                    self._block = True
-                    layer.selected_label = event.source.selected_label
-                finally:
-                    self._block = False
-
-    def _sync_mode(self, event):
-        """Sync the tool mode between source viewer and other viewer models"""
-
-        for model in [self.viewer, self.viewer_model1, self.viewer_model2]:
-            if event.source.name in model.layers:
-                layer = model.layers[event.source.name]
-                if layer is event.source:
-                    continue
-                try:
-                    self._block = True
-                    layer.mode = event.source.mode
-                finally:
-                    self._block = False
-
-    def _sync_point_click(self, layer, event):
-        """Retrieve the label that was clicked on and forward it to the TrackLabels instance if present"""
-
-        name = layer.name
-        if (
-            event.type == "mouse_press"
-            and name in self.viewer.layers
-            and isinstance(self.viewer.layers[name], TrackPoints)
-        ):
-            # differentiate between click and drag
-            mouse_press_time = time.time()
-            dragged = False
-            yield
-            # on move
-            while event.type == "mouse_move":
-                dragged = True
-                yield
-            if dragged and time.time() - mouse_press_time < 0.5:
-                dragged = False  # suppress micro drag events and treat them as click
-            if not dragged:
-                point_index = layer.get_value(
-                    event.position,
-                    view_direction=event.view_direction,
-                    dims_displayed=event.dims_displayed,
-                    world=True,
-                )
-                self.viewer.layers[name].process_point_click(point_index, event)
-
-    def _sync_click(self, layer, event):
-        """Retrieve the label that was clicked on and forward it to the TrackLabels instance if present"""
-
-        name = layer.name
-        if (
-            event.type == "mouse_press"
-            and layer.mode == "pan_zoom"
-            and name in self.viewer.layers
-            and isinstance(self.viewer.layers[name], TrackLabels)
-        ):
-            # differentiate between click and drag
+        if layer.mode == "pan_zoom":
             mouse_press_time = time.time()
             dragged = False
             yield
@@ -465,123 +270,156 @@ class MultipleViewerWidget(QSplitter):
                 dragged = False  # suppress micro drag events and treat them as click
             # on release
             if not dragged:
-                label = layer.get_value(
-                    event.position,
-                    view_direction=event.view_direction,
-                    dims_displayed=event.dims_displayed,
-                    world=True,
-                )
+                if isinstance(layer, ContourLabels):
+                    label = layer.get_value(
+                        event.position,
+                        view_direction=event.view_direction,
+                        dims_displayed=event.dims_displayed,
+                        world=True,
+                    )
+                    orig_layer.process_click(event, label)
 
-                # Process the click event on the TrackLabels instance
-                self.viewer.layers[name].process_click(event, label)
+                if isinstance(layer, Points):
+                    point_index = layer.get_value(
+                        event.position,
+                        view_direction=event.view_direction,
+                        dims_displayed=event.dims_displayed,
+                        world=True,
+                    )
+                    orig_layer.process_point_click(point_index, event)
 
-    def _sync_paint(self, event):
-        """Forward the paint event to the TrackLabels, if present"""
+    def sync_property(
+        self, property_name: str, source_layer: Layer, target_layer: Layer, event: Event
+    ):
+        """Sync a property of a layer in this viewer model."""
 
-        if event.source.name in self.viewer.layers and isinstance(
-            self.viewer.layers[event.source.name], TrackLabels
-        ):
-            self.viewer.layers[event.source.name]._on_paint(event)
-
-    def _sync_name(self, event):
-        """sync name of layers"""
-
-        try:
-            index = self.viewer.layers.index(event.source)
-            self.viewer_model1.layers[index].name = event.source.name
-            self.viewer_model2.layers[index].name = event.source.name
-        except IndexError:
+        if self._block or property_name in self._blocked_properties:
             return
 
-    def _sync_data(self, event):
-        """sync data modification from additional viewers"""
+        self._block = True
+        setattr(
+            target_layer,
+            property_name,
+            getattr(source_layer, property_name),
+        )
+        self._block = False
 
-        if self._block:
+
+class MultipleViewerWidget(QSplitter):
+    """The main widget of the example."""
+
+    def __init__(self, viewer: finn.Viewer):
+        super().__init__()
+        self.viewer = viewer
+        self.tracks_viewer = TracksViewer.get_instance(self.viewer)
+        self.viewer_model1 = DockableViewerModel(title="model1")
+        self.viewer_model2 = DockableViewerModel(title="model2")
+        self.qt_viewer1 = QtViewerWrap(viewer, self.viewer_model1.viewer_model)
+        self.qt_viewer2 = QtViewerWrap(viewer, self.viewer_model2.viewer_model)
+        viewer_splitter = QSplitter()
+        viewer_splitter.setOrientation(Qt.Vertical)
+        viewer_splitter.addWidget(self.qt_viewer1)
+        viewer_splitter.addWidget(self.qt_viewer2)
+        viewer_splitter.setContentsMargins(0, 0, 0, 0)
+
+        self.addWidget(viewer_splitter)
+
+        # Add the layers currently in the viewer
+        for i, layer in enumerate(self.viewer.layers):
+            self.viewer_model1.add_layer(layer, i)
+            self.viewer_model2.add_layer(layer, i)
+
+        # Connect to events
+        self.viewer.layers.events.inserted.connect(self._layer_added)
+        self.viewer.layers.events.removed.connect(self._layer_removed)
+        self.viewer.layers.events.moved.connect(self._layer_moved)
+        self.viewer.layers.selection.events.active.connect(self._layer_selection_changed)
+        self.viewer.events.reset_view.connect(self._reset_view)
+        self.viewer.dims.events.current_step.connect(self._update_current_step)
+        self.viewer_model1.viewer_model.dims.events.current_step.connect(
+            self._update_current_step
+        )
+        self.viewer_model2.viewer_model.dims.events.current_step.connect(
+            self._update_current_step
+        )
+
+        # Adjust dimensions for orthogonal views
+        self.set_orth_views_dims_order()
+
+    def set_orth_views_dims_order(self):
+        """The the order of the z,y,x dims in the orthogonal views"""
+
+        order = list(self.viewer.dims.order)
+        if len(order) > 2:
+            # xz view
+            order[-3:] = order[-2], order[-3], order[-1]
+            self.viewer_model1.viewer_model.dims.order = order
+
+            # yz view
+            order = list(self.viewer.dims.order)
+            order[-3:] = order[-1], order[-2], order[-3]
+            self.viewer_model2.viewer_model.dims.order = order
+
+    def _reset_view(self):
+        """Propagate the reset view event"""
+
+        self.viewer_model1.viewer_model.reset_view()
+        self.viewer_model2.viewer_model.reset_view()
+
+    def _layer_selection_changed(self, event):
+        """Update of current active layers"""
+
+        if event.value is None:
+            self.viewer_model1.viewer_model.layers.selection.active = None
+            self.viewer_model2.viewer_model.layers.selection.active = None
             return
-        for model in [self.viewer, self.viewer_model1, self.viewer_model2]:
-            if event.source.name in model.layers:
-                layer = model.layers[event.source.name]
-                if layer is event.source:
-                    self.viewer.layers[
-                        event.source.name
-                    ].selected_data = event.source.selected_data
-                    self.viewer.layers[event.source.name]._update_data(event)
-                    continue
-                try:
-                    self._block = True
-                    layer.data = event.source.data
 
-                finally:
-                    self._block = False
+        if event.value.name in self.viewer_model1.viewer_model.layers:
+            self.viewer_model1.viewer_model.layers.selection.active = (
+                self.viewer_model1.viewer_model.layers[event.value.name]
+            )
+        if event.value.name in self.viewer_model2.viewer_model.layers:
+            self.viewer_model2.viewer_model.layers.selection.active = (
+                self.viewer_model2.viewer_model.layers[event.value.name]
+            )
 
-    def _sync_shown_points(self, event):
-        """Sync the visible points between TrackPoints layer and orthogonal views"""
+    def _update_current_step(self, event):
+        """Sync the current step between different viewer models"""
 
-        for model in [self.viewer_model1, self.viewer_model2]:
-            if event.source.name in model.layers:
-                layer = model.layers[event.source.name]
-                try:
-                    self._block = True
-                    layer.shown = event.source.shown
-                    layer.border_color = event.source.border_color
-                    layer.size = event.source.size
-                    layer.refresh()
-                finally:
-                    self._block = False
+        for model in [
+            self.viewer,
+            self.viewer_model1.viewer_model,
+            self.viewer_model2.viewer_model,
+        ]:
+            if model.dims is event.source:
+                continue
+            model.dims.current_step = event.value
 
-    def _set_data_refresh(self, event):
-        """
-        synchronize data refresh between layers
-        """
-        if self._block:
-            return
-        for model in [self.viewer, self.viewer_model1, self.viewer_model2]:
-            if event.source.name in model.layers:
-                layer = model.layers[event.source.name]
-                if layer is event.source:
-                    continue
-                try:
-                    self._block = True
-                    layer.refresh()
-                finally:
-                    self._block = False
+    def _layer_added(self, event):
+        """Add layer to additional other viewer models"""
+
+        if event.value.name not in self.viewer_model1.viewer_model.layers:
+            self.viewer_model1.add_layer(event.value, event.index)
+
+        if event.value.name not in self.viewer_model2.viewer_model.layers:
+            self.viewer_model2.add_layer(event.value, event.index)
+
+        self.set_orth_views_dims_order()
 
     def _layer_removed(self, event):
-        """remove layer in all viewers"""
+        """Remove layer in all viewer models"""
 
         layer_name = event.value.name
-        if layer_name in self.viewer_model1.layers:
-            self.viewer_model1.layers.pop(layer_name)
-        if layer_name in self.viewer_model2.layers:
-            self.viewer_model2.layers.pop(layer_name)
+        if layer_name in self.viewer_model1.viewer_model.layers:
+            self.viewer_model1.viewer_model.layers.pop(layer_name)
+        if layer_name in self.viewer_model2.viewer_model.layers:
+            self.viewer_model2.viewer_model.layers.pop(layer_name)
 
     def _layer_moved(self, event):
-        """update order of layers"""
+        """Update order of layers in all viewer models"""
 
         dest_index = (
             event.new_index if event.new_index < event.index else event.new_index + 1
         )
-        self.viewer_model1.layers.move(event.index, dest_index)
-        self.viewer_model2.layers.move(event.index, dest_index)
-
-    def _property_sync(self, name, event):
-        """Sync layers properties (except the name)"""
-
-        if event.source.name not in self.viewer.layers:
-            return
-        try:
-            self._block = True
-            if event.source.name in self.viewer_model1.layers:
-                setattr(
-                    self.viewer_model1.layers[event.source.name],
-                    name,
-                    getattr(event.source, name),
-                )
-            if event.source.name in self.viewer_model2.layers:
-                setattr(
-                    self.viewer_model2.layers[event.source.name],
-                    name,
-                    getattr(event.source, name),
-                )
-        finally:
-            self._block = False
+        self.viewer_model1.viewer_model.layers.move(event.index, dest_index)
+        self.viewer_model2.viewer_model.layers.move(event.index, dest_index)
