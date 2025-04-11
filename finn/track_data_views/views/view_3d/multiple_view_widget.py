@@ -91,25 +91,6 @@ class own_partial:
         return self.func(*(self.args + args), **{**self.kwargs, **kwargs})
 
 
-class QtViewerWrap(QtViewer):
-    def __init__(self, main_viewer, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.main_viewer = main_viewer
-
-    def _qt_open(
-        self,
-        filenames: list,
-        stack: bool,
-        plugin: str | None = None,
-        layer_type: str | None = None,
-        **kwargs,
-    ):
-        """for drag and drop open files"""
-        self.main_viewer.window._qt_viewer._qt_open(
-            filenames, stack, plugin, layer_type, **kwargs
-        )
-
-
 class DockableViewerModel:
     """
     A dockable container that holds a ViewerModel and manages synchronization.
@@ -316,8 +297,8 @@ class MultipleViewerWidget(QSplitter):
         self.tracks_viewer = TracksViewer.get_instance(self.viewer)
         self.viewer_model1 = DockableViewerModel(title="model1", rel_order=(-2, -3, -1))
         self.viewer_model2 = DockableViewerModel(title="model2", rel_order=(-1, -2, -3))
-        self.qt_viewer1 = QtViewerWrap(viewer, self.viewer_model1.viewer_model)
-        self.qt_viewer2 = QtViewerWrap(viewer, self.viewer_model2.viewer_model)
+        self.qt_viewer1 = QtViewer(self.viewer_model1.viewer_model)
+        self.qt_viewer2 = QtViewer(self.viewer_model2.viewer_model)
         viewer_splitter = QSplitter()
         viewer_splitter.setOrientation(Qt.Vertical)
         viewer_splitter.addWidget(self.qt_viewer1)
