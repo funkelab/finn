@@ -119,6 +119,7 @@ class DockableViewerModel:
         self.title = title
         self.rel_order = rel_order
         self.viewer_model = ViewerModel(title)
+        self.viewer_model.axes.visible = True
         self._block = False
 
     def add_layer(self, orig_layer: Layer, index: int):
@@ -310,6 +311,8 @@ class MultipleViewerWidget(QSplitter):
     def __init__(self, viewer: finn.Viewer):
         super().__init__()
         self.viewer = viewer
+        self.viewer.axes.visible = True
+        self.viewer.axes.events.visible.connect(self.set_orth_views_dims_order)
         self.tracks_viewer = TracksViewer.get_instance(self.viewer)
         self.viewer_model1 = DockableViewerModel(title="model1", rel_order=(-2, -3, -1))
         self.viewer_model2 = DockableViewerModel(title="model2", rel_order=(-1, -2, -3))
@@ -348,26 +351,55 @@ class MultipleViewerWidget(QSplitter):
     def set_orth_views_dims_order(self):
         """The the order of the z,y,x dims in the orthogonal views, by using the rel_order attribute of the viewer models"""
 
+        axis_labels = ("t", "z", "y", "x")  # default axis labels
         order = list(self.viewer.dims.order)
 
         if len(order) > 2:
-            # xz view
-            xz_order = list(order)
-            xz_order[-3:] = (
-                xz_order[self.viewer_model1.rel_order[0]],
-                xz_order[self.viewer_model1.rel_order[1]],
-                xz_order[self.viewer_model1.rel_order[2]],
+            # model 1 axis order (e.g. xz view)
+            m1_order = list(order)
+            m1_order[-3:] = (
+                m1_order[self.viewer_model1.rel_order[0]],
+                m1_order[self.viewer_model1.rel_order[1]],
+                m1_order[self.viewer_model1.rel_order[2]],
             )
-            self.viewer_model1.viewer_model.dims.order = xz_order
+            self.viewer_model1.viewer_model.dims.order = m1_order
 
-            # yz view
-            yz_order = list(order)
-            yz_order[-3:] = (
-                yz_order[self.viewer_model2.rel_order[0]],
-                yz_order[self.viewer_model2.rel_order[1]],
-                yz_order[self.viewer_model2.rel_order[2]],
+            m1_axis_labels = list(axis_labels)
+            m1_axis_labels[-3:] = (
+                m1_axis_labels[self.viewer_model1.rel_order[0]],
+                m1_axis_labels[self.viewer_model1.rel_order[1]],
+                m1_axis_labels[self.viewer_model1.rel_order[2]],
             )
-            self.viewer_model2.viewer_model.dims.order = yz_order
+
+            # model 2 axis order (e.g. yz view)
+            m2_order = list(order)
+            m2_order[-3:] = (
+                m2_order[self.viewer_model2.rel_order[0]],
+                m2_order[self.viewer_model2.rel_order[1]],
+                m2_order[self.viewer_model2.rel_order[2]],
+            )
+
+            m2_axis_labels = list(axis_labels)
+            m2_axis_labels[-3:] = (
+                m2_axis_labels[self.viewer_model2.rel_order[0]],
+                m2_axis_labels[self.viewer_model2.rel_order[1]],
+                m2_axis_labels[self.viewer_model2.rel_order[2]],
+            )
+
+            self.viewer_model2.viewer_model.dims.order = m2_order
+
+        if len(order) == 3:  # assume we have zyx axes
+            self.viewer.dims.axis_labels = axis_labels[1:]
+            self.viewer_model1.viewer_model.dims.axis_labels = m1_axis_labels[1:]
+            self.viewer_model2.viewer_model.dims.axis_labels = m2_axis_labels[1:]
+        elif len(order) == 4:  # assume we have tzyx axes
+            self.viewer.dims.axis_labels = axis_labels
+            self.viewer_model1.viewer_model.dims.axis_labels = m1_axis_labels
+            self.viewer_model2.viewer_model.dims.axis_labels = m2_axis_labels
+
+        # whether or not the axis should be visible
+        self.viewer_model1.viewer_model.axes.visible = self.viewer.axes.visible
+        self.viewer_model2.viewer_model.axes.visible = self.viewer.axes.visible
 
     def _reset_view(self):
         """Propagate the reset view event"""
