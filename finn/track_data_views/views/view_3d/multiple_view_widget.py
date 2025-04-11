@@ -115,12 +115,11 @@ class DockableViewerModel:
     A dockable container that holds a ViewerModel and manages synchronization.
     """
 
-    def __init__(self, title: str):
+    def __init__(self, title: str, rel_order: tuple[int]):
         self.title = title
+        self.rel_order = rel_order
         self.viewer_model = ViewerModel(title)
         self._block = False
-        self._blocked_properties = []
-        self._data_block = False
 
     def add_layer(self, orig_layer: Layer, index: int):
         """Set the layers of the contained ViewerModel."""
@@ -293,7 +292,7 @@ class DockableViewerModel:
     ):
         """Sync a property of a layer in this viewer model."""
 
-        if self._block or property_name in self._blocked_properties:
+        if self._block:
             return
 
         self._block = True
@@ -312,8 +311,8 @@ class MultipleViewerWidget(QSplitter):
         super().__init__()
         self.viewer = viewer
         self.tracks_viewer = TracksViewer.get_instance(self.viewer)
-        self.viewer_model1 = DockableViewerModel(title="model1")
-        self.viewer_model2 = DockableViewerModel(title="model2")
+        self.viewer_model1 = DockableViewerModel(title="model1", rel_order=(-2, -3, -1))
+        self.viewer_model2 = DockableViewerModel(title="model2", rel_order=(-1, -2, -3))
         self.qt_viewer1 = QtViewerWrap(viewer, self.viewer_model1.viewer_model)
         self.qt_viewer2 = QtViewerWrap(viewer, self.viewer_model2.viewer_model)
         viewer_splitter = QSplitter()
@@ -347,18 +346,28 @@ class MultipleViewerWidget(QSplitter):
         self.set_orth_views_dims_order()
 
     def set_orth_views_dims_order(self):
-        """The the order of the z,y,x dims in the orthogonal views"""
+        """The the order of the z,y,x dims in the orthogonal views, by using the rel_order attribute of the viewer models"""
 
         order = list(self.viewer.dims.order)
+
         if len(order) > 2:
             # xz view
-            order[-3:] = order[-2], order[-3], order[-1]
-            self.viewer_model1.viewer_model.dims.order = order
+            xz_order = list(order)
+            xz_order[-3:] = (
+                xz_order[self.viewer_model1.rel_order[0]],
+                xz_order[self.viewer_model1.rel_order[1]],
+                xz_order[self.viewer_model1.rel_order[2]],
+            )
+            self.viewer_model1.viewer_model.dims.order = xz_order
 
             # yz view
-            order = list(self.viewer.dims.order)
-            order[-3:] = order[-1], order[-2], order[-3]
-            self.viewer_model2.viewer_model.dims.order = order
+            yz_order = list(order)
+            yz_order[-3:] = (
+                yz_order[self.viewer_model2.rel_order[0]],
+                yz_order[self.viewer_model2.rel_order[1]],
+                yz_order[self.viewer_model2.rel_order[2]],
+            )
+            self.viewer_model2.viewer_model.dims.order = yz_order
 
     def _reset_view(self):
         """Propagate the reset view event"""
@@ -414,6 +423,8 @@ class MultipleViewerWidget(QSplitter):
             self.viewer_model1.viewer_model.layers.pop(layer_name)
         if layer_name in self.viewer_model2.viewer_model.layers:
             self.viewer_model2.viewer_model.layers.pop(layer_name)
+
+        self.set_orth_views_dims_order()
 
     def _layer_moved(self, event):
         """Update order of layers in all viewer models"""
