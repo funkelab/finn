@@ -97,8 +97,7 @@ class Labels(ScalarFieldBase):
         Colormap to use for the labels. If None, a random colormap will be
         used.
     depiction : str
-        3D Depiction mode. Must be one of {'volume', 'plane'}.
-        The default value is 'volume'.
+        3D Depiction mode. Must be equal to 'volume'.
     experimental_clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
         Each dict defines a clipping plane in 3D in data coordinates.
         Valid dictionary keys are {'position', 'normal', and 'enabled'}.
@@ -126,10 +125,6 @@ class Labels(ScalarFieldBase):
         Name of the layer.
     opacity : float
         Opacity of the layer visual, between 0.0 and 1.0.
-    plane : dict or SlicingPlane
-        Properties defining plane rendering in 3D. Properties are defined in
-        data coordinates. Valid dictionary keys are
-        {'position', 'normal', 'thickness', and 'enabled'}.
     projection_mode : str
         How data outside the viewed dimensions but inside the thick Dims slice will
         be projected onto the viewed dimensions
@@ -239,8 +234,6 @@ class Labels(ScalarFieldBase):
 
         In ERASE mode the cursor functions similarly to PAINT mode, but to
         paint with background label, which effectively removes the label.
-    plane : SlicingPlane
-        Properties defining plane rendering in 3D.
     experimental_clipping_planes : ClippingPlaneList
         Clipping planes defined in data coordinates, used to clip the volume.
     units: tuple of pint.Unit
@@ -309,7 +302,6 @@ class Labels(ScalarFieldBase):
         multiscale=None,
         name=None,
         opacity=0.7,
-        plane=None,
         projection_mode="none",
         properties=None,
         rendering="iso_categorical",
@@ -350,7 +342,6 @@ class Labels(ScalarFieldBase):
             name=name,
             scale=scale,
             shear=shear,
-            plane=plane,
             opacity=opacity,
             projection_mode=projection_mode,
             rotate=rotate,

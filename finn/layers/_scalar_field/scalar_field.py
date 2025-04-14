@@ -16,7 +16,6 @@ from finn.layers.image._image_constants import Interpolation, VolumeDepiction
 from finn.layers.image._image_utils import guess_multiscale
 from finn.layers.image._slice import _ImageSliceRequest, _ImageSliceResponse
 from finn.layers.utils._slice_input import _SliceInput, _ThickNDSlice
-from finn.layers.utils.plane import SlicingPlane
 from finn.utils._dask_utils import DaskIndexer
 from finn.utils.colormaps import AVAILABLE_COLORMAPS
 from finn.utils.events import Event
@@ -66,8 +65,7 @@ class ScalarFieldBase(Layer, ABC):
     custom_interpolation_kernel_2d : np.ndarray
         Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
     depiction : str
-        3D Depiction mode. Must be one of {'volume', 'plane'}.
-        The default value is 'volume'.
+        3D Depiction mode. Must be equal to 'volume'.
     experimental_clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
         Each dict defines a clipping plane in 3D in data coordinates.
         Valid dictionary keys are {'position', 'normal', and 'enabled'}.
@@ -88,10 +86,6 @@ class ScalarFieldBase(Layer, ABC):
         Number of dimensions in the data.
     opacity : float
         Opacity of the layer visual, between 0.0 and 1.0.
-    plane : dict or SlicingPlane
-        Properties defining plane rendering in 3D. Properties are defined in
-        data coordinates. Valid dictionary keys are
-        {'position', 'normal', 'thickness', and 'enabled'}.
     projection_mode : str
         How data outside the viewed dimensions but inside the thick Dims slice will
         be projected onto the viewed dimensions. Must fit to cls._projectionclass.
@@ -148,9 +142,6 @@ class ScalarFieldBase(Layer, ABC):
         list should be the largest. Please note multiscale rendering is only
         supported in 2D. In 3D, only the lowest resolution scale is
         displayed.
-    plane : SlicingPlane or dict
-        Properties defining plane rendering in 3D. Valid dictionary keys are
-        {'position', 'normal', 'thickness'}.
     rendering : str
         Rendering mode used by vispy. Must be one of our supported
         modes.
@@ -185,7 +176,6 @@ class ScalarFieldBase(Layer, ABC):
         name=None,
         ndim=None,
         opacity=1.0,
-        plane=None,
         projection_mode="none",
         rendering="mip",
         rotate=None,
@@ -250,7 +240,6 @@ class ScalarFieldBase(Layer, ABC):
             interpolation2d=Event,
             interpolation3d=Event,
             iso_threshold=Event,
-            plane=Event,
             experimental_clipping_planes=Event,
             rendering=Event,
         )
@@ -283,7 +272,6 @@ class ScalarFieldBase(Layer, ABC):
             rgb=len(self.data.shape) != self.ndim,
         )
 
-        self._plane = SlicingPlane(thickness=1)
         # Whether to calculate clims on the next set_view_slice
         self._should_calc_clims = False
         # using self.colormap = colormap uses the setter in *derived* classes,
@@ -392,15 +380,6 @@ class ScalarFieldBase(Layer, ABC):
         """Set the current 3D depiction mode."""
         self._depiction = VolumeDepiction("volume")  # only volume is allowed1
         self.events.depiction()
-
-    @property
-    def plane(self):
-        return self._plane
-
-    @plane.setter
-    def plane(self, value: dict | SlicingPlane) -> None:
-        self._plane.update(value)
-        self.events.plane()
 
     @property
     def custom_interpolation_kernel_2d(self):

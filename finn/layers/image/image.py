@@ -109,10 +109,6 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         Name of the layer.
     opacity : float
         Opacity of the layer visual, between 0.0 and 1.0.
-    plane : dict or SlicingPlane
-        Properties defining plane rendering in 3D. Properties are defined in
-        data coordinates. Valid dictionary keys are
-        {'position', 'normal', 'thickness', and 'enabled'}.
     projection_mode : str
         How data outside the viewed dimensions, but inside the thick Dims slice will
         be projected onto the viewed dimensions. Must fit to ImageProjectionMode
@@ -203,9 +199,6 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         Threshold for isosurface.
     attenuation : float
         Attenuation rate for attenuated maximum intensity projection.
-    plane : SlicingPlane or dict
-        Properties defining plane rendering in 3D. Valid dictionary keys are
-        {'position', 'normal', 'thickness'}.
     experimental_clipping_planes : ClippingPlaneList
         Clipping planes defined in data coordinates, used to clip the volume.
     custom_interpolation_kernel_2d : np.ndarray
@@ -250,7 +243,6 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         multiscale=None,
         name=None,
         opacity=1.0,
-        plane=None,
         projection_mode="none",
         rendering="mip",
         rgb=None,
@@ -287,7 +279,6 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
             name=name,
             ndim=len(data_shape) - 1 if rgb else len(data_shape),
             opacity=opacity,
-            plane=plane,
             projection_mode=projection_mode,
             rendering=rendering,
             rotate=rotate,
