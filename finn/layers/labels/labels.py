@@ -677,7 +677,6 @@ class Labels(ScalarFieldBase):
                 "rendering": self.rendering,
                 "iso_gradient_mode": self.iso_gradient_mode,
                 "depiction": self.depiction,
-                "plane": self.plane.dict(),
                 "experimental_clipping_planes": [
                     plane.dict() for plane in self.experimental_clipping_planes
                 ],

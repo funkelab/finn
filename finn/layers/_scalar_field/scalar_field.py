@@ -13,10 +13,6 @@ from finn.layers import Layer
 from finn.layers._data_protocols import LayerDataProtocol
 from finn.layers._multiscale_data import MultiScaleData
 from finn.layers.image._image_constants import Interpolation, VolumeDepiction
-from finn.layers.image._image_mouse_bindings import (
-    move_plane_along_normal as plane_drag_callback,
-    set_plane_position as plane_double_click_callback,
-)
 from finn.layers.image._image_utils import guess_multiscale
 from finn.layers.image._slice import _ImageSliceRequest, _ImageSliceResponse
 from finn.layers.utils._slice_input import _SliceInput, _ThickNDSlice
@@ -25,7 +21,6 @@ from finn.utils._dask_utils import DaskIndexer
 from finn.utils.colormaps import AVAILABLE_COLORMAPS
 from finn.utils.events import Event
 from finn.utils.events.event import WarningEmitter
-from finn.utils.events.event_utils import connect_no_arg
 from finn.utils.geometry import clamp_point_to_bounding_box
 from finn.utils.naming import magic_name
 from finn.utils.translations import trans
@@ -298,9 +293,6 @@ class ScalarFieldBase(Layer, ABC):
         # triggered (self.refresh(), below).
         self.rendering = rendering
         self.depiction = depiction
-        if plane is not None:
-            self.plane = plane
-        connect_no_arg(self.plane.events, self.events, "plane")
         self.custom_interpolation_kernel_2d = custom_interpolation_kernel_2d
 
     def _post_init(self):
@@ -392,40 +384,14 @@ class ScalarFieldBase(Layer, ABC):
 
         Selects a preset depiction mode in vispy
             * volume: images are rendered as 3D volumes.
-            * plane: images are rendered as 2D planes embedded in 3D.
-                plane position, normal, and thickness are attributes of
-                layer.plane which can be modified directly.
         """
         return str(self._depiction)
 
     @depiction.setter
     def depiction(self, depiction: str | VolumeDepiction) -> None:
         """Set the current 3D depiction mode."""
-        self._depiction = VolumeDepiction(depiction)
-        self._update_plane_callbacks()
+        self._depiction = VolumeDepiction("volume")  # only volume is allowed1
         self.events.depiction()
-
-    def _reset_plane_parameters(self):
-        """Set plane attributes to something valid."""
-        self.plane.position = np.array(self.data.shape) / 2
-        self.plane.normal = (1, 0, 0)
-
-    def _update_plane_callbacks(self):
-        """Set plane callbacks depending on depiction mode."""
-        plane_drag_callback_connected = plane_drag_callback in self.mouse_drag_callbacks
-        double_click_callback_connected = (
-            plane_double_click_callback in self.mouse_double_click_callbacks
-        )
-        if self.depiction == VolumeDepiction.VOLUME:
-            if plane_drag_callback_connected:
-                self.mouse_drag_callbacks.remove(plane_drag_callback)
-            if double_click_callback_connected:
-                self.mouse_double_click_callbacks.remove(plane_double_click_callback)
-        elif self.depiction == VolumeDepiction.PLANE:
-            if not plane_drag_callback_connected:
-                self.mouse_drag_callbacks.append(plane_drag_callback)
-            if not double_click_callback_connected:
-                self.mouse_double_click_callbacks.append(plane_double_click_callback)
 
     @property
     def plane(self):

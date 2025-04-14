@@ -6,7 +6,6 @@ import numpy as np
 import numpy.typing as npt
 
 from finn.utils.geometry import (
-    point_in_bounding_box,
     project_points_onto_plane,
 )
 
@@ -143,56 +142,6 @@ def orient_clipping_plane_normals(layer: Image | Labels | TrackLabels, orientati
             0,
             0,
         )
-
-
-def orient_plane_normal_around_cursor(layer: Image, plane_normal: tuple) -> None:
-    """Orient a rendering plane by rotating it around the cursor.
-
-    If the cursor ray does not intersect the plane, the position will remain
-    unchanged.
-
-    Parameters
-    ----------
-    layer : Image
-        The layer on which the rendering plane is to be rotated
-    plane_normal : 3-tuple
-        The target plane normal in scene coordinates.
-    """
-    # avoid circular imports
-    import finn
-    from finn.layers.image._image_constants import VolumeDepiction
-
-    viewer = finn.viewer.current_viewer()
-    if viewer is None:
-        return
-
-    # early exit
-    if viewer.dims.ndisplay != 3 or layer.depiction != VolumeDepiction.PLANE:
-        return
-
-    # find cursor-plane intersection in data coordinates
-    cursor_position = layer._world_to_displayed_data(
-        position=np.asarray(viewer.cursor.position),
-        dims_displayed=layer._slice_input.displayed,
-    )
-    view_direction = layer._world_to_displayed_data_ray(
-        np.asarray(viewer.camera.view_direction), dims_displayed=[-3, -2, -1]
-    )
-    intersection = layer.plane.intersect_with_line(
-        line_position=cursor_position, line_direction=view_direction
-    )
-
-    # check if intersection is within data extents for displayed dimensions
-    bounding_box = layer.extent.data[:, layer._slice_input.displayed]
-
-    # update plane position
-    if point_in_bounding_box(intersection, bounding_box):
-        layer.plane.position = intersection
-
-    # update plane normal
-    layer.plane.normal = layer._world_to_displayed_data_normal(
-        np.asarray(plane_normal), dims_displayed=layer._slice_input.displayed
-    )
 
 
 def nd_line_segment_to_displayed_data_ray(

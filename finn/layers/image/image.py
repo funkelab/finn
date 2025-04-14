@@ -76,8 +76,7 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
     custom_interpolation_kernel_2d : np.ndarray
         Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
     depiction : str
-        3D Depiction mode. Must be one of {'volume', 'plane'}.
-        The default value is 'volume'.
+        3D Depiction mode. Must be equal to 'volume'.
     experimental_clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
         Each dict defines a clipping plane in 3D in data coordinates.
         Valid dictionary keys are {'position', 'normal', and 'enabled'}.
@@ -386,7 +385,6 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
                 "interpolation3d": self.interpolation3d,
                 "rendering": self.rendering,
                 "depiction": self.depiction,
-                "plane": self.plane.dict(),
                 "iso_threshold": self.iso_threshold,
                 "attenuation": self.attenuation,
                 "gamma": self.gamma,
