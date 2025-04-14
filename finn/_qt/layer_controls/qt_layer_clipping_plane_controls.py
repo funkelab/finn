@@ -176,7 +176,7 @@ class QtLayerClippingPlanes(QFormLayout):
     def set_clipping_plane_positions(self, width: int, center: int) -> None:
         """Set the positions of the clipping planes based on the slider width and center values."""
 
-        if not self.layer.ndim < 3:
+        if self.layer.ndim < 3:
             return
 
         # Ensure the width is odd (to center around the middle slice)
