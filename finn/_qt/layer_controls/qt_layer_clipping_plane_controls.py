@@ -281,10 +281,14 @@ class QtLayerClippingPlanes(QFormLayout):
         # Set the minimum and maximum values of the clipping plane sliders
         self.clippingPlaneCenterSlider.setMinimum(clip_range[0])
         self.clippingPlaneCenterSlider.setMaximum(clip_range[1] + 1)
-        self.clippingPlaneWidthSlider.setMaximum(clip_range[1] + 1)
 
-        width = clip_range[1] // 2
-        center = clip_range[0] + width // 2
+        width_range = abs(clip_range[1]) + abs(clip_range[0]) + 1
+        self.clippingPlaneWidthSlider.setMaximum(width_range)
+
+        width = self.clippingPlaneWidthSlider.value()
+        if width > self.clippingPlaneWidthSlider.maximum():
+            width = self.clippingPlaneWidthSlider.maximum()
+        center = clip_range[1] // 2
 
         self.clippingPlaneWidthSlider.setValue(width)
         self.clippingPlaneCenterSlider.setValue(center)
