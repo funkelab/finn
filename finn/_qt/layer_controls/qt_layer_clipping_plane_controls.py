@@ -171,7 +171,7 @@ class QtLayerClippingPlanes(QFormLayout):
         center = self.clippingPlaneCenterSlider.value()
         width = self.clippingPlaneWidthSlider.value()
 
-        self.set_clipping_planepositions(width, center)
+        self.set_clipping_plane_positions(width, center)
 
     def set_clipping_plane_positions(self, width: int, center: int) -> None:
         """Set the positions of the clipping planes based on the slider width and center values."""

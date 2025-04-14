@@ -81,7 +81,7 @@ def test_set_clipping_plane_position(qtbot):
     qtbot.addWidget(qtctrl)
     width = 3
     center = 4
-    qtctrl.clippingPlaneControls.set_clipping_planepositions(width, center)
+    qtctrl.clippingPlaneControls.set_clipping_plane_positions(width, center)
 
     position1 = center - width // 2
     position2 = (center + width // 2) + 1
