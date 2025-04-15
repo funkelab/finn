@@ -36,48 +36,47 @@ def test_link_clipping_planes(make_napari_viewer):
     assert layer_is_linked(layer3)
 
     # initiate clipping planes
-    plane = layer1.plane
     layer1.experimental_clipping_planes.append(
         ClippingPlane(
-            normal=plane.normal,
-            position=plane.position,
+            normal=(np.float64(1.0), np.float64(0.0), np.float64(0.0)),
+            position=(0.0, 0.0, 0.0),
             enabled=False,
         )
     )
     layer1.experimental_clipping_planes.append(
         ClippingPlane(
-            normal=[-n for n in plane.normal],
-            position=plane.position,
+            normal=[-n for n in layer1.experimental_clipping_planes[0].normal],
+            position=(0.0, 0.0, 0.0),
             enabled=False,
         )
     )
 
     layer2.experimental_clipping_planes.append(
         ClippingPlane(
-            normal=plane.normal,
-            position=plane.position,
+            normal=(np.float64(1.0), np.float64(0.0), np.float64(0.0)),
+            position=(0.0, 0.0, 0.0),
             enabled=False,
         )
     )
     layer2.experimental_clipping_planes.append(
         ClippingPlane(
-            normal=[-n for n in plane.normal],
-            position=plane.position,
+            normal=[-n for n in layer1.experimental_clipping_planes[0].normal],
+            position=(0.0, 0.0, 0.0),
             enabled=False,
         )
     )
 
     layer3.experimental_clipping_planes.append(
         ClippingPlane(
-            normal=plane.normal,
-            position=plane.position,
+            normal=(np.float64(1.0), np.float64(0.0), np.float64(0.0)),
+            position=(0.0, 0.0, 0.0),
             enabled=False,
         )
     )
     layer3.experimental_clipping_planes.append(
         ClippingPlane(
-            normal=[-n for n in plane.normal],
-            position=plane.position,
+            normal=[-n for n in layer1.experimental_clipping_planes[0].normal],
+            position=(0.0, 0.0, 0.0),
             enabled=False,
         )
     )
