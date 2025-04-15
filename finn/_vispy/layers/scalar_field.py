@@ -44,11 +44,7 @@ class VispyScalarFieldBaseLayer(VispyBaseLayer[ScalarFieldBase]):
         self._array_like = True
 
         self.layer.events.rendering.connect(self._on_rendering_change)
-        self.layer.events.depiction.connect(self._on_depiction_change)
         self.layer.events.colormap.connect(self._on_colormap_change)
-        self.layer.plane.events.position.connect(self._on_plane_position_change)
-        self.layer.plane.events.thickness.connect(self._on_plane_thickness_change)
-        self.layer.plane.events.normal.connect(self._on_plane_normal_change)
         self.layer.events.custom_interpolation_kernel_2d.connect(
             self._on_custom_interpolation_kernel_2d_change
         )
@@ -127,18 +123,6 @@ class VispyScalarFieldBaseLayer(VispyBaseLayer[ScalarFieldBase]):
     def _on_blending_change(self, event=None) -> None:
         super()._on_blending_change()
 
-    def _on_plane_thickness_change(self) -> None:
-        if isinstance(self.node, VolumeNode):
-            self.node.plane_thickness = self.layer.plane.thickness
-
-    def _on_plane_position_change(self) -> None:
-        if isinstance(self.node, VolumeNode):
-            self.node.plane_position = self.layer.plane.position
-
-    def _on_plane_normal_change(self) -> None:
-        if isinstance(self.node, VolumeNode):
-            self.node.plane_normal = self.layer.plane.normal
-
     def _on_colormap_change(self, event=None) -> None:
         raise NotImplementedError
 
@@ -146,9 +130,6 @@ class VispyScalarFieldBaseLayer(VispyBaseLayer[ScalarFieldBase]):
         super().reset()
         self._on_rendering_change()
         self._on_depiction_change()
-        self._on_plane_position_change()
-        self._on_plane_normal_change()
-        self._on_plane_thickness_change()
         self._on_custom_interpolation_kernel_2d_change()
 
     def downsample_texture(self, data: np.ndarray, MAX_TEXTURE_SIZE: int) -> np.ndarray:

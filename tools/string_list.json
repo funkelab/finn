@@ -1644,7 +1644,6 @@
     ],
     "napari/layers/image/__init__.py": [],
     "napari/layers/image/_image_loader.py": [],
-    "napari/layers/image/_image_mouse_bindings.py": ["Shift", "mouse_move"],
     "napari/layers/image/_image_slice.py": [
       "ImageSlice.__init__",
       "f",

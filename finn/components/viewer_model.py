@@ -771,7 +771,6 @@ class ViewerModel(KeymapProvider, MousemapProvider, EventedModel):
         multiscale=None,
         name=None,
         opacity=1.0,
-        plane=None,
         projection_mode="none",
         rendering="mip",
         rgb=None,
@@ -835,8 +834,7 @@ class ViewerModel(KeymapProvider, MousemapProvider, EventedModel):
         custom_interpolation_kernel_2d : np.ndarray
             Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
         depiction : str or list of str
-            3D Depiction mode. Must be one of {'volume', 'plane'}.
-            The default value is 'volume'.
+            3D Depiction mode. Must be equal to 'volume'.
         experimental_clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
             Each dict defines a clipping plane in 3D in data coordinates.
             Valid dictionary keys are {'position', 'normal', and 'enabled'}.
@@ -869,10 +867,6 @@ class ViewerModel(KeymapProvider, MousemapProvider, EventedModel):
             Name of the layer.
         opacity : float or list
             Opacity of the layer visual, between 0.0 and 1.0.
-        plane : dict or SlicingPlane
-            Properties defining plane rendering in 3D. Properties are defined in
-            data coordinates. Valid dictionary keys are
-            {'position', 'normal', 'thickness', and 'enabled'}.
         projection_mode : str
             How data outside the viewed dimensions, but inside the thick Dims slice will
             be projected onto the viewed dimensions. Must fit to cls._projectionclass
@@ -944,7 +938,6 @@ class ViewerModel(KeymapProvider, MousemapProvider, EventedModel):
             "visible": visible,
             "multiscale": multiscale,
             "cache": cache,
-            "plane": plane,
             "experimental_clipping_planes": experimental_clipping_planes,
             "custom_interpolation_kernel_2d": custom_interpolation_kernel_2d,
             "projection_mode": projection_mode,

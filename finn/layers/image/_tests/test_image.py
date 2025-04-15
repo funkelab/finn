@@ -8,7 +8,7 @@ from finn._tests.utils import check_layer_world_data_extent
 from finn.components.dims import Dims
 from finn.layers import Image
 from finn.layers.image._image_constants import ImageRendering
-from finn.layers.utils.plane import ClippingPlaneList, SlicingPlane
+from finn.layers.utils.plane import ClippingPlaneList
 from finn.utils import Colormap
 from finn.utils._test_utils import (
     validate_all_params_in_docstring,
@@ -784,32 +784,6 @@ def test_image_state_update():
     state = image._get_state()
     for k, v in state.items():
         setattr(image, k, v)
-
-
-def test_instantiate_with_plane_parameter_dict():
-    """Test that an image layer can be instantiated with plane parameters
-    in a dictionary.
-    """
-    plane_parameters = {
-        "position": (32, 32, 32),
-        "normal": (1, 1, 1),
-        "thickness": 22,
-    }
-    image = Image(np.ones((32, 32, 32)), plane=plane_parameters)
-    for k, v in plane_parameters.items():
-        if k == "normal":
-            v = tuple(v / np.linalg.norm(v))
-        assert v == getattr(image.plane, k, v)
-
-
-def test_instiantiate_with_plane():
-    """Test that an image layer can be instantiated with plane parameters
-    in a Plane.
-    """
-    plane = SlicingPlane(position=(32, 32, 32), normal=(1, 1, 1), thickness=22)
-    image = Image(np.ones((32, 32, 32)), plane=plane)
-    for k, v in plane.dict().items():
-        assert v == getattr(image.plane, k, v)
 
 
 def test_instantiate_with_clipping_planelist():

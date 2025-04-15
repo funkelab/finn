@@ -1825,35 +1825,6 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         """
         return self._display_bounding_box_augmented(dims_displayed)
 
-    def click_plane_from_click_data(
-        self,
-        click_position: npt.ArrayLike,
-        view_direction: npt.ArrayLike,
-        dims_displayed: list[int],
-    ) -> tuple[np.ndarray, np.ndarray]:
-        """Calculate a (point, normal) plane parallel to the canvas in data
-        coordinates, centered on the centre of rotation of the camera.
-
-        Parameters
-        ----------
-        click_position : np.ndarray
-            click position in world coordinates from mouse event.
-        view_direction : np.ndarray
-            view direction in world coordinates from mouse event.
-        dims_displayed : List[int]
-            dimensions of the data array currently in view.
-
-        Returns
-        -------
-        click_plane : Tuple[np.ndarray, np.ndarray]
-            tuple of (plane_position, plane_normal) in data coordinates.
-        """
-        click_position = np.asarray(click_position)
-        view_direction = np.asarray(view_direction)
-        plane_position = self.world_to_data(click_position)[dims_displayed]
-        plane_normal = self._world_to_data_ray(view_direction)[dims_displayed]
-        return plane_position, plane_normal
-
     def get_ray_intersections(
         self,
         position: npt.ArrayLike,

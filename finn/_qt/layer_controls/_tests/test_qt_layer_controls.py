@@ -362,7 +362,7 @@ def test_create_layer_controls_qslider(
                 max_value = [qslider.maximum()] * num_values
                 min_value = [qslider.minimum()] * num_values
                 value_range_to_max = list(zip(base_value_range, max_value, strict=False))
-                base_value_range_copy = base_value_range.copy()
+                base_value_range_copy = list(base_value_range).copy()
                 base_value_range_copy.reverse()
                 value_range_to_min = list(
                     zip(min_value, base_value_range_copy, strict=False)
