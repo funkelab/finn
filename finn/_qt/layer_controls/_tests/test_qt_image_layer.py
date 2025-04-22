@@ -42,7 +42,7 @@ def test_rendering_combobox(qtbot):
 
 
 def test_plane_controls_show_hide_on_ndisplay_change(qtbot):
-    """Changing depiction mode should show/hide plane controls in 3D."""
+    """Changing ndisplay should show/hide plane controls in 3D."""
     layer = Image(np.random.rand(10, 15, 20))
     qtctrl = QtImageControls(layer)
     qtbot.addWidget(qtctrl)

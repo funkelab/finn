@@ -264,7 +264,7 @@ class QtLabelsControls(QtLayerControls):
         self.layout().addRow(trans._("preserve\nlabels:"), self.preserveLabelsCheckBox)
         self.layout().addRow(trans._("show\nselected:"), self.selectedColorCheckbox)
 
-        # add the depiction controls
+        # add the clipping plane controls
         self.clippingPlaneControls = QtLayerClippingPlanes(self)
 
         for i in range(self.clippingPlaneControls.rowCount()):
