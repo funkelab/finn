@@ -68,7 +68,7 @@ class Vectors(Layer):
         (property.min(), property.max())
     edge_width : float
         Width for all vectors in pixels.
-    experimental_clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
+    clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
         Each dict defines a clipping plane in 3D in data coordinates.
         Valid dictionary keys are {'position', 'normal', and 'enabled'}.
         Values on the negative side of the normal are discarded if the plane is enabled.
@@ -205,7 +205,7 @@ class Vectors(Layer):
         edge_colormap="viridis",
         edge_contrast_limits=None,
         edge_width=1,
-        experimental_clipping_planes=None,
+        clipping_planes=None,
         feature_defaults=None,
         features=None,
         length=1,
@@ -237,7 +237,7 @@ class Vectors(Layer):
             axis_labels=axis_labels,
             blending=blending,
             cache=cache,
-            experimental_clipping_planes=experimental_clipping_planes,
+            clipping_planes=clipping_planes,
             name=name,
             metadata=metadata,
             opacity=opacity,

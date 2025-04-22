@@ -129,7 +129,7 @@ class Shapes(Layer):
         same length as the length of `data` and each element will be
         applied to each shape otherwise the same value will be used for all
         shapes.
-    experimental_clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
+    clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
         Each dict defines a clipping plane in 3D in data coordinates.
         Valid dictionary keys are {'position', 'normal', and 'enabled'}.
         Values on the negative side of the normal are discarded if the plane is enabled.
@@ -443,7 +443,7 @@ class Shapes(Layer):
         edge_colormap="viridis",
         edge_contrast_limits=None,
         edge_width=1,
-        experimental_clipping_planes=None,
+        clipping_planes=None,
         face_color="white",
         face_color_cycle=None,
         face_colormap="viridis",
@@ -489,7 +489,7 @@ class Shapes(Layer):
             axis_labels=axis_labels,
             blending=blending,
             cache=cache,
-            experimental_clipping_planes=experimental_clipping_planes,
+            clipping_planes=clipping_planes,
             metadata=metadata,
             name=name,
             opacity=opacity,

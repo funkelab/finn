@@ -66,7 +66,7 @@ class ScalarFieldBase(Layer, ABC):
         Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
     depiction : str
         3D Depiction mode. Must be equal to 'volume'.
-    experimental_clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
+    clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
         Each dict defines a clipping plane in 3D in data coordinates.
         Valid dictionary keys are {'position', 'normal', and 'enabled'}.
         Values on the negative side of the normal are discarded if the plane is enabled.
@@ -127,7 +127,7 @@ class ScalarFieldBase(Layer, ABC):
         Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
     depiction : str
         3D Depiction mode used by vispy. Must be one of our supported modes.
-    experimental_clipping_planes : ClippingPlaneList
+    clipping_planes : ClippingPlaneList
         Clipping planes defined in data coordinates, used to clip the volume.
     metadata : dict
         Image metadata.
@@ -170,7 +170,7 @@ class ScalarFieldBase(Layer, ABC):
         cache=True,
         custom_interpolation_kernel_2d=None,
         depiction="volume",
-        experimental_clipping_planes=None,
+        clipping_planes=None,
         metadata=None,
         multiscale=None,
         name=None,
@@ -212,7 +212,7 @@ class ScalarFieldBase(Layer, ABC):
             axis_labels=axis_labels,
             blending=blending,
             cache=cache,
-            experimental_clipping_planes=experimental_clipping_planes,
+            clipping_planes=clipping_planes,
             metadata=metadata,
             multiscale=multiscale,
             name=name,
@@ -240,7 +240,7 @@ class ScalarFieldBase(Layer, ABC):
             interpolation2d=Event,
             interpolation3d=Event,
             iso_threshold=Event,
-            experimental_clipping_planes=Event,
+            clipping_planes=Event,
             rendering=Event,
         )
 

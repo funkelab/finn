@@ -82,25 +82,23 @@ class QtLayerClippingPlanes(QFormLayout):
         )
 
         # make sure the clipping planes are initialized
-        if len(self.layer.experimental_clipping_planes) == 0:
-            self.layer.experimental_clipping_planes.append(
+        if len(self.layer.clipping_planes) == 0:
+            self.layer.clipping_planes.append(
                 ClippingPlane(
                     normal=(np.float64(1.0), np.float64(0.0), np.float64(0.0)),
                     position=(0.0, 0.0, 0.0),
                     enabled=False,
                 )
             )
-            self.layer.experimental_clipping_planes.append(
+            self.layer.clipping_planes.append(
                 ClippingPlane(
-                    normal=[
-                        -n for n in self.layer.experimental_clipping_planes[0].normal
-                    ],
+                    normal=[-n for n in self.layer.clipping_planes[0].normal],
                     position=(0.0, 0.0, 0.0),
                     enabled=False,
                 )
             )
 
-        # clipping plane sliders to set width and position of experimental_clipping_planes
+        # clipping plane sliders to set width and position of clipping_planes
         self.clippingPlaneWidthLabel = QLabel("Clipping Plane Width")
         self.clippingPlaneWidthLabel.setEnabled(False)
         self.clippingPlaneWidthSlider = QLabeledSlider(
@@ -194,14 +192,14 @@ class QtLayerClippingPlanes(QFormLayout):
         if position2 > self.clippingPlaneCenterSlider.maximum():
             position2 = self.clippingPlaneCenterSlider.maximum()
 
-        plane_normal = np.array(self.layer.experimental_clipping_planes[0].normal)
+        plane_normal = np.array(self.layer.clipping_planes[0].normal)
         new_position1 = np.array([0, 0, 0]) + position1 * plane_normal
         new_position1 = (
             int(new_position1[0] * self.layer.scale[-3]),
             int(new_position1[1] * self.layer.scale[-2]),
             int(new_position1[2] * self.layer.scale[-1]),
         )
-        self.layer.experimental_clipping_planes[0].position = new_position1
+        self.layer.clipping_planes[0].position = new_position1
 
         new_position2 = np.array([0, 0, 0]) + position2 * plane_normal
         new_position2 = (
@@ -209,9 +207,9 @@ class QtLayerClippingPlanes(QFormLayout):
             int(new_position2[1] * self.layer.scale[-2]),
             int(new_position2[2] * self.layer.scale[-1]),
         )
-        self.layer.experimental_clipping_planes[1].position = new_position2
+        self.layer.clipping_planes[1].position = new_position2
 
-        self.layer.events.experimental_clipping_planes()
+        self.layer.events.clipping_planes()
 
     def _update_plane_parameter_visibility(self):
         """Hide plane rendering controls if they are not needed."""
@@ -234,7 +232,7 @@ class QtLayerClippingPlanes(QFormLayout):
             tuple[float, float], the minimum and maximum possible values of the slider
         """
 
-        normal = np.array(self.layer.experimental_clipping_planes[0].normal)
+        normal = np.array(self.layer.clipping_planes[0].normal)
         Lx, Ly, Lz = self.layer.data.shape[-3:]
 
         # Define the corners of the 3D image bounding box
@@ -302,20 +300,20 @@ class QtLayerClippingPlanes(QFormLayout):
             state: bool, the state of the checkbox.
         """
         if state:
-            self.layer.experimental_clipping_planes[0].enabled = True
-            self.layer.experimental_clipping_planes[1].enabled = True
+            self.layer.clipping_planes[0].enabled = True
+            self.layer.clipping_planes[1].enabled = True
             self.clippingPlaneWidthSlider.setEnabled(True)
             self.clippingPlaneCenterSlider.setEnabled(True)
             self.clippingPlaneWidthLabel.setEnabled(True)
             self.clippingPlaneCenterLabel.setEnabled(True)
         else:
-            self.layer.experimental_clipping_planes[0].enabled = False
-            self.layer.experimental_clipping_planes[1].enabled = False
+            self.layer.clipping_planes[0].enabled = False
+            self.layer.clipping_planes[1].enabled = False
             self.clippingPlaneWidthSlider.setEnabled(False)
             self.clippingPlaneCenterSlider.setEnabled(False)
             self.clippingPlaneWidthLabel.setEnabled(False)
             self.clippingPlaneCenterLabel.setEnabled(False)
-        self.layer.events.experimental_clipping_planes()
+        self.layer.events.clipping_planes()
 
     def _on_ndisplay_changed(self):
         """Update widget visibility based on 2D and 3D visualization modes."""

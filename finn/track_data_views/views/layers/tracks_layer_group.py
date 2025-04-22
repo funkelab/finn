@@ -100,7 +100,7 @@ class TracksLayerGroup:
             track_layers.append(self.points_layer)
 
         if all(layer.ndim >= 3 for layer in track_layers):
-            link_layers(track_layers, ("experimental_clipping_planes",))
+            link_layers(track_layers, ("clipping_planes",))
 
     def unlink_clipping_planes(self):
         """Unlink the clipping planes of all tracking layers"""
@@ -112,7 +112,7 @@ class TracksLayerGroup:
             track_layers.append(self.seg_layer)
         if self.points_layer is not None:
             track_layers.append(self.points_layer)
-        unlink_layers(track_layers, ("experimental_clipping_planes",))
+        unlink_layers(track_layers, ("clipping_planes",))
 
     def _refresh(self) -> None:
         """Refresh the tracking layers with new tracks info"""

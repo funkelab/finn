@@ -63,8 +63,8 @@ def orient_plane_normal_along_view_direction(
         normal = layer._world_to_displayed_data_normal(
             viewer.camera.view_direction, [-3, -2, -1]
         )
-        layer.experimental_clipping_planes[0].normal = normal
-        layer.experimental_clipping_planes[1].normal = (
+        layer.clipping_planes[0].normal = normal
+        layer.clipping_planes[1].normal = (
             -normal[-3],
             -normal[-2],
             -normal[-1],
@@ -89,8 +89,8 @@ def orient_plane_normal_along_view_direction_no_gen(layer: Image) -> None:
         viewer.camera.view_direction, [-3, -2, -1]
     )
 
-    layer.experimental_clipping_planes[0].normal = normal
-    layer.experimental_clipping_planes[1].normal = (
+    layer.clipping_planes[0].normal = normal
+    layer.clipping_planes[1].normal = (
         -normal[-3],
         -normal[-2],
         -normal[-1],

@@ -79,7 +79,7 @@ class Surface(IntensityVisualizationMixin, Layer):
         Color limits to be used for determining the colormap bounds for
         luminance images. If not passed is calculated as the min and max of
         the image.
-    experimental_clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
+    clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
         Each dict defines a clipping plane in 3D in data coordinates.
         Valid dictionary keys are {'position', 'normal', and 'enabled'}.
         Values on the negative side of the normal are discarded if the plane is enabled.
@@ -219,7 +219,7 @@ class Surface(IntensityVisualizationMixin, Layer):
         cache=True,
         colormap="gray",
         contrast_limits=None,
-        experimental_clipping_planes=None,
+        clipping_planes=None,
         feature_defaults=None,
         features=None,
         gamma=1.0,
@@ -249,7 +249,7 @@ class Surface(IntensityVisualizationMixin, Layer):
             axis_labels=axis_labels,
             blending=blending,
             cache=cache,
-            experimental_clipping_planes=experimental_clipping_planes,
+            clipping_planes=clipping_planes,
             metadata=metadata,
             name=name,
             opacity=opacity,

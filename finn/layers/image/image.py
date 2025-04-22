@@ -77,7 +77,7 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
     depiction : str
         3D Depiction mode. Must be equal to 'volume'.
-    experimental_clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
+    clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
         Each dict defines a clipping plane in 3D in data coordinates.
         Valid dictionary keys are {'position', 'normal', and 'enabled'}.
         Values on the negative side of the normal are discarded if the plane is enabled.
@@ -199,7 +199,7 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         Threshold for isosurface.
     attenuation : float
         Attenuation rate for attenuated maximum intensity projection.
-    experimental_clipping_planes : ClippingPlaneList
+    clipping_planes : ClippingPlaneList
         Clipping planes defined in data coordinates, used to clip the volume.
     custom_interpolation_kernel_2d : np.ndarray
         Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
@@ -234,7 +234,7 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         contrast_limits=None,
         custom_interpolation_kernel_2d=None,
         depiction="volume",
-        experimental_clipping_planes=None,
+        clipping_planes=None,
         gamma=1.0,
         interpolation2d="nearest",
         interpolation3d="linear",
@@ -273,7 +273,7 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
             cache=cache,
             custom_interpolation_kernel_2d=custom_interpolation_kernel_2d,
             depiction=depiction,
-            experimental_clipping_planes=experimental_clipping_planes,
+            clipping_planes=clipping_planes,
             metadata=metadata,
             multiscale=multiscale,
             name=name,

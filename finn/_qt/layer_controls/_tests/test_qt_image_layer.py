@@ -86,7 +86,7 @@ def test_set_clipping_plane_position(qtbot):
     position1 = center - width // 2
     position2 = (center + width // 2) + 1
 
-    plane_normal = np.array(layer.experimental_clipping_planes[0].normal)
+    plane_normal = np.array(layer.clipping_planes[0].normal)
     new_position1 = np.array([0, 0, 0]) + position1 * plane_normal
     new_position1 = (
         int(new_position1[0] * layer.scale[-3]),
@@ -100,8 +100,8 @@ def test_set_clipping_plane_position(qtbot):
         int(new_position2[2] * layer.scale[-1]),
     )
 
-    assert layer.experimental_clipping_planes[0].position == new_position1
-    assert layer.experimental_clipping_planes[1].position == new_position2
+    assert layer.clipping_planes[0].position == new_position1
+    assert layer.clipping_planes[1].position == new_position2
 
 
 def test_compute_plane_range(qtbot):
@@ -112,7 +112,7 @@ def test_compute_plane_range(qtbot):
     qtbot.addWidget(qtctrl)
 
     # Set the plane normal
-    layer.experimental_clipping_planes[0].normal = [1, 0, 0]  # Normal along the x-axis
+    layer.clipping_planes[0].normal = [1, 0, 0]  # Normal along the x-axis
     expected_range = (0, layer_data.shape[-3])  # Range along the x-axis
 
     # Call _compute_plane_range
@@ -122,7 +122,7 @@ def test_compute_plane_range(qtbot):
     )
 
     # Test with a different plane normal
-    layer.experimental_clipping_planes[0].normal = [0, 1, 0]  # Normal along the x-axis
+    layer.clipping_planes[0].normal = [0, 1, 0]  # Normal along the x-axis
     expected_range = (0, layer_data.shape[-2])  # Range along the y-axis
     computed_range = qtctrl.clippingPlaneControls._compute_plane_range()
     assert computed_range == expected_range, (
@@ -130,7 +130,7 @@ def test_compute_plane_range(qtbot):
     )
 
     # Test with an oblique plane normal
-    layer.experimental_clipping_planes[0].normal = [1, 1, 1]  # Normal along the x-axis
+    layer.clipping_planes[0].normal = [1, 1, 1]  # Normal along the x-axis
     computed_range = qtctrl.clippingPlaneControls._compute_plane_range()
     expected_range = (np.float64(0.0), np.float64(25.98))
     np.testing.assert_almost_equal(computed_range[0], expected_range[0], decimal=1)
@@ -143,16 +143,16 @@ def test_activate_clipping_plane(qtbot):
     qtctrl = QtImageControls(layer)
     qtbot.addWidget(qtctrl)
 
-    # Ensure the experimental_clipping_planes are initialized
-    layer.experimental_clipping_planes = [
+    # Ensure the clipping_planes are initialized
+    layer.clipping_planes = [
         ClippingPlane(normal=[1, 0, 0], position=[0, 0, 0], enabled=False),
         ClippingPlane(normal=[-1, 0, 0], position=[0, 0, 0], enabled=False),
     ]
 
     # Activate the clipping plane
     qtctrl.clippingPlaneControls._activateClippingPlane(True)
-    assert layer.experimental_clipping_planes[0].enabled is True
-    assert layer.experimental_clipping_planes[1].enabled is True
+    assert layer.clipping_planes[0].enabled is True
+    assert layer.clipping_planes[1].enabled is True
 
     assert qtctrl.clippingPlaneControls.clippingPlaneWidthSlider.isEnabled() is True
     assert qtctrl.clippingPlaneControls.clippingPlaneCenterSlider.isEnabled() is True
@@ -161,8 +161,8 @@ def test_activate_clipping_plane(qtbot):
 
     # Deactivate the clipping plane
     qtctrl.clippingPlaneControls._activateClippingPlane(False)
-    assert layer.experimental_clipping_planes[0].enabled is False
-    assert layer.experimental_clipping_planes[1].enabled is False
+    assert layer.clipping_planes[0].enabled is False
+    assert layer.clipping_planes[1].enabled is False
 
     assert qtctrl.clippingPlaneControls.clippingPlaneWidthSlider.isEnabled() is False
     assert qtctrl.clippingPlaneControls.clippingPlaneCenterSlider.isEnabled() is False

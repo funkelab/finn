@@ -98,7 +98,7 @@ class Labels(ScalarFieldBase):
         used.
     depiction : str
         3D Depiction mode. Must be equal to 'volume'.
-    experimental_clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
+    clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
         Each dict defines a clipping plane in 3D in data coordinates.
         Valid dictionary keys are {'position', 'normal', and 'enabled'}.
         Values on the negative side of the normal are discarded if the plane is enabled.
@@ -234,7 +234,7 @@ class Labels(ScalarFieldBase):
 
         In ERASE mode the cursor functions similarly to PAINT mode, but to
         paint with background label, which effectively removes the label.
-    experimental_clipping_planes : ClippingPlaneList
+    clipping_planes : ClippingPlaneList
         Clipping planes defined in data coordinates, used to clip the volume.
     units: tuple of pint.Unit
         Units of the layer data in world coordinates.
@@ -295,7 +295,7 @@ class Labels(ScalarFieldBase):
         cache=True,
         colormap=None,
         depiction="volume",
-        experimental_clipping_planes=None,
+        clipping_planes=None,
         features=None,
         iso_gradient_mode=IsoCategoricalGradientMode.FAST.value,
         metadata=None,
@@ -335,7 +335,7 @@ class Labels(ScalarFieldBase):
             blending=blending,
             cache=cache,
             depiction=depiction,
-            experimental_clipping_planes=experimental_clipping_planes,
+            clipping_planes=clipping_planes,
             rendering=rendering,
             metadata=metadata,
             multiscale=multiscale,
@@ -668,9 +668,7 @@ class Labels(ScalarFieldBase):
                 "rendering": self.rendering,
                 "iso_gradient_mode": self.iso_gradient_mode,
                 "depiction": self.depiction,
-                "experimental_clipping_planes": [
-                    plane.dict() for plane in self.experimental_clipping_planes
-                ],
+                "clipping_planes": [plane.dict() for plane in self.clipping_planes],
                 "data": self.data,
                 "features": self.features,
                 "colormap": self.colormap,

@@ -36,76 +36,67 @@ def test_link_clipping_planes(make_napari_viewer):
     assert layer_is_linked(layer3)
 
     # initiate clipping planes
-    layer1.experimental_clipping_planes.append(
+    layer1.clipping_planes.append(
         ClippingPlane(
             normal=(np.float64(1.0), np.float64(0.0), np.float64(0.0)),
             position=(0.0, 0.0, 0.0),
             enabled=False,
         )
     )
-    layer1.experimental_clipping_planes.append(
+    layer1.clipping_planes.append(
         ClippingPlane(
-            normal=[-n for n in layer1.experimental_clipping_planes[0].normal],
+            normal=[-n for n in layer1.clipping_planes[0].normal],
             position=(0.0, 0.0, 0.0),
             enabled=False,
         )
     )
 
-    layer2.experimental_clipping_planes.append(
+    layer2.clipping_planes.append(
         ClippingPlane(
             normal=(np.float64(1.0), np.float64(0.0), np.float64(0.0)),
             position=(0.0, 0.0, 0.0),
             enabled=False,
         )
     )
-    layer2.experimental_clipping_planes.append(
+    layer2.clipping_planes.append(
         ClippingPlane(
-            normal=[-n for n in layer1.experimental_clipping_planes[0].normal],
+            normal=[-n for n in layer1.clipping_planes[0].normal],
             position=(0.0, 0.0, 0.0),
             enabled=False,
         )
     )
 
-    layer3.experimental_clipping_planes.append(
+    layer3.clipping_planes.append(
         ClippingPlane(
             normal=(np.float64(1.0), np.float64(0.0), np.float64(0.0)),
             position=(0.0, 0.0, 0.0),
             enabled=False,
         )
     )
-    layer3.experimental_clipping_planes.append(
+    layer3.clipping_planes.append(
         ClippingPlane(
-            normal=[-n for n in layer1.experimental_clipping_planes[0].normal],
+            normal=[-n for n in layer1.clipping_planes[0].normal],
             position=(0.0, 0.0, 0.0),
             enabled=False,
         )
     )
 
     # change the position of the clipping plane in layer1 and verify that it is reflected in layer2 and layer3
-    plane_normal = np.array(layer1.experimental_clipping_planes[0].normal)
-    layer1.experimental_clipping_planes[0].position = tuple(
-        np.array([0, 0, 0]) + 2 * plane_normal
-    )
+    plane_normal = np.array(layer1.clipping_planes[0].normal)
+    layer1.clipping_planes[0].position = tuple(np.array([0, 0, 0]) + 2 * plane_normal)
 
-    assert layer1.experimental_clipping_planes != layer2.experimental_clipping_planes
-    layer1.events.experimental_clipping_planes()  # Simulate event emission
-    assert (
-        layer1.experimental_clipping_planes
-        == layer2.experimental_clipping_planes
-        == layer3.experimental_clipping_planes
-    )
+    assert layer1.clipping_planes != layer2.clipping_planes
+    layer1.events.clipping_planes()  # Simulate event emission
+    assert layer1.clipping_planes == layer2.clipping_planes == layer3.clipping_planes
 
     # verify that enabling the clipping plane in one layer is reflected in the others
-    layer1.experimental_clipping_planes[0].enabled = True
+    layer1.clipping_planes[0].enabled = True
+    assert layer1.clipping_planes[0].enabled != layer2.clipping_planes[0].enabled
+    layer1.events.clipping_planes()  # Simulate event emission
     assert (
-        layer1.experimental_clipping_planes[0].enabled
-        != layer2.experimental_clipping_planes[0].enabled
-    )
-    layer1.events.experimental_clipping_planes()  # Simulate event emission
-    assert (
-        layer1.experimental_clipping_planes[0].enabled
-        == layer2.experimental_clipping_planes[0].enabled
-        == layer3.experimental_clipping_planes[0].enabled
+        layer1.clipping_planes[0].enabled
+        == layer2.clipping_planes[0].enabled
+        == layer3.clipping_planes[0].enabled
     )
 
     tracks_layer_group.unlink_clipping_planes()

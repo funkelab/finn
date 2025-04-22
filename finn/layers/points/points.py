@@ -112,7 +112,7 @@ class Points(Layer):
         Currently, this only applies to dask arrays.
     canvas_size_limits : tuple of float
         Lower and upper limits for the size of points in canvas pixels.
-    experimental_clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
+    clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
         Each dict defines a clipping plane in 3D in data coordinates.
         Valid dictionary keys are {'position', 'normal', and 'enabled'}.
         Values on the negative side of the normal are discarded if the plane is enabled.
@@ -398,7 +398,7 @@ class Points(Layer):
         border_width_is_relative=True,
         cache=True,
         canvas_size_limits=(2, 10000),
-        experimental_clipping_planes=None,
+        clipping_planes=None,
         face_color="white",
         face_color_cycle=None,
         face_colormap="viridis",
@@ -464,7 +464,7 @@ class Points(Layer):
             axis_labels=axis_labels,
             blending=blending,
             cache=cache,
-            experimental_clipping_planes=experimental_clipping_planes,
+            clipping_planes=clipping_planes,
             metadata=metadata,
             name=name,
             opacity=opacity,
@@ -499,7 +499,7 @@ class Points(Layer):
             canvas_size_limits=Event,
             features=Event,
             feature_defaults=Event,
-            experimental_clipping_planes=Event,
+            clipping_planes=Event,
         )
 
         deprecated_events = {}

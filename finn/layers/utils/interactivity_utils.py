@@ -108,36 +108,36 @@ def orient_clipping_plane_normals(layer: Image | Labels | TrackLabels, orientati
         return
 
     if orientation == "x":
-        layer.experimental_clipping_planes[0].normal = (
+        layer.clipping_planes[0].normal = (
             0,
             0,
             1,
         )
-        layer.experimental_clipping_planes[1].normal = (
+        layer.clipping_planes[1].normal = (
             0,
             0,
             -1,
         )
 
     elif orientation == "y":
-        layer.experimental_clipping_planes[0].normal = (
+        layer.clipping_planes[0].normal = (
             0,
             1,
             0,
         )
-        layer.experimental_clipping_planes[1].normal = (
+        layer.clipping_planes[1].normal = (
             0,
             -1,
             0,
         )
 
     elif orientation == "z":
-        layer.experimental_clipping_planes[0].normal = (
+        layer.clipping_planes[0].normal = (
             1,
             0,
             0,
         )
-        layer.experimental_clipping_planes[1].normal = (
+        layer.clipping_planes[1].normal = (
             -1,
             0,
             0,

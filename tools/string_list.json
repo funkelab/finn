@@ -1017,7 +1017,7 @@
     "napari/_vispy/image.py": [],
     "napari/_vispy/layers/base.py": [
         "clipping_planes",
-        "experimental_clipping_planes"
+        "clipping_planes"
     ],
     "napari/_vispy/layers/image.py": ["auto", "tile2data", "texture_float"],
     "napari/_vispy/layers/points.py": [
@@ -1544,7 +1544,7 @@
       "ViewerModel",
       "valid_add_kwargs",
       "cache",
-      "experimental_clipping_planes",
+      "clipping_planes",
       "plane",
       "layers_change",
       "mode",
@@ -1623,7 +1623,7 @@
       "{cls.__name__}",
       "_double_click_modes",
       "data2physical",
-      "experimental_clipping_planes",
+      "clipping_planes",
       "extent",
       "keyword argument ",
       "physical2world",
@@ -1795,7 +1795,7 @@
       "transparent",
       "; ",
       "_color",
-      "experimental_clipping_planes",
+      "clipping_planes",
       "plane",
       "iso_categorical",
       "rendering",
@@ -2081,7 +2081,7 @@
       "translate",
       "{name} layer {i}",
       "blue",
-      "experimental_clipping_planes",
+      "clipping_planes",
       "plane",
       "green",
       "red",

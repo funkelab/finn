@@ -50,7 +50,7 @@ class Tracks(Layer):
         Optional dictionary mapping each property to a colormap for that
         property. This allows each property to be assigned a specific colormap,
         rather than having a global colormap for everything.
-    experimental_clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
+    clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
         Each dict defines a clipping plane in 3D in data coordinates.
         Valid dictionary keys are {'position', 'normal', and 'enabled'}.
         Values on the negative side of the normal are discarded if the plane is enabled.
@@ -117,7 +117,7 @@ class Tracks(Layer):
         color_by="track_id",
         colormap="turbo",
         colormaps_dict=None,
-        experimental_clipping_planes=None,
+        clipping_planes=None,
         features=None,
         graph=None,
         head_length: int = 0,
@@ -149,7 +149,7 @@ class Tracks(Layer):
             axis_labels=axis_labels,
             blending=blending,
             cache=cache,
-            experimental_clipping_planes=experimental_clipping_planes,
+            clipping_planes=clipping_planes,
             name=name,
             metadata=metadata,
             opacity=opacity,
@@ -174,7 +174,7 @@ class Tracks(Layer):
             properties=Event,
             rebuild_tracks=Event,
             rebuild_graph=Event,
-            experimental_clipping_planes=Event,
+            clipping_planes=Event,
         )
 
         # track manager deals with data slicing, graph building and properties

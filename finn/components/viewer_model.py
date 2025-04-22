@@ -762,7 +762,7 @@ class ViewerModel(KeymapProvider, MousemapProvider, EventedModel):
         contrast_limits=None,
         custom_interpolation_kernel_2d=None,
         depiction="volume",
-        experimental_clipping_planes=None,
+        clipping_planes=None,
         gamma=1.0,
         interpolation2d="nearest",
         interpolation3d="linear",
@@ -835,7 +835,7 @@ class ViewerModel(KeymapProvider, MousemapProvider, EventedModel):
             Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
         depiction : str or list of str
             3D Depiction mode. Must be equal to 'volume'.
-        experimental_clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
+        clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
             Each dict defines a clipping plane in 3D in data coordinates.
             Valid dictionary keys are {'position', 'normal', and 'enabled'}.
             Values on the negative side of the normal are discarded if the plane is enabled.
@@ -938,7 +938,7 @@ class ViewerModel(KeymapProvider, MousemapProvider, EventedModel):
             "visible": visible,
             "multiscale": multiscale,
             "cache": cache,
-            "experimental_clipping_planes": experimental_clipping_planes,
+            "clipping_planes": clipping_planes,
             "custom_interpolation_kernel_2d": custom_interpolation_kernel_2d,
             "projection_mode": projection_mode,
             "units": units,
@@ -953,7 +953,7 @@ class ViewerModel(KeymapProvider, MousemapProvider, EventedModel):
             "affine",
             "contrast_limits",
             "metadata",
-            "experimental_clipping_planes",
+            "clipping_planes",
             "custom_interpolation_kernel_2d",
             "axis_labels",
             "units",
