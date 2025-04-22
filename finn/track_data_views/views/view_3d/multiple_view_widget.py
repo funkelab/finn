@@ -7,7 +7,7 @@ from qtpy.QtWidgets import (
 
 import finn
 from finn.components.viewer_model import ViewerModel
-from finn.layers import Layer, Points, Shapes
+from finn.layers import Labels, Layer, Points, Shapes
 from finn.qt import QtViewer
 from finn.track_data_views.views.layers.contour_labels import ContourLabels
 from finn.track_data_views.views.layers.track_graph import TrackGraph
@@ -22,8 +22,8 @@ from finn.utils.events.event import WarningEmitter
 def copy_layer(layer: Layer, name: str = ""):
     if isinstance(
         layer, TrackGraph
-    ):  # instead of showing the tracks (not very useful on 3D data because they are collapsed to a single frame), 
-        # use an empty shapes layer as substitute to ensure that the layer indices in the orthogonal viewer models 
+    ):  # instead of showing the tracks (not very useful on 3D data because they are collapsed to a single frame),
+        # use an empty shapes layer as substitute to ensure that the layer indices in the orthogonal viewer models
         # match with those in the main viewer
         res_layer = Shapes(
             name=layer.name,
@@ -122,7 +122,7 @@ class DockableViewerModel:
                 # sync forward (from original layer to copied layer)
                 if not (
                     isinstance(orig_layer, TrackPoints) and property_name == "data"
-                ):  # we will sync data separately as we need finer control
+                ):  # we will sync data separately on TrackPoints as we need finer control
                     getattr(orig_layer.events, property_name).connect(
                         own_partial(
                             self.sync_property,
@@ -171,9 +171,26 @@ class DockableViewerModel:
 
             copied_layer.events.paint.connect(paint_wrapper)
 
+        elif isinstance(orig_layer, Labels):
+            # if the original layer is a normal labels layer, we still want to connect to the paint event,
+            # because we need it in order to invoke syncing between the different viewers.
+            # (Paint event does not trigger 'data' event by itself).
+            # We do not need to connect to the eraser and fill bucket separately.
+
+            copied_layer.events.paint.connect(
+                lambda event: self.update_data(
+                    source=copied_layer, target=orig_layer, event=event
+                )  # copy data from copied_layer to orig_layer (orig_layer emits signal, which triggers update on other viewer models, if present)
+            )
+            orig_layer.events.paint.connect(
+                lambda event: self.update_data(
+                    source=orig_layer, target=copied_layer, event=event
+                )  # copy data from orig_layer to copied_layer (copied_layer emits signal but we don't process it)
+            )
+
         # if the original layer is a TrackPoints layer, make sure the visible points are synced (when switching between 'all' and 'lineage' mode)
         # and make sure that moving a point forwards the event to the original layer for processing (or resetting, if a seg_layer is present)
-        if isinstance(orig_layer, TrackPoints):
+        elif isinstance(orig_layer, TrackPoints):
 
             def shown_points_wrapper(event):
                 return self.sync_shown_points(orig_layer, copied_layer)
@@ -190,6 +207,17 @@ class DockableViewerModel:
 
             copied_layer._sync_data_wrapper = sync_data_wrapper
             copied_layer.events.data.connect(sync_data_wrapper)
+
+    def update_data(self, source: Labels, target: Labels, event: Event) -> None:
+        """Copy data from source layer to target layer, which triggers a data event on the target layer. Block syncing to itself (VM1 -> orig -> VM1 is blocked, but VM1 -> orig -> VM2 is not blocked)
+        Args:
+            source: the source Labels layer
+            target: the target Labels layer
+            event: the event to be triggered (not used)"""
+
+        self._block = True  # no syncing to itself is necessary
+        target.data = source.data  # trigger data event so that it can sync to other viewer models (only if target layer is orig_layer)
+        self._block = False
 
     def receive_data(self, orig_layer: TrackPoints, copied_layer: Points) -> None:
         """Respond to signal from the original layer, to update the data"""
