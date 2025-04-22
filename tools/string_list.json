@@ -1554,7 +1554,6 @@
       "linear",
       "volume",
       "interpolation3d",
-      "depiction",
       "translucent_no_depth",
       "uri",
       "builtins",
@@ -1761,7 +1760,6 @@
       "select",
       "bilinear",
       "interpolation3d",
-      "depiction",
       "bicubic",
       "cubic"
     ],
@@ -1802,7 +1800,6 @@
       "{k}: {v[idx]}",
       "features",
       "volume",
-      "depiction",
       "coordinates",
       "xarray.DataArray"
     ],

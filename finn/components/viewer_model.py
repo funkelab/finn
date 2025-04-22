@@ -761,7 +761,6 @@ class ViewerModel(KeymapProvider, MousemapProvider, EventedModel):
         colormap=None,
         contrast_limits=None,
         custom_interpolation_kernel_2d=None,
-        depiction="volume",
         clipping_planes=None,
         gamma=1.0,
         interpolation2d="nearest",
@@ -833,8 +832,6 @@ class ViewerModel(KeymapProvider, MousemapProvider, EventedModel):
             the image.
         custom_interpolation_kernel_2d : np.ndarray
             Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
-        depiction : str or list of str
-            3D Depiction mode. Must be equal to 'volume'.
         clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
             Each dict defines a clipping plane in 3D in data coordinates.
             Valid dictionary keys are {'position', 'normal', and 'enabled'}.
@@ -923,7 +920,6 @@ class ViewerModel(KeymapProvider, MousemapProvider, EventedModel):
             "interpolation2d": interpolation2d,
             "interpolation3d": interpolation3d,
             "rendering": rendering,
-            "depiction": depiction,
             "iso_threshold": iso_threshold,
             "attenuation": attenuation,
             "name": name,

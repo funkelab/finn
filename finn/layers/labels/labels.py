@@ -96,8 +96,6 @@ class Labels(ScalarFieldBase):
     colormap : CyclicLabelColormap or DirectLabelColormap or None
         Colormap to use for the labels. If None, a random colormap will be
         used.
-    depiction : str
-        3D Depiction mode. Must be equal to 'volume'.
     clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
         Each dict defines a clipping plane in 3D in data coordinates.
         Valid dictionary keys are {'position', 'normal', and 'enabled'}.
@@ -294,7 +292,6 @@ class Labels(ScalarFieldBase):
         blending="translucent",
         cache=True,
         colormap=None,
-        depiction="volume",
         clipping_planes=None,
         features=None,
         iso_gradient_mode=IsoCategoricalGradientMode.FAST.value,
@@ -334,7 +331,6 @@ class Labels(ScalarFieldBase):
             axis_labels=axis_labels,
             blending=blending,
             cache=cache,
-            depiction=depiction,
             clipping_planes=clipping_planes,
             rendering=rendering,
             metadata=metadata,
@@ -667,7 +663,6 @@ class Labels(ScalarFieldBase):
                 "properties": self.properties,
                 "rendering": self.rendering,
                 "iso_gradient_mode": self.iso_gradient_mode,
-                "depiction": self.depiction,
                 "clipping_planes": [plane.dict() for plane in self.clipping_planes],
                 "data": self.data,
                 "features": self.features,

@@ -12,7 +12,7 @@ from numpy import typing as npt
 from finn.layers import Layer
 from finn.layers._data_protocols import LayerDataProtocol
 from finn.layers._multiscale_data import MultiScaleData
-from finn.layers.image._image_constants import Interpolation, VolumeDepiction
+from finn.layers.image._image_constants import Interpolation
 from finn.layers.image._image_utils import guess_multiscale
 from finn.layers.image._slice import _ImageSliceRequest, _ImageSliceResponse
 from finn.layers.utils._slice_input import _SliceInput, _ThickNDSlice
@@ -64,8 +64,6 @@ class ScalarFieldBase(Layer, ABC):
         Currently, this only applies to dask arrays.
     custom_interpolation_kernel_2d : np.ndarray
         Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
-    depiction : str
-        3D Depiction mode. Must be equal to 'volume'.
     clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
         Each dict defines a clipping plane in 3D in data coordinates.
         Valid dictionary keys are {'position', 'normal', and 'enabled'}.
@@ -125,8 +123,6 @@ class ScalarFieldBase(Layer, ABC):
         Dimension names of the layer data.
     custom_interpolation_kernel_2d : np.ndarray
         Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
-    depiction : str
-        3D Depiction mode used by vispy. Must be one of our supported modes.
     clipping_planes : ClippingPlaneList
         Clipping planes defined in data coordinates, used to clip the volume.
     metadata : dict
@@ -169,7 +165,6 @@ class ScalarFieldBase(Layer, ABC):
         blending="translucent",
         cache=True,
         custom_interpolation_kernel_2d=None,
-        depiction="volume",
         clipping_planes=None,
         metadata=None,
         multiscale=None,
@@ -229,7 +224,6 @@ class ScalarFieldBase(Layer, ABC):
         self.events.add(
             attenuation=Event,
             custom_interpolation_kernel_2d=Event,
-            depiction=Event,
             interpolation=WarningEmitter(
                 trans._(
                     "'layer.events.interpolation' is deprecated please use `interpolation2d` and `interpolation3d`",
@@ -280,7 +274,6 @@ class ScalarFieldBase(Layer, ABC):
         # we don't want to use get_color before set_view_slice has been
         # triggered (self.refresh(), below).
         self.rendering = rendering
-        self.depiction = depiction
         self.custom_interpolation_kernel_2d = custom_interpolation_kernel_2d
 
     def _post_init(self):
@@ -365,21 +358,6 @@ class ScalarFieldBase(Layer, ABC):
     def downsample_factors(self) -> np.ndarray:
         """list: Downsample factors for each level of the multiscale."""
         return np.divide(self.level_shapes[0], self.level_shapes)
-
-    @property
-    def depiction(self):
-        """The current 3D depiction mode.
-
-        Selects a preset depiction mode in vispy
-            * volume: images are rendered as 3D volumes.
-        """
-        return str(self._depiction)
-
-    @depiction.setter
-    def depiction(self, depiction: str | VolumeDepiction) -> None:
-        """Set the current 3D depiction mode."""
-        self._depiction = VolumeDepiction("volume")  # only volume is allowed1
-        self.events.depiction()
 
     @property
     def custom_interpolation_kernel_2d(self):

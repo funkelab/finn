@@ -116,10 +116,6 @@ class VispyScalarFieldBaseLayer(VispyBaseLayer[ScalarFieldBase]):
         if isinstance(self.node, VolumeNode):
             self.node.method = self.layer.rendering
 
-    def _on_depiction_change(self) -> None:
-        if isinstance(self.node, VolumeNode):
-            self.node.raycasting_mode = str(self.layer.depiction)
-
     def _on_blending_change(self, event=None) -> None:
         super()._on_blending_change()
 
@@ -129,7 +125,6 @@ class VispyScalarFieldBaseLayer(VispyBaseLayer[ScalarFieldBase]):
     def reset(self, event=None) -> None:
         super().reset()
         self._on_rendering_change()
-        self._on_depiction_change()
         self._on_custom_interpolation_kernel_2d_change()
 
     def downsample_texture(self, data: np.ndarray, MAX_TEXTURE_SIZE: int) -> np.ndarray:

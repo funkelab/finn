@@ -75,8 +75,6 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         the image.
     custom_interpolation_kernel_2d : np.ndarray
         Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
-    depiction : str
-        3D Depiction mode. Must be equal to 'volume'.
     clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
         Each dict defines a clipping plane in 3D in data coordinates.
         Valid dictionary keys are {'position', 'normal', and 'enabled'}.
@@ -193,8 +191,6 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
     rendering : str
         Rendering mode used by vispy. Must be one of our supported
         modes.
-    depiction : str
-        3D Depiction mode used by vispy. Must be one of our supported modes.
     iso_threshold : float
         Threshold for isosurface.
     attenuation : float
@@ -233,7 +229,6 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         colormap="gray",
         contrast_limits=None,
         custom_interpolation_kernel_2d=None,
-        depiction="volume",
         clipping_planes=None,
         gamma=1.0,
         interpolation2d="nearest",
@@ -272,7 +267,6 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
             blending=blending,
             cache=cache,
             custom_interpolation_kernel_2d=custom_interpolation_kernel_2d,
-            depiction=depiction,
             clipping_planes=clipping_planes,
             metadata=metadata,
             multiscale=multiscale,
@@ -375,7 +369,6 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
                 "interpolation2d": self.interpolation2d,
                 "interpolation3d": self.interpolation3d,
                 "rendering": self.rendering,
-                "depiction": self.depiction,
                 "iso_threshold": self.iso_threshold,
                 "attenuation": self.attenuation,
                 "gamma": self.gamma,
