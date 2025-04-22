@@ -22,7 +22,9 @@ from finn.utils.events.event import WarningEmitter
 def copy_layer(layer: Layer, name: str = ""):
     if isinstance(
         layer, TrackGraph
-    ):  # instead of showing the tracks (not very useful on 3D data because they are collapsed to a single frame), use an empty shapes layer as substitute to ensure that the layer indices in the orthogonal viewer models match with those in the main viewer
+    ):  # instead of showing the tracks (not very useful on 3D data because they are collapsed to a single frame), 
+        # use an empty shapes layer as substitute to ensure that the layer indices in the orthogonal viewer models 
+        # match with those in the main viewer
         res_layer = Shapes(
             name=layer.name,
             data=[],
@@ -332,7 +334,8 @@ class MultipleViewerWidget(QSplitter):
     def set_orth_views_dims_order(self):
         """The the order of the z,y,x dims in the orthogonal views, by using the rel_order attribute of the viewer models"""
 
-        axis_labels = ("t", "z", "y", "x")  # default axis labels
+        # TODO: allow the user to provide the dimension order and names.
+        axis_labels = ("t", "z", "y", "x")  # assume default axis labels for now
         order = list(self.viewer.dims.order)
 
         if len(order) > 2:
@@ -345,13 +348,6 @@ class MultipleViewerWidget(QSplitter):
             )
             self.viewer_model1.viewer_model.dims.order = m1_order
 
-            m1_axis_labels = list(axis_labels)
-            m1_axis_labels[-3:] = (
-                m1_axis_labels[self.viewer_model1.rel_order[0]],
-                m1_axis_labels[self.viewer_model1.rel_order[1]],
-                m1_axis_labels[self.viewer_model1.rel_order[2]],
-            )
-
             # model 2 axis order (e.g. yz view)
             m2_order = list(order)
             m2_order[-3:] = (
@@ -360,23 +356,16 @@ class MultipleViewerWidget(QSplitter):
                 m2_order[self.viewer_model2.rel_order[2]],
             )
 
-            m2_axis_labels = list(axis_labels)
-            m2_axis_labels[-3:] = (
-                m2_axis_labels[self.viewer_model2.rel_order[0]],
-                m2_axis_labels[self.viewer_model2.rel_order[1]],
-                m2_axis_labels[self.viewer_model2.rel_order[2]],
-            )
-
             self.viewer_model2.viewer_model.dims.order = m2_order
 
         if len(order) == 3:  # assume we have zyx axes
             self.viewer.dims.axis_labels = axis_labels[1:]
-            self.viewer_model1.viewer_model.dims.axis_labels = m1_axis_labels[1:]
-            self.viewer_model2.viewer_model.dims.axis_labels = m2_axis_labels[1:]
+            self.viewer_model1.viewer_model.dims.axis_labels = axis_labels[1:]
+            self.viewer_model2.viewer_model.dims.axis_labels = axis_labels[1:]
         elif len(order) == 4:  # assume we have tzyx axes
             self.viewer.dims.axis_labels = axis_labels
-            self.viewer_model1.viewer_model.dims.axis_labels = m1_axis_labels
-            self.viewer_model2.viewer_model.dims.axis_labels = m2_axis_labels
+            self.viewer_model1.viewer_model.dims.axis_labels = axis_labels
+            self.viewer_model2.viewer_model.dims.axis_labels = axis_labels
 
         # whether or not the axis should be visible
         self.viewer_model1.viewer_model.axes.visible = self.viewer.axes.visible
