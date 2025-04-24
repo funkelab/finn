@@ -39,5 +39,5 @@ def test_Fluo_N2DL_Hela(ds_function, img_shape, point_shape):
     assert raw_data.shape == img_shape
     assert seg_data.shape == img_shape
     assert raw_data.dtype == np.uint16
-    assert seg_data.dtype == np.uint16
+    assert seg_data.dtype == np.uint64
     assert points.shape == point_shape
