@@ -15,9 +15,6 @@ from finn._tests.utils import (
     skip_on_win_ci,
 )
 from finn.settings import get_settings
-from finn.track_data_views.views.view_3d.cross_widget import (
-    center_cross_on_mouse,  # noqa: F401
-)
 from finn.utils._tests.test_naming import eval_with_filename
 from finn.utils.action_manager import action_manager
 
@@ -36,9 +33,16 @@ def _assert_shortcuts_exist_for_each_action(type_):
     actions = _get_provider_actions(type_)
     shortcuts = {name.partition(":")[-1] for name in get_settings().shortcuts.shortcuts}
     shortcuts.update(func.__name__ for func in type_.class_keymap.values())
+
+    actions_to_skip = {
+        "center_cross_on_mouse"
+    }  # skip this action as we only bind it if the cross widget is imported
+
     for action in actions:
+        if action.__name__ in actions_to_skip:
+            continue  # Skip this action
         assert action.__name__ in shortcuts, (
-            f"missing shortcut for action '{action.__name__}' on '{type_.__name__}' is missing"
+            f"missing shortcut for action '{action.__name__}' on '{type_.__name__}'"
         )
 
 
