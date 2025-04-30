@@ -108,6 +108,10 @@ class Shapes(Layer):
     cache : bool
         Whether slices of out-of-core datasets should be cached upon retrieval.
         Currently, this only applies to dask arrays.
+    clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
+        Each dict defines a clipping plane in 3D in data coordinates.
+        Valid dictionary keys are {'position', 'normal', and 'enabled'}.
+        Values on the negative side of the normal are discarded if the plane is enabled.
     edge_color : str, array-like
         If string can be any color name recognized by vispy or hex value if
         starting with `#`. If array-like must be 1-dimensional array with 3
@@ -129,10 +133,6 @@ class Shapes(Layer):
         same length as the length of `data` and each element will be
         applied to each shape otherwise the same value will be used for all
         shapes.
-    clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
-        Each dict defines a clipping plane in 3D in data coordinates.
-        Valid dictionary keys are {'position', 'normal', and 'enabled'}.
-        Values on the negative side of the normal are discarded if the plane is enabled.
     face_color : str, array-like
         If string can be any color name recognized by vispy or hex value if
         starting with `#`. If array-like must be 1-dimensional array with 3
@@ -438,12 +438,12 @@ class Shapes(Layer):
         axis_labels=None,
         blending="translucent",
         cache=True,
+        clipping_planes=None,
         edge_color="#777777",
         edge_color_cycle=None,
         edge_colormap="viridis",
         edge_contrast_limits=None,
         edge_width=1,
-        clipping_planes=None,
         face_color="white",
         face_color_cycle=None,
         face_colormap="viridis",

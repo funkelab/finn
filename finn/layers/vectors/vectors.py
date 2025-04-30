@@ -54,6 +54,10 @@ class Vectors(Layer):
     cache : bool
         Whether slices of out-of-core datasets should be cached upon retrieval.
         Currently, this only applies to dask arrays.
+    clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
+        Each dict defines a clipping plane in 3D in data coordinates.
+        Valid dictionary keys are {'position', 'normal', and 'enabled'}.
+        Values on the negative side of the normal are discarded if the plane is enabled.
     edge_color : str
         Color of all of the vectors.
     edge_color_cycle : np.ndarray, list
@@ -68,10 +72,6 @@ class Vectors(Layer):
         (property.min(), property.max())
     edge_width : float
         Width for all vectors in pixels.
-    clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
-        Each dict defines a clipping plane in 3D in data coordinates.
-        Valid dictionary keys are {'position', 'normal', and 'enabled'}.
-        Values on the negative side of the normal are discarded if the plane is enabled.
     feature_defaults : dict[str, Any] or DataFrame
         The default value of each feature in a table with one row.
     features : dict[str, array-like] or DataFrame
@@ -200,12 +200,12 @@ class Vectors(Layer):
         axis_labels=None,
         blending="translucent",
         cache=True,
+        clipping_planes=None,
         edge_color="red",
         edge_color_cycle=None,
         edge_colormap="viridis",
         edge_contrast_limits=None,
         edge_width=1,
-        clipping_planes=None,
         feature_defaults=None,
         features=None,
         length=1,
