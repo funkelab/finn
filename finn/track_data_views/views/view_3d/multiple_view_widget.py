@@ -13,7 +13,6 @@ from finn.track_data_views.views.layers.contour_labels import ContourLabels
 from finn.track_data_views.views.layers.track_graph import TrackGraph
 from finn.track_data_views.views.layers.track_labels import TrackLabels
 from finn.track_data_views.views.layers.track_points import TrackPoints
-from finn.utils.action_manager import action_manager
 from finn.utils.events import Event
 from finn.utils.events.event import WarningEmitter
 
@@ -72,9 +71,6 @@ def get_property_names(layer: Layer):
         ):
             res.append(event_name)
     return res
-
-
-action_manager.bind_shortcut("finn:move_point", "T")
 
 
 class own_partial:

@@ -41,6 +41,8 @@ action_manager.register_action(
     keymapprovider=ViewerModel,
 )
 
+action_manager.bind_shortcut("finn:move_point", "T")
+
 
 class CrossWidget(QCheckBox):
     """
