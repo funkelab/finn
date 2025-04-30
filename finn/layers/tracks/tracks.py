@@ -40,6 +40,10 @@ class Tracks(Layer):
     cache : bool
         Whether slices of out-of-core datasets should be cached upon retrieval.
         Currently, this only applies to dask arrays.
+    clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
+        Each dict defines a clipping plane in 3D in data coordinates.
+        Valid dictionary keys are {'position', 'normal', and 'enabled'}.
+        Values on the negative side of the normal are discarded if the plane is enabled.
     color_by : str
         Track property (from property keys) by which to color vertices.
     colormap : str
@@ -50,10 +54,6 @@ class Tracks(Layer):
         Optional dictionary mapping each property to a colormap for that
         property. This allows each property to be assigned a specific colormap,
         rather than having a global colormap for everything.
-    clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
-        Each dict defines a clipping plane in 3D in data coordinates.
-        Valid dictionary keys are {'position', 'normal', and 'enabled'}.
-        Values on the negative side of the normal are discarded if the plane is enabled.
     features : Dataframe-like
         Features table where each row corresponds to a point and each column
         is a feature.

@@ -93,13 +93,13 @@ class Labels(ScalarFieldBase):
     cache : bool
         Whether slices of out-of-core datasets should be cached upon retrieval.
         Currently, this only applies to dask arrays.
-    colormap : CyclicLabelColormap or DirectLabelColormap or None
-        Colormap to use for the labels. If None, a random colormap will be
-        used.
     clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
         Each dict defines a clipping plane in 3D in data coordinates.
         Valid dictionary keys are {'position', 'normal', and 'enabled'}.
         Values on the negative side of the normal are discarded if the plane is enabled.
+    colormap : CyclicLabelColormap or DirectLabelColormap or None
+        Colormap to use for the labels. If None, a random colormap will be
+        used.
     features : dict[str, array-like] or DataFrame
         Features table where each row corresponds to a label and each column
         is a feature. The first row corresponds to the background label.
@@ -291,8 +291,8 @@ class Labels(ScalarFieldBase):
         axis_labels=None,
         blending="translucent",
         cache=True,
-        colormap=None,
         clipping_planes=None,
+        colormap=None,
         features=None,
         iso_gradient_mode=IsoCategoricalGradientMode.FAST.value,
         metadata=None,

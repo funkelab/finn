@@ -61,6 +61,10 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
     cache : bool
         Whether slices of out-of-core datasets should be cached upon retrieval.
         Currently, this only applies to dask arrays.
+    clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
+        Each dict defines a clipping plane in 3D in data coordinates.
+        Valid dictionary keys are {'position', 'normal', and 'enabled'}.
+        Values on the negative side of the normal are discarded if the plane is enabled.
     colormap : str, finn.utils.Colormap, tuple, dict
         Colormaps to use for luminance images. If a string, it can be the name
         of a supported colormap from vispy or matplotlib or the name of
@@ -73,10 +77,6 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         Intensity value limits to be used for determining the minimum and maximum colormap bounds for
         luminance images. If not passed, they will be calculated as the min and max intensity value of
         the image.
-    clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
-        Each dict defines a clipping plane in 3D in data coordinates.
-        Valid dictionary keys are {'position', 'normal', and 'enabled'}.
-        Values on the negative side of the normal are discarded if the plane is enabled.
     custom_interpolation_kernel_2d : np.ndarray
         Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
     gamma : float
@@ -226,9 +226,9 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         axis_labels=None,
         blending="translucent",
         cache=True,
+        clipping_planes=None,
         colormap="gray",
         contrast_limits=None,
-        clipping_planes=None,
         custom_interpolation_kernel_2d=None,
         gamma=1.0,
         interpolation2d="nearest",
