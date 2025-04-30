@@ -15,6 +15,9 @@ from finn._tests.utils import (
     skip_on_win_ci,
 )
 from finn.settings import get_settings
+from finn.track_data_views.views.view_3d.cross_widget import (
+    center_cross_on_mouse,  # noqa: F401
+)
 from finn.utils._tests.test_naming import eval_with_filename
 from finn.utils.action_manager import action_manager
 
