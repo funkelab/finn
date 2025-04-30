@@ -760,9 +760,8 @@ class ViewerModel(KeymapProvider, MousemapProvider, EventedModel):
         cache=True,
         colormap=None,
         contrast_limits=None,
+        clipping_planes=None,
         custom_interpolation_kernel_2d=None,
-        depiction="volume",
-        experimental_clipping_planes=None,
         gamma=1.0,
         interpolation2d="nearest",
         interpolation3d="linear",
@@ -771,7 +770,6 @@ class ViewerModel(KeymapProvider, MousemapProvider, EventedModel):
         multiscale=None,
         name=None,
         opacity=1.0,
-        plane=None,
         projection_mode="none",
         rendering="mip",
         rgb=None,
@@ -832,15 +830,12 @@ class ViewerModel(KeymapProvider, MousemapProvider, EventedModel):
             Intensity value limits to be used for determining the minimum and maximum colormap bounds for
             luminance images. If not passed, they will be calculated as the min and max intensity value of
             the image.
-        custom_interpolation_kernel_2d : np.ndarray
-            Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
-        depiction : str or list of str
-            3D Depiction mode. Must be one of {'volume', 'plane'}.
-            The default value is 'volume'.
-        experimental_clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
+        clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
             Each dict defines a clipping plane in 3D in data coordinates.
             Valid dictionary keys are {'position', 'normal', and 'enabled'}.
             Values on the negative side of the normal are discarded if the plane is enabled.
+        custom_interpolation_kernel_2d : np.ndarray
+            Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
         gamma : float or list of float
             Gamma correction for determining colormap linearity; defaults to 1.
         interpolation2d : str or list of str
@@ -869,10 +864,6 @@ class ViewerModel(KeymapProvider, MousemapProvider, EventedModel):
             Name of the layer.
         opacity : float or list
             Opacity of the layer visual, between 0.0 and 1.0.
-        plane : dict or SlicingPlane
-            Properties defining plane rendering in 3D. Properties are defined in
-            data coordinates. Valid dictionary keys are
-            {'position', 'normal', 'thickness', and 'enabled'}.
         projection_mode : str
             How data outside the viewed dimensions, but inside the thick Dims slice will
             be projected onto the viewed dimensions. Must fit to cls._projectionclass
@@ -929,7 +920,6 @@ class ViewerModel(KeymapProvider, MousemapProvider, EventedModel):
             "interpolation2d": interpolation2d,
             "interpolation3d": interpolation3d,
             "rendering": rendering,
-            "depiction": depiction,
             "iso_threshold": iso_threshold,
             "attenuation": attenuation,
             "name": name,
@@ -944,8 +934,7 @@ class ViewerModel(KeymapProvider, MousemapProvider, EventedModel):
             "visible": visible,
             "multiscale": multiscale,
             "cache": cache,
-            "plane": plane,
-            "experimental_clipping_planes": experimental_clipping_planes,
+            "clipping_planes": clipping_planes,
             "custom_interpolation_kernel_2d": custom_interpolation_kernel_2d,
             "projection_mode": projection_mode,
             "units": units,
@@ -960,7 +949,7 @@ class ViewerModel(KeymapProvider, MousemapProvider, EventedModel):
             "affine",
             "contrast_limits",
             "metadata",
-            "experimental_clipping_planes",
+            "clipping_planes",
             "custom_interpolation_kernel_2d",
             "axis_labels",
             "units",

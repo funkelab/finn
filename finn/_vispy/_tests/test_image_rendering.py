@@ -81,9 +81,9 @@ def test_clipping_planes_dims():
         "position": (1, 2, 3),
         "normal": (1, 2, 3),
     }
-    image_layer = Image(np.zeros((2, 2, 2)), experimental_clipping_planes=clipping_planes)
+    image_layer = Image(np.zeros((2, 2, 2)), clipping_planes=clipping_planes)
     vispy_layer = VispyImageLayer(image_layer)
-    napari_clip = image_layer.experimental_clipping_planes.as_array()
+    napari_clip = image_layer.clipping_planes.as_array()
     # needed to get volume node
     image_layer._slice_dims(Dims(ndim=3, ndisplay=3))
     vispy_clip = vispy_layer.node.clipping_planes

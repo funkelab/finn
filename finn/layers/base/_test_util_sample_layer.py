@@ -15,7 +15,7 @@ class SampleLayer(Layer):
         axis_labels=None,
         blending="translucent",
         cache=True,  # this should move to future "data source" object.
-        experimental_clipping_planes=None,
+        clipping_planes=None,
         metadata=None,
         mode="pan_zoom",
         multiscale=False,
@@ -38,7 +38,7 @@ class SampleLayer(Layer):
             axis_labels=axis_labels,
             blending=blending,
             cache=cache,
-            experimental_clipping_planes=experimental_clipping_planes,
+            clipping_planes=clipping_planes,
             metadata=metadata,
             mode=mode,
             multiscale=multiscale,

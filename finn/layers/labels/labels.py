@@ -93,16 +93,13 @@ class Labels(ScalarFieldBase):
     cache : bool
         Whether slices of out-of-core datasets should be cached upon retrieval.
         Currently, this only applies to dask arrays.
-    colormap : CyclicLabelColormap or DirectLabelColormap or None
-        Colormap to use for the labels. If None, a random colormap will be
-        used.
-    depiction : str
-        3D Depiction mode. Must be one of {'volume', 'plane'}.
-        The default value is 'volume'.
-    experimental_clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
+    clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
         Each dict defines a clipping plane in 3D in data coordinates.
         Valid dictionary keys are {'position', 'normal', and 'enabled'}.
         Values on the negative side of the normal are discarded if the plane is enabled.
+    colormap : CyclicLabelColormap or DirectLabelColormap or None
+        Colormap to use for the labels. If None, a random colormap will be
+        used.
     features : dict[str, array-like] or DataFrame
         Features table where each row corresponds to a label and each column
         is a feature. The first row corresponds to the background label.
@@ -126,10 +123,6 @@ class Labels(ScalarFieldBase):
         Name of the layer.
     opacity : float
         Opacity of the layer visual, between 0.0 and 1.0.
-    plane : dict or SlicingPlane
-        Properties defining plane rendering in 3D. Properties are defined in
-        data coordinates. Valid dictionary keys are
-        {'position', 'normal', 'thickness', and 'enabled'}.
     projection_mode : str
         How data outside the viewed dimensions but inside the thick Dims slice will
         be projected onto the viewed dimensions
@@ -239,9 +232,7 @@ class Labels(ScalarFieldBase):
 
         In ERASE mode the cursor functions similarly to PAINT mode, but to
         paint with background label, which effectively removes the label.
-    plane : SlicingPlane
-        Properties defining plane rendering in 3D.
-    experimental_clipping_planes : ClippingPlaneList
+    clipping_planes : ClippingPlaneList
         Clipping planes defined in data coordinates, used to clip the volume.
     units: tuple of pint.Unit
         Units of the layer data in world coordinates.
@@ -300,16 +291,14 @@ class Labels(ScalarFieldBase):
         axis_labels=None,
         blending="translucent",
         cache=True,
+        clipping_planes=None,
         colormap=None,
-        depiction="volume",
-        experimental_clipping_planes=None,
         features=None,
         iso_gradient_mode=IsoCategoricalGradientMode.FAST.value,
         metadata=None,
         multiscale=None,
         name=None,
         opacity=0.7,
-        plane=None,
         projection_mode="none",
         properties=None,
         rendering="iso_categorical",
@@ -342,15 +331,13 @@ class Labels(ScalarFieldBase):
             axis_labels=axis_labels,
             blending=blending,
             cache=cache,
-            depiction=depiction,
-            experimental_clipping_planes=experimental_clipping_planes,
+            clipping_planes=clipping_planes,
             rendering=rendering,
             metadata=metadata,
             multiscale=multiscale,
             name=name,
             scale=scale,
             shear=shear,
-            plane=plane,
             opacity=opacity,
             projection_mode=projection_mode,
             rotate=rotate,
@@ -676,11 +663,7 @@ class Labels(ScalarFieldBase):
                 "properties": self.properties,
                 "rendering": self.rendering,
                 "iso_gradient_mode": self.iso_gradient_mode,
-                "depiction": self.depiction,
-                "plane": self.plane.dict(),
-                "experimental_clipping_planes": [
-                    plane.dict() for plane in self.experimental_clipping_planes
-                ],
+                "clipping_planes": [plane.dict() for plane in self.clipping_planes],
                 "data": self.data,
                 "features": self.features,
                 "colormap": self.colormap,

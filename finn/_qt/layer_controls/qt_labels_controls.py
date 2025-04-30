@@ -6,6 +6,7 @@ from qtpy.QtGui import QColor, QPainter
 from qtpy.QtWidgets import (
     QCheckBox,
     QComboBox,
+    QFormLayout,
     QHBoxLayout,
     QLabel,
     QSpinBox,
@@ -13,6 +14,7 @@ from qtpy.QtWidgets import (
 )
 from superqt import QEnumComboBox, QLabeledSlider, QLargeIntSpinBox
 
+from finn._qt.layer_controls.qt_layer_clipping_plane_controls import QtLayerClippingPlanes
 from finn._qt.layer_controls.qt_layer_controls_base import QtLayerControls
 from finn._qt.utils import set_widgets_enabled_with_opacity
 from finn._qt.widgets.qt_mode_buttons import QtModePushButton
@@ -243,8 +245,6 @@ class QtLabelsControls(QtLayerControls):
         self.isoGradientComboBox = isoGradientComboBox
         self.isoGradientLabel = QLabel(trans._("gradient\nmode:"))
 
-        self._on_ndisplay_changed()
-
         color_layout = QHBoxLayout()
         self.colorBox = QtColorBox(layer)
         color_layout.addWidget(self.colorBox)
@@ -263,6 +263,23 @@ class QtLabelsControls(QtLayerControls):
         self.layout().addRow(trans._("contiguous:"), self.contigCheckBox)
         self.layout().addRow(trans._("preserve\nlabels:"), self.preserveLabelsCheckBox)
         self.layout().addRow(trans._("show\nselected:"), self.selectedColorCheckbox)
+
+        # add the clipping plane controls
+        self.clippingPlaneControls = QtLayerClippingPlanes(self)
+
+        for i in range(self.clippingPlaneControls.rowCount()):
+            label_item = self.clippingPlaneControls.itemAt(i, QFormLayout.LabelRole)
+            field_item = self.clippingPlaneControls.itemAt(i, QFormLayout.FieldRole)
+
+            label_widget = label_item.widget() if label_item else None
+            field_widget = field_item.widget() if field_item else None
+
+            if label_widget and field_widget:
+                self.layout().addRow(label_widget, field_widget)
+            elif field_widget:  # If there's no label, just add the field
+                self.layout().addRow(field_widget)
+
+        self._on_ndisplay_changed()
 
     def change_color_mode(self):
         """Change color mode of label layer"""
@@ -484,6 +501,7 @@ class QtLabelsControls(QtLayerControls):
         self._set_polygon_tool_state()
 
     def _on_ndisplay_changed(self):
+        self.clippingPlaneControls._on_ndisplay_changed()
         show_3d_widgets = self.ndisplay == 3
         self.renderComboBox.setVisible(show_3d_widgets)
         self.renderLabel.setVisible(show_3d_widgets)

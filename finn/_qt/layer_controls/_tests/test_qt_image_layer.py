@@ -3,6 +3,7 @@ import numpy as np
 from finn._qt.layer_controls.qt_image_controls import QtImageControls
 from finn.components.dims import Dims
 from finn.layers import Image
+from finn.layers.utils.plane import ClippingPlane
 
 
 def test_interpolation_combobox(qtbot):
@@ -40,72 +41,133 @@ def test_rendering_combobox(qtbot):
     assert combo.findText("iso") == combo.currentIndex()
 
 
-def test_depiction_combobox_changes(qtbot):
-    """Changing the model attribute should update the view."""
-    layer = Image(np.random.rand(10, 15, 20))
-    qtctrl = QtImageControls(layer)
-    qtctrl.ndisplay = 3
-    qtbot.addWidget(qtctrl)
-    combo_box = qtctrl.depictionComboBox
-    opts = {combo_box.itemText(i) for i in range(combo_box.count())}
-    depiction_options = {
-        "volume",
-        "plane",
-    }
-    assert opts == depiction_options
-    layer.depiction = "plane"
-    assert combo_box.findText("plane") == combo_box.currentIndex()
-    layer.depiction = "volume"
-    assert combo_box.findText("volume") == combo_box.currentIndex()
-
-
-def test_plane_controls_show_hide_on_depiction_change(qtbot):
-    """Changing depiction mode should show/hide plane controls in 3D."""
-    layer = Image(np.random.rand(10, 15, 20))
-    qtctrl = QtImageControls(layer)
-    qtbot.addWidget(qtctrl)
-    qtctrl.ndisplay = 3
-
-    layer.depiction = "volume"
-    assert qtctrl.planeThicknessSlider.isHidden()
-    assert qtctrl.planeThicknessLabel.isHidden()
-    assert qtctrl.planeNormalButtons.isHidden()
-    assert qtctrl.planeNormalLabel.isHidden()
-
-    layer.depiction = "plane"
-    assert not qtctrl.planeThicknessSlider.isHidden()
-    assert not qtctrl.planeThicknessLabel.isHidden()
-    assert not qtctrl.planeNormalButtons.isHidden()
-    assert not qtctrl.planeNormalLabel.isHidden()
-
-
 def test_plane_controls_show_hide_on_ndisplay_change(qtbot):
-    """Changing ndisplay should show/hide plane controls if depicting a plane."""
+    """Changing ndisplay should show/hide plane controls in 3D."""
     layer = Image(np.random.rand(10, 15, 20))
-    layer.depiction = "plane"
     qtctrl = QtImageControls(layer)
     qtbot.addWidget(qtctrl)
-
-    assert qtctrl.ndisplay == 2
-    assert qtctrl.planeThicknessSlider.isHidden()
-    assert qtctrl.planeThicknessLabel.isHidden()
-    assert qtctrl.planeNormalButtons.isHidden()
-    assert qtctrl.planeNormalLabel.isHidden()
-
     qtctrl.ndisplay = 3
-    assert not qtctrl.planeThicknessSlider.isHidden()
-    assert not qtctrl.planeThicknessLabel.isHidden()
-    assert not qtctrl.planeNormalButtons.isHidden()
-    assert not qtctrl.planeNormalLabel.isHidden()
+
+    assert not qtctrl.clippingPlaneControls.planeNormalLabel.isHidden()
+    assert not qtctrl.clippingPlaneControls.planeNormalButtons.isHidden()
+
+    assert not qtctrl.clippingPlaneControls.clippingPlaneLabel.isHidden()
+    assert not qtctrl.clippingPlaneControls.clippingPlaneCheckbox.isHidden()
+
+    assert not qtctrl.clippingPlaneControls.clippingPlaneWidthLabel.isHidden()
+    assert not qtctrl.clippingPlaneControls.clippingPlaneWidthSlider.isHidden()
+
+    assert not qtctrl.clippingPlaneControls.clippingPlaneCenterLabel.isHidden()
+    assert not qtctrl.clippingPlaneControls.clippingPlaneCenterSlider.isHidden()
+
+    qtctrl.ndisplay = 2
+    assert qtctrl.clippingPlaneControls.planeNormalLabel.isHidden()
+    assert qtctrl.clippingPlaneControls.planeNormalButtons.isHidden()
+
+    assert qtctrl.clippingPlaneControls.clippingPlaneLabel.isHidden()
+    assert qtctrl.clippingPlaneControls.clippingPlaneCheckbox.isHidden()
+
+    assert qtctrl.clippingPlaneControls.clippingPlaneWidthLabel.isHidden()
+    assert qtctrl.clippingPlaneControls.clippingPlaneWidthSlider.isHidden()
+
+    assert qtctrl.clippingPlaneControls.clippingPlaneCenterLabel.isHidden()
+    assert qtctrl.clippingPlaneControls.clippingPlaneCenterSlider.isHidden()
 
 
-def test_plane_slider_value_change(qtbot):
-    """Changing the model should update the view."""
+def test_set_clipping_plane_position(qtbot):
+    """Test if updating the clipping plane slider updates the clipping plane positions"""
     layer = Image(np.random.rand(10, 15, 20))
     qtctrl = QtImageControls(layer)
     qtbot.addWidget(qtctrl)
-    layer.plane.thickness *= 2
-    assert qtctrl.planeThicknessSlider.value() == layer.plane.thickness
+    width = 3
+    center = 4
+    qtctrl.clippingPlaneControls.set_clipping_plane_positions(width, center)
+
+    position1 = center - width // 2
+    position2 = (center + width // 2) + 1
+
+    plane_normal = np.array(layer.clipping_planes[0].normal)
+    new_position1 = np.array([0, 0, 0]) + position1 * plane_normal
+    new_position1 = (
+        int(new_position1[0] * layer.scale[-3]),
+        int(new_position1[1] * layer.scale[-2]),
+        int(new_position1[2] * layer.scale[-1]),
+    )
+    new_position2 = np.array([0, 0, 0]) + position2 * plane_normal
+    new_position2 = (
+        int(new_position2[0] * layer.scale[-3]),
+        int(new_position2[1] * layer.scale[-2]),
+        int(new_position2[2] * layer.scale[-1]),
+    )
+
+    assert layer.clipping_planes[0].position == new_position1
+    assert layer.clipping_planes[1].position == new_position2
+
+
+def test_compute_plane_range(qtbot):
+    """Test the _compute_plane_range function."""
+    layer_data = np.random.rand(10, 15, 20)
+    layer = Image(layer_data)
+    qtctrl = QtImageControls(layer)
+    qtbot.addWidget(qtctrl)
+
+    # Set the plane normal
+    layer.clipping_planes[0].normal = [1, 0, 0]  # Normal along the x-axis
+    expected_range = (0, layer_data.shape[-3])  # Range along the x-axis
+
+    # Call _compute_plane_range
+    computed_range = qtctrl.clippingPlaneControls._compute_plane_range()
+    assert computed_range == expected_range, (
+        f"Expected {expected_range}, got {computed_range}"
+    )
+
+    # Test with a different plane normal
+    layer.clipping_planes[0].normal = [0, 1, 0]  # Normal along the x-axis
+    expected_range = (0, layer_data.shape[-2])  # Range along the y-axis
+    computed_range = qtctrl.clippingPlaneControls._compute_plane_range()
+    assert computed_range == expected_range, (
+        f"Expected {expected_range}, got {computed_range}"
+    )
+
+    # Test with an oblique plane normal
+    layer.clipping_planes[0].normal = [1, 1, 1]  # Normal along the x-axis
+    computed_range = qtctrl.clippingPlaneControls._compute_plane_range()
+    expected_range = (np.float64(0.0), np.float64(25.98))
+    np.testing.assert_almost_equal(computed_range[0], expected_range[0], decimal=1)
+
+
+def test_activate_clipping_plane(qtbot):
+    """Test the _activateClippingPlane function."""
+    layer_data = np.random.rand(10, 15, 20)
+    layer = Image(layer_data)
+    qtctrl = QtImageControls(layer)
+    qtbot.addWidget(qtctrl)
+
+    # Ensure the clipping_planes are initialized
+    layer.clipping_planes = [
+        ClippingPlane(normal=[1, 0, 0], position=[0, 0, 0], enabled=False),
+        ClippingPlane(normal=[-1, 0, 0], position=[0, 0, 0], enabled=False),
+    ]
+
+    # Activate the clipping plane
+    qtctrl.clippingPlaneControls._activateClippingPlane(True)
+    assert layer.clipping_planes[0].enabled is True
+    assert layer.clipping_planes[1].enabled is True
+
+    assert qtctrl.clippingPlaneControls.clippingPlaneWidthSlider.isEnabled() is True
+    assert qtctrl.clippingPlaneControls.clippingPlaneCenterSlider.isEnabled() is True
+    assert qtctrl.clippingPlaneControls.clippingPlaneWidthLabel.isEnabled() is True
+    assert qtctrl.clippingPlaneControls.clippingPlaneCenterLabel.isEnabled() is True
+
+    # Deactivate the clipping plane
+    qtctrl.clippingPlaneControls._activateClippingPlane(False)
+    assert layer.clipping_planes[0].enabled is False
+    assert layer.clipping_planes[1].enabled is False
+
+    assert qtctrl.clippingPlaneControls.clippingPlaneWidthSlider.isEnabled() is False
+    assert qtctrl.clippingPlaneControls.clippingPlaneCenterSlider.isEnabled() is False
+    assert qtctrl.clippingPlaneControls.clippingPlaneWidthLabel.isEnabled() is False
+    assert qtctrl.clippingPlaneControls.clippingPlaneCenterLabel.isEnabled() is False
 
 
 def test_auto_contrast_buttons(qtbot):

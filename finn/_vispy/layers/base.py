@@ -80,9 +80,7 @@ class VispyBaseLayer(ABC, Generic[_L]):
         self.layer.events.rotate.connect(self._on_matrix_change)
         self.layer.events.shear.connect(self._on_matrix_change)
         self.layer.events.affine.connect(self._on_matrix_change)
-        self.layer.experimental_clipping_planes.events.connect(
-            self._on_experimental_clipping_planes_change
-        )
+        self.layer.clipping_planes.events.connect(self._on_clipping_planes_change)
         self.layer.events._overlays.connect(self._on_overlays_change)
 
     @property
@@ -267,14 +265,12 @@ class VispyBaseLayer(ABC, Generic[_L]):
         for child in self.node.children:
             child.transform.matrix = child_matrix
 
-    def _on_experimental_clipping_planes_change(self):
+    def _on_clipping_planes_change(self):
         if hasattr(self.node, "clipping_planes") and hasattr(
-            self.layer, "experimental_clipping_planes"
+            self.layer, "clipping_planes"
         ):
             # invert axes because vispy uses xyz but napari zyx
-            self.node.clipping_planes = (
-                self.layer.experimental_clipping_planes.as_array()[..., ::-1]
-            )
+            self.node.clipping_planes = self.layer.clipping_planes.as_array()[..., ::-1]
 
     def _on_camera_move(self, event=None):
         return
@@ -284,7 +280,7 @@ class VispyBaseLayer(ABC, Generic[_L]):
         self._on_opacity_change()
         self._on_blending_change()
         self._on_matrix_change()
-        self._on_experimental_clipping_planes_change()
+        self._on_clipping_planes_change()
         self._on_overlays_change()
         self._on_camera_move()
 

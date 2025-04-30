@@ -1017,7 +1017,7 @@
     "napari/_vispy/image.py": [],
     "napari/_vispy/layers/base.py": [
         "clipping_planes",
-        "experimental_clipping_planes"
+        "clipping_planes"
     ],
     "napari/_vispy/layers/image.py": ["auto", "tile2data", "texture_float"],
     "napari/_vispy/layers/points.py": [
@@ -1544,7 +1544,7 @@
       "ViewerModel",
       "valid_add_kwargs",
       "cache",
-      "experimental_clipping_planes",
+      "clipping_planes",
       "plane",
       "layers_change",
       "mode",
@@ -1554,7 +1554,6 @@
       "linear",
       "volume",
       "interpolation3d",
-      "depiction",
       "translucent_no_depth",
       "uri",
       "builtins",
@@ -1623,7 +1622,7 @@
       "{cls.__name__}",
       "_double_click_modes",
       "data2physical",
-      "experimental_clipping_planes",
+      "clipping_planes",
       "extent",
       "keyword argument ",
       "physical2world",
@@ -1644,7 +1643,6 @@
     ],
     "napari/layers/image/__init__.py": [],
     "napari/layers/image/_image_loader.py": [],
-    "napari/layers/image/_image_mouse_bindings.py": ["Shift", "mouse_move"],
     "napari/layers/image/_image_slice.py": [
       "ImageSlice.__init__",
       "f",
@@ -1762,7 +1760,6 @@
       "select",
       "bilinear",
       "interpolation3d",
-      "depiction",
       "bicubic",
       "cubic"
     ],
@@ -1796,14 +1793,13 @@
       "transparent",
       "; ",
       "_color",
-      "experimental_clipping_planes",
+      "clipping_planes",
       "plane",
       "iso_categorical",
       "rendering",
       "{k}: {v[idx]}",
       "features",
       "volume",
-      "depiction",
       "coordinates",
       "xarray.DataArray"
     ],
@@ -2082,7 +2078,7 @@
       "translate",
       "{name} layer {i}",
       "blue",
-      "experimental_clipping_planes",
+      "clipping_planes",
       "plane",
       "green",
       "red",
