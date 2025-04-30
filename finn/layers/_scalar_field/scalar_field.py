@@ -62,12 +62,12 @@ class ScalarFieldBase(Layer, ABC):
     cache : bool
         Whether slices of out-of-core datasets should be cached upon retrieval.
         Currently, this only applies to dask arrays.
-    custom_interpolation_kernel_2d : np.ndarray
-        Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
     clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
         Each dict defines a clipping plane in 3D in data coordinates.
         Valid dictionary keys are {'position', 'normal', and 'enabled'}.
         Values on the negative side of the normal are discarded if the plane is enabled.
+    custom_interpolation_kernel_2d : np.ndarray
+        Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
     metadata : dict
         Layer metadata.
     multiscale : bool
@@ -121,10 +121,10 @@ class ScalarFieldBase(Layer, ABC):
         displayed.
     axis_labels : tuple of str
         Dimension names of the layer data.
-    custom_interpolation_kernel_2d : np.ndarray
-        Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
     clipping_planes : ClippingPlaneList
         Clipping planes defined in data coordinates, used to clip the volume.
+    custom_interpolation_kernel_2d : np.ndarray
+        Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
     metadata : dict
         Image metadata.
     mode : str
@@ -164,8 +164,8 @@ class ScalarFieldBase(Layer, ABC):
         axis_labels=None,
         blending="translucent",
         cache=True,
-        custom_interpolation_kernel_2d=None,
         clipping_planes=None,
+        custom_interpolation_kernel_2d=None,
         metadata=None,
         multiscale=None,
         name=None,
@@ -223,6 +223,7 @@ class ScalarFieldBase(Layer, ABC):
 
         self.events.add(
             attenuation=Event,
+            clipping_planes=Event,
             custom_interpolation_kernel_2d=Event,
             interpolation=WarningEmitter(
                 trans._(
@@ -234,7 +235,6 @@ class ScalarFieldBase(Layer, ABC):
             interpolation2d=Event,
             interpolation3d=Event,
             iso_threshold=Event,
-            clipping_planes=Event,
             rendering=Event,
         )
 

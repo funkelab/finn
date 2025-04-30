@@ -73,12 +73,12 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         Intensity value limits to be used for determining the minimum and maximum colormap bounds for
         luminance images. If not passed, they will be calculated as the min and max intensity value of
         the image.
-    custom_interpolation_kernel_2d : np.ndarray
-        Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
     clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
         Each dict defines a clipping plane in 3D in data coordinates.
         Valid dictionary keys are {'position', 'normal', and 'enabled'}.
         Values on the negative side of the normal are discarded if the plane is enabled.
+    custom_interpolation_kernel_2d : np.ndarray
+        Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
     gamma : float
         Gamma correction for determining colormap linearity; defaults to 1.
     interpolation2d : str
@@ -228,8 +228,8 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         cache=True,
         colormap="gray",
         contrast_limits=None,
-        custom_interpolation_kernel_2d=None,
         clipping_planes=None,
+        custom_interpolation_kernel_2d=None,
         gamma=1.0,
         interpolation2d="nearest",
         interpolation3d="linear",
@@ -266,8 +266,8 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
             axis_labels=axis_labels,
             blending=blending,
             cache=cache,
-            custom_interpolation_kernel_2d=custom_interpolation_kernel_2d,
             clipping_planes=clipping_planes,
+            custom_interpolation_kernel_2d=custom_interpolation_kernel_2d,
             metadata=metadata,
             multiscale=multiscale,
             name=name,
