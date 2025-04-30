@@ -13,7 +13,6 @@ from finn.track_data_views.views.layers.contour_labels import ContourLabels
 from finn.track_data_views.views.layers.track_graph import TrackGraph
 from finn.track_data_views.views.layers.track_labels import TrackLabels
 from finn.track_data_views.views.layers.track_points import TrackPoints
-from finn.track_data_views.views_coordinator.tracks_viewer import TracksViewer
 from finn.utils.action_manager import action_manager
 from finn.utils.events import Event
 from finn.utils.events.event import WarningEmitter
@@ -324,7 +323,6 @@ class MultipleViewerWidget(QSplitter):
         self.viewer = viewer
         self.viewer.axes.visible = True
         self.viewer.axes.events.visible.connect(self.set_orth_views_dims_order)
-        self.tracks_viewer = TracksViewer.get_instance(self.viewer)
         self.viewer_model1 = DockableViewerModel(title="model1", rel_order=(-2, -3, -1))
         self.viewer_model2 = DockableViewerModel(title="model2", rel_order=(-1, -2, -3))
         self.qt_viewer1 = QtViewer(self.viewer_model1.viewer_model)
