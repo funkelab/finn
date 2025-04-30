@@ -9,15 +9,16 @@ from finn.utils._test_utils import (
     validate_kwargs_sorted,
 )
 
-# def test_empty_tracks():
-#     """Test instantiating Tracks layer without data."""
-#     pts = Tracks()
-#     assert pts.data.shape == (0, 4)
-
-
 data_array_2dt = np.zeros((1, 4))
 data_list_2dt = list(data_array_2dt)
 dataframe_2dt = pd.DataFrame(data=data_array_2dt, columns=["track_id", "t", "y", "x"])
+
+
+@pytest.mark.parametrize("ndim", [3, 4])
+def test_empty_tracks(ndim):
+    """Test instantiating Tracks layer without data."""
+    pts = Tracks(data=None, ndim=ndim)
+    assert pts.data.shape == (0, ndim + 1)
 
 
 @pytest.mark.parametrize("data", [data_array_2dt, data_list_2dt, dataframe_2dt])
@@ -25,6 +26,12 @@ def test_tracks_layer_2dt_ndim(data):
     """Test instantiating Tracks layer, check 2D+t dimensionality."""
     layer = Tracks(data)
     assert layer.ndim == 3
+
+    layer = Tracks(data, ndim=3)
+    assert layer.ndim == 3
+
+    with pytest.raises(ValueError, match="Provided ndim 4 and data ndim 3 do not match."):
+        layer = Tracks(data, ndim=4)
 
 
 data_array_3dt = np.zeros((1, 5))
@@ -282,7 +289,8 @@ def test_track_connex_validity() -> None:
     # number of tracks
     n_tracks = 6
 
-    # the number of 'False' in the track_connex array should be equal to the number of tracks
+    # the number of 'False' in the track_connex array should be equal to the number
+    # of tracks
     assert np.sum(~layer._manager.track_connex) == n_tracks
 
 

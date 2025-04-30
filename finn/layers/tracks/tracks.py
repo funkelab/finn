@@ -70,6 +70,9 @@ class Tracks(Layer):
         Layer metadata.
     name : str
         Name of the layer.
+    ndim : int, optional
+        The number of spatio-temporal dimensions of the tracks. Necessary if data is None
+        to initialize an empty tracks layer.
     opacity : float
         Opacity of the layer visual, between 0.0 and 1.0.
     projection_mode : str
@@ -114,15 +117,16 @@ class Tracks(Layer):
         axis_labels=None,
         blending="additive",
         cache=True,
+        clipping_planes=None,
         color_by="track_id",
         colormap="turbo",
         colormaps_dict=None,
-        clipping_planes=None,
         features=None,
         graph=None,
         head_length: int = 0,
         metadata=None,
         name=None,
+        ndim=None,
         opacity=1.0,
         projection_mode="none",
         properties=None,
@@ -135,12 +139,20 @@ class Tracks(Layer):
         units=None,
         visible=True,
     ) -> None:
+        if ndim is None and data is None:
+            raise ValueError("Must provide ndim or data to tracks layer")
+
         # if not provided with any data, set up an empty layer in 2D+t
         # otherwise convert the data to an np.ndarray
-        data = np.empty((0, 4)) if data is None else np.asarray(data)
+        data = np.empty((0, ndim + 1)) if data is None else np.asarray(data)
 
         # set the track data dimensions (remove ID from data)
-        ndim = data.shape[1] - 1
+        if ndim is None:
+            ndim = data.shape[1] - 1
+        elif ndim != data.shape[1] - 1:
+            raise ValueError(
+                f"Provided ndim {ndim} and data ndim {data.shape[1] - 1} do not match."
+            )
 
         super().__init__(
             data,
@@ -226,10 +238,10 @@ class Tracks(Layer):
         """
         if len(self.data) == 0:
             extrema = np.full((2, self.ndim), np.nan)
-        else:
-            maxs = np.max(self.data, axis=0)
-            mins = np.min(self.data, axis=0)
-            extrema = np.vstack([mins, maxs])
+            return extrema
+        maxs = np.max(self.data, axis=0)
+        mins = np.min(self.data, axis=0)
+        extrema = np.vstack([mins, maxs])
         return extrema[:, 1:]
 
     def _get_ndim(self) -> int:
@@ -248,6 +260,7 @@ class Tracks(Layer):
         state.update(
             {
                 "data": self.data,
+                "ndim": self.ndim,
                 "properties": self.properties,
                 "graph": self.graph,
                 "color_by": self.color_by,
@@ -300,7 +313,11 @@ class Tracks(Layer):
         colormapped = np.zeros(self._thumbnail_shape)
         colormapped[..., 3] = 1
 
-        if self._view_data is not None and self.track_colors is not None:
+        if (
+            self._view_data is not None
+            and self.track_colors is not None
+            and self.data.shape[0] > 0
+        ):
             de = self._extent_data
             min_vals = [de[0, i] for i in self._slice_input.displayed]
             shape = np.ceil(
@@ -600,7 +617,8 @@ class Tracks(Layer):
         else:
             # if we don't have a colormap, get one and scale the properties
             colormap = AVAILABLE_COLORMAPS[self.colormap]
-            vertex_properties = _norm(vertex_properties)
+            if vertex_properties.size > 0:
+                vertex_properties = _norm(vertex_properties)
 
         # actually set the vertex colors
         self._track_colors = colormap.map(vertex_properties)
@@ -649,7 +667,8 @@ class Tracks(Layer):
             warn(
                 (
                     trans._(
-                        "Previous color_by key {key!r} not present in features. Falling back to track_id",
+                        "Previous color_by key {key!r} not present in features. "
+                        "Falling back to track_id",
                         deferred=True,
                         key=self._color_by,
                     )
