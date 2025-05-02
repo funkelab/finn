@@ -55,7 +55,8 @@ class MainApp(QWidget):
             self.adjustSize()
 
     def dims_changed(self):
-        """Show/Hide the orthogonal views depending on the amount of dimensions of the viewer"""
+        """Show/Hide the orthogonal views depending on the amount of dimensions
+        of the viewer"""
 
         if self.viewer.dims.ndim > 2:
             self.collapse_btn.show()

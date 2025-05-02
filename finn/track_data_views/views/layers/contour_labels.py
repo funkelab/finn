@@ -23,7 +23,7 @@ def get_contours(
     labels : array of integers
         An input labels image.
     thickness : int
-        It controls the thickness of the inner boundaries. The outside thickness is always 1.
+        Controls the thickness of the inner boundaries. The outside thickness is always 1.
         The final thickness of the contours will be `thickness + 1`.
     background_label : int
         That label is used to fill everything outside the boundaries.
@@ -43,7 +43,8 @@ def get_contours(
     contours = labels.copy()
     contours[not_boundaries] = background_label
 
-    # instead of filling with background label, fill the group label with their normal color
+    # instead of filling with background label,
+    # fill the group label with their normal color
     if group_labels is not None and len(group_labels) > 0:
         group_mask = np.isin(labels, group_labels)
         combined_mask = not_boundaries & group_mask
@@ -53,7 +54,8 @@ def get_contours(
 
 
 class ContourLabels(finn.layers.Labels):
-    """Extended labels layer that allows to show contours and filled labels simultaneously"""
+    """Extended labels layer that allows to show contours
+    and filled labels simultaneously"""
 
     @property
     def _type_string(self) -> str:
