@@ -139,7 +139,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
     cache : bool
         Whether slices of out-of-core datasets should be cached upon retrieval.
         Currently, this only applies to dask arrays.
-    experimental_clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
+    clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
         Each dict defines a clipping plane in 3D in data coordinates.
         Valid dictionary keys are {'position', 'normal', and 'enabled'}.
         Values on the negative side of the normal are discarded if the plane is enabled.
@@ -324,7 +324,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         axis_labels=None,
         blending="translucent",
         cache=True,  # this should move to future "data source" object.
-        experimental_clipping_planes=None,
+        clipping_planes=None,
         metadata=None,
         mode="pan_zoom",
         multiscale=False,
@@ -375,7 +375,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         self._value = None
         self.scale_factor = 1
         self.multiscale = multiscale
-        self._experimental_clipping_planes = ClippingPlaneList()
+        self._clipping_planes = ClippingPlaneList()
         self._mode = self._modeclass("pan_zoom")
         self._projection_mode = self._projectionclass(str(projection_mode))
         self._refresh_blocked = False
@@ -435,7 +435,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         self._thumbnail = np.zeros(self._thumbnail_shape, dtype=np.uint8)
         self._update_properties = True
         self._name = ""
-        self.experimental_clipping_planes = experimental_clipping_planes
+        self.clipping_planes = clipping_planes
 
         # circular import
         from finn.components.overlays.bounding_box import BoundingBoxOverlay
@@ -1079,9 +1079,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
             "affine": self.affine.affine_matrix,
             "axis_labels": self.axis_labels,
             "blending": self.blending,
-            "experimental_clipping_planes": [
-                plane.dict() for plane in self.experimental_clipping_planes
-            ],
+            "clipping_planes": [plane.dict() for plane in self.clipping_planes],
             "metadata": self.metadata,
             "name": self.name,
             "opacity": self.opacity,
@@ -1235,15 +1233,15 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         self.events.cursor_size(cursor_size=cursor_size)
 
     @property
-    def experimental_clipping_planes(self) -> ClippingPlaneList:
-        return self._experimental_clipping_planes
+    def clipping_planes(self) -> ClippingPlaneList:
+        return self._clipping_planes
 
-    @experimental_clipping_planes.setter
-    def experimental_clipping_planes(
+    @clipping_planes.setter
+    def clipping_planes(
         self,
         value: dict | ClippingPlane | list[ClippingPlane | dict] | ClippingPlaneList,
     ) -> None:
-        self._experimental_clipping_planes.clear()
+        self._clipping_planes.clear()
         if value is None:
             return
 
@@ -1252,7 +1250,7 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         for new_plane in value:
             plane = ClippingPlane()
             plane.update(new_plane)
-            self._experimental_clipping_planes.append(plane)
+            self._clipping_planes.append(plane)
 
     @property
     def bounding_box(self) -> Overlay:
@@ -1824,35 +1822,6 @@ class Layer(KeymapProvider, MousemapProvider, ABC, metaclass=PostInit):
         bounding box of the data at the current level
         """
         return self._display_bounding_box_augmented(dims_displayed)
-
-    def click_plane_from_click_data(
-        self,
-        click_position: npt.ArrayLike,
-        view_direction: npt.ArrayLike,
-        dims_displayed: list[int],
-    ) -> tuple[np.ndarray, np.ndarray]:
-        """Calculate a (point, normal) plane parallel to the canvas in data
-        coordinates, centered on the centre of rotation of the camera.
-
-        Parameters
-        ----------
-        click_position : np.ndarray
-            click position in world coordinates from mouse event.
-        view_direction : np.ndarray
-            view direction in world coordinates from mouse event.
-        dims_displayed : List[int]
-            dimensions of the data array currently in view.
-
-        Returns
-        -------
-        click_plane : Tuple[np.ndarray, np.ndarray]
-            tuple of (plane_position, plane_normal) in data coordinates.
-        """
-        click_position = np.asarray(click_position)
-        view_direction = np.asarray(view_direction)
-        plane_position = self.world_to_data(click_position)[dims_displayed]
-        plane_normal = self._world_to_data_ray(view_direction)[dims_displayed]
-        return plane_position, plane_normal
 
     def get_ray_intersections(
         self,

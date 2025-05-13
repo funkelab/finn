@@ -354,6 +354,8 @@ class QtLayerControls(QFrame):
 
     def deleteLater(self):
         disconnect_events(self.layer.events, self)
+        if hasattr(self, "clippingPlaneControls"):
+            self.clippingPlaneControls.disconnect()  # Explicitly disconnect events connected to by QtLayerClippingPlanes instance
         super().deleteLater()
 
     def close(self):

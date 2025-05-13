@@ -94,7 +94,7 @@ def split_channels(
         "contrast_limits",
         "metadata",
         "plane",
-        "experimental_clipping_planes",
+        "clipping_planes",
         "custom_interpolation_kernel_2d",
         "units",
     }
