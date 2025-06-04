@@ -225,7 +225,7 @@ def tracks_from_df(
         attrs.update(row_dict)
 
         if "track_id" in df.columns:
-            attrs[NodeAttr.TRACK_ID.value] = row["track_id"]
+            attrs[NodeAttr.TRACK_ID.value] = int(row["track_id"])
 
         # add the node to the graph
         graph.add_node(_id, **attrs)
