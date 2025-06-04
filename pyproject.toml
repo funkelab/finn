@@ -301,6 +301,9 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+"scripts/*" = [
+    "INP001", # implicit namespace
+]
 # ignoring a lot of napari debt so that we can continue to check in new code
 "finn/_app_model/*" = [
     "E501", # line too long
