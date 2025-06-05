@@ -17,6 +17,8 @@ from typing import Any
 
 from finn.errors import ReaderPluginError
 from finn.track_application_menus.main_app import MainApp
+from finn.track_application_menus.new_project import NewProjectDialog
+from finn.track_application_menus.welcome import WelcomeDialog
 from finn.utils.translations import trans
 
 
@@ -331,6 +333,28 @@ def _run() -> None:
         # it will collect it and hang finn at start time.
         # in a way that is machine, os, time (and likely weather dependant).
         viewer = Viewer()
+
+        # Show the welcome dialog before proceeding
+        while True:
+            dialog = WelcomeDialog(parent=viewer.window._qt_window)
+            if dialog.exec_():
+                if dialog.choice == "new":
+                    # Start a new project
+                    new_proj_dialog = NewProjectDialog(parent=viewer.window._qt_window)
+                    if new_proj_dialog.exec_():
+                        project_info = new_proj_dialog.get_project_info()
+                        print(project_info)  # noqa: T201
+                        break  # Exit the loop, project created
+                    # User cancelled, loop back to welcome dialog
+                    continue
+                if dialog.choice == "continue":
+                    # Open an existing project
+                    print("continue project...")  # noqa: T201
+                    # TODO: Implement logic to open an existing project
+                    break  # Exit the loop, user chose to continue
+            else:
+                # User closed the welcome dialog, exit or break
+                break
 
         # add in track viewing widgets by default
         main_tracks_widget = MainApp(viewer)
