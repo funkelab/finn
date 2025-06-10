@@ -427,7 +427,7 @@ class TreePlot(QWidget):
                 self.vertical_geometries.append(gfx.Geometry(positions=[(0, 0, 0) for _ in track]))
                 line = gfx.Line(
                     self.vertical_geometries[-1],
-                    gfx.LineMaterial(thickness=4.0, color=self.colors[ilineage]),
+                    gfx.LineMaterial(thickness=2.0, color=self.colors[ilineage]),
                     render_order=4,
                 )
                 self.scene.add(line)
