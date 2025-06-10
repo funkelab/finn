@@ -19,6 +19,8 @@ class TreePlot(QWidget):
         self.colors = [(*x, 1) for x in distinctipy.get_colors(sum([len(x) for x in self.lineages]))]
         self.selected_nodes = []
         self.displayed_lineages = []
+        self.time_range = 0
+        self.feature_range = 0
         self.selected_geometry = None
         self.start_geometries = None
         self.middle_geometries = None
@@ -331,8 +333,12 @@ class TreePlot(QWidget):
     def actuate_view_direction(self):
         if self.view_direction == "horizontal":
             self.scene.local.rotation = la.quat_from_axis_angle([0., 0., 1.], 3.14159/2)
+            self.camera.width = self.time_range
+            self.camera.height = self.feature_range
         else:
             self.scene.local.rotation = [0., 0., 0., 1.]
+            self.camera.width = self.feature_range
+            self.camera.height = self.time_range
         self.camera.show_object(self.scene)
         self.camera_state0 = copy.deepcopy(self.camera.get_state())
         self.canvas.update()
@@ -569,5 +575,11 @@ class TreePlot(QWidget):
 
         self.draw_selected_nodes()
 
-        self.actuate_view_direction()
+        f = [l.positions.data[:,0] for l in self.vertical_geometries]
+        f = [y for x in f for y in x]
+        t = [l.positions.data[:,1] for l in self.vertical_geometries]
+        t = [y for x in t for y in x]
+        self.feature_range = np.max(f) - np.min(f)
+        self.time_range = np.max(t) - np.min(t)
 
+        self.actuate_view_direction()
