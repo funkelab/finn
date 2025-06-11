@@ -31,3 +31,4 @@ class MenuWidget(QScrollArea):
         self.setWidgetResizable(True)
 
         self.setLayout(layout)
+        self.setMinimumWidth(300)
