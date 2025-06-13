@@ -1,5 +1,13 @@
 import os
+from pathlib import Path
 
+import funlib.persistence as fp
+import numpy as np
+import tifffile
+import zarr
+from funtracks.project import Project
+from motile_toolbox.utils.relabel_segmentation import ensure_unique_labels
+from qtpy.QtCore import Qt
 from qtpy.QtWidgets import (
     QButtonGroup,
     QComboBox,
@@ -19,6 +27,7 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from tqdm import tqdm
 
 from finn.track_application_menus.browse_data import (
     CsvFileWidget,
@@ -72,9 +81,9 @@ class NewProjectDialog(QDialog):
         layout1.addLayout(dim_layout)
 
         # Table for axes
-        self.table = QTableWidget(4, 4)
+        self.table = QTableWidget(4, 5)
         self.table.setHorizontalHeaderLabels(
-            ["Dimension", "Axis name", "Unit", "Step size"]
+            ["Dimension", "Index", "Name", "Unit", "Step size"]
         )
         self.table.verticalHeader().setVisible(False)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -196,7 +205,16 @@ class NewProjectDialog(QDialog):
         title_ok = bool(self.title_edit.text().strip())
         dir_path = self.dir_edit.text().strip()
         dir_ok = bool(dir_path) and os.path.isdir(dir_path)
-        self.next_btn.setEnabled(title_ok and dir_ok)
+
+        # Check that axis indices are unique
+        indices = []
+        for row in range(self.table.rowCount()):
+            index_widget = self.table.cellWidget(row, 1)
+            if index_widget is not None:
+                indices.append(index_widget.currentText())
+        indices_unique = len(indices) == len(set(indices))
+
+        self.next_btn.setEnabled(title_ok and dir_ok and indices_unique)
 
     def _validate_page2(self):
         # Validate intensity image
@@ -218,6 +236,7 @@ class NewProjectDialog(QDialog):
     def _update_table(self):
         is_3d = self.radio_3d.isChecked()
         axes = ["time", "z", "y", "x"] if is_3d else ["time", "y", "x"]
+        axes_indices = [0, 1, 2, 3] if is_3d else [0, 1, 2]
         units = {
             "time": ["time point", "sec", "min", "hour", "day"],
             "z": ["nm", "µm", "mm", "cm", "m"],
@@ -233,23 +252,32 @@ class NewProjectDialog(QDialog):
         stepsize = {"time": 1.0, "z": 1.0, "y": 1.0, "x": 1.0}
         self.table.setRowCount(len(axes))
         for row, axis in enumerate(axes):
-            # Axis label
-            self.table.setItem(row, 0, QTableWidgetItem(axis))
+            # Axis label (not editable)
+            item = QTableWidgetItem(axis)
+            item.setFlags(item.flags() & ~Qt.ItemIsEditable)
+            self.table.setItem(row, 0, item)
+
+            # Axis indices (dropdown)
+            axis_indices = QComboBox()
+            axis_indices.addItems([str(i) for i in axes_indices])
+            axis_indices.setCurrentText(str(axes_indices[row]))
+            axis_indices.currentIndexChanged.connect(self._validate_inputs)
+            self.table.setCellWidget(row, 1, axis_indices)
             # Axis name (editable)
             axis_name = QLineEdit(axis)
-            self.table.setCellWidget(row, 1, axis_name)
+            self.table.setCellWidget(row, 2, axis_name)
             # Unit (dropdown)
             unit_combo = QComboBox()
             unit_combo.addItems(units[axis])
             unit_combo.setCurrentText(default_units[axis])
-            self.table.setCellWidget(row, 2, unit_combo)
+            self.table.setCellWidget(row, 3, unit_combo)
             # Step size (QDoubleSpinBox)
             step_spin = QDoubleSpinBox()
             step_spin.setDecimals(3)
             step_spin.setSingleStep(0.1)
             step_spin.setValue(stepsize[axis])
             step_spin.setMinimum(0.0)
-            self.table.setCellWidget(row, 3, step_spin)
+            self.table.setCellWidget(row, 4, step_spin)
 
     def _update_data_stack(self):
         if self.radio_seg.isChecked():
@@ -257,29 +285,187 @@ class NewProjectDialog(QDialog):
         else:
             self.data_stacked.setCurrentIndex(1)
 
+    def create_empty_fp_array(
+        self, fp_array_path: str, shape: tuple, axes: dict | None = None
+    ) -> fp.Array:
+        """Creates an empty funtracks persistence array with the specified shape and axes."""
+
+        axis_names = axes.get("axis_names", ["axis_" + str(i) for i in range(len(shape))])
+        voxel_size = axes.get("scaling", [1.0] * len(shape))
+        axis_units = axes.get("units", ["px"] * len(shape))
+
+        fpds = fp.prepare_ds(
+            fp_array_path,
+            shape=shape,
+            voxel_size=voxel_size,
+            axis_names=axis_names,
+            units=axis_units,
+            dtype=np.uint32,
+        )
+
+        return fpds
+
+    def create_fp_array(
+        self,
+        image_path: str | None = None,
+        fp_array_path: str | None = None,
+        axes: dict | None = {},
+    ) -> fp.Array:
+        """Creates a funtracks persistence array from an intensity image or segmentation data.
+        Args:
+            image_path (str): Path to the intensity image or segmentation data.
+            fp_array_path (str): Path where the funtracks persistence array will be created.
+            axes (dict): Dictionary containing axis information like indices, names, units, and scaling.
+        Returns:
+            fp.Array: A funtracks persistence array containing the data."""
+
+        # extract array size from the intensity image
+        if image_path.endswith(".tif"):
+            image = np.squeeze(tifffile.imread(image_path))
+        elif ".zarr" in image_path:
+            image = np.squeeze(zarr.open(image_path))
+        else:
+            raise ValueError("Intensity image must be a tiff or zarr file.")
+        # Reorder the dimensions of the data to make sure the order is t(z)yx:
+        shape = image.shape
+        axis_indices = axes.get("axis_indices", list(range(len(shape))))
+        axis_names = axes.get("axis_names", ["axis_" + str(i) for i in range(len(shape))])
+        voxel_size = axes.get("scaling", [1.0] * len(shape))
+        axis_units = axes.get("units", ["px"] * len(shape))
+
+        default_order = list(range(image.ndim))  # e.g. [0,1,2,3] for tzyx
+        if axis_indices != default_order:
+            print("transposing intensity image to match axis indices")
+            image = np.transpose(image, np.argsort(axis_indices))
+
+        fpds = fp.prepare_ds(
+            fp_array_path,
+            shape=shape,
+            voxel_size=voxel_size,
+            axis_names=axis_names,
+            units=axis_units,
+            dtype=np.uint32,
+        )
+
+        # if segmentation, do the relabeling like we do in the sample data
+        if fp_array_path.endswith("seg"):
+            if self._has_duplicate_ids(image):
+                image = ensure_unique_labels(image)
+
+        # load and write each time point into the dataset
+        for time in tqdm(range(axis_indices[0]), desc="Converting time points to zarr"):
+            fpds[time] = image[time]
+
+        return fpds
+
+    def create_project(self) -> Project:
+        intensity_image = None
+        segmentation = None
+        points = None
+
+        # creates a new funtracks project with the information provided in the dialog
+        project_info = self.get_project_info()
+        name = project_info.get("name", "Untitled Project")
+        axes = project_info.get("axes", [])
+        detection_type = project_info.get("detection_type", "points")
+        working_dir = project_info.get("directory", Path.cwd())
+        params = project_info.get("project_params", None)
+
+        # create fpds for the intensity image and segmentation data (if provided)
+        intensity_image_path = project_info.get("intensity_image", None)
+        if intensity_image_path is not None:
+            int_fps_path = os.path.join(working_dir, "motile_tracker.zarr/int")
+            intensity_image = self.create_fp_array(
+                intensity_image_path, int_fps_path, axes
+            )
+
+        if detection_type == "segmentation":
+            seg_path = project_info.get("detection_path", None)
+            seg_fps_path = os.path.join(working_dir, "motile_tracker.zarr/int")
+
+            if seg_path is None:
+                segmentation = self.create_empty_fp_array(
+                    seg_fps_path, intensity_image.shape, axes
+                )
+
+            else:
+                segmentation = self.create_fp_array(seg_path, seg_fps_path, axes)
+                if segmentation.shape != intensity_image.shape:
+                    raise ValueError(
+                        "Segmentation data shape does not match intensity image shape. "
+                        f"Segmentation shape: {segmentation.shape}, Intensity image shape: {intensity_image.shape}"
+                    )
+
+        elif detection_type == "points":
+            points_path = project_info.get("detection_path", None)
+            if points_path is None:
+                raise ValueError(
+                    "Points detection type selected, but no points file provided."
+                )
+
+        return Project(
+            name=name,
+            project_params=params,
+            raw=intensity_image,
+            segmentation=segmentation,
+            cand_graph=None,
+        )
+
+    @staticmethod
+    def _has_duplicate_ids(segmentation: np.ndarray) -> bool:
+        """Checks if the segmentation has duplicate label ids across time. For efficiency,
+        only checks between the first and second time frames.
+
+        Args:
+            segmentation (np.ndarray): (t, [z], y, x)
+
+        Returns:
+            bool: True if there are duplicate labels between the first two frames, and
+                False otherwise.
+        """
+        if segmentation.shape[0] >= 2:
+            first_frame_ids = set(np.unique(segmentation[0]).tolist())
+            first_frame_ids.remove(0)
+            second_frame_ids = set(np.unique(segmentation[1]).tolist())
+            second_frame_ids.remove(0)
+            return not first_frame_ids.isdisjoint(second_frame_ids)
+        return False
+
     def get_project_info(self):
-        # Returns a dict with all user input
+        # creates a new funtracks project with the information provided in the dialog
+
         info = {
             "title": self.title_edit.text(),
             "directory": self.dir_edit.text(),
             "dimensions": "4" if self.radio_3d.isChecked() else "3",
-            "axes": [],
+            "axes": {
+                "dimensions": [],
+                "indices": [],
+                "axis_names": [],
+                "units": [],
+                "scaling": [],
+            },
             "intensity_image": self.intensity_path.text(),
             "detection_type": "segmentation" if self.radio_seg.isChecked() else "points",
             "detection_path": None,
         }
         for row in range(self.table.rowCount()):
             axis = self.table.item(row, 0).text()
-            axis_name = self.table.cellWidget(row, 1).text()
-            unit = self.table.cellWidget(row, 2).currentText()
-            step_size = self.table.cellWidget(row, 3).value()
-            info["axes"].append(
-                {"axis": axis, "name": axis_name, "unit": unit, "scaling": step_size}
-            )
+            index = self.table.cellWidget(row, 1).currentText()
+            axis_name = self.table.cellWidget(row, 2).text()
+            unit = self.table.cellWidget(row, 3).currentText()
+            step_size = self.table.cellWidget(row, 4).value()
+            info["axes"]["dimensions"].append(axis)
+            info["axes"]["indices"].append(index)
+            info["axes"]["axis_names"].append(axis_name)
+            info["axes"]["units"].append(unit)
+            info["axes"]["scaling"].append(step_size)
+
         if self.radio_seg.isChecked():
             info["detection_path"] = self.seg_widget.image_path_line.text()
         else:
             info["detection_path"] = self.csv_widget.get_path()
+
         return info
 
     def _cancel(self):

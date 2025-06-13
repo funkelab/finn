@@ -342,8 +342,8 @@ def _run() -> None:
                     # Start a new project
                     new_proj_dialog = NewProjectDialog(parent=viewer.window._qt_window)
                     if new_proj_dialog.exec_():
-                        project_info = new_proj_dialog.get_project_info()
-                        print(project_info)  # noqa: T201
+                        project = new_proj_dialog.create_project()
+                        # project = MotileTrackerProject(project_info)
                         break  # Exit the loop, project created
                     # User cancelled, loop back to welcome dialog
                     continue
@@ -352,6 +352,9 @@ def _run() -> None:
                     print("continue project...")  # noqa: T201
                     # TODO: Implement logic to open an existing project
                     break  # Exit the loop, user chose to continue
+                if dialog.choice == "import":
+                    # Import external data
+                    print("import external data...")  # noqa: T201
             else:
                 # User closed the welcome dialog, exit or break
                 break
