@@ -1,7 +1,5 @@
 import os
 
-import tifffile
-import zarr
 from psygnal import Signal
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import (
@@ -17,83 +15,70 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
+from finn_builtins.io._read import magic_imread
 
-class CsvFileWidget(QWidget):
-    """QWidget for specifying the path to a CSV file containing point detections"""
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        layout = QVBoxLayout(self)
+class DataSourceWidget(QWidget):
+    """Widget to combine SourceWidget and DataWidget"""
 
-        # Radio buttons for mode selection
-        self.radio_file = QRadioButton("Choose from file")
-        self.radio_manual = QRadioButton("Manual tracking from scratch")
-        self.radio_file.setChecked(True)
-        radio_layout = QHBoxLayout()
-        radio_layout.addWidget(self.radio_file)
-        radio_layout.addWidget(self.radio_manual)
-        layout.addLayout(radio_layout)
+    validity_changed = Signal()
 
-        # File selection UI
-        self.csv_path_line = QLineEdit(self)
-        self.browse_btn = QPushButton("Browse")
-        self.browse_btn.clicked.connect(self._browse_csv)
+    def __init__(self):
+        super().__init__()
+        self.is_valid = False
+        self.type = "segmentation"
 
-        label = QLabel(
-            "Point detections should be provided as a "
-            "CSV file with columns 't', ('z'), 'y', "
-            "'x'."
-        )
-        font = label.font()
-        font.setItalic(True)
-        label.setFont(font)
-        label.setWordWrap(True)
-        layout.addWidget(label)
+        self.source_selection_widget = SourceWidget()
+        self.source_selection_widget.radio_file.toggled.connect(self._update_mode)
+        self.source_selection_widget.radio_manual.toggled.connect(self._update_mode)
 
-        self.csv_sublayout = QHBoxLayout()
-        self.csv_sublayout.addWidget(QLabel("CSV File:"))
-        self.csv_sublayout.addWidget(self.csv_path_line)
-        self.csv_sublayout.addWidget(self.browse_btn)
-        layout.addLayout(self.csv_sublayout)
-        layout.setAlignment(Qt.AlignTop)
+        self.data_widget = DataWidget()
+        self.data_widget.validity_changed.connect(self._validate)
 
-        # Connect radio buttons to toggle file selection UI
-        self.radio_file.toggled.connect(self._update_mode)
-        self._update_mode()
+        layout = QVBoxLayout()
+        layout.addWidget(self.source_selection_widget)
+        layout.addWidget(self.data_widget)
+        self.setLayout(layout)
+
+    def update_type(self, type: str):
+        self.type = type
+        self.data_widget.update_type(self.type)
 
     def _update_mode(self):
-        enabled = self.radio_file.isChecked()
-        for i in range(self.csv_sublayout.count()):
-            widget = self.csv_sublayout.itemAt(i).widget()
-            if widget:
-                widget.setEnabled(enabled)
+        enabled = self.source_selection_widget.radio_file.isChecked()
+        self.data_widget.setEnabled(enabled)
+        self._validate()
 
-    def _browse_csv(self):
-        file, _ = QFileDialog.getOpenFileName(
-            self, "Select CSV File", "", "CSV Files (*.csv)"
-        )
-        if file:
-            self.csv_path_line.setText(file)
+    def _validate(self):
+        """Check whether all required information is filled out"""
 
-    def get_path(self):
-        if self.radio_manual.isChecked():
-            return None  # Indicates manual tracking
-        return self.csv_path_line.text()
+        if self.source_selection_widget.is_manual():
+            valid = True
+        path = self.data_widget.get_path()
+        if path is None or not os.path.exists(path):
+            valid = False
+        else:
+            valid = True
+
+        self.is_valid = valid
+        self.validity_changed.emit()
 
     def is_manual(self):
-        return self.radio_manual.isChecked()
+        return self.source_selection_widget.is_manual()
+
+    def get_path(self) -> str | None:
+        if self.source_selection_widget.radio_file.isChecked():
+            return self.data_widget.get_path()
+        return None
 
 
-class SegmentationWidget(QWidget):
-    """QWidget for specifying pixel calibration"""
-
-    update_buttons = Signal()
+class SourceWidget(QWidget):
+    """Widget for choosing between loading data from file or from scratch"""
 
     def __init__(self):
         super().__init__()
 
         layout = QVBoxLayout(self)
-
         # Radio buttons for mode selection
         self.radio_file = QRadioButton("Choose from file")
         self.radio_manual = QRadioButton("Manual tracking from scratch")
@@ -103,29 +88,39 @@ class SegmentationWidget(QWidget):
         radio_layout.addWidget(self.radio_manual)
         layout.addLayout(radio_layout)
 
+    def is_manual(self):
+        return self.radio_manual.isChecked()
+
+
+class DataWidget(QWidget):
+    """QWidget for choosing image data on a file system"""
+
+    validity_changed = Signal()
+
+    def __init__(self):
+        super().__init__()
+
+        self.is_valid = False
+        self.type = "segmentation"
+        self.browse_function = self._browse_image
+        layout = QVBoxLayout(self)
+
         # File selection UI
-        self.image_path_line = QLineEdit(self)
-        self.image_path_line.editingFinished.connect(self.update_buttons.emit)
+        self.path_line = QLineEdit(self)
         self.image_browse_button = QPushButton("Browse", self)
         self.image_browse_button.setAutoDefault(0)
-        self.image_browse_button.clicked.connect(self._browse_segmentation)
+        self.image_browse_button.clicked.connect(self._browse)
+        self.path_line.textChanged.connect(self._validate)
+        self.path_line.editingFinished.connect(self._validate)
 
         image_widget = QWidget()
         image_layout = QVBoxLayout()
         image_sublayout = QHBoxLayout()
-        image_sublayout.addWidget(QLabel("Segmentation File Path:"))
-        image_sublayout.addWidget(self.image_path_line)
+        self.label = QLabel("Image data path")
+        image_sublayout.addWidget(self.label)
+        image_sublayout.addWidget(self.path_line)
         image_sublayout.addWidget(self.image_browse_button)
 
-        label = QLabel(
-            "Segmentation files can either be a single tiff stack, or a directory inside"
-            " a zarr folder."
-        )
-        font = label.font()
-        font.setItalic(True)
-        label.setFont(font)
-        label.setWordWrap(True)
-        image_layout.addWidget(label)
         image_layout.addLayout(image_sublayout)
         image_widget.setLayout(image_layout)
         image_widget.setMaximumHeight(100)
@@ -134,54 +129,68 @@ class SegmentationWidget(QWidget):
         layout.setAlignment(Qt.AlignTop)
         self.setLayout(layout)
 
-        self.image_widget = image_widget  # For toggling
-        # Connect radio buttons to toggle file selection UI
-        self.radio_file.toggled.connect(self._update_mode)
-        self._update_mode()
+    def update_type(self, type: str):
+        self.type = type
+        if type == "segmentation":
+            self.label.setText("Image data path")
+            self.path_line.setText("")
+            self.browse_function = self._browse_image
+        else:
+            self.label.setText("CSV file path")
+            self.path_line.setText("")
+            self.browse_function = self._browse_csv
 
-    def _update_mode(self):
-        enabled = self.radio_file.isChecked()
-        self.image_widget.setEnabled(enabled)
+    def _browse(self) -> None:
+        self.browse_function()
 
-    def _browse_segmentation(self) -> None:
+    def _browse_image(self) -> None:
         """Open custom dialog to select either a file or a folder"""
         dialog = FileFolderDialog(self)
         if dialog.exec_():
             selected_path = dialog.get_selected_path()
             if selected_path:
-                self.image_path_line.setText(selected_path)
+                self.path_line.setText(selected_path)
+                self._validate()
 
-    def _load_segmentation(self) -> None:
-        """Load the segmentation image file"""
-        if os.path.exists(self.image_path_line.text()):
-            if self.image_path_line.text().endswith(".tif"):
-                segmentation = tifffile.imread(self.image_path_line.text())
-            elif ".zarr" in self.image_path_line.text():
-                segmentation = zarr.open(self.image_path_line.text())
-            else:
+    def _browse_csv(self):
+        file, _ = QFileDialog.getOpenFileName(
+            self, "Select CSV File", "", "CSV Files (*.csv)"
+        )
+        if file:
+            self.path_line.setText(file)
+            self._validate()
+
+    def _load_images(self) -> None:
+        """Load the image data file(s)"""
+
+        path = self.path_line.text()
+        if os.path.exists(path):
+            try:
+                data = magic_imread(path)
+            except:
                 QMessageBox.warning(
                     self,
-                    "Invalid file type",
-                    "Please provide a tiff or zarr file for the segmentation image stack",
+                    "No valid files were found!",
+                    "Please provide a tif stack, tif series, or zarr file for the image stack",
                 )
+                self.data = None
                 return
         else:
-            segmentation = None
-        self.segmentation = segmentation
+            data = None
+        self.data = data
 
     def get_path(self):
-        if self.radio_manual.isChecked():
-            return None  # Indicates manual tracking
-        return self.image_path_line.text()
+        return self.path_line.text()
 
-    def is_manual(self):
-        return self.radio_manual.isChecked()
+    def _validate(self):
+        self.is_valid = os.path.exists(self.get_path())
+        self.validity_changed.emit()
 
 
 class FileFolderDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Select Tif File or Zarr Folder")
+        self.setWindowTitle("Choose an image file or a folder containing a time series")
 
         self.layout = QVBoxLayout(self)
 
@@ -190,14 +199,14 @@ class FileFolderDialog(QDialog):
 
         button_layout = QHBoxLayout()
 
-        self.file_button = QPushButton("Select tiff file", self)
+        self.file_button = QPushButton("Select file", self)
         self.file_button.clicked.connect(self.select_file)
         self.file_button.setAutoDefault(False)
         self.file_button.setDefault(False)
 
         button_layout.addWidget(self.file_button)
 
-        self.folder_button = QPushButton("Select zarr folder", self)
+        self.folder_button = QPushButton("Select folder", self)
         self.folder_button.clicked.connect(self.select_folder)
         self.folder_button.setAutoDefault(False)
         self.folder_button.setDefault(False)

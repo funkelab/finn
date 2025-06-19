@@ -19,7 +19,7 @@ from qtpy.QtWidgets import (
 )
 
 
-class SegmentationWidget(QWidget):
+class DataSourceWidget(QWidget):
     """QWidget for specifying pixel calibration"""
 
     update_buttons = Signal()

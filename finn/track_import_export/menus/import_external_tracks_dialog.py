@@ -13,7 +13,7 @@ from finn.track_import_export.load_tracks import tracks_from_df
 from finn.track_import_export.menus.csv_widget import CSVWidget
 from finn.track_import_export.menus.measurement_widget import MeasurementWidget
 from finn.track_import_export.menus.metadata_menu import MetadataMenu
-from finn.track_import_export.menus.segmentation_widget import SegmentationWidget
+from finn.track_import_export.menus.segmentation_widget import DataSourceWidget
 
 
 class ImportTracksDialog(QDialog):
@@ -112,7 +112,7 @@ class ImportTracksDialog(QDialog):
         self.stacked_widget.addWidget(self.data_widget)
 
         if self.menu_widget.segmentation_checkbox.isChecked():
-            self.segmentation_page = SegmentationWidget(
+            self.segmentation_page = DataSourceWidget(
                 self.menu_widget.radio_3D.isChecked()
             )
             self.stacked_widget.addWidget(self.segmentation_page)

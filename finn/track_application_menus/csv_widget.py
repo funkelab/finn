@@ -129,7 +129,7 @@ class CSVFieldMapWidget(QWidget):
 class CSVWidget(QWidget):
     """QWidget for selecting CSV file and optional segmentation image"""
 
-    update_buttons = Signal()
+    validity_changed = Signal()
 
     def __init__(self, add_segmentation: bool = False, incl_z: bool = False):
         super().__init__()
@@ -137,6 +137,7 @@ class CSVWidget(QWidget):
         self.add_segmentation = add_segmentation
         self.incl_z = incl_z
         self.df = None
+        self.is_valid = False
 
         self.layout = QVBoxLayout(self)
 
@@ -144,7 +145,7 @@ class CSVWidget(QWidget):
         self.csv_path_line = QLineEdit(self)
         self.csv_path_line.setFocusPolicy(Qt.StrongFocus)
         self.csv_path_line.returnPressed.connect(self._on_csv_editing_finished)
-        self.csv_browse_button = QPushButton("Browse Tracks CSV file", self)
+        self.csv_browse_button = QPushButton("Browse", self)
         self.csv_browse_button.setAutoDefault(0)
         self.csv_browse_button.clicked.connect(self._browse_csv)
 
@@ -165,6 +166,9 @@ class CSVWidget(QWidget):
 
         csv_path = self.csv_path_line.text()
         self._load_csv(csv_path)
+
+    def get_path(self) -> str:
+        return self.csv_path_line.text()
 
     def _browse_csv(self) -> None:
         """Open File dialog to select CSV file"""
@@ -198,17 +202,22 @@ class CSVWidget(QWidget):
             self.csv_field_widget = CSVFieldMapWidget(
                 list(self.df.columns), seg=self.add_segmentation, incl_z=self.incl_z
             )
-            self.csv_field_widget.columns_updated.connect(self.update_buttons)
             self.layout.addWidget(self.csv_field_widget)
-            self.update_buttons.emit()
+            self.is_valid = True
+            print("csv is valid, emitting signal now!")
+            self.validity_changed.emit()
 
         except pd.errors.EmptyDataError:
             QMessageBox.critical(self, "Error", "The file is empty or has no data.")
             self.df = None
+            self.is_valid = False
+            self.validity_changed.emit()
             return
         except pd.errors.ParserError:
             self.df = None
             QMessageBox.critical(
                 self, "Error", "The file could not be parsed as a valid CSV."
             )
+            self.is_valid = False
+            self.validity_changed.emit()
             return
