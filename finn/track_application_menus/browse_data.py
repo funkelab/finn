@@ -103,6 +103,14 @@ class DataWidget(QWidget):
         self.is_valid = False
         self.type = "segmentation"
         self.browse_function = self._browse_image
+
+        self.setToolTip(
+            "<qt><i>"
+            "Image data can either be a single tif (3D+time or 2D+time) stack, a "
+            "folder containing a time series of 2D or 3D tif images, or a zarr folder."
+            "</i></qt>"
+        )
+
         layout = QVBoxLayout(self)
 
         # File selection UI
@@ -135,10 +143,21 @@ class DataWidget(QWidget):
             self.label.setText("Image data path")
             self.path_line.setText("")
             self.browse_function = self._browse_image
+            self.setToolTip(
+                "<qt><i>"
+                "Image data can either be a single tif (3D+time or 2D+time) stack, a "
+                "folder containing a time series of 2D or 3D tif images, or a zarr folder."
+                "</i></qt>"
+            )
         else:
             self.label.setText("CSV file path")
             self.path_line.setText("")
             self.browse_function = self._browse_csv
+            self.setToolTip(
+                "<qt><i>"
+                "Point data should be a CSV file with columns for the t, (z), y, x coordinates."
+                "</i></qt>"
+            )
 
     def _browse(self) -> None:
         self.browse_function()
@@ -150,7 +169,6 @@ class DataWidget(QWidget):
             selected_path = dialog.get_selected_path()
             if selected_path:
                 self.path_line.setText(selected_path)
-                self._validate()
 
     def _browse_csv(self):
         file, _ = QFileDialog.getOpenFileName(
@@ -158,7 +176,6 @@ class DataWidget(QWidget):
         )
         if file:
             self.path_line.setText(file)
-            self._validate()
 
     def _load_images(self) -> None:
         """Load the image data file(s)"""
@@ -183,8 +200,10 @@ class DataWidget(QWidget):
         return self.path_line.text()
 
     def _validate(self):
+        print("call to validate the data widget")
         self.is_valid = os.path.exists(self.get_path())
         self.validity_changed.emit()
+        print("data widget is valid:", self.is_valid)
 
 
 class FileFolderDialog(QDialog):

@@ -130,6 +130,7 @@ class CSVWidget(QWidget):
     """QWidget for selecting CSV file and optional segmentation image"""
 
     validity_changed = Signal()
+    mapping_updated = Signal()
 
     def __init__(self, add_segmentation: bool = False, incl_z: bool = False):
         super().__init__()
@@ -181,6 +182,13 @@ class CSVWidget(QWidget):
         else:
             QMessageBox.warning(self, "Input Required", "Please select a CSV file.")
 
+    def update_field_map(self, seg: bool = False, incl_z: bool = False):
+        """Update the CSVFieldMapWidget with new seg/incl_z settings, keeping the file path."""
+
+        self.add_segmentation = seg
+        self.incl_z = incl_z
+        self._load_csv(self.csv_path_line.text())
+
     def _load_csv(self, csv_file: str) -> None:
         """Load the csv file and display the CSVFieldMapWidget"""
 
@@ -202,9 +210,9 @@ class CSVWidget(QWidget):
             self.csv_field_widget = CSVFieldMapWidget(
                 list(self.df.columns), seg=self.add_segmentation, incl_z=self.incl_z
             )
+            self.csv_field_widget.columns_updated.connect(self._emit_mapping_updated)
             self.layout.addWidget(self.csv_field_widget)
             self.is_valid = True
-            print("csv is valid, emitting signal now!")
             self.validity_changed.emit()
 
         except pd.errors.EmptyDataError:
@@ -221,3 +229,8 @@ class CSVWidget(QWidget):
             self.is_valid = False
             self.validity_changed.emit()
             return
+
+    def _emit_mapping_updated(self) -> None:
+        """Emit the mapping_updated signal when the CSVFieldMapWidget changes its columns."""
+
+        self.mapping_updated.emit()

@@ -352,9 +352,6 @@ def _run() -> None:
                     print("continue project...")  # noqa: T201
                     # TODO: Implement logic to open an existing project
                     break  # Exit the loop, user chose to continue
-                if dialog.choice == "import":
-                    # Import external data
-                    print("import external data...")  # noqa: T201
             else:
                 # User closed the welcome dialog, exit or break
                 break

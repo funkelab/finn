@@ -20,13 +20,10 @@ class WelcomeDialog(QDialog):
         self.choice = None  # Will be set to "new" or "continue"
         new_project_btn = QPushButton("Start new project")
         continue_project_btn = QPushButton("Open existing project")
-        import_data_btn = QPushButton("Import external data")
         new_project_btn.clicked.connect(self._new_project)
         continue_project_btn.clicked.connect(self._continue_project)
-        import_data_btn.clicked.connect(self._import_data)
         layout.addWidget(new_project_btn)
         layout.addWidget(continue_project_btn)
-        layout.addWidget(import_data_btn)
         self.setLayout(layout)
         self.setModal(True)
 
@@ -36,8 +33,4 @@ class WelcomeDialog(QDialog):
 
     def _continue_project(self):
         self.choice = "continue"
-        self.accept()
-
-    def _import_data(self):
-        self.choice = "import"
         self.accept()
