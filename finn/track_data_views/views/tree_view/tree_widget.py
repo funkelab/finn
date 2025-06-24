@@ -16,7 +16,6 @@ from qtpy.QtWidgets import (
 )
 from superqt import QCollapsible
 
-import finn
 from finn.track_data_views.views.tree_view.flip_axes_widget import FlipTreeWidget
 from finn.track_data_views.views.tree_view.navigation_widget import NavigationWidget
 from finn.track_data_views.views.tree_view.tree_view_feature_widget import (
@@ -418,7 +417,7 @@ class TreePlot(pg.PlotWidget):
 class TreeWidget(QWidget):
     """pyqtgraph-based widget for lineage tree visualization and navigation"""
 
-    def __init__(self, viewer: finn.Viewer):
+    def __init__(self, viewer: TracksViewer):
         super().__init__()
         self.track_df = pd.DataFrame()  # all tracks
         self.lineage_df = pd.DataFrame()  # the currently viewed subset of lineages
@@ -427,7 +426,7 @@ class TreeWidget(QWidget):
         self.feature = "tree"  # options: "tree", "area"
         self.view_direction = "vertical"  # options: "horizontal", "vertical"
 
-        self.tracks_viewer = TracksViewer.get_instance(viewer)
+        self.tracks_viewer = viewer
         self.selected_nodes = self.tracks_viewer.selected_nodes
         self.selected_nodes.list_updated.connect(self._update_selected)
         self.tracks_viewer.tracks_updated.connect(self._update_track_data)

@@ -38,6 +38,7 @@ class TracksViewer:
     def __init__(
         self,
         viewer: finn.Viewer,
+        tracks: SolutionTracks,
     ):
         self.viewer = viewer
         self.colormap = finn.utils.colormaps.label_colormap(
@@ -52,7 +53,7 @@ class TracksViewer:
             NodeType.SPLIT: "triangle_up",
         }
         self.mode = "all"
-        self.tracks: SolutionTracks | None = None
+        self.tracks: SolutionTracks = tracks
         self.visible: list | str = []
         self.tracking_layers = TracksLayerGroup(self.viewer, self.tracks, "", self)
         self.selected_nodes = NodeSelectionList()
