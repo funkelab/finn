@@ -1151,6 +1151,7 @@ class Page8(QWidget):
 
         self.is_valid = title_ok and dir_ok
 
+        print("page 8 valid", self.is_valid)
         self.validity_changed.emit()
 
     def get_settings(self) -> dict[str:str]:
@@ -1355,7 +1356,7 @@ class NewProjectDialog(QDialog):
         self.next_btn4.clicked.connect(self._go_to_page5_or_6)
         self.next_btn5.clicked.connect(lambda: self.stacked.setCurrentIndex(5))
         self.next_btn6.clicked.connect(self._go_to_page7)
-        self.next_btn7.clicked.connect(lambda: self.stacked.setCurrentIndex(7))
+        self.next_btn7.clicked.connect(self._go_to_page8)
 
         self.prev_btn.clicked.connect(lambda: self.stacked.setCurrentIndex(0))
         self.prev_btn2.clicked.connect(lambda: self.stacked.setCurrentIndex(1))
@@ -1363,7 +1364,7 @@ class NewProjectDialog(QDialog):
         self.prev_btn4.clicked.connect(self._go_to_page4)
         self.prev_btn5.clicked.connect(self._go_to_page4_or_5)
         self.prev_btn6.clicked.connect(lambda: self.stacked.setCurrentIndex(5))
-        self.prev_btn7.clicked.connect(self._go_to_page8)
+        self.prev_btn7.clicked.connect(lambda: self.stacked.setCurrentIndex(6))
 
         self.ok_btn.clicked.connect(self.on_ok_clicked)
 
@@ -1396,7 +1397,8 @@ class NewProjectDialog(QDialog):
         self.next_btn5.setEnabled(self.page5.is_valid)
 
     def _validate_page8(self):
-        """Validate inputs on page 85 and enable/disable the OK button to page5."""
+        """Validate inputs on page 8 and enable/disable the OK button to page8."""
+        print("validating page 8, button should be enabled", self.page8.is_valid)
         self.ok_btn.setEnabled(self.page8.is_valid)
 
     def _go_to_page2(self):
@@ -1424,7 +1426,7 @@ class NewProjectDialog(QDialog):
         """Go to page 5 if the user chose to use external tracks, otherwise go to page 6."""
         if self.page1.get_choice() == "curate_tracks":
             self.stacked.setCurrentIndex(4)
-            self._validate_page5()
+            self.page5.validate()
         else:
             self.stacked.setCurrentIndex(5)
 
@@ -1435,7 +1437,7 @@ class NewProjectDialog(QDialog):
 
     def _go_to_page8(self):
         """Go to page 8 and validate it to update the button"""
-        self._validate_page8()
+        self.page8.validate()
         self.stacked.setCurrentIndex(7)
 
     def on_ok_clicked(self):
