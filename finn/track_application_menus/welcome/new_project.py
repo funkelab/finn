@@ -34,6 +34,8 @@ class DialogValueError(ValueError):
     def __init__(self, message, show_dialog=True):
         super().__init__(message)
         self.show_dialog = show_dialog
+
+
 class NewProjectDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)

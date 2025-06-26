@@ -1,3 +1,4 @@
+import os
 from typing import Any
 
 from funtracks.features.measurement_features import featureset
@@ -17,7 +18,6 @@ from finn.track_application_menus.welcome.new_project_pages.page3_seg_data impor
 from finn.track_application_menus.welcome.new_project_pages.page4_dimensions import Page4
 from finn.track_application_menus.welcome.new_project_pages.page5_csv_import import Page5
 
-import os
 
 class FeatureWidget(QWidget):
     """Widget allowing the user to choose which features to include"""
@@ -133,6 +133,7 @@ class FeatureWidget(QWidget):
                 }
             )
         return selected
+
 
 class Page7(QWidget):
     """Page 7 of the project dialog, to enter features to measure or import"""

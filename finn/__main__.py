@@ -342,7 +342,7 @@ def _run() -> None:
                     # Start a new project
                     new_proj_dialog = NewProjectDialog(parent=viewer.window._qt_window)
                     if new_proj_dialog.exec_():
-                        project = new_proj_dialog.project 
+                        project = new_proj_dialog.project
                         break  # Exit the loop, project created
                     # User cancelled, loop back to welcome dialog
                     continue

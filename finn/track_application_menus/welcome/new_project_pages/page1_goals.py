@@ -1,4 +1,3 @@
-
 from psygnal import Signal
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import (

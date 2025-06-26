@@ -1,4 +1,3 @@
-
 from psygnal import Signal
 from qtpy.QtWidgets import (
     QGroupBox,

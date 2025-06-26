@@ -6,4 +6,3 @@ from finn.track_application_menus.welcome.new_project_pages.page5_csv_import imp
 from finn.track_application_menus.welcome.new_project_pages.page6_params import Page6
 from finn.track_application_menus.welcome.new_project_pages.page7_features import Page7
 from finn.track_application_menus.welcome.new_project_pages.page8_saving import Page8
-
