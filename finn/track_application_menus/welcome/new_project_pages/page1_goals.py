@@ -26,13 +26,16 @@ class Page1(QWidget):
         goal_layout.addWidget(label)
 
         self.track_from_scratch = QRadioButton(
-            "I have intensity data and want to track objects from scratch by manually placing points or segmentation labels."
+            "I have intensity data and want to track objects from scratch by manually "
+            "placing points or segmentation labels."
         )
         self.track_from_detections = QRadioButton(
-            "I have (label or point) detections and want to track objects from these detections."
+            "I have (label or point) detections and want to track objects from these "
+            "detections."
         )
         self.curate_tracks = QRadioButton(
-            "I have tracking data from external software that I want to view and/or curate."
+            "I have tracking data from external software that I want to view and/or "
+            "curate."
         )
         self.track_from_scratch.toggled.connect(self.choice_updated)
         self.track_from_detections.toggled.connect(self.choice_updated)

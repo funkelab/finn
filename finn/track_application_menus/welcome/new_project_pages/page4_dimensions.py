@@ -62,7 +62,8 @@ class Page4(QWidget):
 
         # Display the shape of the intensity and/or segmentation data
         self.channel_label = QLabel(
-            "<i>Please rearrange your dimension order such that the channel axis is the first dimension</i>"
+            "<i>Please rearrange your dimension order such that the channel axis is the"
+            " first dimension</i>"
         )
         layout.addWidget(self.channel_label)
 
@@ -73,14 +74,23 @@ class Page4(QWidget):
         layout.addWidget(self.seg_label)
 
         self.incompatible_label = QLabel(
-            "❌ The shapes of the intensity data and the segmentation data do not match.\n\n Please check if your intensity data has channels or go back to select different data."
+            "❌ The shapes of the intensity data and the segmentation data do not match."
+            "\n\n Please check if your intensity data has channels or go back to select"
+            " different data."
         )
         layout.addWidget(self.incompatible_label)
 
         # Table for axes
         self.table = QTableWidget(5, 6)
         self.table.setHorizontalHeaderLabels(
-            ["Dimension", "Index (intensity)", "Index (seg)", "Name", "Unit", "Step size"]
+            [
+                "Dimension",
+                "Index (intensity)",
+                "Index (seg)",
+                "Name",
+                "Unit",
+                "Step size",
+            ]
         )
         self.table.verticalHeader().setVisible(False)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -107,7 +117,8 @@ class Page4(QWidget):
             self.intensity_image = self.page2.intensity_data_widget.load_images()
             self.intensity_image_shape = self.intensity_image.shape
             self.intensity_label.setText(
-                f"Intensity data shape: {self.intensity_image_shape} -> {self.intensity_image_shape}"
+                f"Intensity data shape: {self.intensity_image_shape} ->"
+                f"{self.intensity_image_shape}"
             )
             self.intensity_label.setVisible(True)
         else:
@@ -117,7 +128,8 @@ class Page4(QWidget):
             self.segmentation_image = self.page3.data_widget.load_images()
             self.segmentation_image_shape = self.segmentation_image.shape
             self.seg_label.setText(
-                f"Segmentation data shape: {self.segmentation_image_shape} -> {self.segmentation_image_shape}"
+                f"Segmentation data shape: {self.segmentation_image_shape} -> "
+                f"{self.segmentation_image_shape}"
             )
             self.seg_label.setVisible(True)
         else:
@@ -130,7 +142,8 @@ class Page4(QWidget):
         self._update_table()
 
     def _set_allow_channels(self) -> None:
-        """Channels label should be visible if the intensity data has one dimension more than the segmentation data"""
+        """Channels label should be visible if the intensity data has one dimension more
+        than the segmentation data"""
 
         if self.intensity_image_shape is None and self.segmentation_image_shape is None:
             self.allow_channels = False
@@ -163,7 +176,8 @@ class Page4(QWidget):
         self.channel_label.setVisible(visible)
 
     def _update_axis(self, axis_name: str):
-        """Updates the top row of the table with the dimension chosen by the user, either 'channel' or 'z'"""
+        """Updates the top row of the table with the dimension chosen by the user, either
+        'channel' or 'z'"""
 
         # Axis name (editable)
         self.table.setCellWidget(0, 3, QLineEdit(axis_name))
@@ -177,6 +191,7 @@ class Page4(QWidget):
             step_spin = QLabel("1")
             self.channel_label.setVisible(True)
             self.has_channels = True
+            self.incl_z = False
         else:
             step_spin = QDoubleSpinBox()
             step_spin.setDecimals(3)
@@ -185,6 +200,7 @@ class Page4(QWidget):
             step_spin.setMinimum(0.0)
             self.channel_label.setVisible(False)
             self.has_channels = False
+            self.incl_z = True
         self.table.setCellWidget(0, 5, step_spin)
 
         self.dim_updated.emit()
@@ -194,8 +210,6 @@ class Page4(QWidget):
         self.table.setVisible(True)
 
         self._set_allow_channels()
-
-        print(self.ndim)
 
         if self.ndim == 5:
             axes = ["channel", "time", "z", "y", "x"]
@@ -213,9 +227,9 @@ class Page4(QWidget):
 
         self.table.setRowCount(len(axes))
         for row, axis in enumerate(axes):
-            # Axis label (not editable, except when the user has to choose between 'channel' and 'z')
+            # Axis label (not editable, except when the user has to choose between
+            # 'channel' and 'z')
             if isinstance(axis, list):
-                print("updating table with combobox to chooise between channel and z")
                 item = QComboBox()
                 item.addItems(axis)
                 item.currentTextChanged.connect(self._update_axis)
@@ -223,7 +237,6 @@ class Page4(QWidget):
                 axis_name = item.currentText()
                 self.table.setCellWidget(row, 0, item)
             else:
-                print("no combobox needed")
                 existing_widget = self.table.cellWidget(row, 0)
                 if existing_widget is not None:
                     self.table.removeCellWidget(row, 0)
@@ -321,10 +334,12 @@ class Page4(QWidget):
 
         # check that the selected axis order results in matching shapes
         self.intensity_label.setText(
-            f"Intensity data shape: {self.intensity_image_shape} -> {self.intensity_image_shape} "
+            f"Intensity data shape: {self.intensity_image_shape} -> "
+            f"{self.intensity_image_shape} "
         )
         self.seg_label.setText(
-            f"Segmentation data shape: {self.segmentation_image_shape} -> {self.segmentation_image_shape}"
+            f"Segmentation data shape: {self.segmentation_image_shape} -> "
+            f"{self.segmentation_image_shape}"
         )
 
         if self.intensity_image_shape is not None:
@@ -362,7 +377,8 @@ class Page4(QWidget):
 
         if not shape_match:
             self.incompatible_label.setText(
-                "❌ The shapes of the intensity data and the segmentation data do not match."
+                "❌ The shapes of the intensity data and the segmentation data do not "
+                "match."
             )
 
         if shape_match and seg_axis_ok and raw_axis_ok:

@@ -110,6 +110,12 @@ class FeatureWidget(QWidget):
                 combobox.setEnabled(data_type == "segmentation")
 
     def get_selected_features(self) -> list[dict[str : str | bool]]:
+        """For each feature, check whether to include it, and optionally if it should be
+        imported from an existing column.
+        Returns:
+            dict[str: str | bool]: dictionary with feature name, boolean to include it,
+            and which column to take it from.
+        """
         selected = []
         for feature in self.feature_instances:
             attr_name = feature.attr_name
@@ -205,7 +211,7 @@ class Page7(QWidget):
             include_intensity=self.include_intensity,
         )
 
-    def get_selected_features(self) -> dict[str:Any]:
+    def get_settings(self) -> dict[str:Any]:
         """Get the features selected by the user in the FeatureWidget"""
 
-        return self.feature_widget.get_selected_features()
+        return {"features": self.feature_widget.get_selected_features()}

@@ -59,7 +59,8 @@ class Page5(QWidget):
         self.csv_widget.update_field_map(seg=self.has_segmentation, incl_z=self.incl_z)
 
     def _update_incl_z(self):
-        """Update whether the user wants to include z-dimension based on the selection in page4."""
+        """Update whether the user wants to include z-dimension based on the selection in"
+        " page4."""
 
         self.incl_z = self.page4.incl_z
         self.csv_widget.update_field_map(seg=self.has_segmentation, incl_z=self.incl_z)
@@ -70,16 +71,16 @@ class Page5(QWidget):
         self.is_valid = self.csv_widget.is_valid
         self.validity_changed.emit()
 
-    def get_tracks_path(self) -> str:
+    def _get_tracks_path(self) -> str:
         """Get the path to the CSV file containing the tracks"""
         return self.csv_widget.get_path()
 
-    def get_mapping(self) -> str:
+    def _get_mapping(self) -> str:
         """Get the mapping from feature name to csv field name"""
         if self.csv_widget.csv_field_widget is not None:
             # Return the mapping from feature name to csv field name
             return self.csv_widget.csv_field_widget.get_name_map()
-        return {}
+        return None
 
     def get_unmapped_columns(self) -> list[str]:
         """Get the columns that were not mapped to any feature"""
@@ -87,3 +88,11 @@ class Page5(QWidget):
         if self.csv_widget.csv_field_widget is not None:
             return self.csv_widget.csv_field_widget.columns_left
         return []
+
+    def get_settings(self) -> dict[str:str]:
+        """Get the settings, CSV path and mapping, from this widget."""
+
+        return {
+            "tracks_path": self._get_tracks_path(),
+            "column_mapping": self._get_mapping(),
+        }

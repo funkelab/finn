@@ -120,7 +120,6 @@ class DataWidget(QWidget):
         self.image_browse_button = QPushButton("Browse", self)
         self.image_browse_button.setAutoDefault(0)
         self.image_browse_button.clicked.connect(self._browse)
-        self.path_line.textChanged.connect(self._validate)
         self.path_line.editingFinished.connect(self._validate)
 
         image_widget = QWidget()
@@ -148,7 +147,8 @@ class DataWidget(QWidget):
             self.setToolTip(
                 "<qt><i>"
                 "Image data can either be a single tif (3D+time or 2D+time) stack, a "
-                "folder containing a time series of 2D or 3D tif images, or a zarr folder."
+                "folder containing a time series of 2D or 3D tif images, or a zarr "
+                "folder."
                 "</i></qt>"
             )
         else:
@@ -157,7 +157,8 @@ class DataWidget(QWidget):
             self.browse_function = self._browse_csv
             self.setToolTip(
                 "<qt><i>"
-                "Point data should be a CSV file with columns for the t, (z), y, x coordinates."
+                "Point data should be a CSV file with columns for the t, (z), y, x "
+                "coordinates."
                 "</i></qt>"
             )
 
@@ -190,7 +191,8 @@ class DataWidget(QWidget):
                 QMessageBox.warning(
                     self,
                     "No valid files were found!",
-                    "Please provide a tif stack, tif series, or zarr file for the image stack",
+                    "Please provide a tif stack, tif series, or zarr file for the image "
+                    "stack",
                 )
                 self.data = None
                 return None
@@ -204,11 +206,9 @@ class DataWidget(QWidget):
         return path if os.path.exists(path) else None
 
     def _validate(self):
-        print("call to validate the data widget")
         path = self.get_path()
         self.is_valid = path is not None and os.path.exists(path)
         self.validity_changed.emit()
-        print("data widget is valid:", self.is_valid)
 
 
 class FileFolderDialog(QDialog):

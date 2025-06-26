@@ -6,6 +6,7 @@ from typing import Any
 import dask.array as da
 import funlib.persistence as fp
 import numpy as np
+import pandas as pd
 from funtracks.project import Project
 from qtpy.QtWidgets import (
     QDialog,
@@ -30,6 +31,7 @@ from finn.track_application_menus.welcome.new_project_pages import (
 )
 
 
+# from finn.track_application_menus.welcome.load_tracks import graph_from_df
 class DialogValueError(ValueError):
     def __init__(self, message, show_dialog=True):
         super().__init__(message)
@@ -37,6 +39,8 @@ class DialogValueError(ValueError):
 
 
 class NewProjectDialog(QDialog):
+    """Dialog to create a new project"""
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Create New Project")
@@ -45,7 +49,7 @@ class NewProjectDialog(QDialog):
         main_layout = QVBoxLayout(self)
         main_layout.addWidget(self.stacked)
 
-        # --- Page 1: Project Info ---
+        # --- Page 1: Project goals --- #
         self.page1 = Page1()
         layout1 = QVBoxLayout()
         layout1.addWidget(self.page1)
@@ -54,17 +58,17 @@ class NewProjectDialog(QDialog):
         btn_layout1 = QHBoxLayout()
         btn_layout1.addStretch()
         self.cancel_btn1 = QPushButton("Cancel")
-        self.next_btn = QPushButton("Next")
-        self.next_btn.setEnabled(True)
+        self.next_btn1 = QPushButton("Next")
+        self.next_btn1.setEnabled(True)
         btn_layout1.addWidget(self.cancel_btn1)
-        btn_layout1.addWidget(self.next_btn)
+        btn_layout1.addWidget(self.next_btn1)
         layout1.addLayout(btn_layout1)
 
         page1_widget = QWidget()
         page1_widget.setLayout(layout1)
         self.stacked.addWidget(page1_widget)
 
-        # --- Page 2: Intensity Data Selection ---
+        # --- Page 2: Intensity Data Selection --- #
         self.page2 = Page2(page1=self.page1)
         self.page2.validity_changed.connect(self._validate_page2)
         layout2 = QVBoxLayout()
@@ -72,12 +76,12 @@ class NewProjectDialog(QDialog):
 
         # Add Prev/Next/Cancel buttons
         btn_layout2 = QHBoxLayout()
-        self.prev_btn = QPushButton("Previous")
+        self.prev_btn1 = QPushButton("Previous")
         self.cancel_btn2 = QPushButton("Cancel")
         self.next_btn2 = QPushButton("Next")
         btn_layout2.addStretch()
         btn_layout2.addWidget(self.cancel_btn2)
-        btn_layout2.addWidget(self.prev_btn)
+        btn_layout2.addWidget(self.prev_btn1)
         btn_layout2.addWidget(self.next_btn2)
         layout2.addLayout(btn_layout2)
 
@@ -85,7 +89,7 @@ class NewProjectDialog(QDialog):
         page2_widget.setLayout(layout2)
         self.stacked.addWidget(page2_widget)
 
-        # # --- Page 3: Detection data selection---
+        # --- Page 3: Detection data selection --- #
         self.page3 = Page3(page1=self.page1)
         self.page3.validity_changed.connect(self._validate_page3)
 
@@ -107,14 +111,14 @@ class NewProjectDialog(QDialog):
         page3_widget.setLayout(layout3)
         self.stacked.addWidget(page3_widget)
 
-        # --- Page 4: Project info and dimensions ---
+        # --- Page 4: Image data dimensions --- #
         self.page4 = Page4(self.page2, self.page3)
         self.page4.validity_changed.connect(self._validate_page4)
 
         layout4 = QVBoxLayout()
         layout4.addWidget(self.page4)
 
-        # Add Prev/ONextk/Cancel buttons
+        # Add Prev/Next/Cancel buttons
         btn_layout4 = QHBoxLayout()
         self.prev_btn3 = QPushButton("Previous")
         self.next_btn4 = QPushButton("Next")
@@ -130,7 +134,7 @@ class NewProjectDialog(QDialog):
         page4_widget.setLayout(layout4)
         self.stacked.addWidget(page4_widget)
 
-        # --- Page 5: Importing external tracks from csv ---
+        # --- Page 5: Importing external tracks from csv --- #
         self.page5 = Page5(self.page3, self.page4)
         self.page5.validity_changed.connect(self._validate_page5)
 
@@ -153,7 +157,7 @@ class NewProjectDialog(QDialog):
         page5_widget.setLayout(layout5)
         self.stacked.addWidget(page5_widget)
 
-        # --- Page 6: Project and candidate graph parameters ---
+        # --- Page 6: Project and candidate graph parameters --- #
         self.page6 = Page6()
 
         layout6 = QVBoxLayout()
@@ -175,7 +179,7 @@ class NewProjectDialog(QDialog):
         page6_widget.setLayout(layout6)
         self.stacked.addWidget(page6_widget)
 
-        # --- Page 7: Features to measure ---
+        # --- Page 7: Features to measure --- #
         self.page7 = Page7(
             page1=self.page1,
             page2=self.page2,
@@ -186,7 +190,7 @@ class NewProjectDialog(QDialog):
         layout7 = QVBoxLayout()
         layout7.addWidget(self.page7)
 
-        # Add Prev/Ok/Cancel buttons
+        # Add Prev/Next/Cancel buttons
         btn_layout7 = QHBoxLayout()
         self.prev_btn6 = QPushButton("Previous")
         self.next_btn7 = QPushButton("Next")
@@ -202,7 +206,7 @@ class NewProjectDialog(QDialog):
         page7_widget.setLayout(layout7)
         self.stacked.addWidget(page7_widget)
 
-        # --- Page 8: Save Project ---
+        # --- Page 8: Save Project --- #
         self.page8 = Page8()
         layout8 = QVBoxLayout()
         layout8.addWidget(self.page8)
@@ -224,8 +228,8 @@ class NewProjectDialog(QDialog):
         page8_widget.setLayout(layout8)
         self.stacked.addWidget(page8_widget)
 
-        # Connections for navigation
-        self.next_btn.clicked.connect(self._go_to_page2)
+        # --- Navigation --- #
+        self.next_btn1.clicked.connect(self._go_to_page2)
         self.next_btn2.clicked.connect(self._go_to_page3)
         self.next_btn3.clicked.connect(self._go_to_page4)
         self.next_btn4.clicked.connect(self._go_to_page5_or_6)
@@ -233,17 +237,15 @@ class NewProjectDialog(QDialog):
         self.next_btn6.clicked.connect(self._go_to_page7)
         self.next_btn7.clicked.connect(self._go_to_page8)
 
-        self.prev_btn.clicked.connect(lambda: self.stacked.setCurrentIndex(0))
+        self.prev_btn1.clicked.connect(lambda: self.stacked.setCurrentIndex(0))
         self.prev_btn2.clicked.connect(lambda: self.stacked.setCurrentIndex(1))
         self.prev_btn3.clicked.connect(lambda: self.stacked.setCurrentIndex(2))
-        self.prev_btn4.clicked.connect(self._go_to_page4)
+        self.prev_btn4.clicked.connect(lambda: self.stacked.setCurrentIndex(3))
         self.prev_btn5.clicked.connect(self._go_to_page4_or_5)
         self.prev_btn6.clicked.connect(lambda: self.stacked.setCurrentIndex(5))
         self.prev_btn7.clicked.connect(lambda: self.stacked.setCurrentIndex(6))
 
-        self.ok_btn.clicked.connect(self.on_ok_clicked)
-
-        self.stacked.setCurrentIndex(0)
+        self.ok_btn.clicked.connect(self._on_ok_clicked)
 
         # Connect cancel buttons to close the dialog
         self.cancel_btn1.clicked.connect(self._cancel)
@@ -255,6 +257,8 @@ class NewProjectDialog(QDialog):
         self.cancel_btn7.clicked.connect(self._cancel)
         self.cancel_btn8.clicked.connect(self._cancel)
 
+        self.stacked.setCurrentIndex(0)
+
     def _validate_page2(self):
         """Validate inputs on page 2 and enable/disable the NEXT button to page3."""
         self.next_btn2.setEnabled(self.page2.is_valid)
@@ -264,41 +268,41 @@ class NewProjectDialog(QDialog):
         self.next_btn3.setEnabled(self.page3.is_valid)
 
     def _validate_page4(self):
-        """Validate inputs on page 4 and enable/disable the NEXT button to page4."""
+        """Validate inputs on page 4 and enable/disable the NEXT button to page5."""
         self.next_btn4.setEnabled(self.page4.is_valid)
 
     def _validate_page5(self):
-        """Validate inputs on page 5 and enable/disable the NEXT button to page5."""
+        """Validate inputs on page 5 and enable/disable the NEXT button to page6."""
         self.next_btn5.setEnabled(self.page5.is_valid)
 
     def _validate_page8(self):
-        """Validate inputs on page 8 and enable/disable the OK button to page8."""
-        print("validating page 8, button should be enabled", self.page8.is_valid)
+        """Validate inputs on page 8 and enable/disable the OK button."""
         self.ok_btn.setEnabled(self.page8.is_valid)
 
     def _go_to_page2(self):
+        """Go to page 2 and validate it to enable/disable the NEXT button."""
         self.stacked.setCurrentIndex(1)
         self.page2.validate()
 
     def _go_to_page3(self):
+        """Go to page 3 and validate it to enable/disable the NEXT button."""
         self.stacked.setCurrentIndex(2)
         self.page3.validate()
 
     def _go_to_page4(self):
+        """Go to page 4 and validate it to enable/disable the NEXT button."""
         self.stacked.setCurrentIndex(3)
         self.page4.validate()
 
     def _go_to_page4_or_5(self):
-        """Go to page 5 if the user chose to track from scratch, otherwise go to page 5."""
+        """Go to page 5 to track from scratch, otherwise go to page 4."""
         if self.page1.get_choice() == "curate_tracks":
             self.stacked.setCurrentIndex(4)
-            self.page5.validate()
         else:
             self.stacked.setCurrentIndex(3)
-            self.page4.validate()
 
     def _go_to_page5_or_6(self):
-        """Go to page 5 if the user chose to use external tracks, otherwise go to page 6."""
+        """Go to page 5 to use external tracks, otherwise go to page 6."""
         if self.page1.get_choice() == "curate_tracks":
             self.stacked.setCurrentIndex(4)
             self.page5.validate()
@@ -315,8 +319,9 @@ class NewProjectDialog(QDialog):
         self.page8.validate()
         self.stacked.setCurrentIndex(7)
 
-    def on_ok_clicked(self):
-        # Called when OK/Finish is clicked
+    def _on_ok_clicked(self):
+        """Collect all information entered by the user and try to build a project. Throws
+        an error if invalid/incompatible information was entered."""
         try:
             self.project = self.create_project()
         except DialogValueError as e:
@@ -325,55 +330,62 @@ class NewProjectDialog(QDialog):
             return
         self.accept()
 
-    def get_project_info(self) -> dict[str:Any]:
-        """Create a dictionary with the information from the different dialog pages.
+    def _get_project_info(self) -> dict[str:Any]:
+        """Collect the information from the different dialog pages.
         Returns:
-            dict[str: Any] with the following information:
-            - title [str]: name of the project,
-            - directory [str]: path to directory where the project should be saved
-            - ndim [int]: the number of dimensions (incl time) of the data (3 or 4)
-            - axes [dict]:
-                dimensions [tuple[str]]: dimension names (e.g. 'time', 'z')
-                indices [tuple[int]]: index of each dimension (e.g (0,1,2,3))
-                axis_names [tuple(str)]: dimension names assigned by the user
-                units (tuple[str]): units for each dimension, e.g. 'µm'
-                scaling [tuple(float)]: spatial calibration in the same order as the dimensions
-            - intensity_image [da.Array] | None : intensity data
-            - segmentation_image [da.Array] | None: segmentation data
-            - tracks_path [str | None]: path to where the tracking data csv file is stored (if provided)
-            - tracks_mapping [dict[str: str]]: mapping of the csv column headers to the required tracking information (dimensions, ids)
-            - data_type [str]: either 'segmentation' or 'points'
-            - points_path [str | None]: path to the segmentation or poitns detection data, if provided.
-            - features [list[dict[str: str|bool]]]: list of features to measure, each with 'feature_name', 'include' (bool), and 'from_column' (str or None)
-            - project_params [ProjectParams]: parameters for the project
-            - cand_graph_params [CandGraphParams]: parameters for the candidate graph
+            dict[str: Any] with information from the different pages as follows:
+            Page 3:
+                - data_type [str]: either 'segmentation' or 'points'
+                - points_data [str | None] : path to points data
+            Page 4:
+                - intensity_image [da.Array | None] : intensity data
+                - segmentation_image [da.Array | None] : segmentation data
+                - ndim [int]: the number of dimensions (incl time) of the data (3, 4, or
+                    5)
+                - axes [dict]:
+                    dimensions [tuple[str]]: dimension names (e.g. 'time', 'z')
+                    raw_indices [tuple[int]]: index of each dimension in the raw data
+                    seg_indices [tuple[int]]: index of each dimension in the seg data
+                    axis_names [tuple(str)]: dimension names assigned by the user
+                    units (tuple[str]): units for each dimension, e.g. 'µm'
+                    scaling [tuple(float)]: spatial calibration in the same order as the
+                        dimensions
+            Page 5:
+                - tracks_path [str | None]: path to where the tracking data csv file is
+                    stored (if provided)
+                - tracks_mapping [dict[str: str] | None] : mapping of the csv column headers to
+                    the required tracking information (dimensions, ids)
+            Page 6:
+                - project_params [ProjectParams]: parameters for the project
+                - cand_graph_params [CandGraphParams]: parameters for the candidate graph
+            Page 7:
+                - features (list[dict[str: str|bool]]): list of features to measure,
+                    each with 'feature_name', 'include' (bool), and 'from_column'
+                    (str or None)
+            Page 8:
+                - title [str]: name of the project,
+                - directory [str]: path to directory where the project should be saved
         """
 
         choice = self.page1.get_choice()
-        project_info = {}
-        data_type = self.page3.data_type
-        project_info["data_type"] = data_type
-        project_info["points_path"] = (
-            self.page3.get_path() if data_type == "points" else None
-        )
 
-        project_info = (
-            project_info | self.page4.get_settings()
-        )  # intensity image, segmentation image, dimensions, axes
+        project_info = {
+            "tracks_path": None,
+            "column_mapping": None,
+        }
 
-        project_info["tracks_path"] = (
-            self.page5.get_tracks_path() if choice == "curate_tracks" else None
-        )
-        project_info["column_mapping"] = (
-            self.page5.get_mapping() if choice == "curate_tracks" else None
-        )
+        project_info = project_info | self.page3.get_settings()
+        project_info = project_info | self.page4.get_settings()
+        if choice == "curate_tracks":
+            project_info = project_info | self.page5.get_settings()
         project_info = project_info | self.page6.get_settings()
-        project_info["features"] = self.page7.get_selected_features()
-        project_info = project_info | self.page8.get_settings()  # name, directory
+        project_info = project_info | self.page7.get_settings()
+        project_info = project_info | self.page8.get_settings()
 
         return project_info
 
     def _cancel(self):
+        """Reject the dialog, go back to welcome menu"""
         self.reject()
 
     def create_empty_fp_array(
@@ -579,6 +591,7 @@ class NewProjectDialog(QDialog):
         for time in tqdm(
             range(image.shape[time_index]), desc="Converting time points to zarr"
         ):
+            # keep running track of max and call ensure unique labels, map to csv
             slc = [slice(None)] * image.ndim
             slc[time_index] = time
             fpds[time] = image[tuple(slc)].compute()
@@ -588,7 +601,7 @@ class NewProjectDialog(QDialog):
     def create_project(self) -> Project:
         """Creates a new funtracks project with the information provided in the dialog"""
 
-        project_info = self.get_project_info()
+        project_info = self._get_project_info()
         intensity_image = project_info["intensity_image"]
         segmentation_image = project_info["segmentation_image"]
         name = project_info.get("title", "Untitled Project")
@@ -597,6 +610,7 @@ class NewProjectDialog(QDialog):
         data_type = project_info.get("data_type", "points")
         working_dir = project_info.get("directory", Path.cwd())
         params = project_info.get("project_params", None)
+        features = project_info.get("features")
 
         # remove old zarr dir if present
         zarr_dir = os.path.join(project_info.get("directory"), f"{name}.zarr")
@@ -605,6 +619,16 @@ class NewProjectDialog(QDialog):
 
         # create fpds for the intensity image and segmentation data (if provided)
         print(project_info)
+
+        tracks_path = project_info["tracks_path"]
+        if tracks_path is not None:
+            df = pd.read_csv(tracks_path)
+            mapping = project_info["column_mapping"]
+            scaling = axes["scaling"]
+            if "channel" in axes["dimensions"]:
+                scaling = list(scaling).pop(0)
+            included_features = [f for f in features if f["include"]]
+            # cand_graph = graph_from_df(df, segmentation_fdps, mapping, scaling, features)
 
         intensity_fpds, segmentation_fdps = self.create_fpds(
             intensity_image,
@@ -622,6 +646,7 @@ class NewProjectDialog(QDialog):
                 raise ValueError(
                     "Points detection type selected, but no points file provided."
                 )
+            # make graph from points here
 
         # # TODO: include features to measure, ndim, cand_graph_params, point detections
         return Project(
