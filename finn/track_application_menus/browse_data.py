@@ -1,5 +1,7 @@
 import os
 
+import dask.array as da
+import numpy as np
 from psygnal import Signal
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import (
@@ -177,13 +179,13 @@ class DataWidget(QWidget):
         if file:
             self.path_line.setText(file)
 
-    def _load_images(self) -> None:
+    def load_images(self) -> np.ndarray | da.Array:
         """Load the image data file(s)"""
 
         path = self.path_line.text()
-        if os.path.exists(path):
+        if path is not None and os.path.exists(path):
             try:
-                data = magic_imread(path)
+                data = magic_imread(path, use_dask=True)
             except:
                 QMessageBox.warning(
                     self,
@@ -191,17 +193,20 @@ class DataWidget(QWidget):
                     "Please provide a tif stack, tif series, or zarr file for the image stack",
                 )
                 self.data = None
-                return
+                return None
         else:
             data = None
-        self.data = data
+
+        return data
 
     def get_path(self):
-        return self.path_line.text()
+        path = self.path_line.text()
+        return path if os.path.exists(path) else None
 
     def _validate(self):
         print("call to validate the data widget")
-        self.is_valid = os.path.exists(self.get_path())
+        path = self.get_path()
+        self.is_valid = path is not None and os.path.exists(path)
         self.validity_changed.emit()
         print("data widget is valid:", self.is_valid)
 
