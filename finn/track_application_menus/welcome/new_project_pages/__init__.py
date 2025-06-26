@@ -1,0 +1,9 @@
+from finn.track_application_menus.welcome.new_project_pages.page1_goals import Page1
+from finn.track_application_menus.welcome.new_project_pages.page2_raw_data import Page2
+from finn.track_application_menus.welcome.new_project_pages.page3_seg_data import Page3
+from finn.track_application_menus.welcome.new_project_pages.page4_dimensions import Page4
+from finn.track_application_menus.welcome.new_project_pages.page5_csv_import import Page5
+from finn.track_application_menus.welcome.new_project_pages.page6_params import Page6
+from finn.track_application_menus.welcome.new_project_pages.page7_features import Page7
+from finn.track_application_menus.welcome.new_project_pages.page8_saving import Page8
+

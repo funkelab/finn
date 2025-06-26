@@ -17,8 +17,8 @@ from typing import Any
 
 from finn.errors import ReaderPluginError
 from finn.track_application_menus.main_app import MainApp
-from finn.track_application_menus.new_project import NewProjectDialog
-from finn.track_application_menus.welcome import WelcomeDialog
+from finn.track_application_menus.welcome.new_project import NewProjectDialog
+from finn.track_application_menus.welcome.welcome import WelcomeDialog
 from finn.utils.translations import trans
 
 
@@ -342,8 +342,7 @@ def _run() -> None:
                     # Start a new project
                     new_proj_dialog = NewProjectDialog(parent=viewer.window._qt_window)
                     if new_proj_dialog.exec_():
-                        project = new_proj_dialog.create_project()
-                        # project = MotileTrackerProject(project_info)
+                        project = new_proj_dialog.project 
                         break  # Exit the loop, project created
                     # User cancelled, loop back to welcome dialog
                     continue
