@@ -12,86 +12,11 @@ from qtpy.QtWidgets import (
     QLineEdit,
     QMessageBox,
     QPushButton,
-    QRadioButton,
     QVBoxLayout,
     QWidget,
 )
 
 from finn_builtins.io._read import magic_imread
-
-
-class DataSourceWidget(QWidget):
-    """Widget to combine SourceWidget and DataWidget"""
-
-    validity_changed = Signal()
-
-    def __init__(self):
-        super().__init__()
-        self.is_valid = False
-        self.type = "segmentation"
-
-        self.source_selection_widget = SourceWidget()
-        self.source_selection_widget.radio_file.toggled.connect(self._update_mode)
-        self.source_selection_widget.radio_manual.toggled.connect(self._update_mode)
-
-        self.data_widget = DataWidget()
-        self.data_widget.validity_changed.connect(self._validate)
-
-        layout = QVBoxLayout()
-        layout.addWidget(self.source_selection_widget)
-        layout.addWidget(self.data_widget)
-        self.setLayout(layout)
-
-    def update_type(self, type: str):
-        self.type = type
-        self.data_widget.update_type(self.type)
-
-    def _update_mode(self):
-        enabled = self.source_selection_widget.radio_file.isChecked()
-        self.data_widget.setEnabled(enabled)
-        self._validate()
-
-    def _validate(self):
-        """Check whether all required information is filled out"""
-
-        if self.source_selection_widget.is_manual():
-            valid = True
-        path = self.data_widget.get_path()
-        if path is None or not os.path.exists(path):
-            valid = False
-        else:
-            valid = True
-
-        self.is_valid = valid
-        self.validity_changed.emit()
-
-    def is_manual(self):
-        return self.source_selection_widget.is_manual()
-
-    def get_path(self) -> str | None:
-        if self.source_selection_widget.radio_file.isChecked():
-            return self.data_widget.get_path()
-        return None
-
-
-class SourceWidget(QWidget):
-    """Widget for choosing between loading data from file or from scratch"""
-
-    def __init__(self):
-        super().__init__()
-
-        layout = QVBoxLayout(self)
-        # Radio buttons for mode selection
-        self.radio_file = QRadioButton("Choose from file")
-        self.radio_manual = QRadioButton("Manual tracking from scratch")
-        self.radio_file.setChecked(True)
-        radio_layout = QHBoxLayout()
-        radio_layout.addWidget(self.radio_file)
-        radio_layout.addWidget(self.radio_manual)
-        layout.addLayout(radio_layout)
-
-    def is_manual(self):
-        return self.radio_manual.isChecked()
 
 
 class DataWidget(QWidget):

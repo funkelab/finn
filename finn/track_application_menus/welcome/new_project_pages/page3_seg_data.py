@@ -20,7 +20,6 @@ class Page3(QWidget):
     """Page 3 of the Project dialog, to select the detection data source"""
 
     validity_changed = Signal()
-    type_updated = Signal()
 
     def __init__(self, page1: Page1):
         super().__init__()
@@ -81,14 +80,14 @@ class Page3(QWidget):
         else:
             self.data_widget.setVisible(True)
             self.label.setText("Do you have point or label detection data?")
-            self.validate()
+        self.validate()
 
     def _toggle_data_type(self):
         """Toggle the visibility of the intensity widget based on the user's choice."""
 
         self.data_type = "segmentation" if self.labels.isChecked() else "points"
         self.data_widget.update_type(self.data_type)
-        self.type_updated.emit()
+        self.validate()
 
     def get_path(self) -> str | None:
         """Return the path to the data, if provided."""
@@ -106,14 +105,15 @@ class Page3(QWidget):
             self.is_valid = True
         else:
             path = self.get_path()
-            if (
-                path is None
-                or not os.path.exists(path)
-                or (self.points.isChecked() and not path.endswith(".csv"))
-            ):
-                self.is_valid = False
+            if self.points.isChecked():
+                self.is_valid = path is not None and (
+                    os.path.exists(path) and path.endswith("csv")
+                )
             else:
-                self.is_valid = True
+                self.is_valid = path is not None and (
+                    os.path.exists(path) and not path.endswith("csv")
+                )
+        print("page 3 valid:", self.is_valid)
         self.validity_changed.emit()
 
     def get_settings(self) -> dict[str]:

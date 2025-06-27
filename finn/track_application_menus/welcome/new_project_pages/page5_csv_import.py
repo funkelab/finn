@@ -21,7 +21,7 @@ class Page5(QWidget):
         self.is_valid = False
         self.page3 = page3
         self.page4 = page4
-        self.page3.type_updated.connect(self._update_has_segmentation)
+        self.page3.validity_changed.connect(self._update_has_segmentation)
         self.page4.dim_updated.connect(self._update_incl_z)
 
         self.incl_z = self.page4.incl_z

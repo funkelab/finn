@@ -1,6 +1,6 @@
 from typing import Any
 
-import numpy as np
+import pandas as pd
 from psygnal import Signal
 from qtpy import QtGui
 from qtpy.QtCore import Qt
@@ -32,16 +32,18 @@ class Page4(QWidget):
         self.page2.validity_changed.connect(self._guess_data_dimensions)
         self.page3 = page3
         self.page3.validity_changed.connect(self._guess_data_dimensions)
-        self.page3.type_updated.connect(self._guess_data_dimensions)
 
         self.ndim = 3
         self.incl_z = False
         self.has_channels = False
         self.allow_channels = False
-        self.intensity_image_shape = None
-        self.segmentation_image_shape = None
+        self.raw = None
+        self.seg = None
+        self.points = None
+
         self.is_valid = False
 
+        self.default_order = ("channel", "time", "z", "y", "x")
         self.units = {
             "channel": ["channel"],
             "time": ["time point", "sec", "min", "hour", "day"],
@@ -57,7 +59,7 @@ class Page4(QWidget):
             "x": "µm",
         }
         self.step_size = {"channel": 1, "time": 1.0, "z": 1.0, "y": 1.0, "x": 1.0}
-
+        self.detection_column_header = "Index (seg)"
         layout = QVBoxLayout()
 
         # Display the shape of the intensity and/or segmentation data
@@ -70,8 +72,8 @@ class Page4(QWidget):
         self.intensity_label = QLabel("Intensity data shape:")
         layout.addWidget(self.intensity_label)
 
-        self.seg_label = QLabel("Segmentation data shape:")
-        layout.addWidget(self.seg_label)
+        self.detection_label = QLabel("Segmentation data shape:")
+        layout.addWidget(self.detection_label)
 
         self.incompatible_label = QLabel(
             "❌ The shapes of the intensity data and the segmentation data do not match."
@@ -86,7 +88,7 @@ class Page4(QWidget):
             [
                 "Dimension",
                 "Index (intensity)",
-                "Index (seg)",
+                self.detection_column_header,
                 "Name",
                 "Unit",
                 "Step size",
@@ -108,32 +110,36 @@ class Page4(QWidget):
 
     def _guess_data_dimensions(self):
         self.intensity_label.setVisible(False)
-        self.seg_label.setVisible(False)
-        self.intensity_image_shape = None
-        self.segmentation_image_shape = None
+        self.detection_label.setVisible(False)
+        self.raw = None
+        self.seg = None
+        self.points = None
 
         # Load the data as dask arrays, and extract the shape.
         if self.page2.get_path() is not None:
-            self.intensity_image = self.page2.intensity_data_widget.load_images()
-            self.intensity_image_shape = self.intensity_image.shape
+            self.raw = self.page2.intensity_data_widget.load_images()
             self.intensity_label.setText(
-                f"Intensity data shape: {self.intensity_image_shape} ->"
-                f"{self.intensity_image_shape}"
+                f"Intensity data shape: {self.raw.shape} ->{self.raw.shape}"
             )
             self.intensity_label.setVisible(True)
         else:
-            self.intensity_image = None
+            self.raw = None
 
         if self.page3.get_path() is not None and self.page3.data_type == "segmentation":
-            self.segmentation_image = self.page3.data_widget.load_images()
-            self.segmentation_image_shape = self.segmentation_image.shape
-            self.seg_label.setText(
-                f"Segmentation data shape: {self.segmentation_image_shape} -> "
-                f"{self.segmentation_image_shape}"
+            self.seg = self.page3.data_widget.load_images()
+            self.detection_label.setText(
+                f"Segmentation data shape: {self.seg.shape} -> {self.seg.shape}"
             )
-            self.seg_label.setVisible(True)
-        else:
-            self.segmentation_image = None
+            self.detection_label.setVisible(True)
+
+        elif self.page3.get_path() is not None and self.page3.data_type == "points":
+            self.seg = None
+            self.points = pd.read_csv(self.page3.get_path())
+            self.detection_label.setText("Using columns from points data")
+
+        self.detection_column_header = (
+            "Index (seg)" if self.page3.data_type == "segmentation" else "CSV Column"
+        )
 
         # check whether we should display the checkbox to ask about the channel dimension
         self._set_allow_channels()
@@ -145,29 +151,22 @@ class Page4(QWidget):
         """Channels label should be visible if the intensity data has one dimension more
         than the segmentation data"""
 
-        if self.intensity_image_shape is None and self.segmentation_image_shape is None:
+        if self.raw is None and self.seg is None:
             self.allow_channels = False
             self.has_channels = True
             self.ndim = 3
-        elif (
-            self.intensity_image_shape is not None
-            and self.segmentation_image_shape is None
-        ):
-            self.allow_channels = len(self.intensity_image_shape) == 4
-            self.ndim = len(self.intensity_image_shape)
-        elif (
-            self.intensity_image_shape is not None
-            and self.segmentation_image_shape is not None
-        ):
-            self.ndim = np.max(
-                (len(self.intensity_image_shape), len(self.segmentation_image_shape))
-            )
-            self.allow_channels = (
-                len(self.intensity_image_shape) == len(self.segmentation_image_shape) + 1
-            )
-        else:
+        elif self.raw is not None and self.seg is None:
+            self.allow_channels = len(self.raw.shape) == 4  # when raw has 4 dims, it is
+            # ambiguous if the 4th axis is 'z' or 'channel'. We therefore need both
+            # options, which will be enabled by setting self.allow_axis = True. In the
+            # case of 5 dims, this is set automatically.
+            self.ndim = len(self.raw.shape)
+        elif self.raw is not None and self.seg is not None:
+            self.ndim = len(self.raw.shape)
+            self.allow_channels = len(self.raw.shape) == len(self.seg.shape) + 1
+        elif self.raw is None and self.seg is not None:
             self.allow_channels = False
-            self.ndim = len(self.segmentation_image_shape)
+            self.ndim = len(self.seg.shape)
 
         if not self.allow_channels:
             self.has_channels = False
@@ -191,7 +190,11 @@ class Page4(QWidget):
             step_spin = QLabel("1")
             self.channel_label.setVisible(True)
             self.has_channels = True
+            widget = self.table.cellWidget(0, 2)
+            if isinstance(widget, QComboBox):
+                widget.setEnabled(False)
             self.incl_z = False
+
         else:
             step_spin = QDoubleSpinBox()
             step_spin.setDecimals(3)
@@ -200,6 +203,9 @@ class Page4(QWidget):
             step_spin.setMinimum(0.0)
             self.channel_label.setVisible(False)
             self.has_channels = False
+            widget = self.table.cellWidget(0, 2)
+            if isinstance(widget, QComboBox):
+                widget.setEnabled(True)
             self.incl_z = True
         self.table.setCellWidget(0, 5, step_spin)
 
@@ -207,6 +213,7 @@ class Page4(QWidget):
         self.validate()
 
     def _update_table(self):
+        print("update the table!")
         self.table.setVisible(True)
 
         self._set_allow_channels()
@@ -217,7 +224,7 @@ class Page4(QWidget):
             self.has_channels = True
         elif self.ndim == 4:
             if self.allow_channels:
-                axes = [["channel", "z"], "time", "y", "x"]
+                axes = [["z", "channel"], "time", "y", "x"]
             else:
                 axes = ["time", "z", "y", "x"]
         else:
@@ -247,22 +254,24 @@ class Page4(QWidget):
 
             # Axis indices (dropdown)
             self.raw_axis_indices = QComboBox()
-            if self.intensity_image_shape is None:
+            if self.raw is None:
                 self.raw_axis_indices.setEnabled(False)
+                indices = range(self.ndim)
             else:
                 self.raw_axis_indices.setEnabled(True)
-                indices = range(len(self.intensity_image_shape))
-                self.raw_axis_indices.addItems([str(i) for i in indices])
-                self.raw_axis_indices.setCurrentText(str(indices[row]))
-                self.raw_axis_indices.currentTextChanged.connect(self.validate)
+                indices = range(len(self.raw.shape))
+            self.raw_axis_indices.addItems([str(i) for i in indices])
+            self.raw_axis_indices.setCurrentText(str(indices[row]))
+            self.raw_axis_indices.currentTextChanged.connect(self.validate)
             self.table.setCellWidget(row, 1, self.raw_axis_indices)
 
             self.seg_axis_indices = QComboBox()
-            if self.segmentation_image_shape is None:
+            if self.seg is None and self.points is None:
                 self.seg_axis_indices.setEnabled(False)
-            else:
+                self.seg_axis_indices.addItems([str(i) for i in indices])
+            elif self.seg is not None:
                 self.seg_axis_indices.setEnabled(True)
-                indices = range(len(self.segmentation_image_shape))
+                indices = range(len(self.seg.shape))
                 self.seg_axis_indices.addItems([str(i) for i in indices])
                 if self.has_channels:
                     self.seg_axis_indices.setCurrentText(str(indices[row - 1]))
@@ -270,6 +279,17 @@ class Page4(QWidget):
                         self.seg_axis_indices.setEnabled(False)
                 else:
                     self.seg_axis_indices.setCurrentText(str(indices[row]))
+                self.seg_axis_indices.currentTextChanged.connect(self.validate)
+            elif self.points is not None:
+                self.seg_axis_indices.setEnabled(True)
+                axis_labels = self.points.columns
+                self.seg_axis_indices.addItems([str(i) for i in axis_labels])
+                if self.has_channels:
+                    self.seg_axis_indices.setCurrentText(str(axis_labels[row - 1]))
+                    if row == 0:
+                        self.seg_axis_indices.setEnabled(False)
+                else:
+                    self.seg_axis_indices.setCurrentText(str(axis_labels[row]))
                 self.seg_axis_indices.currentTextChanged.connect(self.validate)
 
             self.table.setCellWidget(row, 2, self.seg_axis_indices)
@@ -293,11 +313,30 @@ class Page4(QWidget):
                 step_spin.setMinimum(0.0)
             self.table.setCellWidget(row, 5, step_spin)
 
+        self.table.setHorizontalHeaderItem(
+            2, QTableWidgetItem(self.detection_column_header)
+        )
+
         self.dim_updated.emit()
         self.validate()
 
-    def validate(self):
-        """Validate inputs on this page"""
+    def validate(self) -> None:
+        """Validate inputs on this page and then emits a signal"""
+
+        print("validate the table!")
+        # extract the display order in the table (this may vary when the user gets to
+        # choose between 'channel' and 'z' in the first row).
+        display_order = []
+        for row in range(self.table.rowCount()):
+            widget = self.table.cellWidget(row, 0)
+            if isinstance(widget, QComboBox):
+                display_order.append(widget.currentText())
+            else:
+                item = self.table.item(row, 0)
+                if isinstance(item, QTableWidgetItem):
+                    display_order.append(item.text())
+        expected_order = [ax for ax in self.default_order if ax in display_order]
+        reorder_indices = [display_order.index(ax) for ax in expected_order]
 
         # Check that axis indices are unique
         raw_indices = []
@@ -305,7 +344,9 @@ class Page4(QWidget):
             index_widget = self.table.cellWidget(row, 1)
             if index_widget is not None:
                 raw_indices.append(index_widget.currentText())
+        raw_indices = [raw_indices[i] for i in reorder_indices]
         indices_raw_unique = len(raw_indices) == len(set(raw_indices))
+
         if self.raw_axis_indices.isEnabled() and not indices_raw_unique:
             raw_axis_ok = False
             self.table.horizontalHeaderItem(1).setForeground(QtGui.QColor("red"))
@@ -333,39 +374,23 @@ class Page4(QWidget):
             self.table.horizontalHeaderItem(2).setForeground(QtGui.QColor("white"))
 
         # check that the selected axis order results in matching shapes
-        self.intensity_label.setText(
-            f"Intensity data shape: {self.intensity_image_shape} -> "
-            f"{self.intensity_image_shape} "
-        )
-        self.seg_label.setText(
-            f"Segmentation data shape: {self.segmentation_image_shape} -> "
-            f"{self.segmentation_image_shape}"
-        )
-
-        if self.intensity_image_shape is not None:
-            reordered_raw_dims = tuple(
-                self.intensity_image_shape[int(i)] for i in raw_indices
-            )
+        if self.raw is not None:
+            reordered_raw_dims = tuple(self.raw.shape[int(i)] for i in raw_indices)
             color = "green" if raw_axis_ok else "red"
             self.intensity_label.setText(
-                f"Intensity data shape: {self.intensity_image_shape} -> "
+                f"Intensity data shape: {self.raw.shape} -> "
                 f"<span style='color:{color};'>{reordered_raw_dims}</span>"
             )
 
-        if self.segmentation_image_shape is not None:
-            reordered_seg_dims = tuple(
-                self.segmentation_image_shape[int(i)] for i in seg_indices
-            )
+        if self.seg is not None:
+            reordered_seg_dims = tuple(self.seg.shape[int(i)] for i in seg_indices)
             color = "green" if seg_axis_ok else "red"
-            self.seg_label.setText(
-                f"Segmentation data shape: {self.segmentation_image_shape} -> "
+            self.detection_label.setText(
+                f"Segmentation data shape: {self.seg.shape} -> "
                 f"<span style='color:{color};'>{reordered_seg_dims}</span>"
             )
 
-        if (
-            self.intensity_image_shape is not None
-            and self.segmentation_image_shape is not None
-        ):
+        if self.raw is not None and self.seg is not None:
             if not (raw_axis_ok and seg_axis_ok):
                 shape_match = False
             elif self.has_channels:
@@ -391,13 +416,14 @@ class Page4(QWidget):
         """Get the settings on page4"""
 
         info = {
-            "intensity_image": self.intensity_image,
-            "segmentation_image": self.segmentation_image,
+            "intensity_image": self.raw,
+            "segmentation_image": self.seg,
             "ndim": self.ndim,
             "axes": {
                 "dimensions": [],
                 "raw_indices": [],
                 "seg_indices": [],
+                "columns": [],
                 "axis_names": [],
                 "units": [],
                 "scaling": [],
@@ -416,10 +442,12 @@ class Page4(QWidget):
             unit = self.table.cellWidget(row, 4).currentText()
             step_size = self.table.cellWidget(row, 5).value()
             info["axes"]["dimensions"].append(axis)
-            if self.intensity_image_shape is not None:
+            if self.raw is not None:
                 info["axes"]["raw_indices"].append(raw_index)
-            if self.segmentation_image_shape is not None:
+            if self.seg is not None:
                 info["axes"]["seg_indices"].append(seg_index)
+            if self.points is not None:
+                info["axes"]["columns"].append(seg_index)
             info["axes"]["axis_names"].append(axis_name)
             info["axes"]["units"].append(unit)
             info["axes"]["scaling"].append(step_size)

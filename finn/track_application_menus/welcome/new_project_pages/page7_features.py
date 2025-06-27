@@ -160,7 +160,7 @@ class Page7(QWidget):
         self.include_intensity = True if self.page2.get_path() is not None else False
         self.page3 = page3
         data_type = self.page3.data_type
-        self.page3.type_updated.connect(self.update_features)
+        self.page3.validity_changed.connect(self.update_features)
         self.page4 = page4
         self.page4.dim_updated.connect(self.update_features)
         self.page5 = page5
@@ -208,6 +208,7 @@ class Page7(QWidget):
             ndim,
             mappable_columns=mappable_columns,
             include_intensity=self.include_intensity,
+            data_type=self.page3.data_type,
         )
 
     def get_settings(self) -> dict[str:Any]:
