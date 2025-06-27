@@ -172,6 +172,7 @@ class DataWidget(QWidget):
             selected_path = dialog.get_selected_path()
             if selected_path:
                 self.path_line.setText(selected_path)
+        self._validate()
 
     def _browse_csv(self):
         file, _ = QFileDialog.getOpenFileName(
@@ -179,6 +180,7 @@ class DataWidget(QWidget):
         )
         if file:
             self.path_line.setText(file)
+        self._validate()
 
     def load_images(self) -> np.ndarray | da.Array:
         """Load the image data file(s)"""

@@ -28,7 +28,7 @@ class CSVFieldMapWidget(QWidget):
         super().__init__()
 
         self.standard_fields = [
-            "time",
+            "t",
             "y",
             "x",
             "id",

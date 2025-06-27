@@ -1,6 +1,7 @@
 import os
 from typing import Any
 
+from funtracks.features._base import Feature
 from funtracks.features.measurement_features import featureset
 from qtpy.QtWidgets import (
     QCheckBox,
@@ -109,19 +110,19 @@ class FeatureWidget(QWidget):
                     combobox.setEnabled(include_intensity)
                 combobox.setEnabled(data_type == "segmentation")
 
-    def get_selected_features(self) -> list[dict[str : str | bool]]:
+    def get_selected_features(self) -> list[dict[str : Feature | str | bool]]:
         """For each feature, check whether to include it, and optionally if it should be
         imported from an existing column.
         Returns:
             dict[str: str | bool]: dictionary with feature name, boolean to include it,
             and which column to take it from.
         """
-        selected = []
+        features = []
         for feature in self.feature_instances:
             attr_name = feature.attr_name
             checkbox = self.measurement_checkboxes[attr_name]
             include = checkbox.isChecked() and checkbox.isEnabled()
-            from_column = None  # Default to None if not selected/visible
+            from_column = None
             if (
                 hasattr(self, "measurement_comboboxes")
                 and attr_name in self.measurement_comboboxes
@@ -131,14 +132,12 @@ class FeatureWidget(QWidget):
                     from_column = combobox.currentText()
                     if from_column == "None":
                         from_column = None
-            selected.append(
-                {
-                    "feature_name": attr_name,
-                    "include": include,
-                    "from_column": from_column,
-                }
+
+            features.append(
+                {"feature": feature, "include": include, "from_column": from_column}
             )
-        return selected
+
+        return features
 
 
 class Page7(QWidget):

@@ -5,8 +5,10 @@ from typing import Any
 
 import dask.array as da
 import funlib.persistence as fp
+import networkx as nx
 import numpy as np
 import pandas as pd
+from funtracks.features._base import Feature
 from funtracks.project import Project
 from qtpy.QtWidgets import (
     QDialog,
@@ -17,6 +19,7 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from skimage.measure import regionprops
 from tqdm import tqdm
 
 from finn.track_application_menus.welcome.new_project_pages import (
@@ -31,7 +34,6 @@ from finn.track_application_menus.welcome.new_project_pages import (
 )
 
 
-# from finn.track_application_menus.welcome.load_tracks import graph_from_df
 class DialogValueError(ValueError):
     def __init__(self, message, show_dialog=True):
         super().__init__(message)
@@ -398,13 +400,15 @@ class NewProjectDialog(QDialog):
         axis_units = axes.get("units", ["px"] * len(shape))
 
         if "channel" in axes["dimensions"]:
-            # remove the channel information, segmentation fpds can only have dimensions t(z)yx
+            # remove the channel information, segmentation fpds can only have dimensions
+            # t(z)yx
             axis_names.pop(0)
             voxel_size.pop(0)
             axis_units.pop(0)
 
         print(
-            f"creating empty fpds with shape {shape}, voxel_size {voxel_size}, axis_names {axis_names} units {axis_units}"
+            f"creating empty fpds with shape {shape}, voxel_size {voxel_size}, axis_names"
+            f" {axis_names} units {axis_units}"
         )
         fpds = fp.prepare_ds(
             fp_array_path,
@@ -424,23 +428,32 @@ class NewProjectDialog(QDialog):
         fp_array_path: str | None,
         ndim: int,
         axes: dict,
-        data_type,
-    ) -> fp.Array:
-        """Creates a funtracks persistence array from an intensity image or segmentation data.
+        data_type: str,
+        seg_id_map: pd.DataFrame | None,
+    ) -> tuple[fp.Array, fp.Array]:
+        """Creates a funtracks persistence array from an intensity image or segmentation
+        data.
         Args:
             intensity_image (da.Array | None ): Dask array of intensity image
             segmentation_image (da.Array | None): Dask array of the segmentation data.
-            fp_array_path (str): Path where the funtracks persistence array will be created.
-            axes (dict): Dictionary containing axis information like indices, names, units, and scaling.
+            fp_array_path (str): Path where the funtracks persistence array will be
+            created.
+            axes (dict): Dictionary containing axis information like indices, names,
+            units, and scaling.
+            data_type: (str = "points" | "segmentation")
+            seg_id_map (pd.DataFrame): mapping from seg id + time to id, in case the user
+             provided external tracking data.
+
         Returns:
             fp.Array: A funtracks persistence array containing the data."""
 
-        print("path to save to", fp_array_path)
         # Check if at least one of the two data paths is valid.
         if intensity_image is None and segmentation_image is None:
-            # this situation is invalid, if no seg is provided we need at least intensity image to track from scratch
+            # this situation is invalid, if no seg is provided we need at least intensity
+            #  image to track from scratch
             raise DialogValueError(
-                "No valid path to intensity data and segmentation labels was provided. We need at least an intensity image to track from scratch"
+                "No valid path to intensity data and segmentation labels was provided. "
+                "We need at least an intensity image to track from scratch"
             )
 
         # check if segmentation image has integer data type, warn user if not.
@@ -451,7 +464,8 @@ class NewProjectDialog(QDialog):
             msg.setWindowTitle("Invalid segmentation file type")
             msg.setText(
                 "The datatype of the provided segmentation data is float.<br><br>"
-                "Click <b>Continue</b> if you are sure you selected the correct data and it will be converted to integers.<br>"
+                "Click <b>Continue</b> if you are sure you selected the correct data and"
+                " it will be converted to integers.<br>"
                 "Click <b>Go Back</b> to return to the import menu."
             )
             msg.addButton("Continue", QMessageBox.AcceptRole)
@@ -460,7 +474,8 @@ class NewProjectDialog(QDialog):
             msg.exec_()
             if msg.clickedButton() == goback_btn:
                 raise DialogValueError(
-                    "Invalid segmentation file type, going back to select alternative data of type integer.",
+                    "Invalid segmentation file type, going back to select alternative "
+                    "data of type integer.",
                     show_dialog=False,
                 )
             segmentation_image = segmentation_image.astype(np.uint64)
@@ -485,7 +500,6 @@ class NewProjectDialog(QDialog):
 
         # Check if the shapes of intensity and segmentation data are matching
         if intensity_image is not None and segmentation_image is not None:
-            print(intensity_image.shape, segmentation_image.shape)
             if len(intensity_image.shape) == len(segmentation_image.shape) + 1:
                 valid = intensity_image.shape[-(ndim - 1) :] == segmentation_image.shape
             else:
@@ -516,9 +530,6 @@ class NewProjectDialog(QDialog):
                 )
 
         # Create fpds for intensity and/or segmentation image
-
-        print("save path:", os.path.join(fp_array_path, "raw"))
-
         if intensity_image is not None:
             intensity_fpds = self.create_fp_array(
                 intensity_image,
@@ -538,6 +549,7 @@ class NewProjectDialog(QDialog):
                 voxel_size = voxel_size[1:]
                 axis_names = axis_names[1:]
                 axis_units = axis_units[1:]
+
             segmentation_fpds = self.create_fp_array(
                 segmentation_image,
                 path=os.path.join(fp_array_path, "seg"),
@@ -547,6 +559,7 @@ class NewProjectDialog(QDialog):
                 axis_names=axis_names,
                 axis_units=axis_units,
                 dtype=np.uint64,
+                seg_id_map=seg_id_map,
             )
         else:
             segmentation_fpds = None
@@ -563,14 +576,8 @@ class NewProjectDialog(QDialog):
         axis_names: tuple[str],
         axis_units: tuple[str],
         dtype: np.dtype,
+        seg_id_map: pd.DataFrame | None = None,
     ) -> fp.Array:
-        print(path)
-        print(shape)
-        print(voxel_size)
-        print(axis_names)
-        print(axis_units)
-        print(dtype)
-
         fpds = fp.prepare_ds(
             path,
             shape=shape,
@@ -580,21 +587,51 @@ class NewProjectDialog(QDialog):
             dtype=dtype,
         )
 
-        # if segmentation, do the relabeling like we do in the sample data
-        if path.endswith("seg"):
-            if self._has_duplicate_ids(image):
-                image = ensure_unique_labels(image)
+        # if there is segmentation data, check if relabeling is necessary for one of the
+        # following reasons:
+        #   1) User provided external tracks data, and we need to map seg_id to id
+        #   2) The labels in the provided data are not unique across time.
 
-        time_index = list(dimensions).index("time")
+        correct_duplicate_ids = None
+        relabel_from_csv = None
+
+        if path.endswith("seg"):
+            # check whether we should relabel from csv
+            relabel_from_csv = seg_id_map is not None
+            # if not, check whether the data has duplicate values
+            if not relabel_from_csv:
+                correct_duplicate_ids = self._has_duplicate_ids(image)
+            curr_max = 0
 
         # load and write each time point into the dataset
+        time_index = list(dimensions).index("time")
         for time in tqdm(
             range(image.shape[time_index]), desc="Converting time points to zarr"
         ):
             # keep running track of max and call ensure unique labels, map to csv
             slc = [slice(None)] * image.ndim
             slc[time_index] = time
-            fpds[time] = image[tuple(slc)].compute()
+
+            if path.endswith("seg"):
+                seg = image[tuple(slc)].compute()
+                if relabel_from_csv:
+                    relabeled_seg = np.zeros_like(seg).astype(np.uint64)
+                    df_t = seg_id_map[seg_id_map["t"] == time]
+                    # Create a mapping from seg_id to id for the current time point
+                    seg_id_to_id = dict(zip(df_t["seg_id"], df_t["id"], strict=True))
+                    # Apply the mapping to the segmentation image for the current time
+                    # point
+                    for seg_id, new_id in seg_id_to_id.items():
+                        relabeled_seg[seg == seg_id] = new_id
+                    seg = relabeled_seg
+                elif correct_duplicate_ids:
+                    mask = seg != 0
+                    seg[mask] += curr_max
+                    curr_max = int(np.max(seg))
+                # seg is now relabeled, or no relabeling was necessary
+                fpds[time] = seg
+            else:
+                fpds[time] = image[tuple(slc)].compute()
 
         return fpds
 
@@ -602,6 +639,8 @@ class NewProjectDialog(QDialog):
         """Creates a new funtracks project with the information provided in the dialog"""
 
         project_info = self._get_project_info()
+
+        print(project_info)
         intensity_image = project_info["intensity_image"]
         segmentation_image = project_info["segmentation_image"]
         name = project_info.get("title", "Untitled Project")
@@ -617,19 +656,67 @@ class NewProjectDialog(QDialog):
         if os.path.exists(zarr_dir):
             shutil.rmtree(zarr_dir)
 
-        # create fpds for the intensity image and segmentation data (if provided)
-        print(project_info)
-
+        # when loading tracks from csv, we need the mapping to the seg_ids before c
+        # constructing the fpds.
+        create_graph_from_df = False
+        seg_id_map = None
         tracks_path = project_info["tracks_path"]
         if tracks_path is not None:
-            df = pd.read_csv(tracks_path)
+            source_df = pd.read_csv(tracks_path)
             mapping = project_info["column_mapping"]
             scaling = axes["scaling"]
             if "channel" in axes["dimensions"]:
                 scaling = list(scaling).pop(0)
-            included_features = [f for f in features if f["include"]]
-            # cand_graph = graph_from_df(df, segmentation_fdps, mapping, scaling, features)
 
+            # remap based on column mapping provided by the user
+            df = pd.DataFrame()
+            for feature, column in mapping.items():
+                df[feature] = source_df[column]
+
+            # check that the ids provided in the csv are indeed unique
+            if not df["id"].is_unique:
+                raise DialogValueError(
+                    f"The object id values in column {mapping['id']} "
+                    "of the provided CSV file are not unique. Please provide a csv file where"
+                    "each object has a unique id value."
+                )
+
+            # check that the id column contains integer values, if not relabel them to
+            # unique integers
+            if not pd.api.types.is_integer_dtype(df["id"]):
+                print(
+                    f"Relabeling strings in column {mapping['id']} and "
+                    f"{mapping['parent_id']} to unique integers"
+                )
+                all_labels = pd.unique(df[["id"]].values.ravel())
+                label_to_int = {label: idx + 1 for idx, label in enumerate(all_labels)}
+                df["id"] = df["id"].map(label_to_int)
+                df["parent_id"] = df["parent_id"].map(label_to_int).astype("Int64")
+
+            # check if the provided segmentation matches with the dataframe (dimensions
+            # and seg value of the first object). Raises DialogValueError if any problems
+            # are found.
+            if segmentation_image is not None:
+                seg_indices = [int(i) for i in axes.get("seg_indices", list(range(ndim)))]
+                test_df_seg_match(
+                    df,
+                    segmentation_image,
+                    scaling,
+                    axis_order=seg_indices,
+                    mapping=mapping,
+                )
+
+            # extract id to seg_id dictionary if a segmentation image was provided
+            if segmentation_image is not None:
+                if (df["seg_id"] == df["id"]).all():
+                    # no relabeling is needed, id is already equal to seg_id
+                    seg_id_map = None
+                else:
+                    seg_id_map = df[["t", "id", "seg_id"]]
+
+            create_graph_from_df = True
+
+        # create fpds for the intensity image and segmentation data (if provided)
         intensity_fpds, segmentation_fdps = self.create_fpds(
             intensity_image,
             segmentation_image,
@@ -637,16 +724,25 @@ class NewProjectDialog(QDialog):
             ndim,
             axes,
             data_type,
+            seg_id_map,
         )
 
-        # # TODO implement points logic
+        if create_graph_from_df:
+            cand_graph = graph_from_df(
+                df, segmentation_image, intensity_image, scaling[1:], features
+            )
+        else:
+            cand_graph = None
+
+        # Create a candidate graph with only nodes when tracking based on point detections.
         if data_type == "points":
             points_path = project_info.get("detection_path", None)
             if points_path is None:
                 raise ValueError(
                     "Points detection type selected, but no points file provided."
                 )
-            # make graph from points here
+            points_data = pd.read_csv(points_path)
+            cand_graph = graph_from_points(points_data)
 
         # # TODO: include features to measure, ndim, cand_graph_params, point detections
         return Project(
@@ -654,7 +750,7 @@ class NewProjectDialog(QDialog):
             project_params=params,
             raw=intensity_fpds,
             segmentation=segmentation_fdps,
-            cand_graph=None,
+            cand_graph=cand_graph,
         )
 
     @staticmethod
@@ -686,45 +782,191 @@ class NewProjectDialog(QDialog):
         return False
 
 
-def ensure_unique_labels(
-    segmentation: np.ndarray | da.Array,
-    multiseg: bool = False,
-) -> np.ndarray:
-    """Relabels the segmentation in place to ensure that label ids are unique across
-    time. This means that every detection will have a unique label id.
-    Useful for combining predictions made in each frame independently, or multiple
-    segmentation outputs that repeat label IDs.
+def test_df_seg_match(
+    df: pd.DataFrame,
+    segmentation: da.Array,
+    scale: list[float] | None,
+    axis_order,
+    mapping: dict,
+):
+    """Test if the provided segmentation, dataframe, and scale values are valid together.
+    Tests the following requirements:
+      - The scale, if provided, has same dimensions as the segmentation
+      - The location coordinates have the same dimensions as the segmentation
+      - The segmentation pixel value for the coordinates of first node corresponds
+    with the provided seg_id as a basic sanity check that the csv file matches with the
+    segmentation file
 
     Args:
-        segmentation (np.ndarray | da.Array): Segmentation with dimensions ([h], t, [z], y, x).
-        multiseg (bool, optional): Flag indicating if the segmentation contains
-            multiple hypotheses in the first dimension. Defaults to False.
+        df (pd.DataFrame): the pandas dataframe to turn into tracks, with standardized
+            column names
+        segmentation (np.ndarray): The segmentation, a 3D or 4D array of integer labels
+        scale (list[float] | None): A list of floats representing the relationship between
+            the point coordinates and the pixels in the segmentation
     """
-    is_dask = isinstance(segmentation, da.Array)
-    segmentation = segmentation.astype(np.uint64)
-    orig_shape = segmentation.shape
-    if multiseg:
-        new_shape = (-1, *orig_shape[2:])
-        segmentation = segmentation.reshape(new_shape)
-    curr_max = 0
-    frames = []
-    for idx in range(segmentation.shape[0]):
-        frame = segmentation[idx]
-        if is_dask:
-            mask = frame != 0
-            frame = da.where(mask, frame + curr_max, frame)
-            curr_max = int(da.max(frame).compute())
-        else:
-            mask = frame != 0
-            frame[mask] += curr_max
-            curr_max = int(np.max(frame))
-        frames.append(frame)
-    if is_dask:
-        segmentation = da.stack(frames, axis=0)
-        if multiseg:
-            segmentation = segmentation.reshape(orig_shape)
+    # transpose if needed
+    default_order = list(range(segmentation.ndim))
+    if axis_order != default_order:
+        segmentation = np.transpose(segmentation, axis_order)
+
+    if scale is not None:
+        if segmentation.ndim != len(scale):
+            raise DialogValueError(
+                f"Dimensions of the segmentation image ({segmentation.ndim}) "
+                f"do not match the number of scale values given ({len(scale)})",
+                show_dialog=True,
+            )
     else:
-        segmentation = np.stack(frames, axis=0)
-        if multiseg:
-            segmentation = segmentation.reshape(orig_shape)
-    return segmentation
+        scale = [
+            1,
+        ] * segmentation.ndim
+
+    row = df.iloc[-1]
+    pos = (
+        [row["t"], row["z"], row["y"], row["x"]]
+        if "z" in df.columns
+        else [row["t"], row["y"], row["x"]]
+    )
+
+    if segmentation.ndim != len(pos):
+        raise DialogValueError(
+            f"Dimensions of the segmentation ({segmentation.ndim}) do not match the "
+            f"number of positional dimensions ({len(pos)})",
+            show_dialog=True,
+        )
+
+    seg_id = int(row["seg_id"])
+    coordinates = [
+        int(coord / scale_value) for coord, scale_value in zip(pos, scale, strict=True)
+    ]
+
+    try:
+        value = segmentation[tuple(coordinates)].compute()
+    except IndexError:
+        raise DialogValueError(
+            f"Could not get the segmentation value at coordinates "
+            f"{coordinates}. Segmentation data has shape "
+            f"{segmentation.shape}. Please check if the axis order you"
+            f" provided is correct.",
+            show_dialog=True,
+        )
+
+    if not value == seg_id:
+        raise DialogValueError(
+            f"The value {value} found at coordinates {coordinates} "
+            f"does not match the expected value ({seg_id}) from "
+            f"column {mapping['seg_id']}",
+            show_dialog=True,
+        )
+
+
+def graph_from_points(points_data: pd.DataFrame) -> nx.DiGraph:
+    """Create a graph from points data, representing t(z)yx coordinates"""
+
+    for id, row in points_data.iterrows():
+        if not all(col in points_data.columns for col in ("t", "y", "x")):
+            raise DialogValueError(
+                "Please provide points data with columns for time (t), "
+                "(z), y, and x coordinates",
+                show_dialog=True,
+            )
+
+        if "z" in points_data.columns:
+            pos = [row["z"], row["y"], row["x"]]
+        else:
+            pos = [row["y"], row["x"]]
+
+        attrs = {
+            "t": int(row["t"]),
+            "pos": pos,
+        }
+
+        graph = nx.DiGraph()
+        graph.add_node(id + 1, **attrs)
+
+    return graph
+
+
+def graph_from_df(
+    df: pd.DataFrame,
+    segmentation: fp.Array | None,
+    intensity_image: fp.Array | None,
+    scaling: tuple[float],
+    features: list[dict[str : Feature | str | bool]],
+) -> nx.DiGraph:
+    required_columns = ["id", "t", "y", "x", "parent_id"]
+
+    graph = nx.DiGraph()
+    for _, row in df.iterrows():
+        row_dict = row.to_dict()
+        _id = int(row["id"])
+        parent_id = row["parent_id"]
+        if "z" in df.columns:
+            pos = [row["z"], row["y"], row["x"]]
+            required_columns.append("z")
+        else:
+            pos = [row["y"], row["x"]]
+
+        attrs = {
+            "t": int(row["t"]),
+            "pos": pos,
+        }
+
+        # add all other columns into the attributes
+        for attr in required_columns:
+            del row_dict[attr]
+        attrs.update(row_dict)
+
+        if "track_id" in df.columns:
+            attrs["track_id"] = int(row["track_id"])
+
+        # add additional features from the table, if requested, or recompute them
+        features_to_recompute = [
+            f["feature"]
+            for f in features
+            if f["include"]
+            and f["feature"].computed
+            and f["from_column"] is None
+            and f["feature"].regionprops_name is not None
+        ]
+        features_to_import_from_df = [
+            f
+            for f in features
+            if f["include"] and f["feature"].computed and f["from_column"] is not None
+        ]
+
+        for feature in features_to_import_from_df:
+            attrs[feature.feature.attr_name] = int(row[feature.from_column])
+
+        if len(features_to_recompute) > 0:
+            t = int(row["t"])
+            if intensity_image is not None:
+                intensity = intensity_image[t].compute()
+            else:
+                intensity = None
+            # compute the feature
+            props = regionprops(
+                segmentation[t].compute(), intensity_image=intensity, spacing=scaling
+            )
+            for regionprop in props:
+                for feature in features_to_recompute:
+                    # to list gives floats/ints in the case of single items
+                    value = getattr(regionprop, feature.regionprops_name)
+                    if isinstance(value, tuple):
+                        value = [i.tolist() for i in value]
+                    else:
+                        value = value.tolist()
+                    attrs[feature.attr_name] = value
+
+        # add the node to the graph
+        graph.add_node(_id, **attrs)
+
+        # add the edge to the graph, if the node has a parent
+        # note: this loading format does not support edge attributes
+        if not pd.isna(parent_id) and parent_id != -1:
+            assert parent_id in graph.nodes, (
+                f"Parent id {parent_id} of node {_id} not in graph yet"
+            )
+            graph.add_edge(parent_id, _id)
+
+        return graph
