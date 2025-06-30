@@ -1,7 +1,7 @@
 import os
 from typing import Any
 
-from funtracks.features._base import Feature
+from funtracks.features._base import Feature, FeatureType
 from funtracks.features.measurement_features import featureset
 from qtpy.QtWidgets import (
     QCheckBox,
@@ -9,10 +9,13 @@ from qtpy.QtWidgets import (
     QGroupBox,
     QHBoxLayout,
     QLabel,
+    QLineEdit,
+    QPushButton,
     QVBoxLayout,
     QWidget,
 )
 
+from finn._qt.qt_resources import QColoredSVGIcon
 from finn.track_application_menus.welcome.new_project_pages.page1_goals import Page1
 from finn.track_application_menus.welcome.new_project_pages.page2_raw_data import Page2
 from finn.track_application_menus.welcome.new_project_pages.page3_seg_data import Page3
@@ -32,7 +35,8 @@ class FeatureWidget(QWidget):
         super().__init__()
 
         self.feature_instances = [feature_cls(ndim=ndim) for feature_cls in featureset]
-
+        self.data_type = data_type
+        self.ndim = ndim
         self.features_layout = QVBoxLayout()
 
         self.show_mapping = bool(mappable_columns)
@@ -50,17 +54,30 @@ class FeatureWidget(QWidget):
             checkbox.setChecked(False)
             row_layout.addWidget(checkbox)
             self.measurement_checkboxes[feature.attr_name] = checkbox
-            checkbox.setEnabled(data_type == "segmentation")
+            checkbox.setEnabled(self.data_type == "segmentation")
 
             combobox = QComboBox()
             combobox.addItem("None")
             combobox.setVisible(self.show_mapping)
-            combobox.setEnabled(data_type == "segmentation")
+            combobox.setEnabled(self.data_type == "segmentation")
 
             row_layout.addWidget(combobox)
             self.measurement_comboboxes[feature.attr_name] = combobox
 
             self.features_layout.addLayout(row_layout)
+
+        self.extra_features_layout = QVBoxLayout()
+        self.extra_features = []  # List of (QLineEdit, QComboBox)
+        self.mappable_columns = list(mappable_columns)  # Save for later use
+
+        # Add "+" button for extra features
+        self.add_feature_btn = QPushButton("+")
+        self.add_feature_btn.setFixedSize(20, 20)
+        self.add_feature_btn.clicked.connect(self.add_extra_feature)
+        self.add_feature_btn.setEnabled(self._can_add_extra_feature())
+
+        self.features_layout.addLayout(self.extra_features_layout)
+        self.features_layout.addWidget(self.add_feature_btn)
 
         self.setLayout(self.features_layout)
 
@@ -72,8 +89,19 @@ class FeatureWidget(QWidget):
         data_type: str = "segmentation",
     ):
         self.show_mapping = bool(mappable_columns)
+        self.mappable_columns = list(mappable_columns)  # Save for later use
         self.choose_column_label.setVisible(self.show_mapping)
+        self.ndim = ndim
         self.feature_instances = [feature_cls(ndim=ndim) for feature_cls in featureset]
+        self.data_type = data_type
+        enable_features = self.data_type == "segmentation" or (
+            self.data_type == "points" and bool(mappable_columns)
+        )
+
+        if not mappable_columns:
+            self.clear_extra_features()
+
+        self.add_feature_btn.setEnabled(self._can_add_extra_feature())
 
         for feature in self.feature_instances:
             attr_name = feature.attr_name
@@ -84,7 +112,7 @@ class FeatureWidget(QWidget):
                 # Enable/disable intensity checkbox if needed
                 if attr_name == "intensity":
                     checkbox.setEnabled(include_intensity)
-                checkbox.setEnabled(data_type == "segmentation")
+                checkbox.setEnabled(enable_features)
 
             # Update combobox visibility and options
             if attr_name in self.measurement_comboboxes:
@@ -108,7 +136,85 @@ class FeatureWidget(QWidget):
                 # Enable/disable intensity combobox if needed
                 if attr_name == "intensity":
                     combobox.setEnabled(include_intensity)
-                combobox.setEnabled(data_type == "segmentation")
+                combobox.setEnabled(enable_features)
+
+    def _can_add_extra_feature(self):
+        # Only enable if there are unmapped columns and no combo is set to None
+        used_columns = {
+            combo.currentText()
+            for _, combo, *_ in self.extra_features
+            if combo.currentText() != "None"
+        }
+        available = [col for col in self.mappable_columns if col not in used_columns]
+        return bool(available)
+
+    def clear_extra_features(self):
+        # Remove all extra feature widgets and layouts
+        for edit, combo, row_layout, delete_btn in self.extra_features:
+            edit.deleteLater()
+            combo.deleteLater()
+            delete_btn.deleteLater()
+            while row_layout.count():
+                item = row_layout.takeAt(0)
+                widget = item.widget()
+                if widget is not None:
+                    widget.setParent(None)
+            self.extra_features_layout.removeItem(row_layout)
+        self.extra_features = []
+
+    def add_extra_feature(self):
+        # Find the columns that are available to map (should be numerical)
+        used_columns = {combo.currentText() for _, combo, *_ in self.extra_features}
+        available = [col for col in self.mappable_columns if col not in used_columns]
+
+        if not available:
+            return
+
+        feature_name_edit = QLineEdit(available[0])
+        combo = QComboBox()
+        combo.addItem("None")
+        for col in self.mappable_columns:
+            if col not in used_columns:
+                combo.addItem(col)
+        combo.setCurrentText(available[0])
+
+        def on_combo_changed():
+            self.add_feature_btn.setEnabled(self._can_add_extra_feature())
+            feature_name_edit.setText(combo.currentText())
+
+        combo.currentTextChanged.connect(on_combo_changed)
+
+        # Delete button
+        delete_icon = QColoredSVGIcon.from_resources("delete").colored("white")
+        delete_btn = QPushButton(icon=delete_icon)
+        delete_btn.setToolTip("Remove this feature")
+        delete_btn.setFixedSize(20, 20)
+
+        row_layout = QHBoxLayout()
+        row_layout.addWidget(feature_name_edit)
+        row_layout.addWidget(combo)
+        row_layout.addWidget(delete_btn)
+        self.extra_features_layout.addLayout(row_layout)
+        self.extra_features.append((feature_name_edit, combo, row_layout, delete_btn))
+
+        def remove_feature():
+            feature_name_edit.deleteLater()
+            combo.deleteLater()
+            delete_btn.deleteLater()
+            while row_layout.count():
+                item = row_layout.takeAt(0)
+                widget = item.widget()
+                if widget is not None:
+                    widget.setParent(None)
+            self.extra_features_layout.removeItem(row_layout)
+            self.extra_features = [
+                ef for ef in self.extra_features if ef[0] != feature_name_edit
+            ]
+            self.add_feature_btn.setEnabled(self._can_add_extra_feature())
+
+        delete_btn.clicked.connect(remove_feature)
+
+        self.add_feature_btn.setEnabled(self._can_add_extra_feature())
 
     def get_selected_features(self) -> list[dict[str : Feature | str | bool]]:
         """For each feature, check whether to include it, and optionally if it should be
@@ -133,9 +239,29 @@ class FeatureWidget(QWidget):
                     if from_column == "None":
                         from_column = None
 
+            # features can only be computed when a segmentation is provided.
+            feature.computed = self.data_type == "segmentation"
             features.append(
                 {"feature": feature, "include": include, "from_column": from_column}
             )
+
+        for edit, combo, *_ in self.extra_features:
+            col = combo.currentText()
+            if col != "None":
+                features.append(
+                    {
+                        "feature": Feature(
+                            attr_name=edit.text(),
+                            value_names=edit.text(),
+                            feature_type=FeatureType.NODE.value,
+                            valid_ndim=(self.ndim,),
+                            computed=False,
+                            required=False,
+                        ),
+                        "include": True,
+                        "from_column": col,
+                    }
+                )
 
         return features
 
@@ -150,11 +276,26 @@ class Page7(QWidget):
 
         self.page1 = page1
         self.page1.choice_updated.connect(self.update_features)
+        choice = self.page1.get_choice()
+
         mappable_columns = (
-            self.page5.get_unmapped_columns()
-            if self.page1.get_choice() == "curate_tracks"
+            self.page5.get_unmapped_columns(numerical_only=True)
+            if choice == "curate_tracks"
             else []
         )
+
+        if choice == "curate_tracks":
+            self.points_label = QLabel(
+                "<i>Measuring features is only supported when you "
+                "provide segmentation data.<br><br>.You can load existing features from CSV for "
+                "viewing purposes only.</i>"
+            )
+        else:
+            self.points_label = QLabel(
+                "<i>Measuring features is only supported when you "
+                "provide segmentation data.</i>"
+            )
+
         self.page2 = page2
         self.page2.validity_changed.connect(self.update_features)
         self.include_intensity = True if self.page2.get_path() is not None else False
@@ -165,6 +306,8 @@ class Page7(QWidget):
         self.page4.dim_updated.connect(self.update_features)
         self.page5 = page5
         self.page5.mapping_updated.connect(self.update_features)
+
+        self.points_label.setVisible(self.page3.data_type == "points")
 
         if self.page4.incl_z:
             ndim = 4
@@ -179,6 +322,7 @@ class Page7(QWidget):
 
         # wrap in a group box
         layout = QVBoxLayout(self)
+        layout.addWidget(self.points_label)
         feature_group_box = QGroupBox("Node Features")
         feature_group_layout = QVBoxLayout(feature_group_box)
         feature_group_layout.addWidget(QLabel("Choose which features to include"))
@@ -190,10 +334,26 @@ class Page7(QWidget):
     def update_features(self):
         """Update the features based on the selected dimensions"""
 
-        if self.page1.get_choice() != "curate_tracks":
-            mappable_columns = []
+        choice = self.page1.get_choice()
+        if choice == "curate_tracks":
+            self.points_label = QLabel(
+                "<i>Measuring features is only supported when you "
+                "provide segmentation data.<br><br>.You can load existing features from CSV for "
+                "viewing purposes only.</i>"
+            )
         else:
-            mappable_columns = self.page5.get_unmapped_columns()
+            self.points_label = QLabel(
+                "<i>Measuring features is only supported when you "
+                "provide segmentation data.</i>"
+            )
+        self.points_label.setVisible(self.page3.data_type == "points")
+
+        mappable_columns = (
+            self.page5.get_unmapped_columns(numerical_only=True)
+            if choice == "curate_tracks"
+            else []
+        )
+
         if self.page2.get_path() is None or not os.path.exists(self.page2.get_path()):
             self.include_intensity = False
         else:

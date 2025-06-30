@@ -82,11 +82,15 @@ class Page5(QWidget):
             return self.csv_widget.csv_field_widget.get_name_map()
         return None
 
-    def get_unmapped_columns(self) -> list[str]:
-        """Get the columns that were not mapped to any feature"""
+    def get_unmapped_columns(self, numerical_only: bool = False) -> list[str]:
+        """Get the columns that were not mapped to any feature
+        args:
+            numerical_only (bool, default False): whether to return only columns with a
+             numerical dtype
+        """
 
-        if self.csv_widget.csv_field_widget is not None:
-            return self.csv_widget.csv_field_widget.columns_left
+        if self.csv_widget is not None:
+            return self.csv_widget.get_unmapped_columns(numerical_only)
         return []
 
     def get_settings(self) -> dict[str:str]:

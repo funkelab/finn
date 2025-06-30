@@ -234,3 +234,24 @@ class CSVWidget(QWidget):
         """Emit the mapping_updated signal when the CSVFieldMapWidget changes its columns."""
 
         self.mapping_updated.emit()
+
+    def get_unmapped_columns(self, numerical_only: bool = False) -> None:
+        """Get all non mapped columns
+        args:
+            numerical_only (bool, defaults to False): whether to return only numerical
+            columns
+        """
+        if self.df is None:
+            return []
+
+        if numerical_only:
+            return [
+                column
+                for column in self.df.select_dtypes(include="number").columns
+                if column not in self.csv_field_widget.get_name_map().values()
+            ]
+        return [
+            column
+            for column in self.csv_columns
+            if column not in self.csv_field_widget.get_name_map().values()
+        ]
