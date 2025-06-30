@@ -139,9 +139,6 @@ class Page3(QWidget):
         self.validity_changed.emit()
 
     def get_settings(self) -> dict[str]:
-        """Returns the data_type and path to the points data, if data_type is points.
-        TODO: handle the point data separately, similar to the seg data"""
+        """Returns the data_type chosen by the user"""
 
-        points_path = self.get_path() if self.data_type == "points" else None
-
-        return {"data_type": self.data_type, "points_path": points_path}
+        return {"data_type": self.data_type}

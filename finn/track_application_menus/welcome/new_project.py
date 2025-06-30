@@ -294,7 +294,7 @@ class NewProjectDialog(QDialog):
     def _go_to_page4(self):
         """Go to page 4 and validate it to enable/disable the NEXT button."""
         self.stacked.setCurrentIndex(3)
-        self.page4.validate()
+        self.page4.update_table()
 
     def _go_to_page4_or_5(self):
         """Go to page 5 to track from scratch, otherwise go to page 4."""
@@ -338,10 +338,10 @@ class NewProjectDialog(QDialog):
             dict[str: Any] with information from the different pages as follows:
             Page 3:
                 - data_type [str]: either 'segmentation' or 'points'
-                - points_data [str | None] : path to points data
             Page 4:
                 - intensity_image [da.Array | None] : intensity data
                 - segmentation_image [da.Array | None] : segmentation data
+                - points_data [pd.DataFrame]: point detection data
                 - ndim [int]: the number of dimensions (incl time) of the data (3, 4, or
                     5)
                 - axes [dict]:
@@ -736,13 +736,8 @@ class NewProjectDialog(QDialog):
 
         # Create a candidate graph with only nodes when tracking based on point detections.
         if data_type == "points":
-            points_path = project_info.get("detection_path", None)
-            if points_path is None:
-                raise ValueError(
-                    "Points detection type selected, but no points file provided."
-                )
-            points_data = pd.read_csv(points_path)
-            cand_graph = graph_from_points(points_data)
+            points_data = project_info.get("points_data", None)
+            cand_graph = graph_from_points(points_data, axes["points_columns"])
 
         # # TODO: include features to measure, ndim, cand_graph_params, point detections
         return Project(
@@ -860,28 +855,36 @@ def test_df_seg_match(
         )
 
 
-def graph_from_points(points_data: pd.DataFrame) -> nx.DiGraph:
+def graph_from_points(
+    points_data: pd.DataFrame, column_mapping: dict[str:str]
+) -> nx.DiGraph:
     """Create a graph from points data, representing t(z)yx coordinates"""
 
+    graph = nx.DiGraph()
     for id, row in points_data.iterrows():
-        if not all(col in points_data.columns for col in ("t", "y", "x")):
+        if "z" in column_mapping:
+            pos = [
+                row.get(column_mapping["z"], None),
+                row.get(column_mapping["y"], None),
+                row.get(column_mapping["x"], None),
+            ]
+        else:
+            pos = [row.get(column_mapping["y"], None), row.get(column_mapping["x"], None)]
+
+        t = row.get(column_mapping["t"], None)
+
+        values = pos + [t]
+        if not all(isinstance(v, (int, float, np.integer, np.floating)) for v in values):
             raise DialogValueError(
-                "Please provide points data with columns for time (t), "
-                "(z), y, and x coordinates",
+                f"Non-numerical or missing value found in position columns at row {id}: {values}",
                 show_dialog=True,
             )
 
-        if "z" in points_data.columns:
-            pos = [row["z"], row["y"], row["x"]]
-        else:
-            pos = [row["y"], row["x"]]
-
         attrs = {
-            "t": int(row["t"]),
+            "t": int(t),
             "pos": pos,
         }
 
-        graph = nx.DiGraph()
         graph.add_node(id + 1, **attrs)
 
     return graph

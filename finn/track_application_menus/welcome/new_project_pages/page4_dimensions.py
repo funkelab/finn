@@ -149,7 +149,7 @@ class Page4(QWidget):
         self._set_allow_channels()
 
         # Check if the shapes for intensity data and segmentation data are compatible
-        self._update_table()
+        self.update_table()
 
     def _set_allow_channels(self) -> None:
         """Channels label should be visible if the intensity data has one dimension more
@@ -224,7 +224,7 @@ class Page4(QWidget):
         self.dim_updated.emit()
         self.validate()
 
-    def _update_table(self):
+    def update_table(self):
         self.table.setVisible(True)
 
         self._set_allow_channels()
@@ -250,8 +250,9 @@ class Page4(QWidget):
             if isinstance(axis, list):
                 item = QComboBox()
                 item.addItems(axis)
-                item.currentTextChanged.connect(self._update_axis)
                 item.setCurrentText("channel")
+                self.has_channels = True
+                item.currentTextChanged.connect(self._update_axis)
                 axis_name = item.currentText()
                 self.table.setCellWidget(row, 0, item)
             else:
@@ -306,7 +307,7 @@ class Page4(QWidget):
                             str(guess_map_values[row - 1])
                         )
                 else:
-                    self.seg_axis_indices.setCurrentText(str(guess_map_values[row]))
+                    self.seg_axis_indices.setCurrentText(guess_map_values[row])
                 self.seg_axis_indices.currentTextChanged.connect(self.validate)
 
             self.table.setCellWidget(row, 2, self.seg_axis_indices)
@@ -461,12 +462,13 @@ class Page4(QWidget):
         info = {
             "intensity_image": self.raw,
             "segmentation_image": self.seg,
+            "points_data": self.points,
             "ndim": self.ndim,
             "axes": {
                 "dimensions": [],
                 "raw_indices": [],
                 "seg_indices": [],
-                "columns": [],
+                "points_columns": {},
                 "axis_names": [],
                 "units": [],
                 "scaling": [],
@@ -474,11 +476,13 @@ class Page4(QWidget):
         }
 
         for row in range(self.table.rowCount()):
-            axis = (
-                self.table.item(row, 0).text()
-                if isinstance(self.table.item(row, 0), QTableWidgetItem)
-                else self.table.item(row, 0).currentText()
-            )
+            widget = self.table.cellWidget(row, 0)
+
+            if isinstance(widget, QComboBox):
+                axis = widget.currentText()
+            else:
+                item = self.table.item(row, 0)
+                axis = item.text()
             raw_index = self.table.cellWidget(row, 1).currentText()
             seg_index = self.table.cellWidget(row, 2).currentText()
             axis_name = self.table.cellWidget(row, 3).text()
@@ -490,7 +494,7 @@ class Page4(QWidget):
             if self.seg is not None:
                 info["axes"]["seg_indices"].append(seg_index)
             if self.points is not None:
-                info["axes"]["columns"].append(seg_index)
+                info["axes"]["points_columns"][axis] = seg_index
             info["axes"]["axis_names"].append(axis_name)
             info["axes"]["units"].append(unit)
             info["axes"]["scaling"].append(step_size)
