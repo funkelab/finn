@@ -216,7 +216,7 @@ class Page4(QWidget):
 
         # Automatic column mapping from CSV
         if self.points is not None and axis_name == "z":
-            axis_labels = self.points.columns
+            axis_labels = list(self.points.select_dtypes(include="number").columns)
             guess_map_values = self._get_initial_mapping(list(axis_labels), self.incl_z)
             widget = self.table.cellWidget(0, 2)
             widget.setCurrentText(str(guess_map_values[1]))
@@ -294,7 +294,7 @@ class Page4(QWidget):
                 self.seg_axis_indices.currentTextChanged.connect(self.validate)
             elif self.points is not None:
                 self.seg_axis_indices.setEnabled(True)
-                axis_labels = self.points.columns
+                axis_labels = list(self.points.select_dtypes(include="number").columns)
                 guess_map_values = self._get_initial_mapping(
                     list(axis_labels), self.incl_z
                 )
