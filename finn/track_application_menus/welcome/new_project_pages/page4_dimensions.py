@@ -184,6 +184,7 @@ class Page4(QWidget):
 
         # Axis name (editable)
         self.table.setCellWidget(0, 3, QLineEdit(axis_name))
+
         # Unit (dropdown)
         unit_combo = QComboBox()
         unit_combo.addItems(self.units[axis_name])
@@ -212,6 +213,13 @@ class Page4(QWidget):
                 widget.setEnabled(True)
             self.incl_z = True
         self.table.setCellWidget(0, 5, step_spin)
+
+        # Automatic column mapping from CSV
+        if self.points is not None and axis_name == "z":
+            axis_labels = self.points.columns
+            guess_map_values = self._get_initial_mapping(list(axis_labels), self.incl_z)
+            widget = self.table.cellWidget(0, 2)
+            widget.setCurrentText(str(guess_map_values[1]))
 
         self.dim_updated.emit()
         self.validate()
@@ -286,13 +294,19 @@ class Page4(QWidget):
             elif self.points is not None:
                 self.seg_axis_indices.setEnabled(True)
                 axis_labels = self.points.columns
+                guess_map_values = self._get_initial_mapping(
+                    list(axis_labels), self.incl_z
+                )
                 self.seg_axis_indices.addItems([str(i) for i in axis_labels])
                 if self.has_channels:
-                    self.seg_axis_indices.setCurrentText(str(axis_labels[row - 1]))
                     if row == 0:
                         self.seg_axis_indices.setEnabled(False)
+                    else:
+                        self.seg_axis_indices.setCurrentText(
+                            str(guess_map_values[row - 1])
+                        )
                 else:
-                    self.seg_axis_indices.setCurrentText(str(axis_labels[row]))
+                    self.seg_axis_indices.setCurrentText(str(guess_map_values[row]))
                 self.seg_axis_indices.currentTextChanged.connect(self.validate)
 
             self.table.setCellWidget(row, 2, self.seg_axis_indices)
@@ -322,6 +336,33 @@ class Page4(QWidget):
 
         self.dim_updated.emit()
         self.validate()
+
+    def _get_initial_mapping(self, csv_columns: list[str], incl_z: bool) -> list[str]:
+        """Make an initial guess for mapping of csv columns to fields"""
+
+        mapping = {}
+        columns_left: list = csv_columns.copy()
+
+        standard_fields = ["t", "z", "y", "x"]
+        if not incl_z:
+            standard_fields.remove("z")
+        # find exact matches for standard fields
+        for attribute in standard_fields:
+            if attribute in columns_left:
+                mapping[attribute] = attribute
+                columns_left.remove(attribute)
+
+        # assign first remaining column as best guess for remaining standard fields
+        for attribute in standard_fields:
+            if attribute in mapping:
+                continue
+            if len(columns_left) > 0:
+                mapping[attribute] = columns_left.pop(0)
+            else:
+                # no good guesses left - just put something
+                mapping[attribute] = csv_columns[-1]
+
+        return list(mapping.values())
 
     def validate(self) -> None:
         """Validate inputs on this page and then emits a signal"""
