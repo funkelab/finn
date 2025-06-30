@@ -25,7 +25,7 @@ class Page4(QWidget):
     validity_changed = Signal()
     dim_updated = Signal()
 
-    def __init__(self, page2: Page2 | None = None, page3: Page3 | None = None):
+    def __init__(self, page2: Page2, page3: Page3):
         super().__init__()
 
         self.page2 = page2
@@ -109,6 +109,10 @@ class Page4(QWidget):
         self.setLayout(main_layout)
 
     def _guess_data_dimensions(self):
+        # return early if the previous pages are not yet valid.
+        if not (self.page2.is_valid and self.page3.is_valid):
+            self.is_valid = False
+            return
         self.intensity_label.setVisible(False)
         self.detection_label.setVisible(False)
         self.raw = None
@@ -213,7 +217,6 @@ class Page4(QWidget):
         self.validate()
 
     def _update_table(self):
-        print("update the table!")
         self.table.setVisible(True)
 
         self._set_allow_channels()
@@ -323,7 +326,6 @@ class Page4(QWidget):
     def validate(self) -> None:
         """Validate inputs on this page and then emits a signal"""
 
-        print("validate the table!")
         # extract the display order in the table (this may vary when the user gets to
         # choose between 'channel' and 'z' in the first row).
         display_order = []
