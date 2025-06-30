@@ -92,7 +92,7 @@ class NewProjectDialog(QDialog):
         self.stacked.addWidget(page2_widget)
 
         # --- Page 3: Detection data selection --- #
-        self.page3 = Page3(page1=self.page1)
+        self.page3 = Page3(page1=self.page1, page2=self.page2)
         self.page3.validity_changed.connect(self._validate_page3)
 
         layout3 = QVBoxLayout()

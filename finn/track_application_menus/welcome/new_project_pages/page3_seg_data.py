@@ -14,6 +14,7 @@ from qtpy.QtWidgets import (
 
 from finn.track_application_menus.welcome.browse_data import DataWidget
 from finn.track_application_menus.welcome.new_project_pages.page1_goals import Page1
+from finn.track_application_menus.welcome.new_project_pages.page2_raw_data import Page2
 
 
 class Page3(QWidget):
@@ -21,13 +22,15 @@ class Page3(QWidget):
 
     validity_changed = Signal()
 
-    def __init__(self, page1: Page1):
+    def __init__(self, page1: Page1, page2: Page2):
         super().__init__()
 
         self.is_valid = False
         self.data_type = "segmentation"
         self.page1 = page1
         self.page1.choice_updated.connect(self._toggle_data_widget_visibility)
+        self.page2 = page2
+        self.page2.validity_changed.connect(self.validate)
 
         # Ask the user if they have intensity data (mandatory when tracking from scratch)
         data_layout = QVBoxLayout()
@@ -55,6 +58,14 @@ class Page3(QWidget):
 
         layout = QVBoxLayout()
         layout.addLayout(data_layout)
+
+        self.intensity_label = QLabel(
+            "<i>Intensity data is required when tracking with "
+            "points. <br><br>Please make sure that you have provided a valid path  <br><br>"
+            "to the intensity data on the previous page. </i>"
+        )
+        self.intensity_label.setVisible(False)
+        layout.addWidget(self.intensity_label)
 
         # Provide a widget to enter the path to the detection data
         self.data_widget = DataWidget()
@@ -106,14 +117,25 @@ class Page3(QWidget):
         else:
             path = self.get_path()
             if self.points.isChecked():
-                self.is_valid = path is not None and (
+                path_valid = path is not None and (
                     os.path.exists(path) and path.endswith("csv")
                 )
+                # In the case of points, we do need intensity data as well.
+                intensity_path = self.page2.get_path()
+                intensity_path_valid = intensity_path is not None and os.path.exists(
+                    intensity_path
+                )
+                self.is_valid = path_valid and intensity_path_valid
+                if not intensity_path_valid:
+                    self.intensity_label.setVisible(True)
             else:
                 self.is_valid = path is not None and (
                     os.path.exists(path) and not path.endswith("csv")
                 )
-        print("page 3 valid:", self.is_valid)
+                self.intensity_label.setVisible(False)
+
+        if self.is_valid:
+            self.intensity_label.setVisible(False)
         self.validity_changed.emit()
 
     def get_settings(self) -> dict[str]:
