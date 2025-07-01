@@ -17,7 +17,7 @@ from typing import Any
 
 from finn.errors import ReaderPluginError
 from finn.track_application_menus.main_app import MainApp
-from finn.track_application_menus.welcome.new_project import NewProjectDialog
+from finn.track_application_menus.welcome.new_project_dialog import NewProjectDialog
 from finn.track_application_menus.welcome.welcome import WelcomeDialog
 from finn.utils.translations import trans
 
