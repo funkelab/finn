@@ -27,7 +27,14 @@ from finn.track_application_menus.welcome.new_project_pages import (
 
 
 class NewProjectDialog(QDialog):
-    """Dialog to create a new project"""
+    """Multi-page dialog menu to collect all required information for creating a new
+    Funtracks Project. Options are:
+        1) track from scratch by placing points or segmentation labels
+        2) track based on existing (point or label) detections
+        3) open external tracking data from a csv file.
+    Depending on the choice, different fields are required to be filled out. When
+    information is missing, the dialog cannot be completed.
+    """
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -122,7 +129,7 @@ class NewProjectDialog(QDialog):
         page4_widget.setLayout(layout4)
         self.stacked.addWidget(page4_widget)
 
-        # --- Page 5: Importing external tracks from csv --- #
+        # --- [Optional] Page 5: Importing external tracks from csv --- #
         self.page5 = Page5(self.page3, self.page4)
         self.page5.validity_changed.connect(self._validate_page5)
 
@@ -167,7 +174,7 @@ class NewProjectDialog(QDialog):
         page6_widget.setLayout(layout6)
         self.stacked.addWidget(page6_widget)
 
-        # --- Page 7: Features to measure --- #
+        # --- Page 7: Features to compute or import --- #
         self.page7 = Page7(
             page1=self.page1,
             page2=self.page2,
@@ -348,8 +355,8 @@ class NewProjectDialog(QDialog):
             Page 5:
                 - tracks_path [str | None]: path to where the tracking data csv file is
                     stored (if provided)
-                - tracks_mapping [dict[str: str] | None] : mapping of the csv column headers to
-                    the required tracking information (dimensions, ids)
+                - tracks_mapping [dict[str: str] | None] : mapping of the csv column
+                    headers to the required tracking information (dimensions, ids)
             Page 6:
                 - project_params [ProjectParams]: parameters for the project
                 - cand_graph_params [CandGraphParams]: parameters for the candidate graph
