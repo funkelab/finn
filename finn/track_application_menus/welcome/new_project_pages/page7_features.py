@@ -3,6 +3,7 @@ from typing import Any
 
 from funtracks.features._base import Feature, FeatureType
 from funtracks.features.measurement_features import featureset
+from psygnal import Signal
 from qtpy.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -26,6 +27,8 @@ from finn.track_application_menus.welcome.new_project_pages.page5_csv_import imp
 class FeatureWidget(QWidget):
     """Widget allowing the user to choose which features to include"""
 
+    validity_changed = Signal()
+
     def __init__(
         self,
         ndim: int,
@@ -38,6 +41,7 @@ class FeatureWidget(QWidget):
         self.data_type = data_type
         self.ndim = ndim
         self.features_layout = QVBoxLayout()
+        self.is_valid = True
 
         self.show_mapping = bool(mappable_columns)
         self.choose_column_label = QLabel("Choose from column")
@@ -110,9 +114,9 @@ class FeatureWidget(QWidget):
                 checkbox = self.measurement_checkboxes[attr_name]
                 checkbox.setText(feature.value_names)
                 # Enable/disable intensity checkbox if needed
+                checkbox.setEnabled(enable_features)
                 if attr_name == "intensity":
                     checkbox.setEnabled(include_intensity)
-                checkbox.setEnabled(enable_features)
 
             # Update combobox visibility and options
             if attr_name in self.measurement_comboboxes:
@@ -133,10 +137,10 @@ class FeatureWidget(QWidget):
                     combobox.blockSignals(False)
                 else:
                     combobox.setCurrentText("None")
+                combobox.setEnabled(enable_features)
                 # Enable/disable intensity combobox if needed
                 if attr_name == "intensity":
                     combobox.setEnabled(include_intensity)
-                combobox.setEnabled(enable_features)
 
     def _can_add_extra_feature(self):
         # Only enable if there are unmapped columns and no combo is set to None
@@ -182,6 +186,7 @@ class FeatureWidget(QWidget):
             self.add_feature_btn.setEnabled(self._can_add_extra_feature())
             feature_name_edit.setText(combo.currentText())
 
+        feature_name_edit.textChanged.connect(self.validate_unique_feature_names)
         combo.currentTextChanged.connect(on_combo_changed)
 
         # Delete button
@@ -216,6 +221,27 @@ class FeatureWidget(QWidget):
 
         self.add_feature_btn.setEnabled(self._can_add_extra_feature())
 
+    def validate_unique_feature_names(self):
+        # Collect all attr_names used and check for duplicates
+        base_names = {feature.attr_name for feature in self.feature_instances}
+        extra_names = [edit.text().strip() for edit, *_ in self.extra_features]
+        all_names = list(base_names) + extra_names
+        duplicates = {name for name in extra_names if all_names.count(name) > 1 and name}
+        # change color of text edit when a duplicate name is used
+        for edit, *_ in self.extra_features:
+            if edit.text().strip() in duplicates:
+                edit.setStyleSheet("background-color: #c62828;")  # light red
+            else:
+                edit.setStyleSheet("")
+
+        # send a signal to notify parent widget.
+        if bool(duplicates):
+            self.is_valid = False
+        else:
+            self.is_valid = True
+
+        self.validity_changed.emit()
+
     def get_selected_features(self) -> list[dict[str : Feature | str | bool]]:
         """For each feature, check whether to include it, and optionally if it should be
         imported from an existing column.
@@ -234,7 +260,7 @@ class FeatureWidget(QWidget):
                 and attr_name in self.measurement_comboboxes
             ):
                 combobox = self.measurement_comboboxes[attr_name]
-                if combobox.isVisible() and combobox.isEnabled():
+                if combobox.isVisibleTo(self) and combobox.isEnabled():
                     from_column = combobox.currentText()
                     if from_column == "None":
                         from_column = None
@@ -269,11 +295,14 @@ class FeatureWidget(QWidget):
 class Page7(QWidget):
     """Page 7 of the project dialog, to enter features to measure or import"""
 
+    validity_changed = Signal()
+
     def __init__(
         self, page1: Page1, page2: Page2, page3: Page3, page4: Page4, page5: Page5
     ):
         super().__init__()
 
+        self.is_valid = True
         self.page1 = page1
         self.page1.choice_updated.connect(self.update_features)
         choice = self.page1.get_choice()
@@ -319,6 +348,7 @@ class Page7(QWidget):
             mappable_columns=mappable_columns,
             data_type=data_type,
         )
+        self.feature_widget.validity_changed.connect(self.validate)
 
         # wrap in a group box
         layout = QVBoxLayout(self)
@@ -375,3 +405,13 @@ class Page7(QWidget):
         """Get the features selected by the user in the FeatureWidget"""
 
         return {"features": self.feature_widget.get_selected_features()}
+
+    def validate(self) -> None:
+        """Check if the feature widget is valid"""
+
+        if self.feature_widget.is_valid:
+            self.is_valid = True
+        else:
+            self.is_valid = False
+
+        self.validity_changed.emit()

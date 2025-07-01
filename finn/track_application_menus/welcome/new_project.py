@@ -189,6 +189,7 @@ class NewProjectDialog(QDialog):
             page4=self.page4,
             page5=self.page5,
         )
+        self.page7.validity_changed.connect(self._validate_page7)
         layout7 = QVBoxLayout()
         layout7.addWidget(self.page7)
 
@@ -206,6 +207,7 @@ class NewProjectDialog(QDialog):
 
         page7_widget = QWidget()
         page7_widget.setLayout(layout7)
+
         self.stacked.addWidget(page7_widget)
 
         # --- Page 8: Save Project --- #
@@ -276,6 +278,10 @@ class NewProjectDialog(QDialog):
     def _validate_page5(self):
         """Validate inputs on page 5 and enable/disable the NEXT button to page6."""
         self.next_btn5.setEnabled(self.page5.is_valid)
+
+    def _validate_page7(self):
+        """Validate inputs on page 7 and enable/disable the OK button."""
+        self.next_btn7.setEnabled(self.page7.is_valid)
 
     def _validate_page8(self):
         """Validate inputs on page 8 and enable/disable the OK button."""
@@ -662,16 +668,15 @@ class NewProjectDialog(QDialog):
         seg_id_map = None
         tracks_path = project_info["tracks_path"]
         if tracks_path is not None:
-            source_df = pd.read_csv(tracks_path)
+            df = pd.read_csv(tracks_path)
             mapping = project_info["column_mapping"]
             scaling = axes["scaling"]
             if "channel" in axes["dimensions"]:
                 scaling = list(scaling).pop(0)
 
             # remap based on column mapping provided by the user
-            df = pd.DataFrame()
-            for feature, column in mapping.items():
-                df[feature] = source_df[column]
+            for new_col, old_col in mapping.items():
+                df[new_col] = df[old_col]
 
             # check that the ids provided in the csv are indeed unique
             if not df["id"].is_unique:
@@ -923,6 +928,10 @@ def graph_from_df(
         if "track_id" in df.columns:
             attrs["track_id"] = int(row["track_id"])
 
+        print("these are the features", features)
+        for f in features:
+            print("from column", f["from_column"])
+
         # add additional features from the table, if requested, or recompute them
         features_to_recompute = [
             f["feature"]
@@ -932,14 +941,23 @@ def graph_from_df(
             and f["from_column"] is None
             and f["feature"].regionprops_name is not None
         ]
+
+        print("recompute these features", features_to_recompute)
+
+        # import features directly from the table, without recomputing
         features_to_import_from_df = [
-            f
-            for f in features
-            if f["include"] and f["feature"].computed and f["from_column"] is not None
+            f for f in features if f["include"] and f["from_column"] is not None
         ]
 
+        print("import these features", features_to_import_from_df)
+
         for feature in features_to_import_from_df:
-            attrs[feature.feature.attr_name] = int(row[feature.from_column])
+            print(feature["from_column"])
+            print(feature["feature"].attr_name)
+            attrs[feature["feature"].attr_name] = row.get(feature["from_column"])
+            print(attrs)
+            print(row.get(feature["from_column"]))
+            print(row.get("surface_area"))
 
         if len(features_to_recompute) > 0:
             t = int(row["t"])
@@ -962,6 +980,8 @@ def graph_from_df(
                     attrs[feature.attr_name] = value
 
         # add the node to the graph
+        print(attrs)
+        return None
         graph.add_node(_id, **attrs)
 
         # add the edge to the graph, if the node has a parent
@@ -972,4 +992,4 @@ def graph_from_df(
             )
             graph.add_edge(parent_id, _id)
 
-        return graph
+    return graph
