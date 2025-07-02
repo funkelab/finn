@@ -61,11 +61,18 @@ class Page3(QWidget):
 
         self.intensity_label = QLabel(
             "<i>Intensity data is required when tracking with "
-            "points. <br><br>Please make sure that you have provided a valid path  <br><br>"
-            "to the intensity data on the previous page. </i>"
+            "points. <br><br>Please make sure that you have provided a valid path to the"
+            " intensity data on the previous page. </i>"
         )
         self.intensity_label.setVisible(False)
         layout.addWidget(self.intensity_label)
+
+        self.points_label = QLabel(
+            "<i>Point detections will automatically be derived from the CSV file that you"
+            " will be asked to provide in the second step after this one.</i>"
+        )
+        self.points_label.setVisible(False)
+        layout.addWidget(self.points_label)
 
         # Provide a widget to enter the path to the detection data
         self.data_widget = DataWidget()
@@ -82,22 +89,29 @@ class Page3(QWidget):
         self._toggle_data_type()
 
     def _toggle_data_widget_visibility(self):
-        if self.page1.get_choice() == "track_from_scratch":
+        choice = self.page1.get_choice()
+        if choice == "track_from_scratch":
             self.data_widget.setVisible(False)
             self.label.setText(
                 "Do you want to track by placing points or segmentation labels?"
             )
+            self.points_label.setVisible(False)
             self.is_valid = True
+        elif choice == "curate_tracks" and self.data_type == "points":
+            self.points_label.setVisible(True)
+            self.data_widget.setVisible(False)
         else:
             self.data_widget.setVisible(True)
             self.label.setText("Do you have point or label detection data?")
+            self.points_label.setVisible(False)
         self.validate()
 
     def _toggle_data_type(self):
-        """Toggle the visibility of the intensity widget based on the user's choice."""
+        """Toggle the visibility of the data widget based on the user's choice."""
 
         self.data_type = "segmentation" if self.labels.isChecked() else "points"
         self.data_widget.update_type(self.data_type)
+        self._toggle_data_widget_visibility()
         self.validate()
 
     def get_path(self) -> str | None:
@@ -114,6 +128,7 @@ class Page3(QWidget):
 
         if self.page1.get_choice() == "track_from_scratch":
             self.is_valid = True
+
         else:
             path = self.get_path()
             if self.points.isChecked():
@@ -125,10 +140,19 @@ class Page3(QWidget):
                 intensity_path_valid = intensity_path is not None and os.path.exists(
                     intensity_path
                 )
-                self.is_valid = path_valid and intensity_path_valid
                 if not intensity_path_valid:
                     self.intensity_label.setVisible(True)
+
+                if self.page1.get_choice() == "curate_tracks":
+                    self.is_valid = intensity_path_valid  # no need to provide a path to
+                    # the points data here, as the points will be derived from the tracks
+                    # CSV path later.
+                else:
+                    self.is_valid = path_valid and intensity_path_valid
+
             else:
+                # no need to check whether we have intensity data, just a valid path to
+                # labels data is sufficient.
                 self.is_valid = path is not None and (
                     os.path.exists(path) and not path.endswith("csv")
                 )
