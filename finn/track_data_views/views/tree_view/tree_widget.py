@@ -201,6 +201,11 @@ class TreeWidget(QWidget):
 
         """
         self.tree_plot.set_mode(mode)
+        if mode=="all":
+            self.view_direction = "vertical"
+        else:
+            self.view_direction = "horizontal"
+        self.tree_plot.set_view_direction(self.view_direction)
         self.tree_plot.update()
 
     def _set_feature(self, feature: str) -> None:
