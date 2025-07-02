@@ -8,8 +8,13 @@ import funlib.persistence as fp
 import networkx as nx
 import numpy as np
 import pandas as pd
+from funtracks.cand_graph import CandGraph
 from funtracks.features._base import Feature
+from funtracks.features.feature_set import FeatureSet
+from funtracks.features.measurement_features import Intensity  # adjust import as needed
+from funtracks.nx_graph import NxGraph
 from funtracks.project import Project
+from funtracks.tracking_graph import TrackingGraph
 from qtpy.QtWidgets import (
     QMessageBox,
 )
@@ -72,6 +77,7 @@ def create_project(project_info: dict[str:Any]) -> Project:
         features = project_info["features"]
         name = project_info.get("title", "Untitled Project")
         working_dir = project_info.get("directory", Path.cwd())
+        n_channels = 1
     except KeyError as e:
         missing_key = e.args[0]
         raise DialogValueError(
@@ -127,6 +133,8 @@ def create_project(project_info: dict[str:Any]) -> Project:
         raw_indices = axes["raw_indices"]
         if raw_indices != sorted(raw_indices):
             intensity_image = np.transpose(intensity_image, raw_indices)
+        if "channel" in axes["dimensions"]:
+            n_channels = intensity_image.shape[0]
     if segmentation_image is not None:
         axes["seg_indices"] = [int(axes["seg_indices"][i]) for i in seg_order_indices]
         seg_indices = axes["seg_indices"]
@@ -178,14 +186,31 @@ def create_project(project_info: dict[str:Any]) -> Project:
 
     # construct a graph from the csv data, if provided.
     if create_graph_from_df:
-        cand_graph = graph_from_df(
+        nxgraph = graph_from_df(
             df, segmentation_image, intensity_image, scaling[1:], features
         )
+        seg = segmentation_image is not None
+        feature_set = FeatureSet(ndim=ndim, seg=seg, pos_attr="pos", time_attr="t")
+        for feature in features:
+            if isinstance(feature["feature"], Intensity):
+                feature["feature"].value_names = (
+                    "Intensity"
+                    if n_channels == 1
+                    else [f"Intensity_chan{chan}" for chan in range(n_channels)]
+                )
+            feature_set.add_feature(feature["feature"])  # add the Feature instance from
+            # the feature dict to the feature_set
+
+        tracking_graph = TrackingGraph(NxGraph, nxgraph, feature_set)
+        cand_graph = CandGraph.from_tracking_graph(tracking_graph, cand_graph_params)
     # Create a candidate graph with only nodes when tracking based on point detections
     # without csv.
     elif data_type == "points":
         points_data = project_info.get("points_data")
-        cand_graph = graph_from_points(points_data, axes["points_columns"])
+        nxgraph = graph_from_points(points_data, axes["points_columns"])
+        feature_set = FeatureSet(ndim=ndim, seg=False, pos_attr="pos", time_attr="t")
+        tracking_graph = TrackingGraph(NxGraph, nxgraph, feature_set)
+        cand_graph = CandGraph.from_tracking_graph(tracking_graph, cand_graph_params)
     else:
         cand_graph = None
 
@@ -616,7 +641,19 @@ def graph_from_df(
         if len(features_to_recompute) > 0:
             t = int(row["t"])
             if intensity_image is not None:
-                intensity = intensity_image[t].compute()
+                if len(intensity_image.shape) > len(segmentation.shape):
+                    # intensity image has channels (should always be at index 0)
+                    slc = [slice(None)] * intensity_image.ndim
+                    slc[1] = t
+                    intensity = intensity_image[tuple(slc)].compute()
+                    # skimage.measure.regionprops wants the channel axis to be last,
+                    # so we need to transpose again
+                    indices = list(range(len(intensity.shape)))
+                    indices.append(indices.pop(0))  # move the channel from the first to
+                    # the last position
+                    intensity = np.transpose(intensity, indices)
+                else:
+                    intensity = intensity_image[t].compute
             else:
                 intensity = None
             # compute the feature
