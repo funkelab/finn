@@ -4,6 +4,7 @@ import random
 from typing import TYPE_CHECKING
 
 import numpy as np
+from funtracks.features import Feature
 
 import finn
 from finn.utils import DirectLabelColormap
@@ -84,6 +85,11 @@ class TrackLabels(finn.layers.Labels):
         self.project_viewer = project_viewer
         self.project = project_viewer.project
         self.selected_track = None
+        self.color_by: Feature | None
+        if len(self.project.solution) == 0:
+            self.color_by: Feature | None = None
+        else:
+            self.color_by = self.project.cand_graph.features.track_id
         colormap = self._get_colormap()
 
         super().__init__(
@@ -141,24 +147,27 @@ class TrackLabels(finn.layers.Labels):
         self.events.mode.connect(self._check_mode)
         self.viewer.dims.events.current_step.connect(self._ensure_valid_label)
 
-    def _get_colormap(self) -> DirectLabelColormap:
-        """Get a DirectLabelColormap that maps node ids to their track ids, and then
-        uses the tracks_viewer.colormap to map from track_id to color.
-
-        Returns:
-            DirectLabelColormap: A map from node ids to colors based on track id
-        """
+    def _get_feature_colormap(self, feature: Feature | None) -> DirectLabelColormap:
         nodes = self.project.solution.nodes
-        track_ids = [self.project.cand_graph.get_track_id(node) for node in nodes]
-        for node, track_id in zip(nodes, track_ids, strict=False):
-            print(node, self.project.cand_graph._graph.nodes[node])
-        colors = [self.project_viewer.colormap.map(tid) for tid in track_ids]
+        if feature is None:
+            colormap = finn.utils.colormaps.label_colormap()
+            feature_values = nodes
+        else:
+            feature_values = self.project.cand_graph.get_feature_values(nodes, feature)
+            if feature == self.project.cand_graph.features.track_id:
+                colormap = self.project_viewer.colormap
+            else:
+                colormap = finn.utils.colormaps.ensure_colormap("viridis")
+        colors = [colormap.map(val) for val in feature_values]
         return DirectLabelColormap(
             color_dict={
                 **dict(zip(nodes, colors, strict=True)),
                 None: [0, 0, 0, 0],
             }
         )
+
+    def _get_colormap(self):
+        return self._get_feature_colormap(self.color_by)
 
     def _check_mode(self):
         """Check if the mode is valid and call the ensure_valid_label function"""
