@@ -27,7 +27,7 @@ from finn.track_data_views.views.tree_view.tree_widget_utils import (
     extract_lineage_tree,
     extract_sorted_tracks,
 )
-from finn.track_data_views.views_coordinator.tracks_viewer import TracksViewer
+from finn.track_data_views.views_coordinator.project_viewer import ProjectViewer
 
 
 class CustomViewBox(pg.ViewBox):
@@ -427,7 +427,7 @@ class TreeWidget(QWidget):
         self.feature = "tree"  # options: "tree", "area"
         self.view_direction = "vertical"  # options: "horizontal", "vertical"
 
-        self.tracks_viewer = TracksViewer.get_instance(viewer)
+        self.tracks_viewer = ProjectViewer.get_instance(viewer)
         self.selected_nodes = self.tracks_viewer.selected_nodes
         self.selected_nodes.list_updated.connect(self._update_selected)
         self.tracks_viewer.tracks_updated.connect(self._update_track_data)
@@ -600,21 +600,21 @@ class TreeWidget(QWidget):
         that a new set of tracks should be viewed.
         """
 
-        if self.tracks_viewer.tracks is None:
+        if self.tracks_viewer.project is None:
             self.track_df = pd.DataFrame()
             self.graph = None
         else:
             if reset_view:
                 self.track_df = extract_sorted_tracks(
-                    self.tracks_viewer.tracks, self.tracks_viewer.colormap
+                    self.tracks_viewer.project, self.tracks_viewer.colormap
                 )
             else:
                 self.track_df = extract_sorted_tracks(
-                    self.tracks_viewer.tracks,
+                    self.tracks_viewer.project,
                     self.tracks_viewer.colormap,
                     self.track_df,
                 )
-            self.graph = self.tracks_viewer.tracks.graph
+            self.graph = self.tracks_viewer.project.graph
 
         # check whether we have area measurements and therefore should activate the area
         # button

@@ -3,14 +3,15 @@ from __future__ import annotations
 import networkx as nx
 import numpy as np
 import pandas as pd
-from funtracks.data_model import NodeType, Tracks
 
 import finn.layers
 from finn.track_data_views.graph_attributes import NodeAttr
 
+from ...node_type import NodeType
+
 
 def extract_sorted_tracks(
-    tracks: Tracks,
+    tracks,
     colormap: finn.utils.CyclicLabelColormap,
     prev_df: pd.DataFrame | None = None,
 ) -> pd.DataFrame | None:

@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-from typing import Optional
-
-import numpy as np
-from funtracks.data_model import NodeType, SolutionTracks
-from funtracks.data_model.tracks_controller import TracksController
-from psygnal import Signal
+from funtracks import Project
+from funtracks.actions.action_history import ActionHistory
+from funtracks.user_actions import UserDeleteEdge, UserDeleteNode, UserSelectEdge
 
 import finn
 from finn.track_data_views.graph_attributes import NodeAttr
@@ -14,52 +11,42 @@ from finn.track_data_views.views.tree_view.tree_widget_utils import (
     extract_lineage_tree,
 )
 from finn.track_data_views.views_coordinator.node_selection_list import NodeSelectionList
-from finn.track_data_views.views_coordinator.tracks_list import TracksList
+
+from ..node_type import NodeType
 
 
-class TracksViewer:
-    """Purposes of the TracksViewer:
+class ProjectViewer:
+    """Purposes of the ProjectViewer:
     - Emit signals that all widgets should use to update selection or update
         the currently displayed Tracks object
     - Storing the currently displayed tracks
     - Store shared rendering information like colormaps (or symbol maps)
     """
 
-    tracks_updated = Signal(Optional[bool])  # noqa: UP007
-
-    @classmethod
-    def get_instance(cls, viewer=None):
-        if not hasattr(cls, "_instance"):
-            if viewer is None:
-                raise ValueError("Make a viewer first please!")
-            cls._instance = TracksViewer(viewer)
-        return cls._instance
-
     def __init__(
         self,
-        viewer: finn.Viewer,
+        project: Project,
+        viewer: finn.Viewer | None = None,
     ):
-        self.viewer = viewer
+        self.viewer = finn.Viewer() if viewer is None else viewer
+        self.project = project
+        self.history = ActionHistory()
+
         self.colormap = finn.utils.colormaps.label_colormap(
             49,
             seed=0.5,
             background_value=0,
         )
-
         self.symbolmap: dict[NodeType, str] = {
             NodeType.END: "x",
             NodeType.CONTINUE: "disc",
             NodeType.SPLIT: "triangle_up",
         }
         self.mode = "all"
-        self.tracks: SolutionTracks | None = None
         self.visible: list | str = []
-        self.tracking_layers = TracksLayerGroup(self.viewer, self.tracks, "", self)
+        self.tracking_layers = TracksLayerGroup(self)
         self.selected_nodes = NodeSelectionList()
         self.selected_nodes.list_updated.connect(self.update_selection)
-
-        self.tracks_list = TracksList()
-        self.tracks_list.view_tracks.connect(self.update_tracks)
 
         self.set_keybinds()
 
@@ -82,7 +69,7 @@ class TracksViewer:
         """
 
         if len(self.selected_nodes) > 0 and any(
-            not self.tracks.graph.has_node(node) for node in self.selected_nodes
+            not self.project.cand_graph.has_node(node) for node in self.selected_nodes
         ):
             self.selected_nodes.reset()
 
@@ -99,35 +86,6 @@ class TracksViewer:
         # restore selection and/or highlighting in all finn Views (finn Views do not
         # know about their selection ('all' vs 'lineage'), but TracksViewer does)
         self.update_selection()
-
-    def update_tracks(self, tracks: SolutionTracks, name: str) -> None:
-        """Stop viewing a previous set of tracks and replace it with a new one.
-        Will create new segmentation and tracks layers and add them to the viewer.
-
-        Args:
-            tracks (funtracks.data_model.Tracks): The tracks to visualize in finn.
-            name (str): The name of the tracks to display in the layer names
-        """
-        self.selected_nodes._list = []
-
-        if self.tracks is not None:
-            self.tracks.refresh.disconnect(self._refresh)
-
-        self.tracks = tracks
-        self.tracks_controller = TracksController(self.tracks)
-
-        # listen to refresh signals from the tracks
-        self.tracks.refresh.connect(self._refresh)
-
-        # deactivate the input labels layer
-        for layer in self.viewer.layers:
-            if isinstance(layer, (finn.layers.Labels | finn.layers.Points)):
-                layer.visible = False
-
-        self.set_display_mode("all")
-        self.tracking_layers.set_tracks(tracks, name)
-        self.selected_nodes.reset()
-        self.tracks_updated.emit(True)
 
     def toggle_display_mode(self, event=None) -> None:
         """Toggle the display mode between available options"""
@@ -157,28 +115,28 @@ class TracksViewer:
     def filter_visible_nodes(self) -> list[int]:
         """Construct a list of track_ids that should be displayed"""
 
-        if self.tracks is None or self.tracks.graph is None:
+        if self.project is None or self.project.graph is None:
             return []
         if self.mode == "lineage":
             # if no nodes are selected, check which nodes were previously visible and
             # filter those
             if len(self.selected_nodes) == 0 and self.visible is not None:
                 prev_visible = [
-                    node for node in self.visible if self.tracks.graph.has_node(node)
+                    node for node in self.visible if self.project.graph.has_node(node)
                 ]
                 self.visible = []
                 for node_id in prev_visible:
-                    self.visible += extract_lineage_tree(self.tracks.graph, node_id)
+                    self.visible += extract_lineage_tree(self.project.graph, node_id)
                     if set(prev_visible).issubset(self.visible):
                         break
             else:
                 self.visible = []
                 for node in self.selected_nodes:
-                    self.visible += extract_lineage_tree(self.tracks.graph, node)
+                    self.visible += extract_lineage_tree(self.project.graph, node)
 
             return list(
                 {
-                    self.tracks.graph.nodes[node][NodeAttr.TRACK_ID.value]
+                    self.project.graph.nodes[node][NodeAttr.TRACK_ID.value]
                     for node in self.visible
                 }
             )
@@ -201,12 +159,13 @@ class TracksViewer:
             self.tracking_layers.center_view(node)
 
     def delete_node(self, event=None):
-        """Calls the tracks controller to delete currently selected nodes"""
-
-        self.tracks_controller.delete_nodes(self.selected_nodes._list)
+        """Calls the user action to delete currently selected nodes"""
+        for node in self.selected_nodes._list:
+            action = UserDeleteNode(self.project, node)
+            self.history.add_new_action(action)
 
     def delete_edge(self, event=None):
-        """Calls the tracks controller to delete an edge between the two currently
+        """Calls the user action to delete an edge between the two currently
         selected nodes
         """
 
@@ -214,13 +173,13 @@ class TracksViewer:
             node1 = self.selected_nodes[0]
             node2 = self.selected_nodes[1]
 
-            time1 = self.tracks.get_time(node1)
-            time2 = self.tracks.get_time(node2)
+            time1 = self.project.get_time(node1)
+            time2 = self.project.get_time(node2)
 
             if time1 > time2:
                 node1, node2 = node2, node1
-
-            self.tracks_controller.delete_edges(edges=np.array([[node1, node2]]))
+            action = UserDeleteEdge(self.project, (node1, node2))
+            self.history.add_new_action(action)
 
     def create_edge(self, event=None):
         """Calls the tracks controller to add an edge between the two currently selected
@@ -231,16 +190,15 @@ class TracksViewer:
             node1 = self.selected_nodes[0]
             node2 = self.selected_nodes[1]
 
-            time1 = self.tracks.get_time(node1)
-            time2 = self.tracks.get_time(node2)
+            time1 = self.project.get_time(node1)
+            time2 = self.project.get_time(node2)
 
             if time1 > time2:
                 node1, node2 = node2, node1
-
-            self.tracks_controller.add_edges(edges=np.array([[node1, node2]]))
+            self.history.add_new_action(UserSelectEdge(self.project, (node1, node2), {}))
 
     def undo(self, event=None):
-        self.tracks_controller.undo()
+        self.history.undo()
 
     def redo(self, event=None):
-        self.tracks_controller.redo()
+        self.history.redo()
