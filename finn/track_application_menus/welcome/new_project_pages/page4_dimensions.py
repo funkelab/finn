@@ -487,7 +487,11 @@ class Page4(QWidget):
             seg_index = self.table.cellWidget(row, 2).currentText()
             axis_name = self.table.cellWidget(row, 3).text()
             unit = self.table.cellWidget(row, 4).currentText()
-            step_size = self.table.cellWidget(row, 5).value()
+            step_size = (
+                1
+                if isinstance(self.table.cellWidget(row, 5), QLabel)
+                else self.table.cellWidget(row, 5).value()
+            )
             info["axes"]["dimensions"].append(axis)
             if self.raw is not None:
                 info["axes"]["raw_indices"].append(raw_index)
