@@ -453,6 +453,7 @@ class TreePlot(QWidget):
                     line = gfx.Line(
                         self.diagonal_geometries[-1],
                         gfx.LineMaterial(thickness=2.0, color_mode="vertex"),
+                        render_order=4,
                     )
                     self.scene.add(line)
                 else:
