@@ -18,24 +18,66 @@ from tqdm import tqdm
 
 
 class DialogValueError(ValueError):
+    """Dialog message to display when invalid information is found"""
+
     def __init__(self, message, show_dialog=True):
         super().__init__(message)
         self.show_dialog = show_dialog
 
 
 def create_project(project_info: dict[str:Any]) -> Project:
-    """Creates a new funtracks project with the information provided in the dialog"""
+    """Creates a new Funtracks Project based on the information provided as dictionary.
+    args:
+        project_info (dict[str: Any]): dictionary to build a project from.
+        - data_type [str]: either 'segmentation' or 'points'
+        - intensity_image [da.Array | None] : intensity data
+        - segmentation_image [da.Array | None] : segmentation data
+        - points_data [pd.DataFrame]: point detection data
+        - ndim [int]: the number of dimensions (incl time) of the data (3, 4, or
+        - axes [dict]:
+            dimensions [tuple[str]]: dimension names (e.g. 'time', 'z')
+            raw_indices [tuple[int]]: index of each dimension in the raw data
+            seg_indices [tuple[int]]: index of each dimension in the seg data
+            axis_names [tuple(str)]: dimension names assigned by the user
+            units (tuple[str]): units for each dimension, e.g. 'µm'
+            scaling [tuple(float)]: spatial calibration in the same order as the
+                dimensions
+        - tracks_path [str | None]: path to where the tracking data csv file is
+            stored (if provided)
+        - column_mapping [dict[str: str] | None] : mapping of the csv column
+            headers to the required tracking information (dimensions, ids)
+        - project_params [ProjectParams]: parameters for the project
+        - cand_graph_params [CandGraphParams]: parameters for the candidate graph
+        - features (list[dict[str: str|bool]]): list of features to measure,
+                each with 'feature_name', 'include' (bool), and 'from_column'
+                (str or None)
+        - title [str]: name of the project,
+        - directory [str]: path to directory where the project should be saved
 
-    print(project_info)
-    intensity_image = project_info["intensity_image"]
-    segmentation_image = project_info["segmentation_image"]
-    name = project_info.get("title", "Untitled Project")
-    ndim = int(project_info.get("ndim", 3))
-    axes = project_info.get("axes", [])
-    data_type = project_info.get("data_type", "points")
-    working_dir = project_info.get("directory", Path.cwd())
-    params = project_info.get("project_params")
-    features = project_info.get("features")
+    returns:
+        funtracks.Project
+    """
+
+    try:
+        data_type = project_info["data_type"]
+        intensity_image = project_info["intensity_image"]
+        segmentation_image = project_info["segmentation_image"]
+        points_data = project_info["points_data"]
+        ndim = project_info["ndim"]
+        axes = project_info["axes"]
+        tracks_path = project_info["tracks_path"]
+        column_mapping = project_info["column_mapping"]
+        project_params = project_info["project_params"]
+        cand_graph_params = project_info["cand_graph_params"]
+        features = project_info["features"]
+        name = project_info.get("title", "Untitled Project")
+        working_dir = project_info.get("directory", Path.cwd())
+    except KeyError as e:
+        missing_key = e.args[0]
+        raise DialogValueError(
+            f"The following key is missing: {missing_key}",
+            show_dialog=True,
+        )
 
     # remove old zarr dir if present
     zarr_dir = os.path.join(project_info.get("directory"), f"{name}.zarr")
@@ -66,53 +108,52 @@ def create_project(project_info: dict[str:Any]) -> Project:
             )
         segmentation_image = segmentation_image.astype(np.uint64)
 
-    # when loading tracks from csv, we need the mapping to the seg_ids before c
+    # Sort dimensions according to default_order
+    default_order = ("channel", "time", "z", "y", "x")
+    default_seg_order = ("time", "z", "y", "x")
+    filtered_int_order = [ax for ax in default_order if ax in axes["dimensions"]]
+    filtered_seg_order = [ax for ax in default_seg_order if ax in axes["dimensions"]]
+    int_order_indices = [axes["dimensions"].index(ax) for ax in filtered_int_order]
+    seg_order_indices = [axes["dimensions"].index(ax) for ax in filtered_seg_order]
+
+    # Reorder all axis-related lists and transpose data if needed
+    axes["dimensions"] = [axes["dimensions"][i] for i in int_order_indices]
+    axes["axis_names"] = [axes["axis_names"][i] for i in int_order_indices]
+    axes["units"] = [axes["units"][i] for i in int_order_indices]
+    axes["scaling"] = [axes["scaling"][i] for i in int_order_indices]
+
+    if intensity_image is not None:
+        axes["raw_indices"] = [int(axes["raw_indices"][i]) for i in int_order_indices]
+        raw_indices = axes["raw_indices"]
+        if raw_indices != sorted(raw_indices):
+            intensity_image = np.transpose(intensity_image, raw_indices)
+    if segmentation_image is not None:
+        axes["seg_indices"] = [int(axes["seg_indices"][i]) for i in seg_order_indices]
+        seg_indices = axes["seg_indices"]
+        if seg_indices != sorted(seg_indices):
+            segmentation_image = np.transpose(segmentation_image, seg_indices)
+
+    # when loading tracks from csv, we need the mapping to the seg_ids before
     # constructing the fpds.
     create_graph_from_df = False
     seg_id_map = None
-    tracks_path = project_info["tracks_path"]
+
     if tracks_path is not None:
-        df = pd.read_csv(tracks_path)
-        mapping = project_info["column_mapping"]
-        scaling = axes["scaling"]
-        if "channel" in axes["dimensions"]:
-            scaling = list(scaling).pop(0)
-
-        # remap based on column mapping provided by the user
-        for new_col, old_col in mapping.items():
-            df[new_col] = df[old_col]
-
-        # check that the ids provided in the csv are indeed unique
-        if not df["id"].is_unique:
-            raise DialogValueError(
-                f"The object id values in column {mapping['id']} "
-                "of the provided CSV file are not unique. Please provide a csv file where"
-                "each object has a unique id value."
-            )
-
-        # check that the id column contains integer values, if not relabel them to
-        # unique integers
-        if not pd.api.types.is_integer_dtype(df["id"]):
-            print(
-                f"Relabeling strings in column {mapping['id']} and "
-                f"{mapping['parent_id']} to unique integers"
-            )
-            all_labels = pd.unique(df[["id"]].values.ravel())
-            label_to_int = {label: idx + 1 for idx, label in enumerate(all_labels)}
-            df["id"] = df["id"].map(label_to_int)
-            df["parent_id"] = df["parent_id"].map(label_to_int).astype("Int64")
+        # Read the dataframe, and remap the column headers
+        df = read_tracks_df(tracks_path, column_mapping)
 
         # check if the provided segmentation matches with the dataframe (dimensions
-        # and seg value of the first object). Raises DialogValueError if any problems
-        # are found.
+        # and seg value of the first object). Raises DialogValueError if any problems are
+        # found.
+        scaling = axes["scaling"]
+        if "channel" in axes["dimensions"]:
+            scaling = scaling[1:]  # remove the 'channel' dimension from scaling
         if segmentation_image is not None:
-            seg_indices = [int(i) for i in axes.get("seg_indices", list(range(ndim)))]
             test_df_seg_match(
                 df,
                 segmentation_image,
                 scaling,
-                axis_order=seg_indices,
-                mapping=mapping,
+                mapping=column_mapping,
             )
 
         # extract id to seg_id dictionary if a segmentation image was provided
@@ -130,32 +171,71 @@ def create_project(project_info: dict[str:Any]) -> Project:
         intensity_image,
         segmentation_image,
         os.path.join(working_dir, f"{name}.zarr"),
-        ndim,
         axes,
         data_type,
         seg_id_map,
     )
 
+    # construct a graph from the csv data, if provided.
     if create_graph_from_df:
         cand_graph = graph_from_df(
             df, segmentation_image, intensity_image, scaling[1:], features
         )
-    else:
-        cand_graph = None
-
-    # Create a candidate graph with only nodes when tracking based on point detections.
-    if data_type == "points":
+    # Create a candidate graph with only nodes when tracking based on point detections
+    # without csv.
+    elif data_type == "points":
         points_data = project_info.get("points_data")
         cand_graph = graph_from_points(points_data, axes["points_columns"])
+    else:
+        cand_graph = None
 
     # # TODO: include features to measure, ndim, cand_graph_params, point detections
     return Project(
         name=name,
-        project_params=params,
+        project_params=project_params,
         raw=intensity_fpds,
         segmentation=segmentation_fdps,
         cand_graph=cand_graph,
     )
+
+
+def read_tracks_df(tracks_path: str, column_mapping: dict[str:str]) -> pd.DataFrame:
+    """Reads and verifies the provided csv file. Checks if the 'id' column is unique,
+    raises a DialogValueError if not, and and ensures it consists of integers.
+      args:
+       tracks_path (str): path to the csv file.
+       column_mapping (dict[str: str]): mapping of required column names to the column
+        selected by the user.
+     Returns:
+        df (pd.DataFrame): dataframe holding the tracks data.
+    """
+
+    df = pd.read_csv(tracks_path)
+
+    # remap based on column mapping provided by the user
+    for new_col, old_col in column_mapping.items():
+        df[new_col] = df[old_col]
+
+    # check that the ids provided in the csv are indeed unique
+    if not df["id"].is_unique:
+        raise DialogValueError(
+            f"The object id values in column {column_mapping['id']} "
+            "of the provided CSV file are not unique. Please provide a csv file where"
+            "each object has a unique id value."
+        )
+
+    # check that the id column contains integer values, if not relabel them.
+    if not pd.api.types.is_integer_dtype(df["id"]):
+        print(
+            f"Relabeling strings in column {column_mapping['id']} and "
+            f"{column_mapping['parent_id']} to unique integers"
+        )
+        all_labels = pd.unique(df[["id"]].values.ravel())
+        label_to_int = {label: idx + 1 for idx, label in enumerate(all_labels)}
+        df["id"] = df["id"].map(label_to_int)
+        df["parent_id"] = df["parent_id"].map(label_to_int).astype("Int64")
+
+    return df
 
 
 def create_empty_fp_array(
@@ -194,7 +274,6 @@ def create_fpds(
     intensity_image: da.Array | None,
     segmentation_image: da.Array | None,
     fp_array_path: str | None,
-    ndim: int,
     axes: dict,
     data_type: str,
     seg_id_map: pd.DataFrame | None,
@@ -224,23 +303,15 @@ def create_fpds(
             "We need at least an intensity image to track from scratch"
         )
 
-    # Get the axis information
-    raw_indices = [int(i) for i in axes.get("raw_indices", list(range(ndim)))]
-    seg_indices = [int(i) for i in axes.get("seg_indices", list(range(ndim)))]
-    axis_names = axes.get("axis_names", ["axis_" + str(i) for i in range(ndim)])
-    voxel_size = axes.get("scaling", [1.0] * ndim)
-    axis_units = axes.get("units", ["px"] * ndim)
-
-    # Transpose the stack, if needed
-    if intensity_image is not None:
-        default_order = list(range(intensity_image.ndim))
-        if raw_indices != default_order:
-            intensity_image = np.transpose(intensity_image, raw_indices)
-
-    if segmentation_image is not None:
-        default_order = list(range(segmentation_image.ndim))
-        if seg_indices != default_order:
-            segmentation_image = np.transpose(segmentation_image, seg_indices)
+    dimensions = axes.get("dimensions")
+    axis_names = axes.get("axis_names")
+    voxel_size = axes.get("scaling")
+    axis_units = axes.get("units")
+    ndim = (
+        len(intensity_image.shape)
+        if intensity_image is not None
+        else len(segmentation_image.shape)
+    )
 
     # Check if the shapes of intensity and segmentation data are matching
     if intensity_image is not None and segmentation_image is not None:
@@ -279,7 +350,7 @@ def create_fpds(
             intensity_image,
             path=os.path.join(fp_array_path, "raw"),
             shape=intensity_image.shape,
-            dimensions=axes["dimensions"],
+            dimensions=dimensions,
             voxel_size=voxel_size,
             axis_names=axis_names,
             axis_units=axis_units,
@@ -298,7 +369,7 @@ def create_fpds(
             segmentation_image,
             path=os.path.join(fp_array_path, "seg"),
             shape=segmentation_image.shape,
-            dimensions=(d for d in axes["dimensions"] if d != "channel"),
+            dimensions=(d for d in dimensions if d != "channel"),
             voxel_size=voxel_size,
             axis_names=axis_names,
             axis_units=axis_units,
@@ -375,7 +446,7 @@ def create_fp_array(
             # seg is now relabeled, or no relabeling was necessary
             fpds[time] = seg
         else:
-            fpds[time] = image[tuple(slc)].compute()
+            fpds[tuple(slc)] = image[tuple(slc)].compute()
 
     return fpds
 
@@ -411,8 +482,7 @@ def has_duplicate_ids(segmentation: np.ndarray) -> bool:
 def test_df_seg_match(
     df: pd.DataFrame,
     segmentation: da.Array,
-    scale: list[float] | None,
-    axis_order,
+    scale: list[float],
     mapping: dict,
 ):
     """Test if the provided segmentation, dataframe, and scale values are valid together.
@@ -430,22 +500,13 @@ def test_df_seg_match(
         scale (list[float] | None): A list of floats representing the relationship between
             the point coordinates and the pixels in the segmentation
     """
-    # transpose if needed
-    default_order = list(range(segmentation.ndim))
-    if axis_order != default_order:
-        segmentation = np.transpose(segmentation, axis_order)
 
-    if scale is not None:
-        if segmentation.ndim != len(scale):
-            raise DialogValueError(
-                f"Dimensions of the segmentation image ({segmentation.ndim}) "
-                f"do not match the number of scale values given ({len(scale)})",
-                show_dialog=True,
-            )
-    else:
-        scale = [
-            1,
-        ] * segmentation.ndim
+    if segmentation.ndim != len(scale):
+        raise DialogValueError(
+            f"Dimensions of the segmentation image ({segmentation.ndim}) "
+            f"do not match the number of scale values given ({len(scale)})",
+            show_dialog=True,
+        )
 
     row = df.iloc[-1]
     pos = (
