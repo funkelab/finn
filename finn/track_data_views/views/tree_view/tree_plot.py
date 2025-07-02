@@ -48,6 +48,11 @@ class TreePlot(QWidget):
 
         self.canvas.request_draw(self.animate)
 
+    def sizeHint(self):
+        hint = super().sizeHint()
+        hint.setHeight(100)
+        return hint
+
     def animate(self):
         self.renderer.render(self.scene, self.camera)
 
@@ -420,7 +425,9 @@ class TreePlot(QWidget):
                     self.end_geometries[-1],
                     gfx.PointsMarkerMaterial(marker=track[-1].marker,
                                              edge_width=4,
+                                             size=10,
                                              color="black",
+                                             edge_mode="inner",
                                              edge_color_mode="vertex",
                                              pick_write=True),
                     name=self.NameData(ilineage, track[0].node, len(time)-1, time, area, iselected_tree, itrack))
