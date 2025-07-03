@@ -29,7 +29,6 @@ class Page4(QWidget):
         super().__init__()
 
         self.page2 = page2
-        self.page2.validity_changed.connect(self._guess_data_dimensions)
         self.page3 = page3
         self.page3.validity_changed.connect(self._guess_data_dimensions)
 

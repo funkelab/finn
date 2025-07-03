@@ -49,7 +49,6 @@ class Page2(QWidget):
         self.intensity_group.addButton(self.yes)
         self.intensity_group.addButton(self.no)
         self.yes.toggled.connect(self._toggle_intensity_widget)
-        self.no.toggled.connect(self._toggle_intensity_widget)
         button_layout.setAlignment(Qt.AlignHCenter)
         button_layout.addWidget(self.yes)
         button_layout.addWidget(self.no)

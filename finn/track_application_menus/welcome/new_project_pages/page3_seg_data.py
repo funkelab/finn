@@ -50,7 +50,6 @@ class Page3(QWidget):
         self.button_group.addButton(self.points)
         self.button_group.addButton(self.labels)
         self.points.toggled.connect(self._toggle_data_type)
-        self.labels.toggled.connect(self._toggle_data_type)
         button_layout.setAlignment(Qt.AlignHCenter)
         button_layout.addWidget(self.points)
         button_layout.addWidget(self.labels)

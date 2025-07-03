@@ -226,9 +226,9 @@ class NewProjectDialog(QDialog):
         self.stacked.addWidget(page8_widget)
 
         # --- Navigation --- #
-        self.next_btn1.clicked.connect(self._go_to_page2)
-        self.next_btn2.clicked.connect(self._go_to_page3)
-        self.next_btn3.clicked.connect(self._go_to_page4)
+        self.next_btn1.clicked.connect(lambda: self.stacked.setCurrentIndex(1))
+        self.next_btn2.clicked.connect(lambda: self.stacked.setCurrentIndex(2))
+        self.next_btn3.clicked.connect(lambda: self.stacked.setCurrentIndex(3))
         self.next_btn4.clicked.connect(self._go_to_page5_or_6)
         self.next_btn5.clicked.connect(lambda: self.stacked.setCurrentIndex(5))
         self.next_btn6.clicked.connect(self._go_to_page7)
@@ -279,21 +279,6 @@ class NewProjectDialog(QDialog):
     def _validate_page8(self):
         """Validate inputs on page 8 and enable/disable the OK button."""
         self.ok_btn.setEnabled(self.page8.is_valid)
-
-    def _go_to_page2(self):
-        """Go to page 2 and validate it to enable/disable the NEXT button."""
-        self.stacked.setCurrentIndex(1)
-        self.page2.validate()
-
-    def _go_to_page3(self):
-        """Go to page 3 and validate it to enable/disable the NEXT button."""
-        self.stacked.setCurrentIndex(2)
-        self.page3.validate()
-
-    def _go_to_page4(self):
-        """Go to page 4 and validate it to enable/disable the NEXT button."""
-        self.stacked.setCurrentIndex(3)
-        self.page4.update_table()
 
     def _go_to_page4_or_5(self):
         """Go to page 5 to track from scratch, otherwise go to page 4."""
