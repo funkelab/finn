@@ -93,6 +93,15 @@ def create_project(project_info: dict[str:Any]) -> Project:
     if os.path.exists(zarr_dir):
         shutil.rmtree(zarr_dir)
 
+    # Check if at leat intensity image data or segmentation data is provided
+    if intensity_image is None and segmentation_image is None:
+        # this situation is invalid, if no seg is provided we need at least intensity
+        #  image to track from scratch
+        raise DialogValueError(
+            "No valid path to intensity data and segmentation labels was provided. "
+            "We need at least an intensity image to track from scratch"
+        )
+
     # check if segmentation image has integer data type, warn user if not.
     if segmentation_image is not None and np.issubdtype(
         segmentation_image.dtype, np.floating
@@ -136,13 +145,16 @@ def create_project(project_info: dict[str:Any]) -> Project:
         raw_indices = axes["raw_indices"]
         if raw_indices != sorted(raw_indices):
             intensity_image = np.transpose(intensity_image, raw_indices)
+        n_time_points = intensity_image.shape[0]
         if "channel" in axes["dimensions"]:
             n_channels = intensity_image.shape[0]
+            n_time_points = intensity_image.shape[1]
     if segmentation_image is not None:
         axes["seg_indices"] = [int(axes["seg_indices"][i]) for i in seg_order_indices]
         seg_indices = axes["seg_indices"]
         if seg_indices != sorted(seg_indices):
             segmentation_image = np.transpose(segmentation_image, seg_indices)
+        n_time_points = segmentation_image.shape[0]
 
     # when loading tracks from csv, we need the mapping to the seg_ids before
     # constructing the fpds.
@@ -153,7 +165,7 @@ def create_project(project_info: dict[str:Any]) -> Project:
         # Read the dataframe, and remap the column headers
         scaling_dict = dict(zip(axes["dimensions"], axes["scaling"], strict=False))
         df = read_tracks_df(
-            tracks_path, column_mapping, convert_pixel_units, scaling_dict
+            tracks_path, column_mapping, convert_pixel_units, scaling_dict, n_time_points
         )
 
         # check if the provided segmentation matches with the dataframe (dimensions
@@ -232,6 +244,7 @@ def read_tracks_df(
     column_mapping: dict[str:str],
     convert_pixel_units: bool,
     scaling: dict[str:float],
+    n_time_points: int,
 ) -> pd.DataFrame:
     """Reads and verifies the provided csv file. Checks if the 'id' column is unique,
     raises a DialogValueError if not, and and ensures it consists of integers.
@@ -271,6 +284,12 @@ def read_tracks_df(
         label_to_int = {label: idx + 1 for idx, label in enumerate(all_labels)}
         df["id"] = df["id"].map(label_to_int)
         df["parent_id"] = df["parent_id"].map(label_to_int).astype("Int64")
+
+    if np.max(df["t"]) != n_time_points - 1:
+        # Rescale the time points to ensure integers incrementing at steps of 1.
+        unique_times = np.sort(df["t"].unique())
+        time_mapping = {orig: new for new, orig in enumerate(unique_times)}
+        df["t"] = df["t"].map(time_mapping).astype(int)
 
     return df
 
@@ -326,15 +345,6 @@ def create_fpds(
 
     Returns:
         fp.Array: A funtracks persistence array containing the data."""
-
-    # Check if at least one of the two data paths is valid.
-    if intensity_image is None and segmentation_image is None:
-        # this situation is invalid, if no seg is provided we need at least intensity
-        #  image to track from scratch
-        raise DialogValueError(
-            "No valid path to intensity data and segmentation labels was provided. "
-            "We need at least an intensity image to track from scratch"
-        )
 
     dimensions = axes.get("dimensions")
     axis_names = axes.get("axis_names")
@@ -520,10 +530,12 @@ def test_df_seg_match(
 ):
     """Test if the provided segmentation, dataframe, and scale values are valid together.
     Tests the following requirements:
-      - The scale, if provided, has same dimensions as the segmentation
       - The location coordinates have the same dimensions as the segmentation
+      - The number of unique time points matches the length of the time dimension of the
+      segmentation data, and has the same max value (time points should be integers with
+      increments of 1).
       - The segmentation pixel value for the coordinates of first node corresponds
-    with the provided seg_id as a basic sanity check that the csv file matches with the
+    with the provided seg_id as a basic check that the csv file matches with the
     segmentation file
 
     Args:
@@ -536,13 +548,6 @@ def test_df_seg_match(
 
     scale = [scaling_dict[dim] for dim in scaling_dict if dim != "channel"]
 
-    if segmentation.ndim != len(scale):
-        raise DialogValueError(
-            f"Dimensions of the segmentation image ({segmentation.ndim}) "
-            f"do not match the number of scale values given ({len(scale)})",
-            show_dialog=True,
-        )
-
     row = df.iloc[-1]
     pos = (
         [row["t"], row["z"], row["y"], row["x"]]
@@ -554,6 +559,16 @@ def test_df_seg_match(
         raise DialogValueError(
             f"Dimensions of the segmentation ({segmentation.ndim}) do not match the "
             f"number of positional dimensions ({len(pos)})",
+            show_dialog=True,
+        )
+
+    if segmentation.shape[0] != len(df["t"].unique()):
+        raise DialogValueError(
+            f"The time dimension of the provided data frame does not match the"
+            f"segmentation data. The segmentation data has {segmentation.shape[0]} time"
+            f"points, but the dataframe has {len(df['t'].unique())} time points with a "
+            f"maximum value of {np.max(df['t'])}. Please make sure that you provide a "
+            f"dataframe with integer time points incrementing with step size 1.",
             show_dialog=True,
         )
 
