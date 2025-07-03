@@ -33,7 +33,7 @@ class TreeWidget(QWidget):
         self.view_direction = "vertical"  # options: "horizontal", "vertical"
 
         self.selected_nodes = NodeSelectionList()
-        self.VertexData = namedtuple('VertexData', 'marker, node, time, area')
+        self.VertexData = namedtuple('VertexData', 'marker, node, time, area, trackid')
 
         self.tracks_viewer.tracks_updated.connect(self._update_track_data)
 
@@ -92,13 +92,15 @@ class TreeWidget(QWidget):
         tracks = self.tracks_viewer.tracks
         time = tracks.get_time(node)
         area = tracks.get_area(node)
-        _lineage = [self.VertexData("square", node, time, area)]
+        trackid = tracks.node_id_to_track_id[node]
+        _lineage = [self.VertexData("square", node, time, area, trackid)]
         succs = tracks.successors(node)
         while len(succs)==1:
             node = succs[0]
             time = tracks.get_time(node)
             area = tracks.get_area(node)
-            _lineage.append(self.VertexData("circle", node, time, area))
+            trackid = tracks.node_id_to_track_id[node]
+            _lineage.append(self.VertexData("circle", node, time, area, trackid))
             succs = tracks.successors(node)
         if len(succs)==0:
             _lineage[-1] = self.VertexData("cross", *_lineage[-1][1:])
@@ -118,7 +120,7 @@ class TreeWidget(QWidget):
             for iprogenitor in np.nonzero(in_degrees==0)[0]:
                 lineages.append(self.recurse_tree(nodes[iprogenitor].item(), []))
 
-            self.tree_plot: TreePlot = TreePlot(lineages)
+            self.tree_plot: TreePlot = TreePlot(lineages, self.tracks_viewer.colormap)
             self.tree_plot.set_event_handler(self.my_handler)
             self.tree_plot.init()
             self.layout.addWidget(self.tree_plot)

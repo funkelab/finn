@@ -11,12 +11,12 @@ import copy
 class TreePlot(QWidget):
     """The actual vispy (or pygfx) tree plot"""
 
-    def __init__(self, lineages, parent=None):
+    def __init__(self, lineages, colormap, parent=None):
         super().__init__(parent=parent)
         self.layout = QVBoxLayout(self)
         self.lineages = lineages
 
-        self.colors = [(*x, 1) for x in distinctipy.get_colors(sum([len(x) for x in self.lineages]))]
+        self.colors = colormap
         self.selected_nodes = []
         self.displayed_lineages = []
         self.time_range = 0
@@ -386,10 +386,11 @@ class TreePlot(QWidget):
             for itrack in range(len(self.lineages[itree])):
                 track = self.lineages[itree][itrack]
                 time, area =  [-t.time for t in track], [t.area for t in track],
+                trackid = track[0].trackid
 
                 # start markers
                 self.start_geometries.append(gfx.Geometry(positions=[(0, 0, 0)],
-                                                          edge_colors=[self.colors[ilineage]]))
+                                                          edge_colors=[self.colors.map(trackid)]))
                 points = gfx.Points(
                     self.start_geometries[-1],
                     gfx.PointsMarkerMaterial(marker=track[0].marker,
@@ -408,7 +409,7 @@ class TreePlot(QWidget):
                 if len(track)>2:
                     self.middle_geometries.append(gfx.Geometry(
                             positions=[(0, 0, 0) for _ in track[1:-1]],
-                            edge_colors=[self.colors[ilineage] for _ in track[1:-1]]))
+                            edge_colors=[self.colors.map(trackid) for _ in track[1:-1]]))
                     points = gfx.Points(
                         self.middle_geometries[-1],
                         gfx.PointsMarkerMaterial(marker=track[1].marker,
@@ -426,7 +427,7 @@ class TreePlot(QWidget):
 
                 # end markers
                 self.end_geometries.append(gfx.Geometry(positions=[(0, 0, 0)],
-                                                        edge_colors=[self.colors[ilineage]]))
+                                                        edge_colors=[self.colors.map(trackid)]))
                 points = gfx.Points(
                     self.end_geometries[-1],
                     gfx.PointsMarkerMaterial(marker=track[-1].marker,
@@ -446,7 +447,7 @@ class TreePlot(QWidget):
                 self.vertical_geometries.append(gfx.Geometry(positions=[(0, 0, 0) for _ in track]))
                 line = gfx.Line(
                     self.vertical_geometries[-1],
-                    gfx.LineMaterial(thickness=2.0, color=self.colors[ilineage]),
+                    gfx.LineMaterial(thickness=2.0, color=self.colors.map(trackid)),
                     render_order=4,
                 )
                 self.scene.add(line)
