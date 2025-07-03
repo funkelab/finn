@@ -340,12 +340,18 @@ class TreePlot(QWidget):
             self.scene.local.rotation = la.quat_from_axis_angle([0., 0., 1.], 3.14159/2)
             self.camera.width = self.time_range
             self.camera.height = self.feature_range
+            self.label.anchor_offset=20
+            self.label.anchor="top-center"
         else:
             self.scene.local.rotation = [0., 0., 0., 1.]
             self.camera.width = self.feature_range
             self.camera.height = self.time_range
+            self.label.anchor_offset=40
+            self.label.anchor="middle-right"
         self.camera.show_object(self.scene)
         self.camera_state0 = copy.deepcopy(self.camera.get_state())
+        self.canvas.update()
+        self.ruler.update(self.camera, self.canvas.get_logical_size())
         self.canvas.update()
 
     def reset_fov(self):
@@ -461,6 +467,17 @@ class TreePlot(QWidget):
 
                 ilineage += 1
             iselected_tree += 1
+
+        # needs https://github.com/pygfx/pygfx/pull/1130
+        self.ruler = gfx.Ruler(tick_side="right", start_value=0)
+        self.scene.add(self.ruler)
+        self.label = gfx.Text(
+            text="time",
+            font_size=15,
+            screen_space=True,
+            material=gfx.TextMaterial(color="#ffffff"),
+        )
+        self.scene.add(self.label)
 
         self.update()
 
@@ -589,5 +606,9 @@ class TreePlot(QWidget):
         t = [y for x in t for y in x]
         self.feature_range = np.max(f) - np.min(f)
         self.time_range = np.max(t) - np.min(t)
+
+        self.ruler.start_pos = (-0.1*self.feature_range, 0, 0)
+        self.ruler.end_pos = (-0.1*self.feature_range, -self.time_range, 0)
+        self.label.local.position = (-0.1*self.feature_range, -self.time_range/2, 0)
 
         self.actuate_view_direction()
