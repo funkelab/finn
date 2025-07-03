@@ -51,6 +51,8 @@ def create_project(project_info: dict[str:Any]) -> Project:
             stored (if provided)
         - column_mapping [dict[str: str] | None] : mapping of the csv column
             headers to the required tracking information (dimensions, ids)
+        - convert_pixel_units (bool): whether the coordinates in the csv are still in
+            pixel units and need to be remapped.
         - project_params [ProjectParams]: parameters for the project
         - cand_graph_params [CandGraphParams]: parameters for the candidate graph
         - features (list[dict[str: str|bool]]): list of features to measure,
@@ -72,6 +74,7 @@ def create_project(project_info: dict[str:Any]) -> Project:
         axes = project_info["axes"]
         tracks_path = project_info["tracks_path"]
         column_mapping = project_info["column_mapping"]
+        convert_pixel_units = project_info["convert_pixel_units"]
         project_params = project_info["project_params"]
         cand_graph_params = project_info["cand_graph_params"]
         features = project_info["features"]
@@ -148,19 +151,19 @@ def create_project(project_info: dict[str:Any]) -> Project:
 
     if tracks_path is not None:
         # Read the dataframe, and remap the column headers
-        df = read_tracks_df(tracks_path, column_mapping)
+        scaling_dict = dict(zip(axes["dimensions"], axes["scaling"], strict=False))
+        df = read_tracks_df(
+            tracks_path, column_mapping, convert_pixel_units, scaling_dict
+        )
 
         # check if the provided segmentation matches with the dataframe (dimensions
         # and seg value of the first object). Raises DialogValueError if any problems are
         # found.
-        scaling = axes["scaling"]
-        if "channel" in axes["dimensions"]:
-            scaling = scaling[1:]  # remove the 'channel' dimension from scaling
         if segmentation_image is not None:
             test_df_seg_match(
                 df,
                 segmentation_image,
-                scaling,
+                scaling_dict,
                 mapping=column_mapping,
             )
 
@@ -187,7 +190,7 @@ def create_project(project_info: dict[str:Any]) -> Project:
     # construct a graph from the csv data, if provided.
     if create_graph_from_df:
         nxgraph = graph_from_df(
-            df, segmentation_image, intensity_image, scaling[1:], features
+            df, segmentation_image, intensity_image, scaling_dict, features
         )
         seg = segmentation_image is not None
         feature_set = FeatureSet(ndim=ndim, seg=seg, pos_attr="pos", time_attr="t")
@@ -224,7 +227,12 @@ def create_project(project_info: dict[str:Any]) -> Project:
     )
 
 
-def read_tracks_df(tracks_path: str, column_mapping: dict[str:str]) -> pd.DataFrame:
+def read_tracks_df(
+    tracks_path: str,
+    column_mapping: dict[str:str],
+    convert_pixel_units: bool,
+    scaling: dict[str:float],
+) -> pd.DataFrame:
     """Reads and verifies the provided csv file. Checks if the 'id' column is unique,
     raises a DialogValueError if not, and and ensures it consists of integers.
       args:
@@ -240,6 +248,14 @@ def read_tracks_df(tracks_path: str, column_mapping: dict[str:str]) -> pd.DataFr
     # remap based on column mapping provided by the user
     for new_col, old_col in column_mapping.items():
         df[new_col] = df[old_col]
+
+    # check whether the coordinates are in pixel units and should be rescaled to world
+    # coordinates
+    if convert_pixel_units:
+        for axis in ["z", "y", "x"]:
+            if axis in df.columns:
+                df[axis] = pd.to_numeric(df[axis], errors="coerce")  # convert to float
+                df[axis] = df[axis] * scaling[axis]
 
     # check that the ids provided in the csv are indeed unique
     if not df["id"].is_unique:
@@ -499,7 +515,7 @@ def has_duplicate_ids(segmentation: np.ndarray) -> bool:
 def test_df_seg_match(
     df: pd.DataFrame,
     segmentation: da.Array,
-    scale: list[float],
+    scaling_dict: dict[str:float],
     mapping: dict,
 ):
     """Test if the provided segmentation, dataframe, and scale values are valid together.
@@ -517,6 +533,8 @@ def test_df_seg_match(
         scale (list[float] | None): A list of floats representing the relationship between
             the point coordinates and the pixels in the segmentation
     """
+
+    scale = [scaling_dict[dim] for dim in scaling_dict if dim != "channel"]
 
     if segmentation.ndim != len(scale):
         raise DialogValueError(
@@ -604,7 +622,7 @@ def graph_from_df(
     df: pd.DataFrame,
     segmentation: fp.Array | None,
     intensity_image: fp.Array | None,
-    scaling: tuple[float],
+    scaling_dict: dict[str:float],
     features: list[dict[str : Feature | str | bool]],
 ) -> nx.DiGraph:
     graph = nx.DiGraph()
@@ -631,6 +649,8 @@ def graph_from_df(
             and f["feature"].regionprops_name is not None
         ]
 
+        scaling = [scaling_dict[dim] for dim in scaling_dict if dim in ("z", "y", "x")]
+
         if len(features_to_recompute) > 0:
             t = int(row["t"])
             if intensity_image is not None:
@@ -646,12 +666,14 @@ def graph_from_df(
                     # the last position
                     intensity = np.transpose(intensity, indices)
                 else:
-                    intensity = intensity_image[t].compute
+                    intensity = intensity_image[t].compute()
             else:
                 intensity = None
             # compute the feature
             props = regionprops(
-                segmentation[t].compute(), intensity_image=intensity, spacing=scaling
+                (segmentation[t].compute() == _id).astype(np.uint8),
+                intensity_image=intensity,
+                spacing=scaling,
             )
             for regionprop in props:
                 for feature in features_to_recompute:

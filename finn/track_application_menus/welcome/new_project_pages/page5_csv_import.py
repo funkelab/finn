@@ -1,5 +1,6 @@
 from psygnal import Signal
 from qtpy.QtWidgets import (
+    QCheckBox,
     QGroupBox,
     QVBoxLayout,
     QWidget,
@@ -37,6 +38,8 @@ class Page5(QWidget):
         # wrap everything in a group
         import_data_group = QGroupBox("Import external tracking data")
         self.csv_layout = QVBoxLayout()
+        self.pixel_coords_checkbox = QCheckBox("Coordinates are in pixel units")
+        self.csv_layout.addWidget(self.pixel_coords_checkbox)
         self.csv_layout.addWidget(self.csv_widget)
         import_data_group.setLayout(self.csv_layout)
         import_data_layout = QVBoxLayout()
@@ -49,7 +52,8 @@ class Page5(QWidget):
         self.mapping_updated.emit()
 
     def _update_has_segmentation(self):
-        """Update whether the user has segmentation data based on the selection in page3."""
+        """Update whether the user has segmentation data based on the selection in
+        page3."""
 
         if self.page3.data_type == "segmentation":
             self.has_segmentation = True
@@ -99,4 +103,5 @@ class Page5(QWidget):
         return {
             "tracks_path": self._get_tracks_path(),
             "column_mapping": self._get_mapping(),
+            "convert_pixel_units": self.pixel_coords_checkbox.isChecked(),
         }

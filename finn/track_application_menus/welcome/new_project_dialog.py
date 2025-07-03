@@ -355,8 +355,10 @@ class NewProjectDialog(QDialog):
             Page 5:
                 - tracks_path [str | None]: path to where the tracking data csv file is
                     stored (if provided)
-                - tracks_mapping [dict[str: str] | None] : mapping of the csv column
+                - column_mapping [dict[str: str] | None] : mapping of the csv column
                     headers to the required tracking information (dimensions, ids)
+                - convert_pixel_units (bool, False) : Whether the coordinates still need
+                    to be converted to scaled units (provided on page4)
             Page 6:
                 - project_params [ProjectParams]: parameters for the project
                 - cand_graph_params [CandGraphParams]: parameters for the candidate graph
