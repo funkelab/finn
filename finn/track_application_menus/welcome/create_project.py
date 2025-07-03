@@ -78,12 +78,12 @@ def create_project(project_info: dict[str:Any]) -> Project:
         name = project_info.get("title", "Untitled Project")
         working_dir = project_info.get("directory", Path.cwd())
         n_channels = 1
-    except KeyError as e:
-        missing_key = e.args[0]
+    except KeyError as err:
+        missing_key = err.args[0]
         raise DialogValueError(
             f"The following key is missing: {missing_key}",
             show_dialog=True,
-        )
+        ) from err
 
     # remove old zarr dir if present
     zarr_dir = os.path.join(project_info.get("directory"), f"{name}.zarr")
@@ -251,10 +251,6 @@ def read_tracks_df(tracks_path: str, column_mapping: dict[str:str]) -> pd.DataFr
 
     # check that the id column contains integer values, if not relabel them.
     if not pd.api.types.is_integer_dtype(df["id"]):
-        print(
-            f"Relabeling strings in column {column_mapping['id']} and "
-            f"{column_mapping['parent_id']} to unique integers"
-        )
         all_labels = pd.unique(df[["id"]].values.ravel())
         label_to_int = {label: idx + 1 for idx, label in enumerate(all_labels)}
         df["id"] = df["id"].map(label_to_int)
@@ -279,10 +275,6 @@ def create_empty_fp_array(
         voxel_size.pop(0)
         axis_units.pop(0)
 
-    print(
-        f"creating empty fpds with shape {shape}, voxel_size {voxel_size}, axis_names"
-        f" {axis_names} units {axis_units}"
-    )
     fpds = fp.prepare_ds(
         fp_array_path,
         shape=shape,
@@ -554,14 +546,14 @@ def test_df_seg_match(
 
     try:
         value = segmentation[tuple(coordinates)].compute()
-    except IndexError:
+    except IndexError as err:
         raise DialogValueError(
             f"Could not get the segmentation value at coordinates "
             f"{coordinates}. Segmentation data has shape "
             f"{segmentation.shape}. Please check if the axis order you"
             f" provided is correct.",
             show_dialog=True,
-        )
+        ) from err
 
     if not value == seg_id:
         raise DialogValueError(
@@ -578,7 +570,7 @@ def graph_from_points(
     """Create a graph from points data, representing t(z)yx coordinates"""
 
     graph = nx.DiGraph()
-    for id, row in points_data.iterrows():
+    for _id, row in points_data.iterrows():
         if "z" in column_mapping:
             pos = [
                 row.get(column_mapping["z"], None),
@@ -591,9 +583,10 @@ def graph_from_points(
         t = row.get(column_mapping["t"], None)
 
         values = pos + [t]
-        if not all(isinstance(v, (int, float, np.integer, np.floating)) for v in values):
+        if not all(isinstance(v, int | float | np.integer | np.floating) for v in values):
             raise DialogValueError(
-                f"Non-numerical or missing value found in position columns at row {id}: {values}",
+                f"Non-numerical or missing value found in position columns at row {_id}: "
+                f"{values}",
                 show_dialog=True,
             )
 
@@ -602,7 +595,7 @@ def graph_from_points(
             "pos": pos,
         }
 
-        graph.add_node(id + 1, **attrs)
+        graph.add_node(_id + 1, **attrs)
 
     return graph
 
