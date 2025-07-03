@@ -36,19 +36,17 @@ class TracksLayerGroup:
         else:
             self.seg_layer = None
 
-        # if (
-        #     self.project is not None
-        #     and len(self.project.solution) != 0
-        # ):
-        #     self.tracks_layer = TrackGraph(
-        #         name=self.name + "_tracks",
-        #         project_viewer=self.project_viewer,
-        #     )
+        if self.project is not None and len(self.project.cand_graph) != 0:
+            #     self.tracks_layer = TrackGraph(
+            #         name=self.name + "_tracks",
+            #         project_viewer=self.project_viewer,
+            #     )
 
-        #     self.points_layer = TrackPoints(
-        #         name=self.name + "_points",
-        #         project_viewer=self.project_viewer,
-        #     )
+            self.points_layer = TrackPoints(
+                name=self.name + "_points",
+                project_viewer=self.project_viewer,
+                show_cands=True,
+            )
         # else:
         #     self.tracks_layer = None
         #     self.points_layer = None
@@ -113,7 +111,10 @@ class TracksLayerGroup:
         location, if the node is not already in the field of view"""
 
         if self.seg_layer is None or self.seg_layer.mode == "pan_zoom":
-            location = self.project.get_positions([node], incl_time=True)[0].tolist()
+            graph = self.project.cand_graph
+            time = graph.get_time(node)
+            pos = self.project.cand_graph.get_position(node)
+            location = [time, *pos]
             assert len(location) == self.finn_viewer.dims.ndim, (
                 f"Location {location} does not match viewer number of dims "
                 f"{self.finn_viewer.dims.ndim}"

@@ -5,14 +5,12 @@ from funtracks.actions.action_history import ActionHistory
 from funtracks.user_actions import UserDeleteEdge, UserDeleteNode, UserSelectEdge
 
 import finn
-from finn.track_data_views.graph_attributes import NodeAttr
+from finn.track_data_views.node_type import NodeType
 from finn.track_data_views.views.layers.tracks_layer_group import TracksLayerGroup
 from finn.track_data_views.views.tree_view.tree_widget_utils import (
     extract_lineage_tree,
 )
 from finn.track_data_views.views_coordinator.node_selection_list import NodeSelectionList
-
-from ..node_type import NodeType
 
 
 class ProjectViewer:
@@ -44,8 +42,8 @@ class ProjectViewer:
         }
         self.mode = "all"
         self.visible: list | str = []
-        self.tracking_layers = TracksLayerGroup(self)
         self.selected_nodes = NodeSelectionList()
+        self.tracking_layers = TracksLayerGroup(self)
         self.selected_nodes.list_updated.connect(self.update_selection)
 
         self.set_keybinds()
@@ -114,32 +112,25 @@ class ProjectViewer:
 
     def filter_visible_nodes(self) -> list[int]:
         """Construct a list of track_ids that should be displayed"""
-
-        if self.project is None or self.project.graph is None:
+        solution = self.project.solution
+        if self.project is None or len(solution) == 0:
             return []
         if self.mode == "lineage":
             # if no nodes are selected, check which nodes were previously visible and
             # filter those
             if len(self.selected_nodes) == 0 and self.visible is not None:
-                prev_visible = [
-                    node for node in self.visible if self.project.graph.has_node(node)
-                ]
+                prev_visible = [node for node in self.visible if solution.has_node(node)]
                 self.visible = []
                 for node_id in prev_visible:
-                    self.visible += extract_lineage_tree(self.project.graph, node_id)
+                    self.visible += extract_lineage_tree(solution, node_id)
                     if set(prev_visible).issubset(self.visible):
                         break
             else:
                 self.visible = []
                 for node in self.selected_nodes:
-                    self.visible += extract_lineage_tree(self.project.graph, node)
+                    self.visible += extract_lineage_tree(solution, node)
 
-            return list(
-                {
-                    self.project.graph.nodes[node][NodeAttr.TRACK_ID.value]
-                    for node in self.visible
-                }
-            )
+            return list({self.project.cand_graph.get_track_ids(self.visible)})
         self.visible = "all"
         return "all"
 

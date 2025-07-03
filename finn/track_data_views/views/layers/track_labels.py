@@ -94,7 +94,7 @@ class TrackLabels(finn.layers.Labels):
 
         super().__init__(
             # this will pass the dask array to finn/napari
-            data=data.data.compute(),
+            data=data.data,
             name=name,
             opacity=opacity,
             colormap=colormap,
@@ -148,9 +148,13 @@ class TrackLabels(finn.layers.Labels):
         self.viewer.dims.events.current_step.connect(self._ensure_valid_label)
 
     def _get_feature_colormap(self, feature: Feature | None) -> DirectLabelColormap:
-        nodes = self.project.solution.nodes
+        nodes = self.project.cand_graph.nodes
         if feature is None:
-            colormap = finn.utils.colormaps.label_colormap()
+            colormap = finn.utils.colormaps.label_colormap(
+                49,
+                seed=random.uniform(0, 1),
+                background_value=0,
+            )
             feature_values = nodes
         else:
             feature_values = self.project.cand_graph.get_feature_values(nodes, feature)
