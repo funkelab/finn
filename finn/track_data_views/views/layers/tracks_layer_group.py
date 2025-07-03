@@ -33,23 +33,19 @@ class TracksLayerGroup:
                 opacity=0.9,
                 project_viewer=self.project_viewer,
             )
-        else:
-            self.seg_layer = None
 
-        if self.project is not None and len(self.project.cand_graph) != 0:
-            #     self.tracks_layer = TrackGraph(
-            #         name=self.name + "_tracks",
-            #         project_viewer=self.project_viewer,
-            #     )
-
+        if len(self.project.cand_graph) != 0:
             self.points_layer = TrackPoints(
                 name=self.name + "_points",
                 project_viewer=self.project_viewer,
                 show_cands=True,
             )
-        # else:
-        #     self.tracks_layer = None
-        #     self.points_layer = None
+        # TODO: Update this when a solution becomes available
+        if len(self.project.solution) != 0:
+            self.tracks_layer = TrackGraph(
+                name=self.name + "_tracks",
+                project_viewer=self.project_viewer,
+            )
         self.add_finn_layers()
 
     def add_finn_layers(self) -> None:

@@ -32,7 +32,7 @@ class TrackPoints(finn.layers.Points):
         self,
         name: str,
         project_viewer: ProjectViewer,
-        show_cands=False,
+        show_cands=True,
     ):
         self.project_viewer = project_viewer
         self.show_cands = show_cands
@@ -250,7 +250,6 @@ class TrackPoints(finn.layers.Points):
             indices = np.where(np.isin(self.properties["track_id"], visible))[0].tolist()
             self.shown[:] = False
             self.shown[indices] = True
-
         # set border color for selected item
         self.border_color = [1, 1, 1, 1]
         self.size = self.default_size
