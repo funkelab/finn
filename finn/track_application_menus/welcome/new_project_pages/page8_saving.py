@@ -65,8 +65,6 @@ class Page8(QWidget):
         dir_ok = bool(dir_path) and os.path.isdir(dir_path)
 
         self.is_valid = title_ok and dir_ok
-
-        print("page 8 valid", self.is_valid)
         self.validity_changed.emit()
 
     def get_settings(self) -> dict[str:str]:

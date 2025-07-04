@@ -324,25 +324,26 @@ class NewProjectDialog(QDialog):
             Page 3:
                 - data_type [str]: either 'segmentation' or 'points'
             Page 4:
-                - intensity_image [da.Array | None] : intensity data
-                - segmentation_image [da.Array | None] : segmentation data
+                - intensity_image [da.Array | None]: intensity data
+                - segmentation_image [da.Array | None]: segmentation data
                 - points_data [pd.DataFrame]: point detection data
                 - ndim [int]: the number of dimensions (incl time) of the data (3, 4, or
                     5)
-                - axes [dict]:
-                    dimensions [tuple[str]]: dimension names (e.g. 'time', 'z')
-                    raw_indices [tuple[int]]: index of each dimension in the raw data
-                    seg_indices [tuple[int]]: index of each dimension in the seg data
-                    axis_names [tuple(str)]: dimension names assigned by the user
-                    units (tuple[str]): units for each dimension, e.g. 'µm'
-                    scaling [tuple(float)]: spatial calibration in the same order as the
-                        dimensions
+                - axes [dict[str: dict[str: str|int|float]]]:
+                    with each dimension ((channel), t, (z), y, x) as key:
+                        - axis_name (str), e.g. 'time', 'z'
+                        - unit (str), e.g. 'µm'
+                        - step_size (float), spatial calibration
+                        - raw_index (int), index of dimension in raw data
+                        - seg_index (int), index of dimension in seg data
+                        - column (str), column in csv data that maps to this dimension
+                        - size (int), size of dimension in the dataset
             Page 5:
                 - tracks_path [str | None]: path to where the tracking data csv file is
                     stored (if provided)
-                - column_mapping [dict[str: str] | None] : mapping of the csv column
+                - column_mapping [dict[str: str] | None]: mapping of the csv column
                     headers to the required tracking information (dimensions, ids)
-                - convert_pixel_units (bool, False) : Whether the coordinates still need
+                - convert_pixel_units (bool, False): Whether the coordinates still need
                     to be converted to scaled units (provided on page4)
             Page 6:
                 - project_params [ProjectParams]: parameters for the project
@@ -361,6 +362,7 @@ class NewProjectDialog(QDialog):
         project_info = {
             "tracks_path": None,
             "column_mapping": None,
+            "convert_pixel_units": False,
         }
 
         project_info = project_info | self.page3.get_settings()

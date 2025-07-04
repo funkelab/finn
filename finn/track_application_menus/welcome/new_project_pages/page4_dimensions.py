@@ -463,43 +463,46 @@ class Page4(QWidget):
             "segmentation_image": self.seg,
             "points_data": self.points,
             "ndim": self.ndim,
-            "axes": {
-                "dimensions": [],
-                "raw_indices": [],
-                "seg_indices": [],
-                "points_columns": {},
-                "axis_names": [],
-                "units": [],
-                "scaling": [],
-            },
+            "axes": {},
         }
 
         for row in range(self.table.rowCount()):
             widget = self.table.cellWidget(row, 0)
-
             if isinstance(widget, QComboBox):
                 axis = widget.currentText()
             else:
                 item = self.table.item(row, 0)
                 axis = item.text()
-            raw_index = self.table.cellWidget(row, 1).currentText()
-            seg_index = self.table.cellWidget(row, 2).currentText()
-            axis_name = self.table.cellWidget(row, 3).text()
-            unit = self.table.cellWidget(row, 4).currentText()
-            step_size = (
+
+            axis_dict = {}
+            axis_dict["axis_name"] = self.table.cellWidget(row, 3).text()
+            axis_dict["unit"] = self.table.cellWidget(row, 4).currentText()
+            axis_dict["step_size"] = (
                 1
                 if isinstance(self.table.cellWidget(row, 5), QLabel)
                 else self.table.cellWidget(row, 5).value()
             )
-            info["axes"]["dimensions"].append(axis)
+            raw_index = (
+                int(self.table.cellWidget(row, 1).currentText())
+                if self.raw is not None
+                else None
+            )
+            axis_dict["raw_index"] = raw_index
+            seg_index = (
+                int(self.table.cellWidget(row, 2).currentText())
+                if self.seg is not None and axis != "channel"
+                else None
+            )
+            axis_dict["seg_index"] = seg_index
+            axis_dict["column"] = (
+                self.table.cellWidget(row, 2).currentText()
+                if self.points is not None and axis != "channel"
+                else None
+            )
             if self.raw is not None:
-                info["axes"]["raw_indices"].append(raw_index)
-            if self.seg is not None:
-                info["axes"]["seg_indices"].append(seg_index)
-            if self.points is not None:
-                info["axes"]["points_columns"][axis] = seg_index
-            info["axes"]["axis_names"].append(axis_name)
-            info["axes"]["units"].append(unit)
-            info["axes"]["scaling"].append(step_size)
+                axis_dict["size"] = self.raw.shape[raw_index]
+            elif self.seg is not None:
+                axis_dict["size"] = self.seg.shape[seg_index]
+            info["axes"][axis] = axis_dict
 
         return info
