@@ -32,7 +32,7 @@ class FeatureWidget(QWidget):
     def __init__(
         self,
         ndim: int,
-        mappable_columns: list[str] | None = [],
+        mappable_columns: list[str],
         data_type: str = "segmentation",
     ):
         super().__init__()
@@ -54,7 +54,7 @@ class FeatureWidget(QWidget):
         # For each feature:
         for feature in self.feature_instances:
             row_layout = QHBoxLayout()
-            checkbox = QCheckBox(feature.value_names)
+            checkbox = QCheckBox(feature.display_name)
             checkbox.setChecked(False)
             row_layout.addWidget(checkbox)
             self.measurement_checkboxes[feature.attr_name] = checkbox
@@ -88,7 +88,7 @@ class FeatureWidget(QWidget):
     def _update_features(
         self,
         ndim: int,
-        mappable_columns: list[str] | None = [],
+        mappable_columns: list[str],
         include_intensity: bool = False,
         data_type: str = "segmentation",
     ):
@@ -112,7 +112,7 @@ class FeatureWidget(QWidget):
             # Update checkbox label if needed
             if attr_name in self.measurement_checkboxes:
                 checkbox = self.measurement_checkboxes[attr_name]
-                checkbox.setText(feature.value_names)
+                checkbox.setText(feature.display_name)
                 # Enable/disable intensity checkbox if needed
                 checkbox.setEnabled(enable_features)
                 if attr_name == "intensity":
@@ -316,8 +316,8 @@ class Page7(QWidget):
         if choice == "curate_tracks":
             self.points_label = QLabel(
                 "<i>Measuring features is only supported when you "
-                "provide segmentation data.<br><br>.You can load existing features from CSV for "
-                "viewing purposes only.</i>"
+                "provide segmentation data.<br><br>.You can load existing features from "
+                "CSV for viewing purposes only.</i>"
             )
         else:
             self.points_label = QLabel(
@@ -327,7 +327,7 @@ class Page7(QWidget):
 
         self.page2 = page2
         self.page2.validity_changed.connect(self.update_features)
-        self.include_intensity = True if self.page2.get_path() is not None else False
+        self.include_intensity = self.page2.get_path() is not None
         self.page3 = page3
         data_type = self.page3.data_type
         self.page3.validity_changed.connect(self.update_features)
@@ -338,10 +338,7 @@ class Page7(QWidget):
 
         self.points_label.setVisible(self.page3.data_type == "points")
 
-        if self.page4.incl_z:
-            ndim = 4
-        else:
-            ndim = 3
+        ndim = 4 if self.page4.incl_z else 3
 
         self.feature_widget = FeatureWidget(
             ndim=ndim,
@@ -368,8 +365,8 @@ class Page7(QWidget):
         if choice == "curate_tracks":
             self.points_label = QLabel(
                 "<i>Measuring features is only supported when you "
-                "provide segmentation data.<br><br>.You can load existing features from CSV for "
-                "viewing purposes only.</i>"
+                "provide segmentation data.<br><br>.You can load existing features from "
+                "CSV for viewing purposes only.</i>"
             )
         else:
             self.points_label = QLabel(
@@ -389,10 +386,7 @@ class Page7(QWidget):
         else:
             self.include_intensity = True
 
-        if self.page4.incl_z:
-            ndim = 4
-        else:
-            ndim = 3
+        ndim = 4 if self.page4.incl_z else 3
 
         self.feature_widget._update_features(
             ndim,

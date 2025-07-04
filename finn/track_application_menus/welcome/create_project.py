@@ -5,20 +5,18 @@ from typing import Any
 
 import dask.array as da
 import funlib.persistence as fp
-import networkx as nx
 import numpy as np
 import pandas as pd
-from funtracks.cand_graph import CandGraph
-from funtracks.features._base import Feature
+from funtracks.cand_graph_utils import (
+    graph_from_df,
+    graph_from_points,
+    graph_from_segmentation,
+)
 from funtracks.features.feature_set import FeatureSet
-from funtracks.features.measurement_features import Intensity  # adjust import as needed
-from funtracks.nx_graph import NxGraph
 from funtracks.project import Project
-from funtracks.tracking_graph import TrackingGraph
 from qtpy.QtWidgets import (
     QMessageBox,
 )
-from skimage.measure import regionprops
 from tqdm import tqdm
 
 
@@ -220,29 +218,22 @@ def create_project(project_info: dict[str:Any]) -> Project:
             seg_id_map=seg_id_map,
         )
 
-    # ----------- Construct graphs ---------- #
+    # ----------- Construct Candidate graph ---------- #
 
     # construct a graph from the csv data, if provided.
+    scaling = [axes[dim]["step_size"] for dim in axes if dim in ("z", "y", "x")]
+    n_channels = axes["channel"]["size"]
     if create_graph_from_df:
-        scaling = [axes[dim]["step_size"] for dim in axes if dim in ("z", "y", "x")]
-        nxgraph = graph_from_df(
-            df, segmentation_image, intensity_image, scaling, features
+        cand_graph = graph_from_df(
+            df,
+            segmentation_image,
+            intensity_image,
+            ndim,
+            n_channels,
+            scaling,
+            features,
+            cand_graph_params,
         )
-        seg = segmentation_image is not None
-        feature_set = FeatureSet(ndim=ndim, seg=seg, pos_attr="pos", time_attr="t")
-        for feature in features:
-            if isinstance(feature["feature"], Intensity):
-                n_channels = axes["channel"]["size"]
-                feature["feature"].value_names = (
-                    "Intensity"
-                    if n_channels == 1
-                    else [f"Intensity_chan{chan}" for chan in range(n_channels)]
-                )
-            feature_set.add_feature(feature["feature"])  # add the Feature instance from
-            # the feature dict to the feature_set
-
-        tracking_graph = TrackingGraph(NxGraph, nxgraph, feature_set)
-        cand_graph = CandGraph.from_tracking_graph(tracking_graph, cand_graph_params)
 
     # Create a candidate graph with only nodes when tracking based on point detections
     # without csv.
@@ -252,12 +243,31 @@ def create_project(project_info: dict[str:Any]) -> Project:
         for dim in ("time", "z", "y", "x"):
             if dim in axes:
                 column_mapping[dim] = axes[dim]["column"]
-        nxgraph = graph_from_points(points_data, axes)
+
+        # check that all values are numerical
+        for col in column_mapping.values():
+            # Try to convert to numeric, NaNs will be introduced for non-numeric values
+            if pd.to_numeric(df[col], errors="coerce").isnull().any():
+                raise DialogValueError(
+                    f"Non-numerical or missing values found in column: {col}",
+                    show_dialog=True,
+                )
+
         feature_set = FeatureSet(ndim=ndim, seg=False, pos_attr="pos", time_attr="t")
-        tracking_graph = TrackingGraph(NxGraph, nxgraph, feature_set)
-        cand_graph = CandGraph.from_tracking_graph(tracking_graph, cand_graph_params)
+        cand_graph = graph_from_points(
+            points_data, column_mapping, feature_set, cand_graph_params
+        )
+
     else:
-        cand_graph = None
+        cand_graph = graph_from_segmentation(
+            segmentation_image,
+            intensity_image,
+            ndim,
+            n_channels,
+            scaling,
+            features,
+            cand_graph_params,
+        )
 
     # ----------- Return Project ---------#
 
@@ -534,152 +544,3 @@ def test_df_seg_match(
             f"column {mapping['seg_id']}",
             show_dialog=True,
         )
-
-
-def graph_from_points(
-    points_data: pd.DataFrame, column_mapping: dict[str:str]
-) -> nx.DiGraph:
-    """Create a graph from points data, representing t(z)yx coordinates
-    Args:
-        points_data (pd.DataFrame): dataframe holding the point t, (z), y, x coordinates
-        column_mapping (dict[str: str]): dictionary mapping each dimension to a column in
-         the dataframe
-    Returns:
-        nx.DiGraph with nodes only.
-    """
-    graph = nx.DiGraph()
-    for _id, row in points_data.iterrows():
-        if "z" in column_mapping:
-            pos = [
-                row.get(column_mapping["z"], None),
-                row.get(column_mapping["y"], None),
-                row.get(column_mapping["x"], None),
-            ]
-        else:
-            pos = [row.get(column_mapping["y"], None), row.get(column_mapping["x"], None)]
-
-        t = row.get(column_mapping["t"], None)
-
-        values = pos + [t]
-        if not all(isinstance(v, int | float | np.integer | np.floating) for v in values):
-            raise DialogValueError(
-                f"Non-numerical or missing value found in position columns at row {_id}: "
-                f"{values}",
-                show_dialog=True,
-            )
-
-        attrs = {
-            "t": int(t),
-            "pos": pos,
-        }
-
-        graph.add_node(_id + 1, **attrs)
-
-    return graph
-
-
-def graph_from_df(
-    df: pd.DataFrame,
-    segmentation: fp.Array | None,
-    intensity_image: fp.Array | None,
-    scaling: list[float],
-    features: list[dict[str : Feature | str | bool]],
-) -> nx.DiGraph:
-    """Construct a nx.DiGraph from a pd.DataFrame, and optionally computes attributes from
-    a list of features and adds them to the nodes.
-
-    Args:
-        df (pd.DataFrame): dataframe holding the tracks data.
-        segmentation (fp.Array | None): segmentation data
-        intensity_image (fp.Array | None): intensity image
-        scaling (list[float]): spatial calibration for (z), y, x dimensions.
-        features (list[dict[str: Feature|str|bool]]): Features to be measured.
-            - feature (funtracks.Feature)
-            - include (bool): whether to include this feature on the graph
-            - from_column (str | None): optional dataframe column from which to take the
-            measurement (instead of recomputing)
-
-    Returns:
-        nx.DiGraph with nodes and edges, and computed features on the nodes.
-
-    """
-
-    graph = nx.DiGraph()
-    for _, row in df.iterrows():
-        _id = int(row["id"])
-        parent_id = row["parent_id"]
-        if "z" in df.columns:
-            pos = [row["z"], row["y"], row["x"]]
-        else:
-            pos = [row["y"], row["x"]]
-
-        attrs = {
-            "t": int(row["t"]),
-            "pos": pos,
-        }
-
-        # add additional features that should be recomputed
-        features_to_recompute = [
-            f["feature"]
-            for f in features
-            if f["include"]
-            and f["feature"].computed
-            and f["from_column"] is None
-            and f["feature"].regionprops_name is not None
-        ]
-
-        if len(features_to_recompute) > 0:
-            t = int(row["t"])
-            if intensity_image is not None:
-                if len(intensity_image.shape) > len(segmentation.shape):
-                    # intensity image has channels (should always be at index 0)
-                    slc = [slice(None)] * intensity_image.ndim
-                    slc[1] = t
-                    intensity = intensity_image[tuple(slc)].compute()
-                    # skimage.measure.regionprops wants the channel axis to be last,
-                    # so we need to transpose again
-                    indices = list(range(len(intensity.shape)))
-                    indices.append(indices.pop(0))  # move the channel from the first to
-                    # the last position
-                    intensity = np.transpose(intensity, indices)
-                else:
-                    intensity = intensity_image[t].compute()
-            else:
-                intensity = None
-            # compute the feature
-            props = regionprops(
-                (segmentation[t].compute() == _id).astype(np.uint8),
-                intensity_image=intensity,
-                spacing=scaling,
-            )
-            if props:
-                regionprop = props[0]
-                for feature in features_to_recompute:
-                    # tolist gives floats/ints in the case of single items
-                    value = getattr(regionprop, feature.regionprops_name)
-                    if isinstance(value, tuple):
-                        value = [i.tolist() for i in value]
-                    else:
-                        value = value.tolist()
-                    attrs[feature.attr_name] = value
-
-        # optionally import extra features directly from the table, without recomputing
-        features_to_import_from_df = [
-            f for f in features if f["include"] and f["from_column"] is not None
-        ]
-
-        for feature in features_to_import_from_df:
-            attrs[feature["feature"].attr_name] = row.get(feature["from_column"])
-
-        # add the node to the graph
-        graph.add_node(_id, **attrs)
-
-        # add the edge to the graph, if the node has a parent
-        # note: this loading format does not support edge attributes
-        if not pd.isna(parent_id) and parent_id != -1:
-            assert parent_id in graph.nodes, (
-                f"Parent id {parent_id} of node {_id} not in graph yet"
-            )
-            graph.add_edge(parent_id, _id)
-
-    return graph
