@@ -222,7 +222,7 @@ def create_project(project_info: dict[str:Any]) -> Project:
 
     # construct a graph from the csv data, if provided.
     scaling = [axes[dim]["step_size"] for dim in axes if dim in ("z", "y", "x")]
-    n_channels = axes["channel"]["size"]
+    n_channels = axes["channel"]["size"] if "channel" in axes else 1
     if create_graph_from_df:
         cand_graph = graph_from_df(
             df,

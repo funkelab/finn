@@ -2,8 +2,10 @@ import os
 from typing import Any
 
 from funtracks.features._base import Feature, FeatureType
-from funtracks.features.measurement_features import featureset
+from funtracks.features.edge_features import edge_features
+from funtracks.features.measurement_features import measurement_features
 from psygnal import Signal
+from qtpy.QtCore import Qt
 from qtpy.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -37,19 +39,25 @@ class FeatureWidget(QWidget):
     ):
         super().__init__()
 
-        self.feature_instances = [feature_cls(ndim=ndim) for feature_cls in featureset]
+        self.feature_instances = [
+            feature_cls(ndim=ndim) for feature_cls in measurement_features
+        ]
+        self.edge_feature_instances = [
+            feature_cls() for feature_cls in edge_features if feature_cls().computed
+        ]
         self.data_type = data_type
         self.ndim = ndim
         self.features_layout = QVBoxLayout()
+        self.features_layout.addWidget(QLabel("Node Features"))
+        self.edge_features_layout = QVBoxLayout()
+        self.edge_features_layout.addWidget(QLabel("Edge Features"))
+        self.edge_features_layout.setContentsMargins(40, 0, 0, 0)
         self.is_valid = True
 
         self.show_mapping = bool(mappable_columns)
-        self.choose_column_label = QLabel("Choose from column")
-        self.features_layout.addWidget(self.choose_column_label)
-        self.choose_column_label.setVisible(self.show_mapping)
-
         self.measurement_checkboxes = {}
         self.measurement_comboboxes = {}
+        self.edge_measurement_checkboxes = {}
 
         # For each feature:
         for feature in self.feature_instances:
@@ -70,6 +78,15 @@ class FeatureWidget(QWidget):
 
             self.features_layout.addLayout(row_layout)
 
+        for feature in self.edge_feature_instances:
+            row_layout = QHBoxLayout()
+            checkbox = QCheckBox(feature.display_name)
+            checkbox.setChecked(False)
+            row_layout.addWidget(checkbox)
+            self.edge_measurement_checkboxes[feature.attr_name] = checkbox
+            checkbox.setEnabled(self.data_type == "segmentation")
+            self.edge_features_layout.addLayout(row_layout)
+
         self.extra_features_layout = QVBoxLayout()
         self.extra_features = []  # List of (QLineEdit, QComboBox)
         self.mappable_columns = list(mappable_columns)  # Save for later use
@@ -83,7 +100,14 @@ class FeatureWidget(QWidget):
         self.features_layout.addLayout(self.extra_features_layout)
         self.features_layout.addWidget(self.add_feature_btn)
 
-        self.setLayout(self.features_layout)
+        main_layout = QHBoxLayout()
+        main_layout.addLayout(self.features_layout)
+        main_layout.addLayout(self.edge_features_layout)
+        main_layout.addStretch()  # Optional: pushes everything to the left
+        main_layout.setAlignment(self.features_layout, Qt.AlignTop)
+        main_layout.setAlignment(self.edge_features_layout, Qt.AlignTop)
+
+        self.setLayout(main_layout)
 
     def _update_features(
         self,
@@ -94,9 +118,13 @@ class FeatureWidget(QWidget):
     ):
         self.show_mapping = bool(mappable_columns)
         self.mappable_columns = list(mappable_columns)  # Save for later use
-        self.choose_column_label.setVisible(self.show_mapping)
         self.ndim = ndim
-        self.feature_instances = [feature_cls(ndim=ndim) for feature_cls in featureset]
+        self.feature_instances = [
+            feature_cls(ndim=ndim) for feature_cls in measurement_features
+        ]
+        self.edge_feature_instances = [
+            feature_cls() for feature_cls in edge_features if feature_cls().computed
+        ]
         self.data_type = data_type
         enable_features = self.data_type == "segmentation" or (
             self.data_type == "points" and bool(mappable_columns)
@@ -141,6 +169,17 @@ class FeatureWidget(QWidget):
                 # Enable/disable intensity combobox if needed
                 if attr_name == "intensity":
                     combobox.setEnabled(include_intensity)
+
+        for feature in self.edge_feature_instances:
+            attr_name = feature.attr_name
+            # Update checkbox label if needed
+            if attr_name in self.edge_measurement_checkboxes:
+                checkbox = self.edge_measurement_checkboxes[attr_name]
+                checkbox.setText(feature.display_name)
+                # Enable/disable intensity checkbox if needed
+                checkbox.setEnabled(enable_features)
+                if attr_name == "iou":
+                    checkbox.setEnabled(data_type == "segmentation")
 
     def _can_add_extra_feature(self):
         # Only enable if there are unmapped columns and no combo is set to None
@@ -271,6 +310,15 @@ class FeatureWidget(QWidget):
                 {"feature": feature, "include": include, "from_column": from_column}
             )
 
+        for feature in self.edge_feature_instances:
+            attr_name = feature.attr_name
+            checkbox = self.edge_measurement_checkboxes[attr_name]
+            include = checkbox.isChecked() and checkbox.isEnabled()
+            from_column = None
+            features.append(
+                {"feature": feature, "include": include, "from_column": from_column}
+            )
+
         for edit, combo, *_ in self.extra_features:
             col = combo.currentText()
             if col != "None":
@@ -316,7 +364,7 @@ class Page7(QWidget):
         if choice == "curate_tracks":
             self.points_label = QLabel(
                 "<i>Measuring features is only supported when you "
-                "provide segmentation data.<br><br>.You can load existing features from "
+                "provide segmentation data.<br><br>. You can load existing features from "
                 "CSV for viewing purposes only.</i>"
             )
         else:
@@ -349,9 +397,9 @@ class Page7(QWidget):
 
         # wrap in a group box
         layout = QVBoxLayout(self)
-        layout.addWidget(self.points_label)
         feature_group_box = QGroupBox("Node Features")
         feature_group_layout = QVBoxLayout(feature_group_box)
+        feature_group_layout.addWidget(self.points_label)
         feature_group_layout.addWidget(QLabel("Choose which features to include"))
         feature_group_layout.addWidget(self.feature_widget)
         feature_group_box.setLayout(feature_group_layout)
@@ -363,13 +411,13 @@ class Page7(QWidget):
 
         choice = self.page1.get_choice()
         if choice == "curate_tracks":
-            self.points_label = QLabel(
+            self.points_label.setText(
                 "<i>Measuring features is only supported when you "
-                "provide segmentation data.<br><br>.You can load existing features from "
+                "provide segmentation data.<br><br>You can load existing features from "
                 "CSV for viewing purposes only.</i>"
             )
         else:
-            self.points_label = QLabel(
+            self.points_label.setText(
                 "<i>Measuring features is only supported when you "
                 "provide segmentation data.</i>"
             )
