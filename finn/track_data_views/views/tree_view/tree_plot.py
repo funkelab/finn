@@ -536,12 +536,13 @@ class TreePlot(QWidget):
                         self.start_geometries[ilineage].positions.data[0,0] = \
                                 idisplayed*10 if self.feature == "tree" else track[0].area
                         self.start_geometries[ilineage].positions.data[0,1] = -track[0].time
+                        self.start_geometries[ilineage].positions.data[0,2] = 0
                     else:
                         self.start_geometries[ilineage].edge_colors.data[0,3] = 0
                         self.start_geometries[ilineage].edge_colors.update_range(0)
                         self.start_geometries[ilineage].positions.data[0,0] = 0
                         self.start_geometries[ilineage].positions.data[0,1] = 0
-                    self.start_geometries[ilineage].positions.data[0,2] = 0
+                        self.start_geometries[ilineage].positions.data[0,2] = -10
                     self.start_geometries[ilineage].positions.update_range(0)
 
                 # middle markers
@@ -553,12 +554,13 @@ class TreePlot(QWidget):
                             self.middle_geometries[ilineage].positions.data[i,0] = \
                                 idisplayed*10 if self.feature == "tree" else t.area
                             self.middle_geometries[ilineage].positions.data[i,1] = -t.time
+                            self.middle_geometries[ilineage].positions.data[i,2] = 0
                         else:
                             self.middle_geometries[ilineage].edge_colors.data[i,3] = 0
                             self.middle_geometries[ilineage].edge_colors.update_range(i)
                             self.middle_geometries[ilineage].positions.data[i,0] = 0
                             self.middle_geometries[ilineage].positions.data[i,1] = 0
-                        self.middle_geometries[ilineage].positions.data[i,2] = 0
+                            self.middle_geometries[ilineage].positions.data[i,2] = -10
                         self.middle_geometries[ilineage].positions.update_range(i)
 
                 # end markers
@@ -568,11 +570,13 @@ class TreePlot(QWidget):
                     self.end_geometries[ilineage].positions.data[0,0] = \
                             idisplayed*10 if self.feature == "tree" else track[-1].area
                     self.end_geometries[ilineage].positions.data[0,1] = -track[-1].time
+                    self.end_geometries[ilineage].positions.data[0,2] = 0
                 else:
                     self.end_geometries[ilineage].edge_colors.data[0,3] = 0
                     self.end_geometries[ilineage].edge_colors.update_range(0)
                     self.end_geometries[ilineage].positions.data[0,0] = 0
                     self.end_geometries[ilineage].positions.data[0,1] = 0
+                    self.end_geometries[ilineage].positions.data[0,2] = -10
                 if self.end_markers[ilineage].marker.startswith("triangle"):
                     self.end_markers[ilineage].size = 14
                     if self.view_direction == "horizontal":
@@ -581,7 +585,6 @@ class TreePlot(QWidget):
                         self.end_markers[ilineage].marker = "triangle_up"
                 else:
                     self.end_markers[ilineage].size = 10
-                self.end_geometries[ilineage].positions.data[0,2] = 0
                 self.end_geometries[ilineage].positions.update_range(0)
 
                 # vertical track lines
