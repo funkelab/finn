@@ -39,6 +39,7 @@ class ProjectViewer:
             NodeType.END: "x",
             NodeType.CONTINUE: "disc",
             NodeType.SPLIT: "triangle_up",
+            NodeType.NOT_SELECTED: "hbar",
         }
         self.mode = "all"
         self.visible: list | str = []

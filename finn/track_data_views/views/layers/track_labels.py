@@ -32,10 +32,6 @@ class Alphamap:
 
     def update(self, alpha_dict):
         self._alpha_dict.update(alpha_dict)
-        print("emitting alpha update")
-        for key, val in self._alpha_dict.items():
-            if val == 1.0:
-                print(key)
         self.updated.emit()
 
 
@@ -105,7 +101,8 @@ class TrackLabels(finn.layers.Labels):
         self.project = project_viewer.project
         self.selected_track = None
         self.default_opacity = opacity
-        self.not_visible_opacity = 0.1
+        self.default_color = [0.5, 0.5, 0.5, 1.0]
+        self.not_visible_opacity = 0.2
         self.highighted_opacity = 1.0
         self.color_by: Feature | None
         self.colormap_seed = 1010101
@@ -189,8 +186,10 @@ class TrackLabels(finn.layers.Labels):
                 colormap = finn.utils.colormaps.ensure_colormap("viridis")
         colors = []
         for val in feature_values:
-            color = colormap.map(val)
-            alpha = self.alphamap.map(val)
+            color = colormap.map(val) if val is not None else self.default_color
+            alpha = (
+                self.alphamap.map(val) if val is not None else self.not_visible_opacity
+            )
             color[-1] = alpha
             colors.append(color)
 

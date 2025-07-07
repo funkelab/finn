@@ -9,3 +9,4 @@ class NodeType(Enum):
     SPLIT = "SPLIT"
     END = "END"
     CONTINUE = "CONTINUE"
+    NOT_SELECTED = "NOT_SELECTED"

@@ -4,8 +4,8 @@ from warnings import warn
 import networkx as nx
 import numpy as np
 import pandas as pd
-from funtracks.data_model import SolutionTracks
 
+# from funtracks.data_model import SolutionTracks
 from finn.track_data_views.graph_attributes import NodeAttr
 
 
@@ -133,7 +133,7 @@ def tracks_from_df(
     segmentation: np.ndarray | None = None,
     scale: list[float] | None = None,
     features: dict[str, str] | None = None,
-) -> SolutionTracks:
+) -> nx.DiGraph:
     """Turns a pandas data frame with columns:
         t,[z],y,x,id,parent_id,[seg_id], [optional custom attr 1], ...
     into a SolutionTracks object.
@@ -243,7 +243,7 @@ def tracks_from_df(
     # should be checked by now that these are unique and integers)
     if segmentation is not None and row["seg_id"] != row["id"]:
         segmentation = ensure_correct_labels(df, segmentation)
-
+    return graph
     tracks = SolutionTracks(
         graph=graph,
         segmentation=segmentation,
