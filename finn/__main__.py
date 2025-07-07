@@ -17,6 +17,7 @@ from typing import Any
 
 from finn.errors import ReaderPluginError
 from finn.track_application_menus.main_app import MainApp
+from finn.track_application_menus.welcome.load_project import load_project
 from finn.track_application_menus.welcome.new_project_dialog import NewProjectDialog
 from finn.track_application_menus.welcome.welcome import WelcomeDialog
 from finn.utils.translations import trans
@@ -343,12 +344,14 @@ def _run() -> None:
                     new_proj_dialog = NewProjectDialog(parent=viewer.window._qt_window)
                     if new_proj_dialog.exec_():
                         project = new_proj_dialog.project
+                        project.save()
                         break  # Exit the loop, project created
                     # User cancelled, loop back to welcome dialog
                     continue
                 if dialog.choice == "continue":
                     # Open an existing project
                     print("continue project...")  # noqa: T201
+                    project = load_project()
                     # TODO: Implement logic to open an existing project
                     break  # Exit the loop, user chose to continue
             else:

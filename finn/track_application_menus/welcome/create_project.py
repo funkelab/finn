@@ -7,6 +7,7 @@ import dask.array as da
 import funlib.persistence as fp
 import numpy as np
 import pandas as pd
+import zarr
 from funtracks.cand_graph_utils import (
     graph_from_df,
     graph_from_points,
@@ -196,18 +197,22 @@ def create_project(project_info: dict[str:Any]) -> Project:
     # Intensity fdps should be in a list, one per channel.
     intensity_fpds = None
     segmentation_fpds = None
-    fp_array_path = os.path.join(working_dir, f"{name}.zarr")
-    if os.path.exists(fp_array_path):
-        shutil.rmtree(fp_array_path)
+    if os.path.exists(working_dir):
+        shutil.rmtree(working_dir)
 
     if intensity_image is not None:
         intensity_fpds = []
+
+        # initialize 'raw' first, to ensure it has a .zgroup file
+        zroot = zarr.open(working_dir, mode="a")
+        if "raw" not in zroot:
+            zroot.create_group("raw")
 
         if "channel" in axes:
             n_channels = axes["channel"]["size"]
             for chan in range(n_channels):
                 fpds = create_fp_array(
-                    os.path.join(fp_array_path, f"raw/chan_{chan}"),
+                    os.path.join(working_dir, f"raw/chan_{chan}"),
                     intensity_image[chan],
                     axes=axes,
                     dtype=intensity_image.dtype,
@@ -215,7 +220,7 @@ def create_project(project_info: dict[str:Any]) -> Project:
                 intensity_fpds.append(fpds)
         else:
             fpds = create_fp_array(
-                os.path.join(fp_array_path, "raw/chan_0"),
+                os.path.join(working_dir, "raw/chan_0"),
                 intensity_image,
                 axes=axes,
                 dtype=intensity_image.dtype,
@@ -224,7 +229,7 @@ def create_project(project_info: dict[str:Any]) -> Project:
 
     if data_type == "segmentation":
         segmentation_fpds = create_fp_array(
-            os.path.join(fp_array_path, "seg"),
+            os.path.join(working_dir, "seg"),
             segmentation_image,
             axes=axes,
             dtype=segmentation_image.dtype
@@ -292,6 +297,7 @@ def create_project(project_info: dict[str:Any]) -> Project:
         raw=intensity_fpds,
         segmentation=segmentation_fpds,
         cand_graph=cand_graph,
+        zarr_path=Path(working_dir),
     )
 
 
