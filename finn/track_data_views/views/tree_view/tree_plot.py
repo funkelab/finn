@@ -11,13 +11,14 @@ import copy
 class TreePlot(QWidget):
     """The actual vispy (or pygfx) tree plot"""
 
-    def __init__(self, lineages, colormap, parent=None):
+    def __init__(self, lineages, colormap, selected_nodes, parent=None):
         super().__init__(parent=parent)
         self.layout = QVBoxLayout(self)
         self.lineages = lineages
 
         self.colors = colormap
-        self.selected_nodes = []
+        self.selected_nodes = selected_nodes
+        self.selected_nodes_data = {}
         self.displayed_lineages = []
         self.time_range = 0
         self.feature_range = 0
@@ -31,7 +32,7 @@ class TreePlot(QWidget):
         self.feature = "tree"  # options: "tree", "area"
         self.view_direction = "vertical"  # options: "horizontal", "vertical"
 
-        self.NameData = namedtuple('NameData', 'x, node, offset, time, area, itree, itrack')
+        self.NameData = namedtuple('NameData', 'x, iy, nodes, times, areas, itree, itrack')
 
         self.canvas = WgpuCanvas()
         self.renderer = gfx.WgpuRenderer(self.canvas)
@@ -45,6 +46,8 @@ class TreePlot(QWidget):
         self.controller_y.add_camera(self.camera, include_state={"y", "height"})
 
         self.layout.addWidget(self.canvas)
+
+        self.selected_nodes.list_updated.connect(self.draw_selected_nodes)
 
         self.canvas.request_draw(self.animate)
 
@@ -74,22 +77,24 @@ class TreePlot(QWidget):
 
     def _select_nodes(self, event):
         if self.mode!="all":  return
-        info = (event.pick_info["world_object"].name, event.pick_info["vertex_index"])
-        if info in self.selected_nodes:
-            self.selected_nodes.remove(info)
+        nd, vi = (event.pick_info["world_object"].name, event.pick_info["vertex_index"])
+        node = nd.nodes[nd.iy + vi]
+        if node in self.selected_nodes:
+            del self.selected_nodes_data[node]
         else:
             if 'Shift' not in event.modifiers:
-                self.selected_nodes = []
-            self.selected_nodes.append(info)
-        self.draw_selected_nodes()
+                self.selected_nodes_data = {}
+            self.selected_nodes_data[node] = (nd, vi)
+        self.selected_nodes.add(node, 'Shift' in event.modifiers)
 
     def draw_selected_nodes(self):
         if self.mode=="all":
-            for i,(nd,vi) in enumerate(self.selected_nodes):
+            for i,n in enumerate(self.selected_nodes):
+                nd, vi = self.selected_nodes_data[n]
                 self.selected_geometry.colors.data[i] = [0.68,0.85,0.90,1]  # light blue
                 self.selected_geometry.colors.update_range(i)
-                self.selected_geometry.positions.data[i,0] = nd.x*10 if self.feature == "tree" else nd.area[vi+nd.offset]
-                self.selected_geometry.positions.data[i,1] = nd.time[vi+nd.offset]
+                self.selected_geometry.positions.data[i,0] = nd.x*10 if self.feature == "tree" else nd.areas[vi+nd.iy]
+                self.selected_geometry.positions.data[i,1] = nd.times[vi+nd.iy]
                 self.selected_geometry.positions.update_range(i)
         for i in range(len(self.selected_nodes) if self.mode=="all" else 0, 100):
             self.selected_geometry.colors.data[i] = [0,0,0,0]
@@ -100,88 +105,91 @@ class TreePlot(QWidget):
 
     def select_next_cell(self):
         node = self.selected_nodes[-1]
-        track = self.displayed_lineages[node[0].itree][node[0].itrack]
-        if node[1] + node[0].offset < len(track)-1:
-            icell = node[1] + node[0].offset + 1
+        nd, vi = self.selected_nodes_data[node]
+        track = self.displayed_lineages[nd.itree][nd.itrack]
+        icell = vi + nd.iy + 1
+        if icell < len(track):
             if icell == len(track)-1:
-                offset = len(track)-1
+                iy = icell
                 vi = 0
             else:
-                offset = 1
+                iy = 1
                 vi = icell-1
-            time, area = [-t.time for t in track], [t.area for t in track]
-            self.selected_nodes[-1] = (
-                self.NameData(node[0].x, track[0].node, offset, time, area,
-                              node[0].itree, node[0].itrack),
+            newnode = nd.nodes[icell]
+            self.selected_nodes_data[newnode] = (
+                self.NameData(nd.x, iy, nd.nodes, nd.times, nd.areas, nd.itree, nd.itrack),
                 vi
                 )
-            self.draw_selected_nodes()
+            self.selected_nodes.add(newnode, False)
         elif track[-1].marker=="triangle_up":
-            iprev = node[0].itrack-1
-            while self.displayed_lineages[node[0].itree][iprev][0].time-1 != track[-1].time:
+            iprev = nd.itrack-1
+            while self.displayed_lineages[nd.itree][iprev][0].time-1 != track[-1].time:
                 iprev -= 1
-            track = self.displayed_lineages[node[0].itree][iprev]
-            x = node[0].x - (node[0].itrack - iprev)
-            time, area = [-t.time for t in track], [t.area for t in track]
-            self.selected_nodes[-1] = (
-                self.NameData(x, track[0].node, 0, time, area, node[0].itree, iprev),
+            track = self.displayed_lineages[nd.itree][iprev]
+            x = nd.x - (nd.itrack - iprev)
+            nodes, times, areas = [t.node for t in track], [-t.time for t in track], [t.area for t in track]
+            newnode = track[0].node
+            self.selected_nodes_data[newnode] = (
+                self.NameData(x, 0, nodes, times, areas, nd.itree, iprev),
                 0
                 )
-            self.draw_selected_nodes()
+            self.selected_nodes.add(newnode, False)
 
     def select_prev_cell(self):
         node = self.selected_nodes[-1]
-        track = self.displayed_lineages[node[0].itree][node[0].itrack]
-        if node[1] + node[0].offset > 0:
-            icell = node[1] + node[0].offset - 1
+        nd, vi = self.selected_nodes_data[node]
+        track = self.displayed_lineages[nd.itree][nd.itrack]
+        icell = vi + nd.iy - 1
+        if icell >= 0:
             if icell == 0:
-                offset = 0
+                iy = 0
                 vi = 0
             else:
-                offset = 1
+                iy = 1
                 vi = icell-1
-            time, area = [-t.time for t in track], [t.area for t in track]
-            self.selected_nodes[-1] = (
-                self.NameData(node[0].x, track[0].node, offset,
-                              time, area, node[0].itree, node[0].itrack),
+            newnode = nd.nodes[icell]
+            self.selected_nodes_data[newnode] = (
+                self.NameData(nd.x, iy, nd.nodes, nd.times, nd.areas, nd.itree, nd.itrack),
                 vi
                 )
-            self.draw_selected_nodes()
+            self.selected_nodes.add(newnode, False)
         elif track[0].marker=="square":
-            iprev = node[0].itrack-1
-            while iprev>=0 and self.displayed_lineages[node[0].itree][iprev][-1].time+1 > track[0].time:
+            iprev = nd.itrack-1
+            while iprev>=0 and self.displayed_lineages[nd.itree][iprev][-1].time+1 > track[0].time:
                 iprev -= 1
-            if iprev>=0 and self.displayed_lineages[node[0].itree][iprev][-1].time+1 == track[0].time:
+            if iprev>=0 and self.displayed_lineages[nd.itree][iprev][-1].time+1 == track[0].time:
                 iparent = iprev
             else:
-                inext = node[0].itrack+1
-                while inext<len(self.displayed_lineages[node[0].itree]) and \
-                        self.displayed_lineages[node[0].itree][inext][-1].time+1 > track[0].time:
+                inext = nd.itrack+1
+                while inext<len(self.displayed_lineages[nd.itree]) and \
+                        self.displayed_lineages[nd.itree][inext][-1].time+1 > track[0].time:
                     inext += 1
-                if inext<len(self.displayed_lineages[node[0].itree]) and \
-                        self.displayed_lineages[node[0].itree][inext][-1].time+1 == track[0].time:
+                if inext<len(self.displayed_lineages[nd.itree]) and \
+                        self.displayed_lineages[nd.itree][inext][-1].time+1 == track[0].time:
                     iparent = inext
                 else:
                     return
-            track = self.displayed_lineages[node[0].itree][iparent]
-            x = node[0].x - (node[0].itrack - iparent)
-            time, area = [-t.time for t in track], [t.area for t in track]
-            self.selected_nodes[-1] = (
-                self.NameData(x, track[0].node, len(time)-1, time, area, node[0].itree, iparent),
+            track = self.displayed_lineages[nd.itree][iparent]
+            x = nd.x - (nd.itrack - iparent)
+            nodes, times, areas = [t.node for t in track], [-t.time for t in track], [t.area for t in track]
+            newnode = track[-1].node
+            self.selected_nodes_data[newnode] = (
+                self.NameData(x, len(times)-1, nodes, times, areas, nd.itree, iparent),
                 0
                 )
-            self.draw_selected_nodes()
+            self.selected_nodes.add(newnode, False)
 
     def select_next_lineage(self):
         node = self.selected_nodes[-1]
-        itree, itrack = node[0].itree, node[0].itrack+1
+        nd, vi = self.selected_nodes_data[node]
+        itree, itrack = nd.itree, nd.itrack+1
         if itrack == len(self.displayed_lineages[itree]):
             itrack = 0
             itree += 1
         found = False
         dx = 1
         while itree < len(self.displayed_lineages) and itrack < len(self.displayed_lineages[itree]):
-            time = -node[0].time[node[1]+node[0].offset]
+            time = -nd.times[vi+nd.iy]
             times = [x.time for x in self.displayed_lineages[itree][itrack]]
             if time in times:
                 icell = times.index(time)
@@ -195,31 +203,33 @@ class TreePlot(QWidget):
         if found:
             track = self.displayed_lineages[itree][itrack]
             if icell == 0:
-                offset = 0
+                iy = 0
                 vi = 0
             elif icell==len(track)-1:
-                offset = len(track)-1
+                iy = icell
                 vi = 0
             else:
-                offset = 1
+                iy = 1
                 vi = icell-1
-            time, area = [-t.time for t in track], [t.area for t in track]
-            self.selected_nodes[-1] = (
-                self.NameData(node[0].x+dx, track[0].node, offset, time, area, itree, itrack),
+            nodes, times, areas = [t.node for t in track], [-t.time for t in track], [t.area for t in track]
+            newnode = track[vi+iy].node
+            self.selected_nodes_data[newnode] = (
+                self.NameData(nd.x+dx, iy, nodes, times, areas, itree, itrack),
                 vi
                 )
-            self.draw_selected_nodes()
+            self.selected_nodes.add(newnode, False)
 
     def select_prev_lineage(self):
         node = self.selected_nodes[-1]
-        itree, itrack = node[0].itree, node[0].itrack-1
+        nd, vi = self.selected_nodes_data[node]
+        itree, itrack = nd.itree, nd.itrack-1
         if itrack == -1:
             itree -= 1
             itrack = len(self.displayed_lineages[itree])-1
         found = False
         dx = 1
         while itree >= 0 and itrack >= 0:
-            time = -node[0].time[node[1]+node[0].offset]
+            time = -nd.times[vi+nd.iy]
             times = [x.time for x in self.displayed_lineages[itree][itrack]]
             if time in times:
                 icell = times.index(time)
@@ -233,26 +243,28 @@ class TreePlot(QWidget):
         if found:
             track = self.displayed_lineages[itree][itrack]
             if icell == 0:
-                offset = 0
+                iy = 0
                 vi = 0
             elif icell==len(track)-1:
-                offset = len(track)-1
+                iy = len(track)-1
                 vi = 0
             else:
-                offset = 1
+                iy = 1
                 vi = icell-1
-            time, area = [-t.time for t in track], [t.area for t in track]
-            self.selected_nodes[-1] = (
-                self.NameData(node[0].x-dx, track[0].node, offset, time, area, itree, itrack),
+            nodes, times, areas = [t.node for t in track], [-t.time for t in track], [t.area for t in track]
+            newnode = track[vi+iy].node
+            self.selected_nodes_data[newnode] = (
+                self.NameData(nd.x-dx, iy, nodes, times, areas, itree, itrack),
                 vi
                 )
-            self.draw_selected_nodes()
+            self.selected_nodes.add(newnode, False)
 
     def select_next_feature(self):
         node = self.selected_nodes[-1]
-        icell = node[1] + node[0].offset
-        time = -node[0].time[icell]
-        feature = node[0].area[icell]
+        nd, vi = self.selected_nodes_data[node]
+        icell = vi + nd.iy
+        time = -nd.times[icell]
+        feature = nd.areas[icell]
         feature_next = np.inf
         found = False
         for itree in range(len(self.displayed_lineages)):
@@ -269,26 +281,28 @@ class TreePlot(QWidget):
             track = self.displayed_lineages[itree_next][itrack_next]
             x = sum([len(x) for x in self.displayed_lineages[0:itree_next]]) + itrack_next
             if icell_next == 0:
-                offset = 0
+                iy = 0
                 vi = 0
             elif icell_next==len(track)-1:
-                offset = len(track)-1
+                iy = len(track)-1
                 vi = 0
             else:
-                offset = 1
+                iy = 1
                 vi = icell_next-1
-            time, area = [-t.time for t in track], [t.area for t in track]
-            self.selected_nodes[-1] = (
-                self.NameData(x, track[0].node, offset, time, area, itree_next, itrack_next),
+            nodes, times, areas = [t.node for t in track], [-t.time for t in track], [t.area for t in track]
+            newnode = track[vi+iy].node
+            self.selected_nodes_data[newnode] = (
+                self.NameData(x, iy, nodes, times, areas, itree_next, itrack_next),
                 vi
                 )
-            self.draw_selected_nodes()
+            self.selected_nodes.add(newnode, False)
 
     def select_prev_feature(self):
         node = self.selected_nodes[-1]
-        icell = node[1] + node[0].offset
-        time = -node[0].time[icell]
-        feature = node[0].area[icell]
+        nd, vi = self.selected_nodes_data[node]
+        icell = vi + nd.iy
+        time = -nd.times[icell]
+        feature = nd.areas[icell]
         feature_prev = 0
         found = False
         for itree in range(len(self.displayed_lineages)):
@@ -305,20 +319,21 @@ class TreePlot(QWidget):
             track = self.displayed_lineages[itree_prev][itrack_prev]
             x = sum([len(x) for x in self.displayed_lineages[0:itree_prev]]) + itrack_prev
             if icell_prev == 0:
-                offset = 0
+                iy = 0
                 vi = 0
             elif icell_prev==len(track)-1:
-                offset = len(track)-1
+                iy = len(track)-1
                 vi = 0
             else:
-                offset = 1
+                iy = 1
                 vi = icell_prev-1
-            time, area = [-t.time for t in track], [t.area for t in track]
-            self.selected_nodes[-1] = (
-                self.NameData(x, track[0].node, offset, time, area, itree_prev, itrack_prev),
+            nodes, times, areas = [t.node for t in track], [-t.time for t in track], [t.area for t in track]
+            newnode = track[vi+iy].node
+            self.selected_nodes_data[newnode] = (
+                self.NameData(x, iy, nodes, times, areas, itree_prev, itrack_prev),
                 vi
                 )
-            self.draw_selected_nodes()
+            self.selected_nodes.add(newnode, False)
 
     def set_mode(self, mode):
         self.mode = mode
@@ -385,7 +400,7 @@ class TreePlot(QWidget):
         for itree in range(len(self.lineages)):
             for itrack in range(len(self.lineages[itree])):
                 track = self.lineages[itree][itrack]
-                time, area =  [-t.time for t in track], [t.area for t in track],
+                nodes, times, areas =  [t.node for t in track], [-t.time for t in track], [t.area for t in track]
                 trackid = track[0].trackid
 
                 # start markers
@@ -398,7 +413,7 @@ class TreePlot(QWidget):
                                              edge_color_mode="vertex",
                                              edge_width=4,
                                              pick_write=True),
-                    name=self.NameData(ilineage, track[0].node, 0, time, area, iselected_tree, itrack),
+                    name=self.NameData(ilineage, 0, nodes, times, areas, iselected_tree, itrack),
                     render_order=2)
                 self.scene.add(points)
 
@@ -417,7 +432,7 @@ class TreePlot(QWidget):
                                                  edge_color_mode="vertex",
                                                  edge_width=4,
                                                  pick_write=True),
-                        name=self.NameData(ilineage, track[0].node, 1, time, area, iselected_tree, itrack))
+                        name=self.NameData(ilineage, 1, nodes, times, areas, iselected_tree, itrack))
                     self.scene.add(points)
 
                     @points.add_event_handler("pointer_down")
@@ -437,7 +452,7 @@ class TreePlot(QWidget):
                                              edge_mode="inner",
                                              edge_color_mode="vertex",
                                              pick_write=True),
-                    name=self.NameData(ilineage, track[0].node, len(time)-1, time, area, iselected_tree, itrack))
+                    name=self.NameData(ilineage, len(times)-1, nodes, times, areas, iselected_tree, itrack))
                 self.scene.add(points)
 
                 @points.add_event_handler("pointer_down")
@@ -483,6 +498,7 @@ class TreePlot(QWidget):
         self.update()
 
     def update(self):
+        if self.mode=="lineage" and len(self.selected_nodes)==0:  return
         ilineage = idisplayed = 0
         for itree in range(len(self.lineages)):
 
@@ -491,8 +507,9 @@ class TreePlot(QWidget):
             if self.mode=="lineage":
                 skip=True
                 for itrack in range(len(self.lineages[itree])):
-                    for selected in self.selected_nodes:
-                        if selected[0].node == self.lineages[itree][itrack][0].node:
+                    for node in self.selected_nodes:
+                        nd, vi = self.selected_nodes_data[node]
+                        if nd.nodes[0] == self.lineages[itree][itrack][0].node:
                             skip=False
                             break
                         if not skip: break

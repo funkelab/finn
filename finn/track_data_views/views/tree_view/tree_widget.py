@@ -32,7 +32,6 @@ class TreeWidget(QWidget):
         self.feature = "tree"  # options: "tree", "area"
         self.view_direction = "vertical"  # options: "horizontal", "vertical"
 
-        self.selected_nodes = NodeSelectionList()
         self.VertexData = namedtuple('VertexData', 'marker, node, time, area, trackid')
 
         self.tracks_viewer.tracks_updated.connect(self._update_track_data)
@@ -53,7 +52,7 @@ class TreeWidget(QWidget):
             # navigation_widget.py/get_next_track_node and friends are now implemented in tree_plot.py/select_next_cell
             None, None,
             self.view_direction,
-            self.selected_nodes,
+            self.tracks_viewer.selected_nodes,
             self.feature,
         )
 
@@ -120,7 +119,8 @@ class TreeWidget(QWidget):
             for iprogenitor in np.nonzero(in_degrees==0)[0]:
                 lineages.append(self.recurse_tree(nodes[iprogenitor].item(), []))
 
-            self.tree_plot: TreePlot = TreePlot(lineages, self.tracks_viewer.colormap)
+            self.tree_plot: TreePlot = TreePlot(lineages, self.tracks_viewer.colormap,
+                                                self.tracks_viewer.selected_nodes)
             self.tree_plot.set_event_handler(self.my_handler)
             self.tree_plot.init()
             self.layout.addWidget(self.tree_plot)
