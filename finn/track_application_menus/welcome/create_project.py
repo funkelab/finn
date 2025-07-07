@@ -192,7 +192,8 @@ def create_project(project_info: dict[str:Any]) -> Project:
 
         create_graph_from_df = True
 
-    # Create (empty) fpds arrays for the intensity and segmentation data (if provided)
+    # Create (empty) fpds arrays for the intensity and segmentation data (if provided).
+    # Intensity fdps should be in a list, one per channel.
     intensity_fpds = None
     segmentation_fpds = None
     fp_array_path = os.path.join(working_dir, f"{name}.zarr")
@@ -200,12 +201,26 @@ def create_project(project_info: dict[str:Any]) -> Project:
         shutil.rmtree(fp_array_path)
 
     if intensity_image is not None:
-        intensity_fpds = create_fp_array(
-            os.path.join(fp_array_path, "raw"),
-            intensity_image,
-            axes=axes,
-            dtype=intensity_image.dtype,
-        )
+        intensity_fpds = []
+
+        if "channel" in axes:
+            n_channels = axes["channel"]["size"]
+            for chan in range(n_channels):
+                fpds = create_fp_array(
+                    os.path.join(fp_array_path, f"raw/chan_{chan}"),
+                    intensity_image[chan],
+                    axes=axes,
+                    dtype=intensity_image.dtype,
+                )
+                intensity_fpds.append(fpds)
+        else:
+            fpds = create_fp_array(
+                os.path.join(fp_array_path, "raw/chan_0"),
+                intensity_image,
+                axes=axes,
+                dtype=intensity_image.dtype,
+            )
+            intensity_fpds.append(fpds)
 
     if data_type == "segmentation":
         segmentation_fpds = create_fp_array(
@@ -226,8 +241,8 @@ def create_project(project_info: dict[str:Any]) -> Project:
     if create_graph_from_df:
         cand_graph = graph_from_df(
             df,
-            segmentation_image,
-            intensity_image,
+            segmentation_fpds,
+            intensity_fpds,
             ndim,
             n_channels,
             scaling,
@@ -260,8 +275,8 @@ def create_project(project_info: dict[str:Any]) -> Project:
 
     else:
         cand_graph = graph_from_segmentation(
-            segmentation_image,
-            intensity_image,
+            segmentation_fpds,
+            intensity_fpds,
             ndim,
             n_channels,
             scaling,
@@ -362,10 +377,7 @@ def create_fp_array(
     Returns:
         fp.Array: A funlib persistence array containing the data."""
 
-    if "raw" in path:
-        default_dimensions = ("channel", "time", "z", "y", "x")
-    else:
-        default_dimensions = ("time", "z", "y", "x")
+    default_dimensions = ("time", "z", "y", "x")
 
     dimensions = [dim for dim in default_dimensions if dim in axes]
     axis_names = [axes[dim]["axis_name"] for dim in dimensions]
