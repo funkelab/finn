@@ -4,7 +4,6 @@ import math
 from typing import TYPE_CHECKING
 
 import numpy as np
-from funtracks import TrackingGraph
 from funtracks.actions import SetFeatureValues
 from funtracks.actions._base import ActionGroup
 from funtracks.user_actions import UserAddNode
@@ -41,10 +40,10 @@ class TrackPoints(finn.layers.Points):
             if not show_cands
             else self.project_viewer.project.cand_graph
         )
-        nodes, node_index_dict, track_ids, positions, symbols, colors = (
-            self._get_points_data(self.graph)
+        self.nodes = list(self.graph.nodes)
+        node_index_dict, track_ids, positions, symbols, colors = self._get_points_data(
+            self.nodes
         )
-        self.nodes = nodes
         self.node_index_dict = node_index_dict
         self.current_track_id = None
         self.continue_track = True  # TODO: update these from UI somehow
@@ -112,8 +111,8 @@ class TrackPoints(finn.layers.Points):
         self.default_size = size
         self._refresh()
 
-    def _get_points_data(self, graph: TrackingGraph):
-        nodes = list(graph.nodes)
+    def _get_points_data(self, nodes: list[int]):
+        graph = self.project_viewer.project.cand_graph
         node_index_dict = {node: idx for idx, node in enumerate(nodes)}
         track_ids = graph.get_track_ids(nodes)
         times = np.expand_dims(np.array(graph.get_times(nodes)), axis=1)
@@ -133,7 +132,7 @@ class TrackPoints(finn.layers.Points):
             else [1, 1, 1, 1]
             for track_id in track_ids
         ]
-        return nodes, node_index_dict, track_ids, point_data, symbols, colors
+        return node_index_dict, track_ids, point_data, symbols, colors
 
     def _refresh(self):
         """Refresh the data in the points layer"""
@@ -146,10 +145,10 @@ class TrackPoints(finn.layers.Points):
             if self.show_cands
             else self.project_viewer.project.cand_graph
         )
-        nodes, node_index_dict, track_ids, positions, symbols, colors = (
-            self._get_points_data()
+        self.nodes = list(self.graph.nodes)
+        node_index_dict, track_ids, positions, symbols, colors = self._get_points_data(
+            self.nodes
         )
-        self.nodes = nodes
         self.node_index_dict = node_index_dict
         self.data = positions
         self.symbol = symbols
@@ -262,7 +261,10 @@ class TrackPoints(finn.layers.Points):
                 1,
             )
             self.size[index] = math.ceil(self.default_size + 0.3 * self.default_size)
-        self.current_track_id = self.project_viewer.project.cand_graph.get_track_id(
-            self.project_viewer.selected_nodes._list[-1]
-        )
+        if len(self.project_viewer.selected_nodes._list):
+            track_id = self.project_viewer.project.cand_graph.get_track_id(
+                self.project_viewer.selected_nodes._list[-1]
+            )
+            # if track_id is not None:
+            self.current_track_id = track_id
         self.refresh()
