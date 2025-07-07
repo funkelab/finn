@@ -175,7 +175,7 @@ def create_project(project_info: dict[str:Any]) -> Project:
         # and seg value of the first object). Raises DialogValueError if any problems are
         # found.
         if segmentation_image is not None:
-            test_df_seg_match(
+            check_df_seg_match(
                 df,
                 segmentation_image,
                 axes,
@@ -466,7 +466,7 @@ def has_duplicate_ids(segmentation: da.Array | np.ndarray) -> bool:
     return False
 
 
-def test_df_seg_match(
+def check_df_seg_match(
     df: pd.DataFrame,
     segmentation: da.Array,
     axes: dict[dict[str : str | int | float]],
