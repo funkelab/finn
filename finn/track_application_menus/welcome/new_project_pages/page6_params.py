@@ -13,6 +13,7 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from superqt import QCollapsible
 
 
 class ParamsWidget(QWidget):
@@ -61,14 +62,14 @@ class ParamsWidget(QWidget):
         layout.addWidget(self.solver_params_group)
 
     def _on_param_changed(self):
-        """Update the SolverParams object when a parameter is changed"""
+        """Update the Params object when a parameter is changed"""
 
         sender = self.sender()
         if hasattr(sender, "param_name"):
             value = None
             if isinstance(sender, QCheckBox):
                 value = sender.isChecked()
-            elif isinstance(sender, QSpinBox) or isinstance(sender, QDoubleSpinBox):
+            elif isinstance(sender, QSpinBox | QDoubleSpinBox):
                 value = sender.value()
             if value is not None:
                 setattr(self.params, sender.param_name, value)
@@ -84,36 +85,52 @@ class Page6(QWidget):
 
     def __init__(self):
         super().__init__()
-        layout = QVBoxLayout(self)
 
-        # Create a content widget for the scroll area
-        content_widget = QWidget()
-        params_layout = QVBoxLayout(content_widget)
+        # Collapsible help widget
+        instructions = QLabel(
+            "<qt><i>Please specify the parameters that apply to your "
+            "data. You can still change this afterwards.</i></qt>"
+        )
+        instructions.setWordWrap(True)
+        collapsible_widget = QCollapsible("Explanation")
+        collapsible_widget.layout().setContentsMargins(0, 0, 0, 0)
+        collapsible_widget.layout().setSpacing(0)
+        collapsible_widget.addWidget(instructions)
+        collapsible_widget.collapse(animate=False)
 
+        # Project params widget
         self.project_params_widget = ParamsWidget(ProjectParams, "Project Parameters")
+
+        # Project Cand graph widget
         self.cand_graph_params_widget = ParamsWidget(
             CandGraphParams, "Candidate Graph Parameters"
         )
 
+        # Create a content widget for the scroll area
+        params_widgets = QWidget()
+        params_layout = QVBoxLayout(params_widgets)
         params_layout.addWidget(self.project_params_widget)
         params_layout.addWidget(self.cand_graph_params_widget)
 
         # Wrap in a scroll area
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
-        scroll_area.setWidget(content_widget)
-        layout.addWidget(scroll_area)
+        scroll_area.setWidget(params_widgets)
 
         # Wrap in a group box
         box = QGroupBox("Project and Candidate Graph Parameters")
-        box.setLayout(layout)
-        layout = QVBoxLayout(self)
-        layout.addWidget(box)
+        box_layout = QVBoxLayout()
+        box_layout.addWidget(collapsible_widget)
+        box_layout.addWidget(scroll_area)
+        box.setLayout(box_layout)
 
-        self.setLayout(layout)
+        # Set the box to the main layout
+        main_layout = QVBoxLayout(self)
+        main_layout.addWidget(box)
+        self.setLayout(main_layout)
 
     def get_settings(self) -> dict[str:Any]:
-        """Get the settings entered by the user on page 3"""
+        """Get the Param settings entered by the user"""
 
         settings = {
             "project_params": self.project_params_widget.get_param_values(),

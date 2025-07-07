@@ -14,9 +14,11 @@ from qtpy.QtWidgets import (
     QLabel,
     QLineEdit,
     QPushButton,
+    QScrollArea,
     QVBoxLayout,
     QWidget,
 )
+from superqt import QCollapsible
 
 from finn._qt.qt_resources import QColoredSVGIcon
 from finn.track_application_menus.welcome.new_project_pages.page1_goals import Page1
@@ -39,7 +41,7 @@ class FeatureWidget(QWidget):
     ):
         super().__init__()
 
-        self.feature_instances = [
+        self.node_feature_instances = [
             feature_cls(ndim=ndim) for feature_cls in measurement_features
         ]
         self.edge_feature_instances = [
@@ -60,7 +62,7 @@ class FeatureWidget(QWidget):
         self.edge_measurement_checkboxes = {}
 
         # For each feature:
-        for feature in self.feature_instances:
+        for feature in self.node_feature_instances:
             row_layout = QHBoxLayout()
             checkbox = QCheckBox(feature.display_name)
             checkbox.setChecked(False)
@@ -89,12 +91,12 @@ class FeatureWidget(QWidget):
 
         self.extra_features_layout = QVBoxLayout()
         self.extra_features = []  # List of (QLineEdit, QComboBox)
-        self.mappable_columns = list(mappable_columns)  # Save for later use
+        self.mappable_columns = list(mappable_columns)
 
         # Add "+" button for extra features
         self.add_feature_btn = QPushButton("+")
         self.add_feature_btn.setFixedSize(20, 20)
-        self.add_feature_btn.clicked.connect(self.add_extra_feature)
+        self.add_feature_btn.clicked.connect(self._add_extra_feature)
         self.add_feature_btn.setEnabled(self._can_add_extra_feature())
 
         self.features_layout.addLayout(self.extra_features_layout)
@@ -103,7 +105,7 @@ class FeatureWidget(QWidget):
         main_layout = QHBoxLayout()
         main_layout.addLayout(self.features_layout)
         main_layout.addLayout(self.edge_features_layout)
-        main_layout.addStretch()  # Optional: pushes everything to the left
+        main_layout.addStretch()
         main_layout.setAlignment(self.features_layout, Qt.AlignTop)
         main_layout.setAlignment(self.edge_features_layout, Qt.AlignTop)
 
@@ -116,10 +118,12 @@ class FeatureWidget(QWidget):
         include_intensity: bool = False,
         data_type: str = "segmentation",
     ):
-        self.show_mapping = bool(mappable_columns)
-        self.mappable_columns = list(mappable_columns)  # Save for later use
+        """Updates the feature widgets according to the data provided by the user."""
+
+        self.show_mapping = bool(mappable_columns)  # if a csv is present
+        self.mappable_columns = list(mappable_columns)
         self.ndim = ndim
-        self.feature_instances = [
+        self.node_feature_instances = [
             feature_cls(ndim=ndim) for feature_cls in measurement_features
         ]
         self.edge_feature_instances = [
@@ -128,23 +132,25 @@ class FeatureWidget(QWidget):
         self.data_type = data_type
         enable_features = self.data_type == "segmentation" or (
             self.data_type == "points" and bool(mappable_columns)
-        )
+        )  # Measuring node features is not possible without a segmentation. When
+        # providing tracking data from csv, we do allow mapping a column to a readonly
+        # feature.
 
         if not mappable_columns:
-            self.clear_extra_features()
+            self._clear_extra_features()
 
         self.add_feature_btn.setEnabled(self._can_add_extra_feature())
 
-        for feature in self.feature_instances:
+        for feature in self.node_feature_instances:
             attr_name = feature.attr_name
             # Update checkbox label if needed
             if attr_name in self.measurement_checkboxes:
                 checkbox = self.measurement_checkboxes[attr_name]
                 checkbox.setText(feature.display_name)
-                # Enable/disable intensity checkbox if needed
                 checkbox.setEnabled(enable_features)
+                # Enable/disable intensity checkbox if needed
                 if attr_name == "intensity":
-                    checkbox.setEnabled(include_intensity)
+                    checkbox.setEnabled(enable_features and include_intensity)
 
             # Update combobox visibility and options
             if attr_name in self.measurement_comboboxes:
@@ -165,10 +171,10 @@ class FeatureWidget(QWidget):
                     combobox.blockSignals(False)
                 else:
                     combobox.setCurrentText("None")
-                combobox.setEnabled(enable_features)
                 # Enable/disable intensity combobox if needed
+                combobox.setEnabled(enable_features)
                 if attr_name == "intensity":
-                    combobox.setEnabled(include_intensity)
+                    combobox.setEnabled(include_intensity and enable_features)
 
         for feature in self.edge_feature_instances:
             attr_name = feature.attr_name
@@ -176,12 +182,16 @@ class FeatureWidget(QWidget):
             if attr_name in self.edge_measurement_checkboxes:
                 checkbox = self.edge_measurement_checkboxes[attr_name]
                 checkbox.setText(feature.display_name)
-                # Enable/disable intensity checkbox if needed
-                checkbox.setEnabled(enable_features)
+                # Enable/disable checkbox if needed
+                checkbox.setEnabled(True)  # distance features should always be allowed
                 if attr_name == "iou":
-                    checkbox.setEnabled(data_type == "segmentation")
+                    checkbox.setEnabled(data_type == "segmentation")  # iou only if data
+                    # type is 'segmentation'.
 
-    def _can_add_extra_feature(self):
+    def _can_add_extra_feature(self) -> bool:
+        """Returns True if there are any unmapped csv columns available that the user
+        could select, else returns False."""
+
         # Only enable if there are unmapped columns and no combo is set to None
         used_columns = {
             combo.currentText()
@@ -191,8 +201,9 @@ class FeatureWidget(QWidget):
         available = [col for col in self.mappable_columns if col not in used_columns]
         return bool(available)
 
-    def clear_extra_features(self):
-        # Remove all extra feature widgets and layouts
+    def _clear_extra_features(self) -> None:
+        """Clears all the optional extra feature widgets and layouts"""
+
         for edit, combo, row_layout, delete_btn in self.extra_features:
             edit.deleteLater()
             combo.deleteLater()
@@ -205,15 +216,22 @@ class FeatureWidget(QWidget):
             self.extra_features_layout.removeItem(row_layout)
         self.extra_features = []
 
-    def add_extra_feature(self):
+    def _add_extra_feature(self) -> None:
+        """Add a widget allowing the user to select an extra, optional readonly feature
+        from a dropdown menu listing the available csv columns."""
+
         # Find the columns that are available to map (should be numerical)
         used_columns = {combo.currentText() for _, combo, *_ in self.extra_features}
         available = [col for col in self.mappable_columns if col not in used_columns]
 
+        # return early if nothing was found.
         if not available:
             return
 
+        # Creata line edit allowing the user to select a name for this feature.
         feature_name_edit = QLineEdit(available[0])
+
+        # Create a combobox to select a column
         combo = QComboBox()
         combo.addItem("None")
         for col in self.mappable_columns:
@@ -225,15 +243,18 @@ class FeatureWidget(QWidget):
             self.add_feature_btn.setEnabled(self._can_add_extra_feature())
             feature_name_edit.setText(combo.currentText())
 
+        # Connect to signals, line edit cannot have a name that is already in use for any
+        # of the default supported features. Combobox updates should check
         feature_name_edit.textChanged.connect(self.validate_unique_feature_names)
         combo.currentTextChanged.connect(on_combo_changed)
 
-        # Delete button
+        # Add a delete button to remove the extra feature from the list
         delete_icon = QColoredSVGIcon.from_resources("delete").colored("white")
         delete_btn = QPushButton(icon=delete_icon)
         delete_btn.setToolTip("Remove this feature")
         delete_btn.setFixedSize(20, 20)
 
+        # Combine everythig in a layout
         row_layout = QHBoxLayout()
         row_layout.addWidget(feature_name_edit)
         row_layout.addWidget(combo)
@@ -241,6 +262,7 @@ class FeatureWidget(QWidget):
         self.extra_features_layout.addLayout(row_layout)
         self.extra_features.append((feature_name_edit, combo, row_layout, delete_btn))
 
+        # Implement removing a widget and layout when the delete button is clicked.
         def remove_feature():
             feature_name_edit.deleteLater()
             combo.deleteLater()
@@ -258,14 +280,18 @@ class FeatureWidget(QWidget):
 
         delete_btn.clicked.connect(remove_feature)
 
+        # Enable/Disable the + button
         self.add_feature_btn.setEnabled(self._can_add_extra_feature())
 
-    def validate_unique_feature_names(self):
-        # Collect all attr_names used and check for duplicates
-        base_names = {feature.attr_name for feature in self.feature_instances}
+    def validate_unique_feature_names(self) -> None:
+        """Collect all attr_names used and check for duplicates, make the widget invalid
+        if any are found."""
+
+        base_names = {feature.attr_name for feature in self.node_feature_instances}
         extra_names = [edit.text().strip() for edit, *_ in self.extra_features]
         all_names = list(base_names) + extra_names
         duplicates = {name for name in extra_names if all_names.count(name) > 1 and name}
+
         # change color of text edit when a duplicate name is used
         for edit, *_ in self.extra_features:
             if edit.text().strip() in duplicates:
@@ -289,7 +315,7 @@ class FeatureWidget(QWidget):
             and which column to take it from.
         """
         features = []
-        for feature in self.feature_instances:
+        for feature in self.node_feature_instances:
             attr_name = feature.attr_name
             checkbox = self.measurement_checkboxes[attr_name]
             include = checkbox.isChecked() and checkbox.isEnabled()
@@ -304,7 +330,8 @@ class FeatureWidget(QWidget):
                     if from_column == "None":
                         from_column = None
 
-            # features can only be computed when a segmentation is provided.
+            # features can only be computed when a segmentation is provided. If not, make
+            # the feature a readonly feature.
             feature.computed = self.data_type == "segmentation"
             features.append(
                 {"feature": feature, "include": include, "from_column": from_column}
@@ -350,21 +377,43 @@ class Page7(QWidget):
     ):
         super().__init__()
 
-        self.is_valid = True
         self.page1 = page1
-        self.page1.choice_updated.connect(self.update_features)
-        choice = self.page1.get_choice()
+        self.page2 = page2
+        self.include_intensity = self.page2.get_path() is not None
+        self.page3 = page3
+        self.page4 = page4
+        self.page4.dim_updated.connect(self.update_features)
+        self.page5 = page5
+        self.page5.mapping_updated.connect(self.update_features)
 
-        mappable_columns = (
-            self.page5.get_unmapped_columns(numerical_only=True)
-            if choice == "curate_tracks"
-            else []
+        self.is_valid = True
+
+        # Collapsible help widget
+        instructions = QLabel(
+            "<qt><i>Please select the features that you would like to measure. Node "
+            "features, such as size, shape, or intensity apply to point detections "
+            "without any segmentation. Note that some features, such as sphericity "
+            "and surface area are expensive and therefore slow to compute. If you are "
+            "loading existing tracking data for which you already have measured "
+            "features, you can select a column in the csv file instead of recomputing "
+            "the feature. If you want to view additional features that are not in the "
+            "list, you can add them with the + button, but note that it will not be "
+            "possible to recompute these features when you update the segmentation of "
+            "a node or if you make new nodes.</i></qt>"
         )
+        instructions.setWordWrap(True)
+        collapsible_widget = QCollapsible("Explanation")
+        collapsible_widget.layout().setContentsMargins(0, 0, 0, 0)
+        collapsible_widget.layout().setSpacing(0)
+        collapsible_widget.addWidget(instructions)
+        collapsible_widget.collapse(animate=False)
 
+        # Label with additional information when the user selected points as datatype
+        choice = self.page1.get_choice()
         if choice == "curate_tracks":
             self.points_label = QLabel(
                 "<i>Measuring features is only supported when you "
-                "provide segmentation data.<br><br>. You can load existing features from "
+                "provide segmentation data. You can load existing features from "
                 "CSV for viewing purposes only.</i>"
             )
         else:
@@ -373,41 +422,51 @@ class Page7(QWidget):
                 "provide segmentation data.</i>"
             )
 
-        self.page2 = page2
-        self.page2.validity_changed.connect(self.update_features)
-        self.include_intensity = self.page2.get_path() is not None
-        self.page3 = page3
-        data_type = self.page3.data_type
-        self.page3.validity_changed.connect(self.update_features)
-        self.page4 = page4
-        self.page4.dim_updated.connect(self.update_features)
-        self.page5 = page5
-        self.page5.mapping_updated.connect(self.update_features)
-
+        self.points_label.setWordWrap(True)
         self.points_label.setVisible(self.page3.data_type == "points")
 
+        # Add widget to select features
         ndim = 4 if self.page4.incl_z else 3
+        mappable_columns = (
+            self.page5.get_unmapped_columns(numerical_only=True)
+            if choice == "curate_tracks"
+            else []
+        )
 
         self.feature_widget = FeatureWidget(
             ndim=ndim,
             mappable_columns=mappable_columns,
-            data_type=data_type,
+            data_type=self.page3.data_type,
         )
+
         self.feature_widget.validity_changed.connect(self.validate)
 
-        # wrap in a group box
-        layout = QVBoxLayout(self)
-        feature_group_box = QGroupBox("Node Features")
-        feature_group_layout = QVBoxLayout(feature_group_box)
-        feature_group_layout.addWidget(self.points_label)
-        feature_group_layout.addWidget(QLabel("Choose which features to include"))
-        feature_group_layout.addWidget(self.feature_widget)
-        feature_group_box.setLayout(feature_group_layout)
-        layout.addWidget(feature_group_box)
-        self.setLayout(layout)
+        # Create a content widget for the scroll area
+        content_widget = QWidget()
+        content_layout = QVBoxLayout(content_widget)
+        content_layout.addWidget(self.points_label)
+        content_layout.addWidget(QLabel("Choose which features to include"))
+        content_layout.addWidget(self.feature_widget)
+
+        # Wrap in a scroll area
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setWidget(content_widget)
+
+        # Create a group box and its own layout
+        box = QGroupBox("Node and Edge Features")
+        box_layout = QVBoxLayout()
+        box_layout.addWidget(collapsible_widget)
+        box_layout.addWidget(scroll_area)
+        box.setLayout(box_layout)
+
+        # Set the main layout
+        main_layout = QVBoxLayout(self)
+        main_layout.addWidget(box)
+        self.setLayout(main_layout)
 
     def update_features(self):
-        """Update the features based on the selected dimensions"""
+        """Update the features based on the data and its dimensions"""
 
         choice = self.page1.get_choice()
         if choice == "curate_tracks":
@@ -435,7 +494,6 @@ class Page7(QWidget):
             self.include_intensity = True
 
         ndim = 4 if self.page4.incl_z else 3
-
         self.feature_widget._update_features(
             ndim,
             mappable_columns=mappable_columns,

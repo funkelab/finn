@@ -74,6 +74,7 @@ class NewProjectDialog(QDialog):
         self.prev_btn1 = QPushButton("Previous")
         self.cancel_btn2 = QPushButton("Cancel")
         self.next_btn2 = QPushButton("Next")
+        self.next_btn2.setEnabled(False)
         btn_layout2.addStretch()
         btn_layout2.addWidget(self.cancel_btn2)
         btn_layout2.addWidget(self.prev_btn1)
@@ -297,7 +298,8 @@ class NewProjectDialog(QDialog):
 
     def _go_to_page7(self):
         """Go to page 7 and make sure the mapping on page5 is updated first."""
-        self.page5.mapping_updated.emit()  # ensure the mapping is updated
+        if self.page1.get_choice() == "curate_tracks":
+            self.page5.mapping_updated.emit()  # ensure the mapping is updated
         self.stacked.setCurrentIndex(6)
 
     def _go_to_page8(self):
