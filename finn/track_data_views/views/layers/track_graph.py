@@ -8,15 +8,15 @@ import numpy as np
 import finn
 
 if TYPE_CHECKING:
-    from funtracks.data_model.solution_tracks import SolutionTracks
+    from funtracks import Project
 
-    from finn.track_data_views.views_coordinator.tracks_viewer import (
-        TracksViewer,
+    from finn.track_data_views.views_coordinator.project_viewer import (
+        ProjectViewer,
     )
 
 
 def update_finn_tracks(
-    tracks: SolutionTracks,
+    project: Project,
 ):
     """Function to take a networkx graph with assigned track_ids and return the data
     needed to add to a finn tracks layer.
@@ -36,13 +36,12 @@ def update_finn_tracks(
             case of track splitting, or more than one (the track has multiple
             parents, but only one child) in the case of track merging.
     """
-
-    ndim = tracks.ndim - 1
-    graph = tracks.graph
-    finn_data = np.zeros((graph.number_of_nodes(), ndim + 2))
+    ndim = project.ndim - 1
+    graph = project.solution
+    finn_data = np.zeros((len(graph), ndim + 2))
     finn_edges = {}
 
-    parents = [node for node, degree in graph.out_degree() if degree >= 2]
+    parents = [node for node in graph.nodes if graph.out_degree(node) >= 2]
     intertrack_edges = []
 
     # Remove all intertrack edges from a copy of the original graph
@@ -55,16 +54,16 @@ def update_finn_tracks(
 
     for index, node in enumerate(graph.nodes(data=True)):
         node_id, data = node
-        location = tracks.get_position(node_id)
+        location = graph.get_position(node_id)
         finn_data[index] = [
-            tracks.get_track_id(node_id),
-            tracks.get_time(node_id),
+            graph.get_track_id(node_id),
+            graph.get_time(node_id),
             *location,
         ]
 
     for parent, child in intertrack_edges:
-        parent_track_id = tracks.get_track_id(parent)
-        child_track_id = tracks.get_track_id(child)
+        parent_track_id = graph.get_track_id(parent)
+        child_track_id = graph.get_track_id(child)
         if child_track_id in finn_edges:
             finn_edges[child_track_id].append(parent_track_id)
         else:
@@ -80,11 +79,11 @@ class TrackGraph(finn.layers.Tracks):
     def __init__(
         self,
         name: str,
-        tracks_viewer: TracksViewer,
+        project_viewer: ProjectViewer,
     ):
-        self.tracks_viewer = tracks_viewer
+        self.project_viewer = project_viewer
         track_data, track_edges = update_finn_tracks(
-            self.tracks_viewer.tracks,
+            self.project_viewer.project,
         )
 
         super().__init__(
@@ -95,7 +94,7 @@ class TrackGraph(finn.layers.Tracks):
             color_by="track_id",
         )
 
-        self.colormaps_dict["track_id"] = self.tracks_viewer.colormap
+        self.colormaps_dict["track_id"] = self.project_viewer.colormap
         self.tracks_layer_graph = copy.deepcopy(self.graph)  # for restoring graph later
         # just to 'refresh' the track_id colormap, we do not actually use turbo
         self.colormap = "turbo"
@@ -106,13 +105,13 @@ class TrackGraph(finn.layers.Tracks):
         """
 
         track_data, track_edges = update_finn_tracks(
-            self.tracks_viewer.tracks,
+            self.project_viewer.project,
         )
 
         self.data = track_data
         self.graph = track_edges
         self.tracks_layer_graph = copy.deepcopy(self.graph)
-        self.colormaps_dict["track_id"] = self.tracks_viewer.colormap
+        self.colormaps_dict["track_id"] = self.project_viewer.colormap
         # just to 'refresh' the track_id colormap, we do not actually use turbo
         self.colormap = "turbo"
 

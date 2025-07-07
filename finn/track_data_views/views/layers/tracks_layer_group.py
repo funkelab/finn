@@ -2,90 +2,61 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from funtracks.data_model.tracks import Tracks
-
-import finn
 from finn.experimental import link_layers, unlink_layers
 from finn.track_data_views.views.layers.track_graph import TrackGraph
 from finn.track_data_views.views.layers.track_labels import TrackLabels
 from finn.track_data_views.views.layers.track_points import TrackPoints
 
 if TYPE_CHECKING:
-    from finn.track_data_views.views_coordinator.tracks_viewer import TracksViewer
+    from finn.track_data_views.views_coordinator.project_viewer import ProjectViewer
 
 
 class TracksLayerGroup:
     def __init__(
         self,
-        viewer: finn.Viewer,
-        tracks: Tracks,
-        name: str,
-        tracks_viewer: TracksViewer,
+        project_viewer: ProjectViewer,
     ):
-        self.viewer = viewer
-        self.tracks_viewer = tracks_viewer
-        self.tracks = tracks
-        self.name = name
+        self.finn_viewer = project_viewer.viewer
+        self.project_viewer = project_viewer
+        self.project = project_viewer.project
+        self.name = self.project.name
         self.tracks_layer: TrackGraph | None = None
         self.points_layer: TrackPoints | None = None
         self.seg_layer: TrackLabels | None = None
 
-    def set_tracks(self, tracks, name):
-        self.remove_finn_layers()
-        self.tracks = tracks
-        self.name = name
         # Create new layers
-        if self.tracks is not None and self.tracks.segmentation is not None:
+        if self.project is not None and self.project.segmentation is not None:
             self.seg_layer = TrackLabels(
-                viewer=self.viewer,
-                data=self.tracks.segmentation,
+                viewer=self.finn_viewer,
+                data=self.project.segmentation,
                 name=self.name + "_seg",
                 opacity=0.9,
-                scale=self.tracks.scale,
-                tracks_viewer=self.tracks_viewer,
-            )
-        else:
-            self.seg_layer = None
-
-        if (
-            self.tracks is not None
-            and self.tracks.graph is not None
-            and self.tracks.graph.number_of_nodes() != 0
-        ):
-            self.tracks_layer = TrackGraph(
-                name=self.name + "_tracks",
-                tracks_viewer=self.tracks_viewer,
+                project_viewer=self.project_viewer,
             )
 
+        if len(self.project.cand_graph) != 0:
             self.points_layer = TrackPoints(
                 name=self.name + "_points",
-                tracks_viewer=self.tracks_viewer,
+                project_viewer=self.project_viewer,
+                show_cands=True,
             )
-        else:
-            self.tracks_layer = None
-            self.points_layer = None
+        # TODO: Update this when a solution becomes available
+        if len(self.project.solution) != 0:
+            self.tracks_layer = TrackGraph(
+                name=self.name + "_tracks",
+                project_viewer=self.project_viewer,
+            )
         self.add_finn_layers()
-
-    def remove_finn_layer(self, layer: finn.layers.Layer | None) -> None:
-        """Remove a layer from the finn viewer, if present"""
-        if layer and layer in self.viewer.layers:
-            self.viewer.layers.remove(layer)
-
-    def remove_finn_layers(self) -> None:
-        """Remove all tracking layers from the viewer"""
-        self.remove_finn_layer(self.tracks_layer)
-        self.remove_finn_layer(self.seg_layer)
-        self.remove_finn_layer(self.points_layer)
 
     def add_finn_layers(self) -> None:
         """Add new tracking layers to the viewer"""
 
         if self.tracks_layer is not None:
-            self.viewer.add_layer(self.tracks_layer)
+            self.finn_viewer.add_layer(self.tracks_layer)
         if self.seg_layer is not None:
-            self.viewer.add_layer(self.seg_layer)
+            self.finn_viewer.add_layer(self.seg_layer)
         if self.points_layer is not None:
-            self.viewer.add_layer(self.points_layer)
+            self.finn_viewer.add_layer(self.points_layer)
         self.link_clipping_planes()
 
     def link_clipping_planes(self):
@@ -136,19 +107,22 @@ class TracksLayerGroup:
         location, if the node is not already in the field of view"""
 
         if self.seg_layer is None or self.seg_layer.mode == "pan_zoom":
-            location = self.tracks.get_positions([node], incl_time=True)[0].tolist()
-            assert len(location) == self.viewer.dims.ndim, (
+            graph = self.project.cand_graph
+            time = graph.get_time(node)
+            pos = self.project.cand_graph.get_position(node)
+            location = [time, *pos]
+            assert len(location) == self.finn_viewer.dims.ndim, (
                 f"Location {location} does not match viewer number of dims "
-                f"{self.viewer.dims.ndim}"
+                f"{self.finn_viewer.dims.ndim}"
             )
 
-            step = list(self.viewer.dims.current_step)
-            for dim in self.viewer.dims.not_displayed:
+            step = list(self.finn_viewer.dims.current_step)
+            for dim in self.finn_viewer.dims.not_displayed:
                 step[dim] = int(
                     location[dim] + 0.5
                 )  # use the world location, since the 'step' in viewer.dims.range
                 # already in world units
-            self.viewer.dims.current_step = step
+            self.finn_viewer.dims.current_step = step
 
             # check whether the new coordinates are inside or outside the field of view,
             # then adjust the camera if needed
@@ -161,7 +135,7 @@ class TracksLayerGroup:
 
             # check which dimensions are shown, the first dimension is displayed on the
             # x axis, and the second on the y_axis
-            dims_displayed = self.viewer.dims.displayed
+            dims_displayed = self.finn_viewer.dims.displayed
 
             # Note: This centering does not work in 3D. What we should do instead is take
             # the view direction vector, start at the point, and move backward along the
@@ -184,11 +158,11 @@ class TracksLayerGroup:
                 (location[x_dim] > _min_x and location[x_dim] < _max_x)
                 and (location[y_dim] > _min_y and location[y_dim] < _max_y)
             ):
-                camera_center = self.viewer.camera.center
+                camera_center = self.finn_viewer.camera.center
 
                 # set the center y and x to the center of the node, by using the index
                 # of the currently displayed dimensions
-                self.viewer.camera.center = (
+                self.finn_viewer.camera.center = (
                     camera_center[0],
                     location[y_dim],
                     # camera center is calculated in scaled coordinates, and the optional

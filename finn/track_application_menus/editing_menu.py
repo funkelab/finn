@@ -6,14 +6,14 @@ from qtpy.QtWidgets import (
 )
 
 import finn
-from finn.track_data_views.views_coordinator.tracks_viewer import TracksViewer
+from finn.track_data_views.views_coordinator.project_viewer import ProjectViewer
 
 
 class EditingMenu(QWidget):
     def __init__(self, viewer: finn.Viewer):
         super().__init__()
 
-        self.tracks_viewer = TracksViewer.get_instance(viewer)
+        self.tracks_viewer = ProjectViewer.get_instance(viewer)
         self.tracks_viewer.selected_nodes.list_updated.connect(self.update_buttons)
         layout = QVBoxLayout()
 

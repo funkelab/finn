@@ -36,11 +36,11 @@ class TrackListWidget(QWidget):
     def __init__(self, viewer: finn.Viewer):
         super().__init__()
 
-        from finn.track_data_views.views_coordinator.tracks_viewer import (
-            TracksViewer,
+        from finn.track_data_views.views_coordinator.project_viewer import (
+            ProjectViewer,
         )
 
-        tracks_viewer = TracksViewer.get_instance(viewer)
+        tracks_viewer = ProjectViewer.get_instance(viewer)
         layout = QVBoxLayout()
         layout.addWidget(tracks_viewer.tracks_list)
 

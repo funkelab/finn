@@ -4,17 +4,19 @@ import random
 from typing import TYPE_CHECKING
 
 import numpy as np
+from funtracks.features import Feature
+from funtracks.user_actions import UserUpdateSegmentation
 
 import finn
 from finn.utils import DirectLabelColormap
 from finn.utils.action_manager import action_manager
-from finn.utils.notifications import show_info, show_warning
+from finn.utils.notifications import show_info
 
 if TYPE_CHECKING:
-    from finn.track_data_views.views_coordinator.tracks_viewer import TracksViewer
-    from finn.utils.events import Event
+    import funlib.persistence as fp
 
-from finn.track_data_views.graph_attributes import NodeAttr
+    from finn.track_data_views.views_coordinator.project_viewer import ProjectViewer
+    from finn.utils.events import Event
 
 
 def new_label(layer: TrackLabels):
@@ -48,11 +50,11 @@ def _new_label(layer: TrackLabels, new_track_id=True):
             )
         else:
             if new_track_id:
-                new_selected_track = layer.tracks_viewer.tracks.get_next_track_id()
+                new_selected_track = layer.project_viewer.project.get_next_track_id()
                 layer.selected_track = new_selected_track
             layer.selected_label = new_selected_label
             layer.colormap.color_dict[new_selected_label] = (
-                layer.tracks_viewer.colormap.map(layer.selected_track)
+                layer.project_viewer.colormap.map(layer.selected_track)
             )
             # to refresh, otherwise you paint with a transparent label until you
             # release the mouse
@@ -74,38 +76,44 @@ class TrackLabels(finn.layers.Labels):
     def __init__(
         self,
         viewer: finn.Viewer,
-        data: np.array,
+        data: fp.Array,
         name: str,
         opacity: float,
-        scale: tuple,
-        tracks_viewer: TracksViewer,
+        project_viewer: ProjectViewer,
     ):
-        self.tracks_viewer = tracks_viewer
+        self.project_viewer = project_viewer
+        self.project = project_viewer.project
         self.selected_track = None
+        self.color_by: Feature | None
+        if len(self.project.solution) == 0:
+            self.color_by: Feature | None = None
+        else:
+            self.color_by = self.project.cand_graph.features.track_id
         colormap = self._get_colormap()
 
         super().__init__(
-            data=data,
+            # this will load the whole array into memory :)
+            data=data.data.compute(),
             name=name,
             opacity=opacity,
             colormap=colormap,
-            scale=scale,
+            scale=data.voxel_size,
         )
 
         self.viewer = viewer
 
         # Key bindings (should be specified both on the viewer (in tracks_viewer)
         # and on the layer to overwrite finn defaults)
-        self.bind_key("q")(self.tracks_viewer.toggle_display_mode)
-        self.bind_key("a")(self.tracks_viewer.create_edge)
-        self.bind_key("d")(self.tracks_viewer.delete_node)
-        self.bind_key("Delete")(self.tracks_viewer.delete_node)
-        self.bind_key("b")(self.tracks_viewer.delete_edge)
+        self.bind_key("q")(self.project_viewer.toggle_display_mode)
+        self.bind_key("a")(self.project_viewer.create_edge)
+        self.bind_key("d")(self.project_viewer.delete_node)
+        self.bind_key("Delete")(self.project_viewer.delete_node)
+        self.bind_key("b")(self.project_viewer.delete_edge)
         # self.bind_key("s")(self.tracks_viewer.set_split_node)
         # self.bind_key("e")(self.tracks_viewer.set_endpoint_node)
         # self.bind_key("c")(self.tracks_viewer.set_linear_node)
-        self.bind_key("z")(self.tracks_viewer.undo)
-        self.bind_key("r")(self.tracks_viewer.redo)
+        self.bind_key("z")(self.project_viewer.undo)
+        self.bind_key("r")(self.project_viewer.redo)
 
         # Connect click events to node selection
         @self.mouse_drag_callbacks.append
@@ -114,7 +122,7 @@ class TrackLabels(finn.layers.Labels):
                 event.type == "mouse_press"
                 and self.mode == "pan_zoom"
                 and not (
-                    self.tracks_viewer.mode == "lineage"
+                    self.project_viewer.mode == "lineage"
                     and self.viewer.dims.ndisplay == 3
                 )
             ):  # disable selecting in lineage mode in 3D
@@ -127,36 +135,42 @@ class TrackLabels(finn.layers.Labels):
                 # check opacity (=visibility) in the colormap
                 if label is not None and label != 0 and self.colormap.map(label)[-1] != 0:
                     append = "Shift" in event.modifiers
-                    self.tracks_viewer.selected_nodes.add(label, append)
+                    self.project_viewer.selected_nodes.add(label, append)
 
         # Listen to paint events and changing the selected label
         self.events.paint.connect(self._on_paint)
-        self.tracks_viewer.selected_nodes.list_updated.connect(self.update_selected_label)
+        self.project_viewer.selected_nodes.list_updated.connect(
+            self.update_selected_label
+        )
         self.events.selected_label.connect(self._ensure_valid_label)
         self.events.mode.connect(self._check_mode)
         self.viewer.dims.events.current_step.connect(self._ensure_valid_label)
 
-    def _get_colormap(self) -> DirectLabelColormap:
-        """Get a DirectLabelColormap that maps node ids to their track ids, and then
-        uses the tracks_viewer.colormap to map from track_id to color.
-
-        Returns:
-            DirectLabelColormap: A map from node ids to colors based on track id
-        """
-        tracks = self.tracks_viewer.tracks
-        if tracks is not None:
-            nodes = list(tracks.graph.nodes())
-            track_ids = [tracks.get_track_id(node) for node in nodes]
-            colors = [self.tracks_viewer.colormap.map(tid) for tid in track_ids]
+    def _get_feature_colormap(self, feature: Feature | None) -> DirectLabelColormap:
+        nodes = self.project.cand_graph.nodes
+        if feature is None:
+            colormap = finn.utils.colormaps.label_colormap(
+                49,
+                seed=random.uniform(0, 1),
+                background_value=0,
+            )
+            feature_values = nodes
         else:
-            nodes = []
-            colors = []
+            feature_values = self.project.cand_graph.get_feature_values(nodes, feature)
+            if feature == self.project.cand_graph.features.track_id:
+                colormap = self.project_viewer.colormap
+            else:
+                colormap = finn.utils.colormaps.ensure_colormap("viridis")
+        colors = [colormap.map(val) for val in feature_values]
         return DirectLabelColormap(
             color_dict={
                 **dict(zip(nodes, colors, strict=True)),
                 None: [0, 0, 0, 0],
             }
         )
+
+    def _get_colormap(self):
+        return self._get_feature_colormap(self.color_by)
 
     def _check_mode(self):
         """Check if the mode is valid and call the ensure_valid_label function"""
@@ -176,14 +190,14 @@ class TrackLabels(finn.layers.Labels):
         the tracks_viewer.tracks_controller first
         """
 
-        self.tracks_viewer.redo()
+        self.project_viewer.redo()
 
     def undo(self):
         """Overwrite undo function and invoke undo action on the
         tracks_viewer.tracks_controller
         """
 
-        self.tracks_viewer.undo()
+        self.project_viewer.undo()
 
     def _parse_paint_event(self, event_val):
         """_summary_
@@ -233,62 +247,17 @@ class TrackLabels(finn.layers.Labels):
         """Listen to the paint event and check which track_ids have changed"""
 
         with self.events.selected_label.blocker():
-            current_timepoint = self.viewer.dims.current_step[
-                0
-            ]  # also pass on the current time point to know which node to select later
+            # current_timepoint = self.viewer.dims.current_step[
+            #     0
+            # ]  # also pass on the current time point to know which node to select later
             new_value, updated_pixels = self._parse_paint_event(event.value)
-            # updated_pixels is a list of tuples. Each tuple is (indices, old_value)
-            to_delete = []  # (node_ids, pixels)
-            to_update_smaller = []  # (node_id, pixels)
-            to_update_bigger = []  # (node_id, pixels)
-            to_add = []  # (node_id, track_id, pixels)
-            for pixels, old_value in updated_pixels:
-                ndim = len(pixels)
-                if old_value == 0:
-                    continue
-                time = pixels[0][0]
-                removed_node = old_value
-                assert removed_node is not None, (
-                    f"Node with label {old_value} in time {time} was not found"
-                )
-                # check if all pixels of old_value are removed
-                if np.sum(self.data[time] == old_value) == 0:
-                    to_delete.append((removed_node, pixels))
-                else:
-                    to_update_smaller.append((removed_node, pixels))
-            if new_value != 0:
-                all_pixels = tuple(
-                    np.concatenate([pixels[dim] for pixels, _ in updated_pixels])
-                    for dim in range(ndim)
-                )
-                for _ in np.unique(all_pixels[0]):
-                    existing_node = self.tracks_viewer.tracks.graph.has_node(new_value)
-                    if existing_node:
-                        to_update_bigger.append((new_value, all_pixels))
-                    else:
-                        to_add.append((new_value, self.selected_track, all_pixels))
 
-            if len(to_delete) > 0 and len(to_add) > 0:
-                show_warning(
-                    "This paint or fill operation completely replaced one label with a "
-                    "new label. This is currently not supported."
-                    " If you want to update the track id of the node, please edit the "
-                    "edges directly instead."
-                )
-                self._revert_paint(event)
-                self.refresh()
-                return
-            self.tracks_viewer.tracks_controller.update_segmentations(
-                to_delete,
-                to_update_smaller,
-                to_update_bigger,
-                to_add,
-                current_timepoint,
-            )
+            action = UserUpdateSegmentation(self.project, new_value, updated_pixels)
+            self.project_viewer.history.add_new_action(action)
 
     def _refresh(self):
         """Refresh the data in the labels layer"""
-        self.data = self.tracks_viewer.tracks.segmentation
+        self.data = self.project_viewer.project.segmentation
         self.colormap = self._get_colormap()
         self.refresh()
 
@@ -299,7 +268,7 @@ class TrackLabels(finn.layers.Labels):
         Visible is a list of visible node id
         """
         with self.events.selected_label.blocker():
-            highlighted = self.tracks_viewer.selected_nodes
+            highlighted = self.project_viewer.selected_nodes
 
             # update the opacity of the cyclic label colormap values according to
             # whether nodes are visible/invisible/highlighted
@@ -333,19 +302,19 @@ class TrackLabels(finn.layers.Labels):
         """Override existing function to generate new colormap on tracks_viewer and
         emit refresh signal to update colors in all layers/widgets"""
 
-        self.tracks_viewer.colormap = finn.utils.colormaps.label_colormap(
+        self.project_viewer.colormap = finn.utils.colormaps.label_colormap(
             49,
             seed=random.uniform(0, 1),
             background_value=0,
         )
-        self.tracks_viewer._refresh()
+        self.project_viewer._refresh()
 
     def update_selected_label(self):
         """Update the selected label in the labels layer"""
 
         self.events.selected_label.disconnect(self._ensure_valid_label)
-        if len(self.tracks_viewer.selected_nodes) > 0:
-            self.selected_label = int(self.tracks_viewer.selected_nodes[0])
+        if len(self.project_viewer.selected_nodes) > 0:
+            self.selected_label = int(self.project_viewer.selected_nodes[0])
         self.events.selected_label.connect(self._ensure_valid_label)
 
     def _ensure_valid_label(self, event: Event | None = None):
@@ -372,7 +341,7 @@ class TrackLabels(finn.layers.Labels):
             can be used to update the existing node in a paint event. No action is needed
         """
 
-        if self.tracks_viewer.tracks is not None and self.mode in (
+        if self.project_viewer.project is not None and self.mode in (
             "fill",
             "paint",
             "erase",
@@ -382,36 +351,27 @@ class TrackLabels(finn.layers.Labels):
 
             current_timepoint = self.viewer.dims.current_step[0]
             # if a node with the given label is already in the graph
-            if self.tracks_viewer.tracks.graph.has_node(self.selected_label):
+            graph = self.project_viewer.project.cand_graph
+            if self.project_viewer.project.cand_graph.has_node(self.selected_label):
                 # Update the track id
-                self.selected_track = self.tracks_viewer.tracks._get_node_attr(
-                    self.selected_label, NodeAttr.TRACK_ID.value
-                )
-                existing_time = self.tracks_viewer.tracks._get_node_attr(
-                    self.selected_label, NodeAttr.TIME.value
-                )
+                self.selected_track = graph.get_track_id(self.selected_label)
+                existing_time = graph.get_time(self.selected_label)
                 if existing_time == current_timepoint:
                     # we are changing the existing node. This is fine
                     pass
                 else:
                     # if there is already a node in that track in this frame, edit that
                     # instead
-                    edit = False
-                    if self.selected_track in self.tracks_viewer.tracks.track_id_to_node:
-                        for node in self.tracks_viewer.tracks.track_id_to_node[
-                            self.selected_track
-                        ]:
-                            if (
-                                self.tracks_viewer.tracks._get_node_attr(
-                                    node, NodeAttr.TIME.value
-                                )
-                                == current_timepoint
-                            ):
-                                self.selected_label = int(node)
-                                edit = True
-                                break
-
-                    if not edit:
+                    # get all nodes in track
+                    nodes_in_track = graph.get_elements_with_feature(
+                        graph.features.track_id, self.selected_track
+                    )
+                    times = list(graph.get_times(nodes_in_track))
+                    if current_timepoint in times:
+                        current_time_idx = times.index(current_timepoint)
+                        node_in_current_time = nodes_in_track[current_time_idx]
+                        self.selected_label = int(node_in_current_time)
+                    else:
                         # use a new label, but the same track id
                         _new_label(self, new_track_id=False)
                         self.colormap = DirectLabelColormap(
@@ -425,28 +385,22 @@ class TrackLabels(finn.layers.Labels):
             else:
                 # if there is already a node in that track in this frame, edit that
                 # instead
-                edit = False
-                if self.selected_track in self.tracks_viewer.tracks.track_id_to_node:
-                    for node in self.tracks_viewer.tracks.track_id_to_node[
-                        self.selected_track
-                    ]:
-                        if (
-                            self.tracks_viewer.tracks._get_node_attr(
-                                node, NodeAttr.TIME.value
-                            )
-                            == current_timepoint
-                        ):
-                            self.selected_label = int(node)
-                            edit = True
-                            break
+                nodes_in_track = graph.get_elements_with_feature(
+                    graph.features.track_id, self.selected_track
+                )
+                times = list(graph.get_times(nodes_in_track))
+                if current_timepoint in times:
+                    current_time_idx = times.index(current_timepoint)
+                    node_in_current_time = nodes_in_track[current_time_idx]
+                    self.selected_label = int(node_in_current_time)
 
             self.events.selected_label.connect(self._ensure_valid_label)
 
     @finn.layers.Labels.n_edit_dimensions.setter
     def n_edit_dimensions(self, n_edit_dimensions):
         # Overriding the setter to disable editing in time dimension
-        if n_edit_dimensions > self.tracks_viewer.tracks.ndim - 1:
-            n_edit_dimensions = self.tracks_viewer.tracks.ndim - 1
+        if n_edit_dimensions > self.project_viewer.project.ndim - 1:
+            n_edit_dimensions = self.project_viewer.project.ndim - 1
         self._n_edit_dimensions = n_edit_dimensions
         self.events.n_edit_dimensions()
 

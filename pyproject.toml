@@ -71,7 +71,7 @@ dependencies = [
     "typing_extensions>=4.2.0",
     "vispy>=0.14.1,<0.15",
     "wrapt>=1.11.1",
-    "funtracks",
+    "funtracks>=1.0.3",
     "pyqtgraph",
     "fonticon-fontawesome6",
     "zarr<3",
@@ -298,6 +298,7 @@ ignore = [
     "B028", # need to be fixed
     "PYI015", # it produces bad looking files (@jni opinion)
     "W191", "Q000", "Q001", "Q002", "Q003", "ISC001", # https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
+    "LOG015", # logging to root logger (done a lot in napari)
 ]
 
 [tool.ruff.lint.per-file-ignores]
