@@ -26,6 +26,7 @@ class TreePlot(QWidget):
         self.start_geometries = None
         self.middle_geometries = None
         self.end_geometries = None
+        self.end_markers = None
         self.vertical_geometries = None
         self.diagonal_geometries = None
         self.mode = "all"  # options: "all", "lineage"
@@ -121,7 +122,7 @@ class TreePlot(QWidget):
                 vi
                 )
             self.selected_nodes.add(newnode, False)
-        elif track[-1].marker=="triangle_up":
+        elif track[-1].marker == "triangle":
             iprev = nd.itrack-1
             while self.displayed_lineages[nd.itree][iprev][0].time-1 != track[-1].time:
                 iprev -= 1
@@ -392,6 +393,7 @@ class TreePlot(QWidget):
         self.start_geometries = []
         self.middle_geometries = []
         self.end_geometries = []
+        self.end_markers = []
         self.vertical_geometries = []
         self.diagonal_geometries = []
 
@@ -404,21 +406,24 @@ class TreePlot(QWidget):
                 trackid = track[0].trackid
 
                 # start markers
-                self.start_geometries.append(gfx.Geometry(positions=[(0, 0, 0)],
-                                                          edge_colors=[self.colors.map(trackid)]))
-                points = gfx.Points(
-                    self.start_geometries[-1],
-                    gfx.PointsMarkerMaterial(marker=track[0].marker,
-                                             color="black",
-                                             edge_color_mode="vertex",
-                                             edge_width=4,
-                                             pick_write=True),
-                    name=self.NameData(ilineage, 0, nodes, times, areas, iselected_tree, itrack),
-                    render_order=2)
-                self.scene.add(points)
+                if len(track)>1:
+                    self.start_geometries.append(gfx.Geometry(positions=[(0, 0, 0)],
+                                                              edge_colors=[self.colors.map(trackid)]))
+                    points = gfx.Points(
+                        self.start_geometries[-1],
+                        gfx.PointsMarkerMaterial(marker=track[0].marker,
+                                                 color="black",
+                                                 edge_color_mode="vertex",
+                                                 edge_width=4,
+                                                 pick_write=True),
+                        name=self.NameData(ilineage, 0, nodes, times, areas, iselected_tree, itrack),
+                        render_order=2)
+                    self.scene.add(points)
 
-                @points.add_event_handler("pointer_down")
-                def select_nodes(event):  self._select_nodes(event)
+                    @points.add_event_handler("pointer_down")
+                    def select_nodes(event):  self._select_nodes(event)
+                else:
+                    self.start_geometries.append(None)
 
                 # middle markers
                 if len(track)>2:
@@ -443,15 +448,18 @@ class TreePlot(QWidget):
                 # end markers
                 self.end_geometries.append(gfx.Geometry(positions=[(0, 0, 0)],
                                                         edge_colors=[self.colors.map(trackid)]))
+                marker = track[-1].marker+"_up" if track[-1].marker=="triangle" else track[-1].marker
+                self.end_markers.append(
+                        gfx.PointsMarkerMaterial(marker=marker,
+                                                 edge_width=4,
+                                                 size=14,
+                                                 color="black",
+                                                 edge_mode="inner",
+                                                 edge_color_mode="vertex",
+                                                 pick_write=True))
                 points = gfx.Points(
                     self.end_geometries[-1],
-                    gfx.PointsMarkerMaterial(marker=track[-1].marker,
-                                             edge_width=4,
-                                             size=10,
-                                             color="black",
-                                             edge_mode="inner",
-                                             edge_color_mode="vertex",
-                                             pick_write=True),
+                    self.end_markers[-1],
                     name=self.NameData(ilineage, len(times)-1, nodes, times, areas, iselected_tree, itrack))
                 self.scene.add(points)
 
@@ -468,7 +476,7 @@ class TreePlot(QWidget):
                 self.scene.add(line)
 
                 # diagonal division lines
-                if track[-1].marker=="triangle_up":
+                if track[-1].marker=="triangle":
                     self.diagonal_geometries.append(
                         gfx.Geometry(positions=[[0, 0, 0] for _ in range(3)],
                                      colors=[(1,1,1,1) for _ in range(3)]))
@@ -521,19 +529,20 @@ class TreePlot(QWidget):
                 time, area =  [-t.time for t in track], [t.area for t in track],
 
                 # start markers
-                if not skip:
-                    self.start_geometries[ilineage].edge_colors.data[0,3] = 1
-                    self.start_geometries[ilineage].edge_colors.update_range(0)
-                    self.start_geometries[ilineage].positions.data[0,0] = \
-                            idisplayed*10 if self.feature == "tree" else track[0].area
-                    self.start_geometries[ilineage].positions.data[0,1] = -track[0].time
-                else:
-                    self.start_geometries[ilineage].edge_colors.data[0,3] = 0
-                    self.start_geometries[ilineage].edge_colors.update_range(0)
-                    self.start_geometries[ilineage].positions.data[0,0] = 0
-                    self.start_geometries[ilineage].positions.data[0,1] = 0
-                self.start_geometries[ilineage].positions.data[0,2] = 0
-                self.start_geometries[ilineage].positions.update_range(0)
+                if len(track)>1:
+                    if not skip:
+                        self.start_geometries[ilineage].edge_colors.data[0,3] = 1
+                        self.start_geometries[ilineage].edge_colors.update_range(0)
+                        self.start_geometries[ilineage].positions.data[0,0] = \
+                                idisplayed*10 if self.feature == "tree" else track[0].area
+                        self.start_geometries[ilineage].positions.data[0,1] = -track[0].time
+                    else:
+                        self.start_geometries[ilineage].edge_colors.data[0,3] = 0
+                        self.start_geometries[ilineage].edge_colors.update_range(0)
+                        self.start_geometries[ilineage].positions.data[0,0] = 0
+                        self.start_geometries[ilineage].positions.data[0,1] = 0
+                    self.start_geometries[ilineage].positions.data[0,2] = 0
+                    self.start_geometries[ilineage].positions.update_range(0)
 
                 # middle markers
                 if len(track)>2:
@@ -564,6 +573,14 @@ class TreePlot(QWidget):
                     self.end_geometries[ilineage].edge_colors.update_range(0)
                     self.end_geometries[ilineage].positions.data[0,0] = 0
                     self.end_geometries[ilineage].positions.data[0,1] = 0
+                if self.end_markers[ilineage].marker.startswith("triangle"):
+                    self.end_markers[ilineage].size = 14
+                    if self.view_direction == "horizontal":
+                        self.end_markers[ilineage].marker = "triangle_left"
+                    else:
+                        self.end_markers[ilineage].marker = "triangle_up"
+                else:
+                    self.end_markers[ilineage].size = 10
                 self.end_geometries[ilineage].positions.data[0,2] = 0
                 self.end_geometries[ilineage].positions.update_range(0)
 
@@ -580,7 +597,7 @@ class TreePlot(QWidget):
                     self.vertical_geometries[ilineage].positions.update_range(i)
 
                 # diagonal division lines
-                if track[-1].marker=="triangle_up":
+                if track[-1].marker=="triangle":
                     iprev = itrack-1
                     while self.lineages[itree][iprev][0].time-1 != track[-1].time and iprev>0:
                         iprev -= 1

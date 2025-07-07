@@ -107,7 +107,7 @@ class TreeWidget(QWidget):
             return lineage
         if len(succs)>1:
             lineage = self.recurse_tree(succs[0], lineage)
-            _lineage[-1] = self.VertexData("triangle_up", *_lineage[-1][1:])
+            _lineage[-1] = self.VertexData("triangle", *_lineage[-1][1:])
             lineage.append(_lineage)
             return self.recurse_tree(succs[1], lineage)
 
