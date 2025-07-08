@@ -185,10 +185,10 @@ class TrackLabels(finn.layers.Labels):
             else:
                 colormap = finn.utils.colormaps.ensure_colormap("viridis")
         colors = []
-        for val in feature_values:
+        for node, val in zip(nodes, feature_values, strict=False):
             color = colormap.map(val) if val is not None else self.default_color
             alpha = (
-                self.alphamap.map(val) if val is not None else self.not_visible_opacity
+                self.alphamap.map(node) if node is not None else self.not_visible_opacity
             )
             color[-1] = alpha
             colors.append(color)
