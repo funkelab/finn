@@ -225,7 +225,10 @@ class TreePlot(QWidget):
             self.selected_nodes.add(newnode, False)
 
     def select_next_lineage(self):
-        """adds the cell at the same timepoint in the right neighboring track to selected_nodes"""
+        """
+        adds the cell at the same timepoint in the right neighboring track
+        to selected_nodes
+        """
         node = self.selected_nodes[-1]
         nd, vi = self.selected_nodes_data[node]
         track = self.displayed_lineages[nd.itree][nd.itrack]
@@ -263,7 +266,10 @@ class TreePlot(QWidget):
             self.selected_nodes.add(newnode, False)
 
     def select_prev_lineage(self):
-        """adds the cell at the same timepoint in the left neighboring track to selected_nodes"""
+        """
+        adds the cell at the same timepoint in the left neighboring track
+        to selected_nodes
+        """
         node = self.selected_nodes[-1]
         nd, vi = self.selected_nodes_data[node]
         track = self.displayed_lineages[nd.itree][nd.itrack]
@@ -299,7 +305,10 @@ class TreePlot(QWidget):
             self.selected_nodes.add(newnode, False)
 
     def select_next_feature(self):
-        """adds the cell at the same timepoint in the above neighboring track to selected_nodes"""
+        """
+        adds the cell at the same timepoint in the above neighboring track
+        to selected_nodes
+        """
         node = self.selected_nodes[-1]
         nd, vi = self.selected_nodes_data[node]
         track = self.displayed_lineages[nd.itree][nd.itrack]
@@ -337,7 +346,10 @@ class TreePlot(QWidget):
             self.selected_nodes.add(newnode, False)
 
     def select_prev_feature(self):
-        """adds the cell at the same timepoint in the below neighboring track to selected_nodes"""
+        """
+        adds the cell at the same timepoint in the below neighboring track
+        to selected_nodes
+        """
         node = self.selected_nodes[-1]
         nd, vi = self.selected_nodes_data[node]
         track = self.displayed_lineages[nd.itree][nd.itrack]

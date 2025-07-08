@@ -56,7 +56,8 @@ class TreeWidget(QWidget):
 
         # Add navigation widget
         self.navigation_widget = NavigationWidget(
-            # navigation_widget.py/get_next_track_node and friends are now implemented in tree_plot.py/select_next_cell
+            # navigation_widget.py/get_next_track_node and friends are now
+            # implemented in tree_plot.py/select_next_cell
             None,
             None,
             self.view_direction,
@@ -101,7 +102,7 @@ class TreeWidget(QWidget):
         self.tree_plot.init()
         self.layout.addWidget(self.tree_plot)
 
-    def recurse_tree(self, node, lineage):  # noqa: RET503
+    def recurse_tree(self, node, lineage):
         """returns a list of lists (trees) of lists (tracks)"""
         tracks = self.tracks_viewer.tracks
         time = tracks.get_time(node)
@@ -125,6 +126,7 @@ class TreeWidget(QWidget):
             _lineage[-1] = VertexData("triangle", *_lineage[-1][1:])
             lineage.append(_lineage)
             return self.recurse_tree(succs[1], lineage)
+        return "just to make ruff CI happy"
 
     def _update_track_data(self):
         """transform tracks into a structure more amenable to plotting"""
