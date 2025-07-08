@@ -53,6 +53,7 @@ class TreePlot(QWidget):
         self.canvas.request_draw(self.animate)
 
     def set_lineages(self, lineages):
+        """called by TreeWidget when tracks change"""
         self.lineages = lineages
 
     def sizeHint(self):
@@ -67,19 +68,23 @@ class TreePlot(QWidget):
         self.canvas.add_event_handler(f, "*")
 
     def both_xy(self):
+        """enables zooming on both axes"""
         self.controller_xy.enabled=True
         self.controller_x.enabled=False
         self.controller_y.enabled=False
 
     def only_x(self):
+        """zoom only horizontally"""
         self.controller_xy.enabled=False
         self.controller_x.enabled=True
 
     def only_y(self):
+        """zoom only vertically"""
         self.controller_xy.enabled=False
         self.controller_y.enabled=True
 
     def __select_nodes(self):
+        """called when a node is selected in the data view"""
         if len(self.selected_nodes)>0:
             node = self.selected_nodes[-1]
             if node not in self.selected_nodes_data:
@@ -92,6 +97,7 @@ class TreePlot(QWidget):
         self.draw_selected_nodes()
 
     def _select_nodes(self, event):
+        """called when a node is selected in the tree view"""
         if self.mode!="all":  return
         nd, vi = (event.pick_info["world_object"].name, event.pick_info["vertex_index"])
         node = self.lineages[nd.itree][nd.itrack][nd.icell + vi].node
@@ -104,6 +110,7 @@ class TreePlot(QWidget):
         self.selected_nodes.add(node, 'Shift' in event.modifiers)
 
     def draw_selected_nodes(self):
+        """called whenever a node is (de-)selected"""
         if self.mode=="all":
             for i,n in enumerate(self.selected_nodes):
                 nd, vi = self.selected_nodes_data[n]
@@ -122,6 +129,7 @@ class TreePlot(QWidget):
         self.canvas.request_draw()
 
     def select_next_cell(self):
+        """adds the cell at the next timepoint in the track to selected_nodes"""
         node = self.selected_nodes[-1]
         nd, vi = self.selected_nodes_data[node]
         track = self.displayed_lineages[nd.itree][nd.itrack]
@@ -152,6 +160,7 @@ class TreePlot(QWidget):
             self.selected_nodes.add(newnode, False)
 
     def select_prev_cell(self):
+        """adds the cell at the previous timepoint in the track to selected_nodes"""
         node = self.selected_nodes[-1]
         nd, vi = self.selected_nodes_data[node]
         track = self.displayed_lineages[nd.itree][nd.itrack]
@@ -194,6 +203,7 @@ class TreePlot(QWidget):
             self.selected_nodes.add(newnode, False)
 
     def select_next_lineage(self):
+        """adds the cell at the same timepoint in the right neighboring track to selected_nodes"""
         node = self.selected_nodes[-1]
         nd, vi = self.selected_nodes_data[node]
         track = self.displayed_lineages[nd.itree][nd.itrack]
@@ -232,6 +242,7 @@ class TreePlot(QWidget):
             self.selected_nodes.add(newnode, False)
 
     def select_prev_lineage(self):
+        """adds the cell at the same timepoint in the left neighboring track to selected_nodes"""
         node = self.selected_nodes[-1]
         nd, vi = self.selected_nodes_data[node]
         track = self.displayed_lineages[nd.itree][nd.itrack]
@@ -270,6 +281,7 @@ class TreePlot(QWidget):
             self.selected_nodes.add(newnode, False)
 
     def select_next_feature(self):
+        """adds the cell at the same timepoint in the above neighboring track to selected_nodes"""
         node = self.selected_nodes[-1]
         nd, vi = self.selected_nodes_data[node]
         track = self.displayed_lineages[nd.itree][nd.itrack]
@@ -307,6 +319,7 @@ class TreePlot(QWidget):
             self.selected_nodes.add(newnode, False)
 
     def select_prev_feature(self):
+        """adds the cell at the same timepoint in the below neighboring track to selected_nodes"""
         node = self.selected_nodes[-1]
         nd, vi = self.selected_nodes_data[node]
         track = self.displayed_lineages[nd.itree][nd.itrack]
@@ -359,6 +372,7 @@ class TreePlot(QWidget):
         return self.view_direction
 
     def actuate_view_direction(self):
+        """rotates entire plot by 90 degrees"""
         if self.view_direction == "horizontal":
             self.scene.local.rotation = la.quat_from_axis_angle([0., 0., 1.], 3.14159/2)
             self.camera.width = self.time_range
@@ -378,11 +392,13 @@ class TreePlot(QWidget):
         self.canvas.update()
 
     def reset_fov(self):
+        """adjusts axes to fill the plot window"""
         self.controller_xy.enabled=False
         self.camera.set_state(self.camera_state0)
         self.controller_xy.enabled=True
 
     def init(self):
+        """instantiates all the plot widgets and glyphs etc"""
         self.scene.clear()
 
         # selected markers
@@ -510,6 +526,7 @@ class TreePlot(QWidget):
         self.update()
 
     def update(self):
+        """sets the position and color of all the plot widgets and glyphs etc"""
         if self.mode=="lineage" and len(self.selected_nodes)==0:  return
         ilineage = idisplayed = 0
         for itree in range(len(self.lineages)):

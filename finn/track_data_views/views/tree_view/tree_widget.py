@@ -93,8 +93,8 @@ class TreeWidget(QWidget):
         self.layout.addWidget(self.tree_plot)
 
 
-    # lineages is a list of lists (trees) of lists (tracks)
     def recurse_tree(self, node, lineage):
+        """returns a list of lists (trees) of lists (tracks)"""
         tracks = self.tracks_viewer.tracks
         time = tracks.get_time(node)
         area = tracks.get_area(node)
@@ -119,6 +119,7 @@ class TreeWidget(QWidget):
             return self.recurse_tree(succs[1], lineage)
 
     def _update_track_data(self):
+        """transform tracks into a structure more amenable to plotting"""
         if self.tracks_viewer.tracks is not None:
             self.lineages = []
             nodes = self.tracks_viewer.tracks.nodes()
