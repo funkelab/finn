@@ -30,10 +30,11 @@ class VertexData(NamedTuple):
     area: float
     trackid: int
 
+
 class TreeWidget(QWidget):
     """pyqtgraph-based widget for lineage tree visualization and navigation"""
 
-    def __init__(self,  viewer: finn.Viewer | None = None):
+    def __init__(self, viewer: finn.Viewer | None = None):
         super().__init__()
         self.tracks_viewer = TracksViewer.get_instance(viewer)
         self.mode = "all"  # options: "all", "lineage"
@@ -56,7 +57,8 @@ class TreeWidget(QWidget):
         # Add navigation widget
         self.navigation_widget = NavigationWidget(
             # navigation_widget.py/get_next_track_node and friends are now implemented in tree_plot.py/select_next_cell
-            None, None,
+            None,
+            None,
             self.view_direction,
             self.tracks_viewer.selected_nodes,
             self.feature,
@@ -92,12 +94,12 @@ class TreeWidget(QWidget):
         self.setLayout(self.layout)
 
         self.lineages = []
-        self.tree_plot: TreePlot = TreePlot(self.tracks_viewer.colormap,
-                                            self.tracks_viewer.selected_nodes)
+        self.tree_plot: TreePlot = TreePlot(
+            self.tracks_viewer.colormap, self.tracks_viewer.selected_nodes
+        )
         self.tree_plot.set_event_handler(self.my_handler)
         self.tree_plot.init()
         self.layout.addWidget(self.tree_plot)
-
 
     def recurse_tree(self, node, lineage):  # noqa: RET503
         """returns a list of lists (trees) of lists (tracks)"""
@@ -107,18 +109,18 @@ class TreeWidget(QWidget):
         trackid = tracks.node_id_to_track_id[node]
         _lineage = [VertexData("square", node, time, area, trackid)]
         succs = tracks.successors(node)
-        while len(succs)==1:
+        while len(succs) == 1:
             node = succs[0]
             time = tracks.get_time(node)
             area = tracks.get_area(node)
             trackid = tracks.node_id_to_track_id[node]
             _lineage.append(VertexData("circle", node, time, area, trackid))
             succs = tracks.successors(node)
-        if len(succs)==0:
+        if len(succs) == 0:
             _lineage[-1] = VertexData("cross", *_lineage[-1][1:])
             lineage.append(_lineage)
             return lineage
-        if len(succs)>1:
+        if len(succs) > 1:
             lineage = self.recurse_tree(succs[0], lineage)
             _lineage[-1] = VertexData("triangle", *_lineage[-1][1:])
             lineage.append(_lineage)
@@ -130,28 +132,28 @@ class TreeWidget(QWidget):
             self.lineages = []
             nodes = self.tracks_viewer.tracks.nodes()
             in_degrees = self.tracks_viewer.tracks.in_degree(nodes)
-            for iprogenitor in np.nonzero(in_degrees==0)[0]:
+            for iprogenitor in np.nonzero(in_degrees == 0)[0]:
                 self.lineages.append(self.recurse_tree(nodes[iprogenitor].item(), []))
             self.tree_plot.set_lineages(self.lineages)
             self.tree_plot.init()
 
     def my_handler(self, arg):
-        if arg['event_type'] == 'char' and arg['char_str'] == 'q':
+        if arg["event_type"] == "char" and arg["char_str"] == "q":
             self.mode_widget._toggle_display_mode()
-        if arg['event_type'] == 'char' and arg['char_str'] == 'w':
+        if arg["event_type"] == "char" and arg["char_str"] == "w":
             self.feature_widget._toggle_feature_mode()
-        if arg['event_type'] == 'char' and arg['char_str'] == 'f':
+        if arg["event_type"] == "char" and arg["char_str"] == "f":
             self._flip_axes()
-        if arg['event_type'] == 'key_down' and arg['key'] == 'x':
+        if arg["event_type"] == "key_down" and arg["key"] == "x":
             self.tree_plot.only_x()
-        if arg['event_type'] == 'key_down' and arg['key'] == 'y':
+        if arg["event_type"] == "key_down" and arg["key"] == "y":
             self.tree_plot.only_y()
-        if arg['event_type'] == 'key_up':
+        if arg["event_type"] == "key_up":
             self.tree_plot.both_xy()
-        if arg['event_type'] == 'pointer_up' and arg['button'] == 2:
+        if arg["event_type"] == "pointer_up" and arg["button"] == 2:
             self.tree_plot.reset_fov()
-        if arg['event_type'] == 'key_up' and arg['key'] == 'ArrowLeft':
-            if self.tree_plot.mode!="all":
+        if arg["event_type"] == "key_up" and arg["key"] == "ArrowLeft":
+            if self.tree_plot.mode != "all":
                 return
             if self.tree_plot.get_view_direction() == "horizontal":
                 self.tree_plot.select_prev_cell()
@@ -160,8 +162,8 @@ class TreeWidget(QWidget):
                     self.tree_plot.select_prev_lineage()
                 else:
                     self.tree_plot.select_prev_feature()
-        if arg['event_type'] == 'key_up' and arg['key'] == 'ArrowRight':
-            if self.tree_plot.mode!="all":
+        if arg["event_type"] == "key_up" and arg["key"] == "ArrowRight":
+            if self.tree_plot.mode != "all":
                 return
             if self.tree_plot.get_view_direction() == "horizontal":
                 self.tree_plot.select_next_cell()
@@ -170,8 +172,8 @@ class TreeWidget(QWidget):
                     self.tree_plot.select_next_lineage()
                 else:
                     self.tree_plot.select_next_feature()
-        if arg['event_type'] == 'key_up' and arg['key'] == 'ArrowUp':
-            if self.tree_plot.mode!="all":
+        if arg["event_type"] == "key_up" and arg["key"] == "ArrowUp":
+            if self.tree_plot.mode != "all":
                 return
             if self.tree_plot.get_view_direction() == "vertical":
                 self.tree_plot.select_prev_cell()
@@ -180,8 +182,8 @@ class TreeWidget(QWidget):
                     self.tree_plot.select_next_lineage()
                 else:
                     self.tree_plot.select_next_feature()
-        if arg['event_type'] == 'key_up' and arg['key'] == 'ArrowDown':
-            if self.tree_plot.mode!="all":
+        if arg["event_type"] == "key_up" and arg["key"] == "ArrowDown":
+            if self.tree_plot.mode != "all":
                 return
             if self.tree_plot.get_view_direction() == "vertical":
                 self.tree_plot.select_next_cell()
@@ -217,7 +219,7 @@ class TreeWidget(QWidget):
 
         """
         self.tree_plot.set_mode(mode)
-        if mode=="all":
+        if mode == "all":
             self.view_direction = "vertical"
         else:
             self.view_direction = "horizontal"
