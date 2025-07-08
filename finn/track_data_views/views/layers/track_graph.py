@@ -38,6 +38,7 @@ def update_finn_tracks(
     """
     ndim = project.ndim - 1
     graph = project.solution
+    cand_graph = project.cand_graph
     finn_data = np.zeros((len(graph), ndim + 2))
     finn_edges = {}
 
@@ -45,25 +46,24 @@ def update_finn_tracks(
     intertrack_edges = []
 
     # Remove all intertrack edges from a copy of the original graph
-    graph_copy = graph.copy()
     for parent in parents:
-        daughters = [child for _, child in graph.out_edges(parent)]
+        daughters = graph.successors(parent)
         for daughter in daughters:
-            graph_copy.remove_edge(parent, daughter)
+            # graph.remove_edge(parent, daughter)
             intertrack_edges.append((parent, daughter))
 
-    for index, node in enumerate(graph.nodes(data=True)):
-        node_id, data = node
-        location = graph.get_position(node_id)
+    for index, node in enumerate(graph.nodes):
+        node_id = node
+        location = cand_graph.get_position(node_id)
         finn_data[index] = [
-            graph.get_track_id(node_id),
-            graph.get_time(node_id),
+            cand_graph.get_track_id(node_id),
+            cand_graph.get_time(node_id),
             *location,
         ]
 
     for parent, child in intertrack_edges:
-        parent_track_id = graph.get_track_id(parent)
-        child_track_id = graph.get_track_id(child)
+        parent_track_id = cand_graph.get_track_id(parent)
+        child_track_id = cand_graph.get_track_id(child)
         if child_track_id in finn_edges:
             finn_edges[child_track_id].append(parent_track_id)
         else:

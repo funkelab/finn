@@ -39,6 +39,7 @@ class ProjectViewer:
             NodeType.END: "x",
             NodeType.CONTINUE: "disc",
             NodeType.SPLIT: "triangle_up",
+            NodeType.NOT_SELECTED: "hbar",
         }
         self.mode = "all"
         self.visible: list | str = []
@@ -111,11 +112,12 @@ class ProjectViewer:
         self.tracking_layers.update_visible(visible_tracks, self.visible)
 
     def filter_visible_nodes(self) -> list[int]:
-        """Construct a list of track_ids that should be displayed"""
+        """Construct a list of node ids that should be displayed"""
         solution = self.project.solution
-        if self.project is None or len(solution) == 0:
-            return []
+
         if self.mode == "lineage":
+            if self.project is None or len(solution) == 0:
+                return []
             # if no nodes are selected, check which nodes were previously visible and
             # filter those
             if len(self.selected_nodes) == 0 and self.visible is not None:
@@ -136,7 +138,6 @@ class ProjectViewer:
 
     def update_selection(self) -> None:
         """Sets the view and triggers visualization updates in other components"""
-
         self.set_finn_view()
         visible_tracks = self.filter_visible_nodes()
         self.tracking_layers.update_visible(visible_tracks, self.visible)

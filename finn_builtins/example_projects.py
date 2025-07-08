@@ -8,12 +8,14 @@ from urllib.request import urlretrieve
 
 import funlib.persistence as fp
 import numpy as np
+import pandas as pd
 import tifffile
 import zarr
 from appdirs import AppDirs
 from funtracks import Project
 from funtracks.params import ProjectParams
 
+from finn.track_import_export.load_tracks import tracks_from_df
 from finn.types import LayerData
 
 logger = logging.getLogger(__name__)
@@ -49,7 +51,9 @@ def Fluo_N2DL_HeLa() -> Project:
     appdir = AppDirs("motile-tracker")
     data_dir = Path(appdir.user_data_dir)
     data_dir.mkdir(parents=True, exist_ok=True)
-    return read_ctc_dataset(ds_name, data_dir)
+    return read_ctc_dataset(
+        ds_name, data_dir, graph_csv="scripts/hela_example_tracks.csv"
+    )
 
 
 def Fluo_N2DL_HeLa_crop() -> list[LayerData]:
@@ -95,7 +99,9 @@ def read_zenodo_dataset(
     return [raw_layer_data, seg_layer_data]
 
 
-def read_ctc_dataset(ds_name: str, data_dir: Path, crop_region=False) -> Project:
+def read_ctc_dataset(
+    ds_name: str, data_dir: Path, crop_region=False, graph_csv=None
+) -> Project:
     """Read a CTC dataset from a zarr (assumes pre-downloaded and converted)
     and returns a Project
 
@@ -128,7 +134,48 @@ def read_ctc_dataset(ds_name: str, data_dir: Path, crop_region=False) -> Project
     seg_arr = fp.Array(seg_data)
     ndim = len(seg_arr.shape)
 
-    return Project(ds_name, ProjectParams(), raw=raw_arr, segmentation=seg_arr)
+    project = Project(
+        ds_name,
+        ProjectParams(),
+        raw=raw_arr,
+        segmentation=seg_arr,
+    )
+    project.cand_graph.initialize_cand_edges()
+
+    # TODO: get graph info from actual ctc files not from my random run csv
+    if graph_csv is not None:
+        csvfile = "scripts/hela_example_tracks.csv"
+        selected_columns = {
+            "time": "t",
+            "y": "y",
+            "x": "x",
+            "id": "id",
+            "parent_id": "parent_id",
+            "seg_id": "id",
+            "track_id": "track_id",
+        }
+
+        df = pd.read_csv(csvfile)
+
+        # Create new columns for each feature based on the original column values
+        for feature, column in selected_columns.items():
+            df[feature] = df[column]
+
+        solution_graph = tracks_from_df(
+            df=df,
+            segmentation=seg_arr.data.compute(),
+            scale=[1, 1, 1],
+            features=["track_id"],
+        )
+
+        features = project.cand_graph.features
+        for edge in solution_graph.edges():
+            for node in edge:
+                track_id = solution_graph.nodes[node]["track_id"]
+                project.cand_graph.set_feature_value(node, features.node_selected, True)
+                project.cand_graph.set_feature_value(node, features.track_id, track_id)
+            project.cand_graph.set_feature_value(edge, features.edge_selected, True)
+    return project
 
 
 def _download_and_unzip(data_dir: Path, zip_name: str, url: str):

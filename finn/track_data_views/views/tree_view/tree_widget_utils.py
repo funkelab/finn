@@ -237,7 +237,7 @@ def sort_track_ids(
     return x_axis_order
 
 
-def extract_lineage_tree(graph: nx.DiGraph, node_id: str) -> list[str]:
+def extract_lineage_tree(graph: nx.DiGraph, node_id: str) -> list[int]:
     """Extract the entire lineage tree including horizontal relations for a given node"""
 
     # go up the tree to identify the root node

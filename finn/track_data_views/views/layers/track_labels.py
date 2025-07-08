@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import random
+from collections import defaultdict
 from typing import TYPE_CHECKING
 
 import numpy as np
 from funtracks.features import Feature
 from funtracks.user_actions import UserUpdateSegmentation
+from psygnal import Signal
 
 import finn
 from finn.utils import DirectLabelColormap
@@ -17,6 +19,20 @@ if TYPE_CHECKING:
 
     from finn.track_data_views.views_coordinator.project_viewer import ProjectViewer
     from finn.utils.events import Event
+
+
+class Alphamap:
+    updated = Signal()
+
+    def __init__(self, alpha_dict):
+        self._alpha_dict = alpha_dict
+
+    def map(self, value):
+        return self._alpha_dict[value]
+
+    def update(self, alpha_dict):
+        self._alpha_dict.update(alpha_dict)
+        self.updated.emit()
 
 
 def new_label(layer: TrackLabels):
@@ -84,20 +100,27 @@ class TrackLabels(finn.layers.Labels):
         self.project_viewer = project_viewer
         self.project = project_viewer.project
         self.selected_track = None
+        self.default_opacity = opacity
+        self.default_color = [0.5, 0.5, 0.5, 1.0]
+        self.not_visible_opacity = 0.2
+        self.highighted_opacity = 1.0
         self.color_by: Feature | None
+        self.colormap_seed = 1010101
         if len(self.project.solution) == 0:
             self.color_by: Feature | None = None
         else:
             self.color_by = self.project.cand_graph.features.track_id
-        colormap = self._get_colormap()
+        self.alphamap = Alphamap(alpha_dict=defaultdict(lambda: self.default_opacity))
+        self.alphamap.updated.connect(self.refresh_colormap)
 
         super().__init__(
             # this will load the whole array into memory :)
             data=data.data.compute(),
             name=name,
             opacity=opacity,
-            colormap=colormap,
+            colormap=self._get_colormap(),
             scale=data.voxel_size,
+            multiscale=False,
         )
 
         self.viewer = viewer
@@ -151,7 +174,7 @@ class TrackLabels(finn.layers.Labels):
         if feature is None:
             colormap = finn.utils.colormaps.label_colormap(
                 49,
-                seed=random.uniform(0, 1),
+                seed=self.colormap_seed,
                 background_value=0,
             )
             feature_values = nodes
@@ -161,13 +184,24 @@ class TrackLabels(finn.layers.Labels):
                 colormap = self.project_viewer.colormap
             else:
                 colormap = finn.utils.colormaps.ensure_colormap("viridis")
-        colors = [colormap.map(val) for val in feature_values]
+        colors = []
+        for val in feature_values:
+            color = colormap.map(val) if val is not None else self.default_color
+            alpha = (
+                self.alphamap.map(val) if val is not None else self.not_visible_opacity
+            )
+            color[-1] = alpha
+            colors.append(color)
+
         return DirectLabelColormap(
             color_dict={
                 **dict(zip(nodes, colors, strict=True)),
                 None: [0, 0, 0, 0],
             }
         )
+
+    def refresh_colormap(self):
+        self.colormap = self._get_colormap()
 
     def _get_colormap(self):
         return self._get_feature_colormap(self.color_by)
@@ -257,8 +291,9 @@ class TrackLabels(finn.layers.Labels):
 
     def _refresh(self):
         """Refresh the data in the labels layer"""
-        self.data = self.project_viewer.project.segmentation
-        self.colormap = self._get_colormap()
+        # TODO: DON'T COMPUTE
+        self.data = self.project_viewer.project.segmentation.data.compute()
+        self.refresh_colormap()
         self.refresh()
 
     def update_label_colormap(self, visible: list[int] | str) -> None:
@@ -267,44 +302,35 @@ class TrackLabels(finn.layers.Labels):
 
         Visible is a list of visible node id
         """
+        nodes = self.project.cand_graph.nodes
         with self.events.selected_label.blocker():
             highlighted = self.project_viewer.selected_nodes
 
             # update the opacity of the cyclic label colormap values according to
             # whether nodes are visible/invisible/highlighted
             if visible == "all":
-                self.colormap.color_dict = {
-                    key: np.array(
-                        [
-                            *value[:-1],
-                            0.6 if key is not None and key != 0 else value[-1],
-                        ],
-                        dtype=np.float32,
-                    )
-                    for key, value in self.colormap.color_dict.items()
-                }
-
+                alpha_dict = {node: self.default_opacity for node in nodes}
             else:
-                self.colormap.color_dict = {
-                    key: np.array([*value[:-1], 0], dtype=np.float32)
-                    for key, value in self.colormap.color_dict.items()
-                }
+                # make them all invisible
+                alpha_dict = {node: self.not_visible_opacity for node in nodes}
+                # set the visible ones to default opacity
                 for node in visible:
                     # find the index in the colormap
-                    self.colormap.color_dict[node][-1] = 0.6
+                    alpha_dict[node] = self.default_opacity
 
             for node in highlighted:
-                self.colormap.color_dict[node][-1] = 1  # full opacity
-            # create a new colormap from the updated colors (to ensure refresh)
-            self.colormap = DirectLabelColormap(color_dict=self.colormap.color_dict)
+                alpha_dict[node] = self.highighted_opacity
+
+            self.alphamap.update(alpha_dict)
+            self.refresh()
 
     def new_colormap(self):
         """Override existing function to generate new colormap on tracks_viewer and
         emit refresh signal to update colors in all layers/widgets"""
-
+        self.colormap_seed = random.uniform(0, 1)
         self.project_viewer.colormap = finn.utils.colormaps.label_colormap(
             49,
-            seed=random.uniform(0, 1),
+            seed=self.colormap_seed,
             background_value=0,
         )
         self.project_viewer._refresh()

@@ -4,7 +4,6 @@ import math
 from typing import TYPE_CHECKING
 
 import numpy as np
-from funtracks import TrackingGraph
 from funtracks.actions import SetFeatureValues
 from funtracks.actions._base import ActionGroup
 from funtracks.user_actions import UserAddNode
@@ -41,10 +40,8 @@ class TrackPoints(finn.layers.Points):
             if not show_cands
             else self.project_viewer.project.cand_graph
         )
-        nodes, node_index_dict, track_ids, positions, symbols, colors = (
-            self._get_points_data(self.graph)
-        )
-        self.nodes = nodes
+        self.nodes = list(self.graph.nodes)
+        node_index_dict, track_ids, positions, symbols, colors = self._get_points_data()
         self.node_index_dict = node_index_dict
         self.current_track_id = None
         self.continue_track = True  # TODO: update these from UI somehow
@@ -112,12 +109,14 @@ class TrackPoints(finn.layers.Points):
         self.default_size = size
         self._refresh()
 
-    def _get_points_data(self, graph: TrackingGraph):
-        nodes = list(graph.nodes)
+    def _get_points_data(self):
+        nodes = list(self.graph.nodes)
+        cand_graph = self.project_viewer.project.cand_graph
+        solution = self.project_viewer.project.solution
         node_index_dict = {node: idx for idx, node in enumerate(nodes)}
-        track_ids = graph.get_track_ids(nodes)
-        times = np.expand_dims(np.array(graph.get_times(nodes)), axis=1)
-        positions = np.array(graph.get_positions(nodes))
+        track_ids = cand_graph.get_track_ids(nodes)
+        times = np.expand_dims(np.array(cand_graph.get_times(nodes)), axis=1)
+        positions = np.array(cand_graph.get_positions(nodes))
         point_data = np.concat([times, positions], axis=1)
 
         statemap = {
@@ -126,14 +125,20 @@ class TrackPoints(finn.layers.Points):
             2: NodeType.SPLIT,
         }
         symbolmap = self.project_viewer.symbolmap
-        symbols = [symbolmap[statemap[graph.out_degree(node)]] for node in nodes]
+        symbols = []
+        for node in nodes:
+            if cand_graph.get_feature_value(node, cand_graph.features.node_selected):
+                symbols.append(symbolmap[statemap[solution.out_degree(node)]])
+            else:
+                symbols.append(symbolmap[NodeType.NOT_SELECTED])
+
         colors = [
             self.project_viewer.colormap.map(track_id)
             if track_id is not None
             else [1, 1, 1, 1]
             for track_id in track_ids
         ]
-        return nodes, node_index_dict, track_ids, point_data, symbols, colors
+        return node_index_dict, track_ids, point_data, symbols, colors
 
     def _refresh(self):
         """Refresh the data in the points layer"""
@@ -142,14 +147,12 @@ class TrackPoints(finn.layers.Points):
             self._update_data
         )  # do not listen to new events until updates are complete
         self.graph = (
-            self.project_viewer.project.solution
+            self.project_viewer.project.cand_graph
             if self.show_cands
-            else self.project_viewer.project.cand_graph
+            else self.project_viewer.project.solution
         )
-        nodes, node_index_dict, track_ids, positions, symbols, colors = (
-            self._get_points_data()
-        )
-        self.nodes = nodes
+        self.nodes = list(self.graph.nodes)
+        node_index_dict, track_ids, positions, symbols, colors = self._get_points_data()
         self.node_index_dict = node_index_dict
         self.data = positions
         self.symbol = symbols
@@ -262,7 +265,10 @@ class TrackPoints(finn.layers.Points):
                 1,
             )
             self.size[index] = math.ceil(self.default_size + 0.3 * self.default_size)
-        self.current_track_id = self.project_viewer.project.cand_graph.get_track_id(
-            self.project_viewer.selected_nodes._list[-1]
-        )
+        if len(self.project_viewer.selected_nodes._list):
+            track_id = self.project_viewer.project.cand_graph.get_track_id(
+                self.project_viewer.selected_nodes._list[-1]
+            )
+            # if track_id is not None:
+            self.current_track_id = track_id
         self.refresh()

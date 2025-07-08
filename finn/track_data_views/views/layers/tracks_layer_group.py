@@ -30,7 +30,7 @@ class TracksLayerGroup:
                 viewer=self.finn_viewer,
                 data=self.project.segmentation,
                 name=self.name + "_seg",
-                opacity=0.9,
+                opacity=0.6,
                 project_viewer=self.project_viewer,
             )
 
