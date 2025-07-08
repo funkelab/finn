@@ -20,7 +20,9 @@ from finn.track_application_menus.main_app import MainApp
 from finn.track_application_menus.welcome.load_project import load_project
 from finn.track_application_menus.welcome.new_project_dialog import NewProjectDialog
 from finn.track_application_menus.welcome.welcome import WelcomeDialog
+from finn.track_data_views import ProjectViewer
 from finn.utils.translations import trans
+from finn_builtins.example_projects import Fluo_N2DL_HeLa
 
 
 class InfoAction(argparse.Action):
@@ -345,15 +347,19 @@ def _run() -> None:
                     if new_proj_dialog.exec_():
                         project = new_proj_dialog.project
                         project.save()
-                        break  # Exit the loop, project created
+                        ProjectViewer(project)
+                        break
                     # User cancelled, loop back to welcome dialog
                     continue
                 if dialog.choice == "continue":
                     # Open an existing project
-                    print("continue project...")  # noqa: T201
                     project = load_project()
-                    # TODO: Implement logic to open an existing project
-                    break  # Exit the loop, user chose to continue
+                    ProjectViewer(project)
+                    break
+                if dialog.choice == "example":
+                    project = Fluo_N2DL_HeLa()
+                    ProjectViewer(project)
+                    break
             else:
                 # User closed the welcome dialog, exit or break
                 break
