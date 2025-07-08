@@ -277,6 +277,7 @@ def create_project(project_info: dict[str:Any]) -> Project:
         cand_graph = graph_from_points(
             points_data, column_mapping, feature_set, cand_graph_params
         )
+        cand_graph.initialize_cand_edges()
 
     else:
         cand_graph = graph_from_segmentation(
@@ -288,6 +289,7 @@ def create_project(project_info: dict[str:Any]) -> Project:
             features,
             cand_graph_params,
         )
+        cand_graph.initialize_cand_edges()
 
     # ----------- Return Project ---------#
 
