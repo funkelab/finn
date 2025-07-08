@@ -1,12 +1,17 @@
-from qtpy.QtWidgets import QVBoxLayout, QWidget
-
-from wgpu.gui.auto import WgpuCanvas
-import pygfx as gfx
-import distinctipy
-import numpy as np
-from collections import namedtuple
-import pylinalg as la
 import copy
+from typing import NamedTuple
+
+import numpy as np
+import pygfx as gfx
+import pylinalg as la
+from qtpy.QtWidgets import QVBoxLayout, QWidget
+from wgpu.gui.auto import WgpuCanvas
+
+
+class NameData(NamedTuple):
+    itree: int
+    itrack: int
+    icell: int
 
 class TreePlot(QWidget):
     """The actual vispy (or pygfx) tree plot"""
@@ -32,8 +37,6 @@ class TreePlot(QWidget):
         self.mode = "all"  # options: "all", "lineage"
         self.feature = "tree"  # options: "tree", "area"
         self.view_direction = "vertical"  # options: "horizontal", "vertical"
-
-        self.NameData = namedtuple('NameData', 'itree, itrack, icell')
 
         self.canvas = WgpuCanvas()
         self.renderer = gfx.WgpuRenderer(self.canvas)
@@ -92,13 +95,14 @@ class TreePlot(QWidget):
                     for itrack in range(len(self.lineages[itree])):
                         for icell in range(len(self.lineages[itree][itrack])):
                             if node == self.lineages[itree][itrack][icell].node:
-                                self.selected_nodes_data[node] = (self.NameData(itree, itrack, icell), 0)
+                                self.selected_nodes_data[node] = (NameData(itree, itrack, icell), 0)
                                 break
         self.draw_selected_nodes()
 
     def _select_nodes(self, event):
         """called when a node is selected in the tree view"""
-        if self.mode!="all":  return
+        if self.mode!="all":
+            return
         nd, vi = (event.pick_info["world_object"].name, event.pick_info["vertex_index"])
         node = self.lineages[nd.itree][nd.itrack][nd.icell + vi].node
         if node in self.selected_nodes:
@@ -143,7 +147,7 @@ class TreePlot(QWidget):
                 vi = icell-1
             newnode = self.lineages[nd.itree][nd.itrack][icell].node
             self.selected_nodes_data[newnode] = (
-                self.NameData(nd.itree, nd.itrack, iy),
+                NameData(nd.itree, nd.itrack, iy),
                 vi
                 )
             self.selected_nodes.add(newnode, False)
@@ -154,7 +158,7 @@ class TreePlot(QWidget):
             track = self.displayed_lineages[nd.itree][iprev]
             newnode = track[0].node
             self.selected_nodes_data[newnode] = (
-                self.NameData(nd.itree, iprev, 0),
+                NameData(nd.itree, iprev, 0),
                 0
                 )
             self.selected_nodes.add(newnode, False)
@@ -174,7 +178,7 @@ class TreePlot(QWidget):
                 vi = icell-1
             newnode = self.lineages[nd.itree][nd.itrack][icell].node
             self.selected_nodes_data[newnode] = (
-                self.NameData(nd.itree, nd.itrack, iy),
+                NameData(nd.itree, nd.itrack, iy),
                 vi
                 )
             self.selected_nodes.add(newnode, False)
@@ -197,7 +201,7 @@ class TreePlot(QWidget):
             track = self.displayed_lineages[nd.itree][iparent]
             newnode = track[-1].node
             self.selected_nodes_data[newnode] = (
-                self.NameData(nd.itree, iparent, len(track)-1),
+                NameData(nd.itree, iparent, len(track)-1),
                 0
                 )
             self.selected_nodes.add(newnode, False)
@@ -236,7 +240,7 @@ class TreePlot(QWidget):
                 vi = icell-1
             newnode = track[vi+iy].node
             self.selected_nodes_data[newnode] = (
-                self.NameData(itree, itrack, iy),
+                NameData(itree, itrack, iy),
                 vi
                 )
             self.selected_nodes.add(newnode, False)
@@ -275,7 +279,7 @@ class TreePlot(QWidget):
                 vi = icell-1
             newnode = track[vi+iy].node
             self.selected_nodes_data[newnode] = (
-                self.NameData(itree, itrack, iy),
+                NameData(itree, itrack, iy),
                 vi
                 )
             self.selected_nodes.add(newnode, False)
@@ -313,7 +317,7 @@ class TreePlot(QWidget):
                 vi = icell_next-1
             newnode = track[vi+iy].node
             self.selected_nodes_data[newnode] = (
-                self.NameData(itree_next, itrack_next, iy),
+                NameData(itree_next, itrack_next, iy),
                 vi
                 )
             self.selected_nodes.add(newnode, False)
@@ -351,7 +355,7 @@ class TreePlot(QWidget):
                 vi = icell_prev-1
             newnode = track[vi+iy].node
             self.selected_nodes_data[newnode] = (
-                self.NameData(itree_prev, itrack_prev, iy),
+                NameData(itree_prev, itrack_prev, iy),
                 vi
                 )
             self.selected_nodes.add(newnode, False)
@@ -385,10 +389,12 @@ class TreePlot(QWidget):
             self.camera.height = self.time_range
             self.label.anchor_offset=40
             self.label.anchor="middle-right"
-        if self.lineages:  self.camera.show_object(self.scene)
+        if self.lineages:
+            self.camera.show_object(self.scene)
         self.camera_state0 = copy.deepcopy(self.camera.get_state())
         self.canvas.update()
-        if self.lineages:  self.ruler.update(self.camera, self.canvas.get_logical_size())
+        if self.lineages:
+            self.ruler.update(self.camera, self.canvas.get_logical_size())
         self.canvas.update()
 
     def reset_fov(self):
@@ -437,7 +443,7 @@ class TreePlot(QWidget):
                                                  edge_color_mode="vertex",
                                                  edge_width=4,
                                                  pick_write=True),
-                        name=self.NameData(itree, itrack, 0),
+                        name=NameData(itree, itrack, 0),
                         render_order=2)
                     self.scene.add(points)
 
@@ -458,7 +464,7 @@ class TreePlot(QWidget):
                                                  edge_color_mode="vertex",
                                                  edge_width=4,
                                                  pick_write=True),
-                        name=self.NameData(itree, itrack, 1))
+                        name=NameData(itree, itrack, 1))
                     self.scene.add(points)
 
                     @points.add_event_handler("pointer_down")
@@ -481,7 +487,7 @@ class TreePlot(QWidget):
                 points = gfx.Points(
                     self.end_geometries[-1],
                     self.end_markers[-1],
-                    name=self.NameData(itree, itrack, len(track)-1))
+                    name=NameData(itree, itrack, len(track)-1))
                 self.scene.add(points)
 
                 @points.add_event_handler("pointer_down")
@@ -527,7 +533,8 @@ class TreePlot(QWidget):
 
     def update(self):
         """sets the position and color of all the plot widgets and glyphs etc"""
-        if self.mode=="lineage" and len(self.selected_nodes)==0:  return
+        if self.mode=="lineage" and len(self.selected_nodes)==0:
+            return
         ilineage = idisplayed = 0
         for itree in range(len(self.lineages)):
 
@@ -541,7 +548,8 @@ class TreePlot(QWidget):
                         if nd.itree == itree and nd.itrack == itrack:
                             skip=False
                             break
-                        if not skip: break
+                        if not skip:
+                            break
             if not skip:
                 self.displayed_lineages.append(self.lineages[itree])
 
@@ -654,14 +662,15 @@ class TreePlot(QWidget):
                         self.diagonal_geometries[ilineage].positions.update_range(i)
 
                 ilineage += 1
-                if not skip: idisplayed += 1
+                if not skip:
+                    idisplayed += 1
 
         self.draw_selected_nodes()
 
         if len(self.vertical_geometries)>0:
-            f = [l.positions.data[:,0] for l in self.vertical_geometries]
+            f = [vg.positions.data[:,0] for vg in self.vertical_geometries]
             f = [y for x in f for y in x]
-            t = [l.positions.data[:,1] for l in self.vertical_geometries]
+            t = [vg.positions.data[:,1] for vg in self.vertical_geometries]
             t = [y for x in t for y in x]
             self.feature_range = np.max(f) - np.min(f)
             self.time_range = np.max(t) - np.min(t)
