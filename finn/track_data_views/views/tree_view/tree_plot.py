@@ -11,10 +11,10 @@ import copy
 class TreePlot(QWidget):
     """The actual vispy (or pygfx) tree plot"""
 
-    def __init__(self, lineages, colormap, selected_nodes, parent=None):
+    def __init__(self, colormap, selected_nodes, parent=None):
         super().__init__(parent=parent)
         self.layout = QVBoxLayout(self)
-        self.lineages = lineages
+        self.lineages = []
 
         self.colors = colormap
         self.selected_nodes = selected_nodes
@@ -51,6 +51,9 @@ class TreePlot(QWidget):
         self.selected_nodes.list_updated.connect(self.__select_nodes)
 
         self.canvas.request_draw(self.animate)
+
+    def set_lineages(self, lineages):
+        self.lineages = lineages
 
     def sizeHint(self):
         hint = super().sizeHint()
@@ -368,10 +371,10 @@ class TreePlot(QWidget):
             self.camera.height = self.time_range
             self.label.anchor_offset=40
             self.label.anchor="middle-right"
-        self.camera.show_object(self.scene)
+        if self.lineages:  self.camera.show_object(self.scene)
         self.camera_state0 = copy.deepcopy(self.camera.get_state())
         self.canvas.update()
-        self.ruler.update(self.camera, self.canvas.get_logical_size())
+        if self.lineages:  self.ruler.update(self.camera, self.canvas.get_logical_size())
         self.canvas.update()
 
     def reset_fov(self):
@@ -638,15 +641,16 @@ class TreePlot(QWidget):
 
         self.draw_selected_nodes()
 
-        f = [l.positions.data[:,0] for l in self.vertical_geometries]
-        f = [y for x in f for y in x]
-        t = [l.positions.data[:,1] for l in self.vertical_geometries]
-        t = [y for x in t for y in x]
-        self.feature_range = np.max(f) - np.min(f)
-        self.time_range = np.max(t) - np.min(t)
+        if len(self.vertical_geometries)>0:
+            f = [l.positions.data[:,0] for l in self.vertical_geometries]
+            f = [y for x in f for y in x]
+            t = [l.positions.data[:,1] for l in self.vertical_geometries]
+            t = [y for x in t for y in x]
+            self.feature_range = np.max(f) - np.min(f)
+            self.time_range = np.max(t) - np.min(t)
 
-        self.ruler.start_pos = (-0.1*self.feature_range, 0, 0)
-        self.ruler.end_pos = (-0.1*self.feature_range, -self.time_range, 0)
-        self.label.local.position = (-0.1*self.feature_range, -self.time_range/2, 0)
+            self.ruler.start_pos = (-0.1*self.feature_range, 0, 0)
+            self.ruler.end_pos = (-0.1*self.feature_range, -self.time_range, 0)
+            self.label.local.position = (-0.1*self.feature_range, -self.time_range/2, 0)
 
         self.actuate_view_direction()

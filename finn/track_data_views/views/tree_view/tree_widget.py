@@ -84,7 +84,14 @@ class TreeWidget(QWidget):
         self.layout.addWidget(collapsable_widget)
         self.layout.setSpacing(0)
         self.setLayout(self.layout)
-        self._update_track_data()
+
+        self.lineages = []
+        self.tree_plot: TreePlot = TreePlot(self.tracks_viewer.colormap,
+                                            self.tracks_viewer.selected_nodes)
+        self.tree_plot.set_event_handler(self.my_handler)
+        self.tree_plot.init()
+        self.layout.addWidget(self.tree_plot)
+
 
     # lineages is a list of lists (trees) of lists (tracks)
     def recurse_tree(self, node, lineage):
@@ -113,17 +120,13 @@ class TreeWidget(QWidget):
 
     def _update_track_data(self):
         if self.tracks_viewer.tracks is not None:
-            lineages = []
+            self.lineages = []
             nodes = self.tracks_viewer.tracks.nodes()
             in_degrees = self.tracks_viewer.tracks.in_degree(nodes)
             for iprogenitor in np.nonzero(in_degrees==0)[0]:
-                lineages.append(self.recurse_tree(nodes[iprogenitor].item(), []))
-
-            self.tree_plot: TreePlot = TreePlot(lineages, self.tracks_viewer.colormap,
-                                                self.tracks_viewer.selected_nodes)
-            self.tree_plot.set_event_handler(self.my_handler)
+                self.lineages.append(self.recurse_tree(nodes[iprogenitor].item(), []))
+            self.tree_plot.set_lineages(self.lineages)
             self.tree_plot.init()
-            self.layout.addWidget(self.tree_plot)
 
     def my_handler(self, arg):
         if arg['event_type'] == 'char' and arg['char_str'] == 'q':
