@@ -79,7 +79,7 @@ def create_project(project_info: dict[str:Any]) -> Project:
         cand_graph_params = project_info["cand_graph_params"]
         features = project_info["features"]
         name = project_info.get("title", "Untitled Project")
-        working_dir = project_info.get("directory", Path.cwd())
+        working_dir = os.path.join(project_info.get("directory", Path.cwd()), name)
     except KeyError as err:
         missing_key = err.args[0]
         raise DialogValueError(
