@@ -21,8 +21,8 @@ if __name__ == "__main__":
     tracks2 = SolutionTracks(nx_graph_2, time_attr="t", pos_attr=("z", "y", "x"), ndim=4)
 
     viewer = finn.Viewer()
-    tracks_viewer1 = TracksViewer(viewer, tracks1)
-    tracks_viewer2 = TracksViewer(viewer, tracks2)
+    tracks_viewer1 = TracksViewer(viewer, tracks1, None)
+    tracks_viewer2 = TracksViewer(viewer, tracks2, None)
     tree_widget1 = TreeWidget(tracks_viewer1)
     tree_widget2 = TreeWidget(tracks_viewer2)
     viewer.window.add_dock_widget(tree_widget1)

@@ -21,19 +21,24 @@ class TracksLayerGroup:
         tracks: Tracks,
         name: str,
         tracks_viewer: TracksViewer,
+        face_color: None | list | str,
     ):
         self.viewer = viewer
         self.tracks_viewer = tracks_viewer
         self.tracks = tracks
         self.name = name
+        self.face_color = face_color
+        #print(face_color)
         self.tracks_layer: TrackGraph | None = None
         self.points_layer: TrackPoints | None = None
         self.seg_layer: TrackLabels | None = None
 
-    def set_tracks(self, tracks, name):
+    def set_tracks(self, tracks, name, face_color):
         self.remove_finn_layers()
         self.tracks = tracks
         self.name = name
+        self.face_color = face_color
+        #print(face_color)
         # Create new layers
         if self.tracks is not None and self.tracks.segmentation is not None:
             self.seg_layer = TrackLabels(
@@ -52,15 +57,18 @@ class TracksLayerGroup:
             and self.tracks.graph is not None
             and self.tracks.graph.number_of_nodes() != 0
         ):
+            self.points_layer = TrackPoints(
+                name=self.name + "_points",
+                tracks_viewer=self.tracks_viewer,
+                face_color=self.face_color,
+                
+            )
+
             self.tracks_layer = TrackGraph(
                 name=self.name + "_tracks",
                 tracks_viewer=self.tracks_viewer,
             )
-
-            self.points_layer = TrackPoints(
-                name=self.name + "_points",
-                tracks_viewer=self.tracks_viewer,
-            )
+            
         else:
             self.tracks_layer = None
             self.points_layer = None

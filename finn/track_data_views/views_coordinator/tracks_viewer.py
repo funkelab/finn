@@ -28,17 +28,18 @@ class TracksViewer:
     tracks_updated = Signal(Optional[bool])  # noqa: UP007
 
     @classmethod
-    def get_instance(cls, viewer=None):
+    def get_instance(cls, viewer=None, tracks: SolutionTracks = None, face_color=None):
         if not hasattr(cls, "_instance"):
             if viewer is None:
                 raise ValueError("Make a viewer first please!")
-            cls._instance = TracksViewer(viewer)
+            cls._instance = TracksViewer(viewer, tracks, face_color)
         return cls._instance
 
     def __init__(
         self,
         viewer: finn.Viewer,
         tracks: SolutionTracks,
+        face_color: None | str | list,
     ):
         self.viewer = viewer
         self.colormap = finn.utils.colormaps.label_colormap(
@@ -54,8 +55,9 @@ class TracksViewer:
         }
         self.mode = "all"
         self.tracks: SolutionTracks = tracks
+        self.face_color = face_color
         self.visible: list | str = []
-        self.tracking_layers = TracksLayerGroup(self.viewer, self.tracks, "", self)
+        self.tracking_layers = TracksLayerGroup(viewer=self.viewer, tracks=self.tracks, name="", face_color=self.face_color,tracks_viewer=self)
         self.selected_nodes = NodeSelectionList()
         self.selected_nodes.list_updated.connect(self.update_selection)
 
@@ -102,7 +104,7 @@ class TracksViewer:
         # know about their selection ('all' vs 'lineage'), but TracksViewer does)
         self.update_selection()
 
-    def update_tracks(self, tracks: SolutionTracks, name: str) -> None:
+    def update_tracks(self, tracks: SolutionTracks, name: str = "", face_color: str|list|None = None) -> None:
         """Stop viewing a previous set of tracks and replace it with a new one.
         Will create new segmentation and tracks layers and add them to the viewer.
 
@@ -127,7 +129,7 @@ class TracksViewer:
                 layer.visible = False
 
         self.set_display_mode("all")
-        self.tracking_layers.set_tracks(tracks, name)
+        self.tracking_layers.set_tracks(tracks, name, face_color)
         self.selected_nodes.reset()
         self.tracks_updated.emit(True)
 

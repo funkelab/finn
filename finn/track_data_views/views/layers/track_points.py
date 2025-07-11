@@ -29,6 +29,7 @@ class TrackPoints(finn.layers.Points):
         self,
         name: str,
         tracks_viewer: TracksViewer,
+        face_color: None | list | str,
     ):
         self.tracks_viewer = tracks_viewer
         self.nodes = list(tracks_viewer.tracks.graph.nodes)
@@ -39,7 +40,11 @@ class TrackPoints(finn.layers.Points):
             self.tracks_viewer.tracks.graph.nodes[node][NodeAttr.TRACK_ID.value]
             for node in self.nodes
         ]
-        colors = [self.tracks_viewer.colormap.map(track_id) for track_id in track_ids]
+        colors = face_color
+        #print(face_color)
+        #print(colors)
+        if not face_color:
+            colors = [self.tracks_viewer.colormap.map(track_id) for track_id in track_ids]
         symbols = self.get_symbols(
             self.tracks_viewer.tracks, self.tracks_viewer.symbolmap
         )
@@ -106,6 +111,9 @@ class TrackPoints(finn.layers.Points):
 
         self.default_size = size
         self._refresh()
+
+    def _set_border_color(self):
+        self.border_color = "red"
 
     def _refresh(self):
         """Refresh the data in the points layer"""
