@@ -89,14 +89,14 @@ class TreePlot(pg.PlotWidget):
     node_clicked = Signal(Any, bool)  # node_id, append
     nodes_selected = Signal(list, bool)
 
-    def __init__(self) -> pg.PlotWidget:
+    def __init__(self, title: str) -> pg.PlotWidget:
         """Construct the pyqtgraph treewidget. This is the actual canvas
         on which the tree view is drawn.
         """
         super().__init__(viewBox=CustomViewBox())
 
         self.setFocusPolicy(Qt.StrongFocus)
-        self.setTitle("Lineage Tree")
+        self.setTitle(title)
 
         self._pos = []
         self.adj = []
@@ -417,7 +417,7 @@ class TreePlot(pg.PlotWidget):
 class TreeWidget(QWidget):
     """pyqtgraph-based widget for lineage tree visualization and navigation"""
 
-    def __init__(self, viewer: TracksViewer):
+    def __init__(self, viewer: TracksViewer, title: str = "Lineage Tree"):
         super().__init__()
         self.track_df = pd.DataFrame()  # all tracks
         self.lineage_df = pd.DataFrame()  # the currently viewed subset of lineages
@@ -434,7 +434,7 @@ class TreeWidget(QWidget):
         # Construct the tree view pyqtgraph widget
         layout = QVBoxLayout()
 
-        self.tree_widget: TreePlot = TreePlot()
+        self.tree_widget: TreePlot = TreePlot(title)
         self.tree_widget.node_clicked.connect(self.selected_nodes.add)
         self.tree_widget.nodes_selected.connect(self.selected_nodes.add_list)
 
