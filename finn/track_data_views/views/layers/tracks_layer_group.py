@@ -6,6 +6,7 @@ from funtracks.data_model.tracks import Tracks
 
 import finn
 from finn.experimental import link_layers, unlink_layers
+from finn.layers import Image
 from finn.track_data_views.views.layers.track_graph import TrackGraph
 from finn.track_data_views.views.layers.track_labels import TrackLabels
 from finn.track_data_views.views.layers.track_points import TrackPoints
@@ -29,6 +30,7 @@ class TracksLayerGroup:
         self.tracks_layer: TrackGraph | None = None
         self.points_layer: TrackPoints | None = None
         self.seg_layer: TrackLabels | None = None
+        self.intensity_layer: Image | None = None
 
     def set_tracks(self, tracks, name):
         self.remove_finn_layers()
@@ -64,6 +66,18 @@ class TracksLayerGroup:
         else:
             self.tracks_layer = None
             self.points_layer = None
+
+        if self.tracks is not None and self.tracks.intensity_image is not None:
+            self.intensity_layer = Image(
+                data=self.tracks.intensity_image,
+                name=self.name + "_intensity",
+                opacity=1,
+                scale=self.tracks.scale,
+                blending="translucent_no_depth",
+            )
+        else:
+            self.intensity_layer = None
+
         self.add_finn_layers()
 
     def remove_finn_layer(self, layer: finn.layers.Layer | None) -> None:
@@ -76,10 +90,13 @@ class TracksLayerGroup:
         self.remove_finn_layer(self.tracks_layer)
         self.remove_finn_layer(self.seg_layer)
         self.remove_finn_layer(self.points_layer)
+        self.remove_finn_layer(self.intensity_layer)
 
     def add_finn_layers(self) -> None:
         """Add new tracking layers to the viewer"""
 
+        if self.intensity_layer is not None:
+            self.viewer.add_layer(self.intensity_layer)
         if self.tracks_layer is not None:
             self.viewer.add_layer(self.tracks_layer)
         if self.seg_layer is not None:
@@ -92,6 +109,8 @@ class TracksLayerGroup:
         """Link the clipping planes of all tracking layers"""
 
         track_layers = []
+        if self.intensity_layer is not None:
+            track_layers.append(self.intensity_layer)
         if self.tracks_layer is not None:
             track_layers.append(self.tracks_layer)
         if self.seg_layer is not None:
@@ -106,6 +125,8 @@ class TracksLayerGroup:
         """Unlink the clipping planes of all tracking layers"""
 
         track_layers = []
+        if self.intensity_layer is not None:
+            track_layers.append(self.intensity_layer)
         if self.tracks_layer is not None:
             track_layers.append(self.tracks_layer)
         if self.seg_layer is not None:
