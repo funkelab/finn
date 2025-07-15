@@ -471,6 +471,7 @@ class TreeWidget(QWidget):
         panel = QWidget()
         panel.setLayout(panel_layout)
         panel.setMaximumWidth(930)
+        panel.setMinimumWidth(100)
         panel.setMaximumHeight(82)
 
         # Make a collapsible for TreeView widgets
