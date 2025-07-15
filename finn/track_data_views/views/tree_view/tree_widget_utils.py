@@ -91,8 +91,17 @@ def extract_sorted_tracks(
                 "symbol": symbol,
             }
 
-            if tracks.get_area(node) is not None:
-                track_dict["area"] = tracks.get_area(node)
+            for feature in tracks.features._features:
+                if tracks.get_node_attr(node, feature.key) is not None:
+                    track_dict[feature.key] = tracks.get_node_attr(node, feature.key)
+
+            # for attr in node_attrs:
+            #     if (
+            #         attr not in feature_node_attrs
+            #         and attr not in default_node_attrs
+            #         and tracks._get_node_attr(node, attr) is not None
+            #     ):
+            #         track_dict[attr] = tracks._get_node_attr(node, attr)
 
             if len(pos) == 3:
                 track_dict["z"] = pos[0]
@@ -128,8 +137,12 @@ def extract_sorted_tracks(
         node["x_axis_pos"] = x_axis_order.index(node["track_id"])
 
     df = pd.DataFrame(track_list)
-    if "area" in df.columns:
-        df["area"] = df["area"].fillna(0)
+
+    # # Replace NaN values with 0 for the existing features
+    # extra_features = [
+    #     feature for feature in feature_node_attrs if feature in df.columns
+    # ]
+    # df[extra_features] = df[extra_features].fillna(0)
 
     return df
 
