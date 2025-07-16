@@ -5,6 +5,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
+from funtracks.features.regionprops_annotator import RPFeature
 from psygnal import Signal
 from pyqtgraph.Qt import QtCore
 from qtpy.QtCore import Qt
@@ -636,15 +637,21 @@ class TreeWidget(QWidget):
 
         # update the features that can be plotted
         if self.tracks_viewer.tracks is not None:
-            features = [
-                f
+            rp_features_keys = [
+                f.key
                 for f in self.tracks_viewer.tracks.features._features
-                if f
-                not in [
-                    self.tracks_viewer.tracks.features.time,
-                    self.tracks_viewer.tracks.features.position,
-                ]
+                if isinstance(f, RPFeature)
             ]
+            columns = list(
+                self.tracks_viewer.track_df.select_dtypes(
+                    include=np.number
+                ).columns.values
+            )
+            features = []
+            for c in columns:
+                for f in rp_features_keys:
+                    if c.startswith(f):
+                        features.append(c)
         else:
             features = []
         self.plot_type_widget.update_feature_dropdown(features)

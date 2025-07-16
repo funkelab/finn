@@ -93,15 +93,12 @@ def extract_sorted_tracks(
 
             for feature in tracks.features._features:
                 if tracks.get_node_attr(node, feature.key) is not None:
-                    track_dict[feature.key] = tracks.get_node_attr(node, feature.key)
-
-            # for attr in node_attrs:
-            #     if (
-            #         attr not in feature_node_attrs
-            #         and attr not in default_node_attrs
-            #         and tracks._get_node_attr(node, attr) is not None
-            #     ):
-            #         track_dict[attr] = tracks._get_node_attr(node, attr)
+                    value = tracks.get_node_attr(node, feature.key)
+                    if isinstance(value, list | tuple):
+                        for i in range(len(value)):
+                            track_dict[feature.key + f"_{i!s}"] = value[i]
+                    else:
+                        track_dict[feature.key] = tracks.get_node_attr(node, feature.key)
 
             if len(pos) == 3:
                 track_dict["z"] = pos[0]
