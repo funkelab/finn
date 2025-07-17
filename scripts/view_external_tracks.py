@@ -32,6 +32,7 @@ if __name__ == "__main__":
         df=df,
         segmentation=segmentation_arr,
         scale=[1, 1, 1],
+        features={"area": "Recompute"},
     )
 
     viewer = finn.Viewer()
