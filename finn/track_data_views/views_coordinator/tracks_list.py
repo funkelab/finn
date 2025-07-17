@@ -11,6 +11,7 @@ from qtpy.QtWidgets import (
     QFileDialog,
     QGroupBox,
     QHBoxLayout,
+    QInputDialog,
     QLabel,
     QListWidget,
     QListWidgetItem,
@@ -68,7 +69,7 @@ class TracksButton(QWidget):
         export_icon = qticon(FA6S.file_export, color="white")
         self.export = QPushButton(icon=export_icon)
         self.export.setFixedSize(20, 20)
-        self.export.setToolTip("Export tracks to CSV")
+        self.export.setToolTip("Export tracks to CSV or geff")
         layout = QHBoxLayout()
         layout.setSpacing(10)
         layout.addWidget(self.name)
@@ -100,12 +101,6 @@ class TracksList(QGroupBox):
         self.save_dialog = QFileDialog()
         self.save_dialog.setFileMode(QFileDialog.Directory)
         self.save_dialog.setOption(QFileDialog.ShowDirsOnly, True)
-
-        self.export_dialog = QFileDialog()
-        self.export_dialog.setFileMode(QFileDialog.AnyFile)
-        self.export_dialog.setAcceptMode(QFileDialog.AcceptSave)
-        self.export_dialog.setNameFilter("CSV files (*.csv)")
-        self.export_dialog.setDefaultSuffix("csv")
 
         self.tracks_list = QListWidget()
         self.tracks_list.setSelectionMode(1)  # single selection
@@ -159,14 +154,14 @@ class TracksList(QGroupBox):
         item.setSizeHint(tracks_row.minimumSizeHint())
         self.tracks_list.addItem(item)
         tracks_row.delete.clicked.connect(partial(self.remove_tracks, item))
-        tracks_row.export.clicked.connect(partial(self.export_to_csv, item))
+        tracks_row.export.clicked.connect(partial(self.show_export_dialog, item))
         tracks_row.save.clicked.connect(partial(self.save_tracks, item))
         if select:
             self.tracks_list.setCurrentRow(len(self.tracks_list) - 1)
 
-    def export_to_csv(self, item: QListWidgetItem):
-        """Export a tracks object from the list to a CSV file.
-
+    def show_export_dialog(self, item: QListWidgetItem) -> None:
+        """Prompt user to choose export format (csv or geff), then export the tracks
+        object from the list accordingly.
         You must pass the list item that represents the tracks, not the tracks object
         itself.
 
@@ -174,16 +169,37 @@ class TracksList(QGroupBox):
             item (QListWidgetItem):  The list item containing the TracksButton that
                 represents a set of tracks.
         """
+
+        export_type, ok = QInputDialog.getItem(
+            self, "Select Export Type", "Choose export format:", ["CSV", "geff"], 0, False
+        )
+
+        if not ok:
+            return
+
         widget: TracksButton = self.tracks_list.itemWidget(item)
         tracks: Tracks = widget.tracks
         default_name: str = widget.name.text()
-        default_name = f"{default_name}_tracks.csv"
-        # use the same directory as the last time you opened the dialog
-        base_path = Path(self.export_dialog.directory().path())
-        self.export_dialog.selectFile(str(base_path / default_name))
-        if self.export_dialog.exec_():
-            file_path = Path(self.export_dialog.selectedFiles()[0])
-            tracks.export_tracks(file_path)
+
+        if export_type == "CSV":
+            file_dialog = QFileDialog(self)
+            file_dialog.setFileMode(QFileDialog.AnyFile)
+            file_dialog.setAcceptMode(QFileDialog.AcceptSave)
+            file_dialog.setNameFilter("CSV files (*.csv)")
+            file_dialog.setDefaultSuffix("csv")
+            default_file = f"{default_name}_tracks.csv"
+            base_path = Path(file_dialog.directory().path())
+            file_dialog.selectFile(str(base_path / default_file))
+
+            if file_dialog.exec_():
+                file_path = Path(file_dialog.selectedFiles()[0])
+                tracks.export_tracks(file_path)
+
+        elif export_type == "geff":
+            folder = QFileDialog.getExistingDirectory(self, "Select Output Folder")
+            if folder:
+                folder_path = Path(folder)
+                tracks.export_to_geff(folder_path)
 
     def save_tracks(self, item: QListWidgetItem):
         """Saves a tracks object from the list. You must pass the list item that
