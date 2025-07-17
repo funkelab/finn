@@ -47,7 +47,7 @@ def _new_label(layer: TrackLabels, new_track_id=True):
                 "to be able to set the current select label to the next one available"
             )
         else:
-            if new_track_id:
+            if new_track_id or layer.selected_track is None:
                 new_selected_track = layer.tracks_viewer.tracks.get_next_track_id()
                 layer.selected_track = new_selected_track
             layer.selected_label = new_selected_label
@@ -345,7 +345,9 @@ class TrackLabels(finn.layers.Labels):
 
         self.events.selected_label.disconnect(self._ensure_valid_label)
         if len(self.tracks_viewer.selected_nodes) > 0:
-            self.selected_label = int(self.tracks_viewer.selected_nodes[0])
+            node = int(self.tracks_viewer.selected_nodes[0])
+            self.selected_label = node
+            self.selected_track = int(self.tracks_viewer.tracks.get_track_id(node))
         self.events.selected_label.connect(self._ensure_valid_label)
 
     def _ensure_valid_label(self, event: Event | None = None):
