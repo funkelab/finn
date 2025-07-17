@@ -202,31 +202,31 @@ class TestLoadTracks:
             df, segmentation, scale=(1, 1, 1), features={"Area": "Recompute"}
         )
 
-        assert tracks._get_node_attr(1, NodeAttr.AREA.value) == 3
-        assert tracks._get_node_attr(2, NodeAttr.AREA.value) == 2
-        assert tracks._get_node_attr(3, NodeAttr.AREA.value) == 4
-        assert tracks._get_node_attr(4, NodeAttr.AREA.value) == 3
+        assert tracks.get_node_attr(1, NodeAttr.AREA.value) == 3
+        assert tracks.get_node_attr(2, NodeAttr.AREA.value) == 2
+        assert tracks.get_node_attr(3, NodeAttr.AREA.value) == 4
+        assert tracks.get_node_attr(4, NodeAttr.AREA.value) == 3
 
         tracks = tracks_from_df(
             df, segmentation, scale=(1, 2, 1), features={"Area": "Recompute"}
         )
 
-        assert tracks._get_node_attr(1, NodeAttr.AREA.value) == 6
-        assert tracks._get_node_attr(2, NodeAttr.AREA.value) == 4
-        assert tracks._get_node_attr(3, NodeAttr.AREA.value) == 8
-        assert tracks._get_node_attr(4, NodeAttr.AREA.value) == 6
+        assert tracks.get_node_attr(1, NodeAttr.AREA.value) == 6
+        assert tracks.get_node_attr(2, NodeAttr.AREA.value) == 4
+        assert tracks.get_node_attr(3, NodeAttr.AREA.value) == 8
+        assert tracks.get_node_attr(4, NodeAttr.AREA.value) == 6
 
         tracks = tracks_from_df(
             df, segmentation=None, scale=(1, 2, 1), features={"Area": "Recompute"}
         )  # no seg provided, should return None
 
-        assert tracks._get_node_attr(1, NodeAttr.AREA.value) is None
+        assert tracks.get_node_attr(1, NodeAttr.AREA.value) is None
 
         tracks = tracks_from_df(
             df, segmentation, scale=(1, 2, 1), features={}
         )  # no area measurement provided, should return None.
 
-        assert tracks._get_node_attr(1, NodeAttr.AREA.value) is None
+        assert tracks.get_node_attr(1, NodeAttr.AREA.value) is None
 
         data = {
             NodeAttr.TIME.value: [0, 0, 0, 1],
@@ -245,10 +245,10 @@ class TestLoadTracks:
             df, segmentation, scale=(1, 1, 1), features={"Area": "area"}
         )
 
-        assert tracks._get_node_attr(1, NodeAttr.AREA.value) == 1
-        assert tracks._get_node_attr(2, NodeAttr.AREA.value) == 2
-        assert tracks._get_node_attr(3, NodeAttr.AREA.value) == 3
-        assert tracks._get_node_attr(4, NodeAttr.AREA.value) == 4
+        assert tracks.get_node_attr(1, NodeAttr.AREA.value) == 1
+        assert tracks.get_node_attr(2, NodeAttr.AREA.value) == 2
+        assert tracks.get_node_attr(3, NodeAttr.AREA.value) == 3
+        assert tracks.get_node_attr(4, NodeAttr.AREA.value) == 4
 
     def test_load_sample_data(self):
         test_dir = os.path.abspath(__file__)
