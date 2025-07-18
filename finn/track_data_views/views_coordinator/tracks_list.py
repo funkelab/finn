@@ -15,6 +15,7 @@ from qtpy.QtWidgets import (
     QLabel,
     QListWidget,
     QListWidgetItem,
+    QMessageBox,
     QPushButton,
     QVBoxLayout,
     QWidget,
@@ -196,10 +197,18 @@ class TracksList(QGroupBox):
                 tracks.export_tracks(file_path)
 
         elif export_type == "geff":
-            folder = QFileDialog.getExistingDirectory(self, "Select Output Folder")
-            if folder:
+            while True:
+                folder = QFileDialog.getExistingDirectory(
+                    self, "Select Empty Output Folder"
+                )
+                if not folder:
+                    return  # User cancelled
                 folder_path = Path(folder)
-                tracks.export_to_geff(folder_path)
+                try:
+                    tracks.export_to_geff(folder_path)
+                    break
+                except ValueError as e:
+                    QMessageBox.warning(self, "Invalid Directory", str(e))
 
     def save_tracks(self, item: QListWidgetItem):
         """Saves a tracks object from the list. You must pass the list item that
