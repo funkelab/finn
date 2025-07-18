@@ -76,6 +76,8 @@ dependencies = [
     "fonticon-fontawesome6",
     "zarr<3",
     "imagecodecs", # for unzipping sample data
+    "pygfx>=0.10.0",
+    "distinctipy>=1.3.4",
 ]
 dynamic = [
     "version",
