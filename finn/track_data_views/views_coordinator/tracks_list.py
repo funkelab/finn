@@ -4,6 +4,7 @@ from warnings import warn
 
 from fonticon_fa6 import FA6S
 from funtracks.data_model import SolutionTracks, Tracks
+from funtracks.import_export.export_to_geff import export_to_geff
 from qtpy.QtCore import Signal
 from qtpy.QtWidgets import (
     QComboBox,
@@ -197,18 +198,25 @@ class TracksList(QGroupBox):
                 tracks.export_tracks(file_path)
 
         elif export_type == "geff":
-            while True:
-                folder = QFileDialog.getExistingDirectory(
-                    self, "Select Empty Output Folder"
-                )
-                if not folder:
-                    return  # User cancelled
-                folder_path = Path(folder)
+            default_file = f"{default_name}_geff.zarr"
+
+            file_dialog = QFileDialog(self, "Save GeFF File")
+            file_dialog.setFileMode(QFileDialog.AnyFile)
+            file_dialog.setAcceptMode(QFileDialog.AcceptSave)
+            file_dialog.setNameFilter("Zarr folder (*.zarr)")
+            file_dialog.setDefaultSuffix("zarr")
+
+            # Set default selected file
+            base_path = Path.home()
+            file_dialog.selectFile(str(base_path / default_file))
+
+            if file_dialog.exec_():
+                file_path = Path(file_dialog.selectedFiles()[0])
                 try:
-                    tracks.export_to_geff(folder_path)
-                    break
+                    export_to_geff(tracks, file_path, overwrite=True)  # QFileDialog
+                    # already asks whether to do overwrite
                 except ValueError as e:
-                    QMessageBox.warning(self, "Invalid Directory", str(e))
+                    QMessageBox.warning(self, "Export Error", str(e))
 
     def save_tracks(self, item: QListWidgetItem):
         """Saves a tracks object from the list. You must pass the list item that
