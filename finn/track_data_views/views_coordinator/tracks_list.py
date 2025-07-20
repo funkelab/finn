@@ -200,7 +200,7 @@ class TracksList(QGroupBox):
         elif export_type == "geff":
             default_file = f"{default_name}_geff.zarr"
 
-            file_dialog = QFileDialog(self, "Save GeFF File")
+            file_dialog = QFileDialog(self, "Save as geff file")
             file_dialog.setFileMode(QFileDialog.AnyFile)
             file_dialog.setAcceptMode(QFileDialog.AcceptSave)
             file_dialog.setNameFilter("Zarr folder (*.zarr)")
@@ -214,7 +214,7 @@ class TracksList(QGroupBox):
                 file_path = Path(file_dialog.selectedFiles()[0])
                 try:
                     export_to_geff(tracks, file_path, overwrite=True)  # QFileDialog
-                    # already asks whether to do overwrite
+                    # already asks whether to overwrite in an existing directory
                 except ValueError as e:
                     QMessageBox.warning(self, "Export Error", str(e))
 
