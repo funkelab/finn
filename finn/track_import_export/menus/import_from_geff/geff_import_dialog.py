@@ -57,6 +57,9 @@ class ImportGeffDialog(QDialog):
         self.segmentation_widget.none_radio.toggled.connect(
             self._toggle_scale_widget_and_seg_id
         )
+        self.segmentation_widget.segmentation_widget.seg_path_updated.connect(
+            self._update_finish_button
+        )
         self.prop_map_widget = StandardFieldMapWidget()
         self.geff_widget.update_buttons.connect(self._update_field_map_widget)
         self.scale_widget = ScaleWidget()
@@ -120,7 +123,7 @@ class ImportGeffDialog(QDialog):
             self.segmentation_widget.update_root(self.geff_widget.root)
         else:
             self.segmentation_widget.setVisible(False)
-        self.finish_button.setEnabled(self.geff_widget.root is not None)
+        self._update_finish_button()
         self._resize_dialog()
 
     def _update_field_map_widget(self) -> None:
@@ -130,15 +133,26 @@ class ImportGeffDialog(QDialog):
             self.prop_map_widget.update_mapping(
                 self.geff_widget.root, self.segmentation_widget.include_seg()
             )
-            self.finish_button.setEnabled(self.geff_widget.root is not None)
+
             self.scale_widget._prefill_from_metadata(
                 dict(self.geff_widget.root.attrs.get("geff", {}))
             )
+            self.scale_widget.setVisible(self.segmentation_widget.include_seg())
         else:
             self.prop_map_widget.setVisible(False)
             self.scale_widget.setVisible(False)
-        self.finish_button.setEnabled(self.geff_widget.root is not None)
+
+        self._update_finish_button()
         self._resize_dialog()
+
+    def _update_finish_button(self):
+        """Update the finish button status depending on whether a segmentation is required
+        and whether a valid geff root is present."""
+
+        include_seg = self.segmentation_widget.include_seg()
+        has_seg = self.segmentation_widget.get_segmentation() is not None
+        valid_seg = not (include_seg and not has_seg)
+        self.finish_button.setEnabled(self.geff_widget.root is not None and valid_seg)
 
     def _toggle_scale_widget_and_seg_id(self, checked: bool) -> None:
         """Toggle visibility of the scale widget based on the 'None' radio button state,
@@ -150,6 +164,8 @@ class ImportGeffDialog(QDialog):
         if len(self.prop_map_widget.mapping_widgets) > 0:
             self.prop_map_widget.mapping_widgets["seg_id"].setVisible(not checked)
             self.prop_map_widget.mapping_labels["seg_id"].setVisible(not checked)
+
+        self._update_finish_button()
         self._resize_dialog()
 
     def _cancel(self) -> None:

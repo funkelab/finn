@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 import zarr
+from psygnal import Signal
 from qtpy.QtWidgets import (
     QButtonGroup,
     QDialog,
@@ -24,6 +25,8 @@ from finn.track_import_export.menus.import_from_geff.geff_import_utils import (
 
 class ExternalSegmentationWidget(QWidget):
     """Widget for specifying the path to an external segmentation image file or folder."""
+
+    seg_path_updated = Signal()
 
     def __init__(self):
         super().__init__()
@@ -67,6 +70,8 @@ class ExternalSegmentationWidget(QWidget):
             selected_path = dialog.get_selected_path()
             if selected_path:
                 self.image_path_line.setText(selected_path)
+
+        self.seg_path_updated.emit()
 
     def get_segmentation_path(self) -> Path | None:
         """Return the path to the segmentation data."""

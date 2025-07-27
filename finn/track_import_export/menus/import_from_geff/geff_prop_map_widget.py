@@ -80,12 +80,10 @@ class StandardFieldMapWidget(QWidget):
                 NodeAttr.TIME.value,
                 "y",
                 "x",
+                "seg_id",
                 NodeAttr.TRACK_ID.value,
                 "lineage_id",
             ]
-
-            if seg:
-                self.standard_fields.append("seg_id")
 
             axes = self.metadata.get("axes", None)
             if axes is not None:
@@ -115,6 +113,9 @@ class StandardFieldMapWidget(QWidget):
                     self.mapping_widgets[attribute] = combo
                     self.mapping_labels[attribute] = label
                     self.mapping_layout.addRow(label, combo)
+                    if attribute == "seg_id" and not seg:
+                        combo.setVisible(False)
+                        label.setVisible(False)
 
             # Optional extra features
             clear_layout(self.optional_mapping_layout)
