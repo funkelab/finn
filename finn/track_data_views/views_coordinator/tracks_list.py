@@ -113,7 +113,9 @@ class TracksList(QGroupBox):
 
         load_menu = QHBoxLayout()
         self.dropdown_menu = QComboBox()
-        self.dropdown_menu.addItems(["Motile Run", "External tracks from CSV"])
+        self.dropdown_menu.addItems(
+            ["Motile Run", "External tracks from CSV", "External tracks from geff"]
+        )
 
         load_button = QPushButton("Load")
         load_button.clicked.connect(self.load_tracks)
@@ -262,6 +264,8 @@ class TracksList(QGroupBox):
             self.load_motile_run()
         elif self.dropdown_menu.currentText() == "External tracks from CSV":
             self._load_external_tracks()
+        elif self.dropdown_menu.currentText() == "External tracks from geff":
+            self._load_tracks_from_geff()
 
     def load_motile_run(self):
         """Load a set of tracks from disk. The user selects the directory created
