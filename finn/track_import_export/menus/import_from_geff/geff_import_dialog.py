@@ -32,6 +32,7 @@ class ImportGeffDialog(QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Import external tracks from geff")
+        self.name = "Tracks from Geff"
 
         # cancel and finish buttons
         self.button_layout = QHBoxLayout()
@@ -163,6 +164,8 @@ class ImportGeffDialog(QDialog):
             store_path = Path(self.geff_widget.root.store.path)  # e.g. /.../my_store.zarr
             group_path = Path(self.geff_widget.root.path)  # e.g. 'tracks'
             geff_dir = store_path / group_path
+
+            self.name = self.geff_widget.dir_name
             scale = self.scale_widget.get_scale()
 
             segmentation = self.segmentation_widget.get_segmentation()

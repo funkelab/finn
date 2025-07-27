@@ -30,6 +30,7 @@ class ImportGeffWidget(QWidget):
         super().__init__()
 
         self.root = None
+        self.dir_name = None
 
         # QlineEdit for geff file path and browse button
         self.geff_path_line = QLineEdit(self)
@@ -97,4 +98,5 @@ class ImportGeffWidget(QWidget):
             return
 
         self.root = geff_group
+        self.dir_name = os.path.basename(folder_path)
         self.update_buttons.emit()

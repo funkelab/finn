@@ -130,8 +130,9 @@ class TracksList(QGroupBox):
         dialog = ImportGeffDialog()
         if dialog.exec_() == QDialog.Accepted:
             tracks = dialog.tracks
+            name = dialog.name
             if tracks is not None:
-                self.add_tracks(tracks, "Tracks from Geff", select=True)
+                self.add_tracks(tracks, name, select=True)
 
     def _load_external_tracks(self):
         dialog = ImportTracksDialog()
