@@ -39,6 +39,12 @@ def _new_label(layer: TrackLabels, new_track_id=True):
 
     if isinstance(layer.data, np.ndarray):
         new_selected_label = np.max(layer.data) + 1
+        if layer.selected_label > new_selected_label:
+            show_info(
+                "Current selected label is not being used. You will need to use it first "
+                "to be able to set the current select label to the next one available",
+            )
+            return
         if layer.selected_label == new_selected_label:
             new_selected_label += 1  # just add one more, because the ensure_valid_label
             # function also adds +1 to ensure continuous painting with the same track_id
