@@ -40,21 +40,22 @@ def _new_label(layer: TrackLabels, new_track_id=True):
     if isinstance(layer.data, np.ndarray):
         new_selected_label = np.max(layer.data) + 1
         if layer.selected_label == new_selected_label:
-            show_info(
-                "Current selected label is not being used. You will need to use it first "
-                "to be able to set the current select label to the next one available"
-            )
-        else:
-            if new_track_id or layer.selected_track is None:
-                new_selected_track = layer.tracks_viewer.tracks.get_next_track_id()
-                layer.selected_track = new_selected_track
+            new_selected_label += 1  # just add one more, because the ensure_valid_label
+            # function also adds +1 to ensure continuous painting with the same track_id
+            # (but different node_id). If the user pressed 'M' again, we should assume it
+            # means they want to paint a new track_id instead of continuing the current
+            # one.
             layer.selected_label = new_selected_label
-            layer.colormap.color_dict[new_selected_label] = (
-                layer.tracks_viewer.colormap.map(layer.selected_track)
-            )
-            # to refresh, otherwise you paint with a transparent label until you
-            # release the mouse
-            layer.colormap = DirectLabelColormap(color_dict=layer.colormap.color_dict)
+        if new_track_id or layer.selected_track is None:
+            new_selected_track = layer.tracks_viewer.tracks.get_next_track_id()
+            layer.selected_track = new_selected_track
+        layer.selected_label = new_selected_label
+        layer.colormap.color_dict[new_selected_label] = layer.tracks_viewer.colormap.map(
+            layer.selected_track
+        )
+        # to refresh, otherwise you paint with a transparent label until you
+        # release the mouse
+        layer.colormap = DirectLabelColormap(color_dict=layer.colormap.color_dict)
     else:
         show_info("Calculating empty label on non-numpy array is not supported")
 
@@ -449,3 +450,4 @@ action_manager.register_action(
     keymapprovider=TrackLabels,
     description="",
 )
+TrackLabels.bind_key("m")(new_label)
