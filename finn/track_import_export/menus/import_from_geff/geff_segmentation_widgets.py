@@ -137,7 +137,7 @@ class FileFolderDialog(QDialog):
 
         path = self.path_line_edit.text()
         if path != "" and os.path.exists(path):
-            return Path
+            return path
         return None
 
 
