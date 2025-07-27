@@ -28,6 +28,9 @@ from finn._qt.qt_resources import QColoredSVGIcon
 from finn.track_import_export.menus.import_external_tracks_dialog import (
     ImportTracksDialog,
 )
+from finn.track_import_export.menus.import_from_geff.geff_import_dialog import (
+    ImportGeffDialog,
+)
 
 
 class TrackListWidget(QWidget):
@@ -122,6 +125,13 @@ class TracksList(QGroupBox):
         layout.addWidget(self.tracks_list)
         layout.addLayout(load_menu)
         self.setLayout(layout)
+
+    def _load_tracks_from_geff(self):
+        dialog = ImportGeffDialog()
+        if dialog.exec_() == QDialog.Accepted:
+            tracks = dialog.tracks
+            if tracks is not None:
+                self.add_tracks(tracks, "Tracks from Geff", select=True)
 
     def _load_external_tracks(self):
         dialog = ImportTracksDialog()
