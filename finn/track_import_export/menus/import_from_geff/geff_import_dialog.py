@@ -193,7 +193,7 @@ class ImportGeffDialog(QDialog):
                 self.tracks = import_from_geff(
                     geff_dir,
                     name_map,
-                    segmentation=segmentation,
+                    segmentation_path=segmentation,
                     extra_features=extra_features,
                     scale=scale,
                 )
