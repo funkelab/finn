@@ -8,7 +8,7 @@ from finn._tests.utils import check_layer_world_data_extent
 from finn.components.dims import Dims
 from finn.layers import Image
 from finn.layers.image._image_constants import ImageRendering
-from finn.layers.utils.plane import ClippingPlaneList, SlicingPlane
+from finn.layers.utils.plane import ClippingPlaneList
 from finn.utils import Colormap
 from finn.utils._test_utils import (
     validate_all_params_in_docstring,
@@ -786,47 +786,21 @@ def test_image_state_update():
         setattr(image, k, v)
 
 
-def test_instantiate_with_plane_parameter_dict():
-    """Test that an image layer can be instantiated with plane parameters
-    in a dictionary.
-    """
-    plane_parameters = {
-        "position": (32, 32, 32),
-        "normal": (1, 1, 1),
-        "thickness": 22,
-    }
-    image = Image(np.ones((32, 32, 32)), plane=plane_parameters)
-    for k, v in plane_parameters.items():
-        if k == "normal":
-            v = tuple(v / np.linalg.norm(v))
-        assert v == getattr(image.plane, k, v)
-
-
-def test_instiantiate_with_plane():
-    """Test that an image layer can be instantiated with plane parameters
-    in a Plane.
-    """
-    plane = SlicingPlane(position=(32, 32, 32), normal=(1, 1, 1), thickness=22)
-    image = Image(np.ones((32, 32, 32)), plane=plane)
-    for k, v in plane.dict().items():
-        assert v == getattr(image.plane, k, v)
-
-
 def test_instantiate_with_clipping_planelist():
     planes = ClippingPlaneList.from_array(np.ones((2, 2, 3)))
-    image = Image(np.ones((32, 32, 32)), experimental_clipping_planes=planes)
-    assert len(image.experimental_clipping_planes) == 2
+    image = Image(np.ones((32, 32, 32)), clipping_planes=planes)
+    assert len(image.clipping_planes) == 2
 
 
-def test_instantiate_with_experimental_clipping_planes_dict():
+def test_instantiate_with_clipping_planes_dict():
     planes = [
         {"position": (0, 0, 0), "normal": (0, 0, 1)},
         {"position": (0, 1, 0), "normal": (1, 0, 0)},
     ]
-    image = Image(np.ones((32, 32, 32)), experimental_clipping_planes=planes)
+    image = Image(np.ones((32, 32, 32)), clipping_planes=planes)
     for i in range(len(planes)):
-        assert image.experimental_clipping_planes[i].position == planes[i]["position"]
-        assert image.experimental_clipping_planes[i].normal == planes[i]["normal"]
+        assert image.clipping_planes[i].position == planes[i]["position"]
+        assert image.clipping_planes[i].normal == planes[i]["normal"]
 
 
 def test_tensorstore_image():

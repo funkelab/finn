@@ -6,12 +6,13 @@ import numpy as np
 import numpy.typing as npt
 
 from finn.utils.geometry import (
-    point_in_bounding_box,
     project_points_onto_plane,
 )
 
 if TYPE_CHECKING:
     from finn.layers.image.image import Image
+    from finn.layers.labels.labels import Labels
+    from finn.track_data_views.views.layers.track_labels import TrackLabels
 
 
 def displayed_plane_from_nd_line_segment(
@@ -102,54 +103,21 @@ def drag_data_to_projected_distance(
     return np.einsum("j, ij -> i", drag_vector_canvas, vector).squeeze()
 
 
-def orient_plane_normal_around_cursor(layer: Image, plane_normal: tuple) -> None:
-    """Orient a rendering plane by rotating it around the cursor.
-
-    If the cursor ray does not intersect the plane, the position will remain
-    unchanged.
-
-    Parameters
-    ----------
-    layer : Image
-        The layer on which the rendering plane is to be rotated
-    plane_normal : 3-tuple
-        The target plane normal in scene coordinates.
-    """
-    # avoid circular imports
-    import finn
-    from finn.layers.image._image_constants import VolumeDepiction
-
-    viewer = finn.viewer.current_viewer()
-    if viewer is None:
+def orient_clipping_plane_normals(layer: Image | Labels | TrackLabels, orientation: str):
+    if not layer.ndim >= 3:
         return
 
-    # early exit
-    if viewer.dims.ndisplay != 3 or layer.depiction != VolumeDepiction.PLANE:
-        return
+    if orientation == "x":
+        layer.clipping_planes[0].normal = (0, 0, 1)
+        layer.clipping_planes[1].normal = (0, 0, -1)
 
-    # find cursor-plane intersection in data coordinates
-    cursor_position = layer._world_to_displayed_data(
-        position=np.asarray(viewer.cursor.position),
-        dims_displayed=layer._slice_input.displayed,
-    )
-    view_direction = layer._world_to_displayed_data_ray(
-        np.asarray(viewer.camera.view_direction), dims_displayed=[-3, -2, -1]
-    )
-    intersection = layer.plane.intersect_with_line(
-        line_position=cursor_position, line_direction=view_direction
-    )
+    elif orientation == "y":
+        layer.clipping_planes[0].normal = (0, 1, 0)
+        layer.clipping_planes[1].normal = (0, -1, 0)
 
-    # check if intersection is within data extents for displayed dimensions
-    bounding_box = layer.extent.data[:, layer._slice_input.displayed]
-
-    # update plane position
-    if point_in_bounding_box(intersection, bounding_box):
-        layer.plane.position = intersection
-
-    # update plane normal
-    layer.plane.normal = layer._world_to_displayed_data_normal(
-        np.asarray(plane_normal), dims_displayed=layer._slice_input.displayed
-    )
+    elif orientation == "z":
+        layer.clipping_planes[0].normal = (1, 0, 0)
+        layer.clipping_planes[1].normal = (-1, 0, 0)
 
 
 def nd_line_segment_to_displayed_data_ray(

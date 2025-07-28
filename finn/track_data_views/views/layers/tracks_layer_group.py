@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from funtracks.data_model.tracks import Tracks
 
 import finn
+from finn.experimental import link_layers, unlink_layers
 from finn.track_data_views.views.layers.track_graph import TrackGraph
 from finn.track_data_views.views.layers.track_labels import TrackLabels
 from finn.track_data_views.views.layers.track_points import TrackPoints
@@ -78,12 +79,40 @@ class TracksLayerGroup:
 
     def add_finn_layers(self) -> None:
         """Add new tracking layers to the viewer"""
+
         if self.tracks_layer is not None:
             self.viewer.add_layer(self.tracks_layer)
         if self.seg_layer is not None:
             self.viewer.add_layer(self.seg_layer)
         if self.points_layer is not None:
             self.viewer.add_layer(self.points_layer)
+        self.link_clipping_planes()
+
+    def link_clipping_planes(self):
+        """Link the clipping planes of all tracking layers"""
+
+        track_layers = []
+        if self.tracks_layer is not None:
+            track_layers.append(self.tracks_layer)
+        if self.seg_layer is not None:
+            track_layers.append(self.seg_layer)
+        if self.points_layer is not None:
+            track_layers.append(self.points_layer)
+
+        if all(layer.ndim >= 3 for layer in track_layers):
+            link_layers(track_layers, ("clipping_planes",))
+
+    def unlink_clipping_planes(self):
+        """Unlink the clipping planes of all tracking layers"""
+
+        track_layers = []
+        if self.tracks_layer is not None:
+            track_layers.append(self.tracks_layer)
+        if self.seg_layer is not None:
+            track_layers.append(self.seg_layer)
+        if self.points_layer is not None:
+            track_layers.append(self.points_layer)
+        unlink_layers(track_layers, ("clipping_planes",))
 
     def _refresh(self) -> None:
         """Refresh the tracking layers with new tracks info"""

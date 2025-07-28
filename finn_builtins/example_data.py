@@ -280,15 +280,14 @@ def _convert_tiff_stack_to_zarr(
     files = sorted(tiff_path.glob("*.tif"))
     logger.info("%s time points found.", len(files))
     example_image = tifffile.imread(files[0])
+    dtype = np.uint64 if relabel else example_image.dtype
     data_shape = (len(files), *example_image.shape)
     # prepare zarr
-    zarr_array = _create_zarr(
-        zarr_path, zarr_group, shape=data_shape, dtype=example_image.dtype
-    )
+    zarr_array = _create_zarr(zarr_path, zarr_group, shape=data_shape, dtype=dtype)
     # load and save data in zarr
     max_label = 0
     for t, file in enumerate(files):
-        frame = tifffile.imread(file)
+        frame = tifffile.imread(file).astype(dtype)
         if relabel:
             frame[frame != 0] += max_label
             max_label = int(np.max(frame))

@@ -62,7 +62,7 @@ multi_channel_test_data = [
     ((), {"blending": "translucent"}),
     ((), {"metadata": {"hi": "there"}}),
     ((), {"metadata": dict(MULTI_TUPLES)}),
-    ((), {"experimental_clipping_planes": []}),
+    ((), {"clipping_planes": []}),
 ]
 
 ids = [
@@ -135,7 +135,7 @@ def test_multichannel(shape, kwargs):
                 "shear",
                 "contrast_limits",
                 "metadata",
-                "experimental_clipping_planes",
+                "clipping_planes",
             }:
                 expectation = ensure_sequence_of_iterables(expectation, repeat_empty=True)
             elif key == "colormap" and expectation is not None:

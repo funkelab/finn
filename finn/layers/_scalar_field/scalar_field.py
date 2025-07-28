@@ -12,20 +12,14 @@ from numpy import typing as npt
 from finn.layers import Layer
 from finn.layers._data_protocols import LayerDataProtocol
 from finn.layers._multiscale_data import MultiScaleData
-from finn.layers.image._image_constants import Interpolation, VolumeDepiction
-from finn.layers.image._image_mouse_bindings import (
-    move_plane_along_normal as plane_drag_callback,
-    set_plane_position as plane_double_click_callback,
-)
+from finn.layers.image._image_constants import Interpolation
 from finn.layers.image._image_utils import guess_multiscale
 from finn.layers.image._slice import _ImageSliceRequest, _ImageSliceResponse
 from finn.layers.utils._slice_input import _SliceInput, _ThickNDSlice
-from finn.layers.utils.plane import SlicingPlane
 from finn.utils._dask_utils import DaskIndexer
 from finn.utils.colormaps import AVAILABLE_COLORMAPS
 from finn.utils.events import Event
 from finn.utils.events.event import WarningEmitter
-from finn.utils.events.event_utils import connect_no_arg
 from finn.utils.geometry import clamp_point_to_bounding_box
 from finn.utils.naming import magic_name
 from finn.utils.translations import trans
@@ -68,15 +62,12 @@ class ScalarFieldBase(Layer, ABC):
     cache : bool
         Whether slices of out-of-core datasets should be cached upon retrieval.
         Currently, this only applies to dask arrays.
-    custom_interpolation_kernel_2d : np.ndarray
-        Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
-    depiction : str
-        3D Depiction mode. Must be one of {'volume', 'plane'}.
-        The default value is 'volume'.
-    experimental_clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
+    clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
         Each dict defines a clipping plane in 3D in data coordinates.
         Valid dictionary keys are {'position', 'normal', and 'enabled'}.
         Values on the negative side of the normal are discarded if the plane is enabled.
+    custom_interpolation_kernel_2d : np.ndarray
+        Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
     metadata : dict
         Layer metadata.
     multiscale : bool
@@ -93,10 +84,6 @@ class ScalarFieldBase(Layer, ABC):
         Number of dimensions in the data.
     opacity : float
         Opacity of the layer visual, between 0.0 and 1.0.
-    plane : dict or SlicingPlane
-        Properties defining plane rendering in 3D. Properties are defined in
-        data coordinates. Valid dictionary keys are
-        {'position', 'normal', 'thickness', and 'enabled'}.
     projection_mode : str
         How data outside the viewed dimensions but inside the thick Dims slice will
         be projected onto the viewed dimensions. Must fit to cls._projectionclass.
@@ -134,12 +121,10 @@ class ScalarFieldBase(Layer, ABC):
         displayed.
     axis_labels : tuple of str
         Dimension names of the layer data.
+    clipping_planes : ClippingPlaneList
+        Clipping planes defined in data coordinates, used to clip the volume.
     custom_interpolation_kernel_2d : np.ndarray
         Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
-    depiction : str
-        3D Depiction mode used by vispy. Must be one of our supported modes.
-    experimental_clipping_planes : ClippingPlaneList
-        Clipping planes defined in data coordinates, used to clip the volume.
     metadata : dict
         Image metadata.
     mode : str
@@ -153,9 +138,6 @@ class ScalarFieldBase(Layer, ABC):
         list should be the largest. Please note multiscale rendering is only
         supported in 2D. In 3D, only the lowest resolution scale is
         displayed.
-    plane : SlicingPlane or dict
-        Properties defining plane rendering in 3D. Valid dictionary keys are
-        {'position', 'normal', 'thickness'}.
     rendering : str
         Rendering mode used by vispy. Must be one of our supported
         modes.
@@ -182,15 +164,13 @@ class ScalarFieldBase(Layer, ABC):
         axis_labels=None,
         blending="translucent",
         cache=True,
+        clipping_planes=None,
         custom_interpolation_kernel_2d=None,
-        depiction="volume",
-        experimental_clipping_planes=None,
         metadata=None,
         multiscale=None,
         name=None,
         ndim=None,
         opacity=1.0,
-        plane=None,
         projection_mode="none",
         rendering="mip",
         rotate=None,
@@ -227,7 +207,7 @@ class ScalarFieldBase(Layer, ABC):
             axis_labels=axis_labels,
             blending=blending,
             cache=cache,
-            experimental_clipping_planes=experimental_clipping_planes,
+            clipping_planes=clipping_planes,
             metadata=metadata,
             multiscale=multiscale,
             name=name,
@@ -243,8 +223,8 @@ class ScalarFieldBase(Layer, ABC):
 
         self.events.add(
             attenuation=Event,
+            clipping_planes=Event,
             custom_interpolation_kernel_2d=Event,
-            depiction=Event,
             interpolation=WarningEmitter(
                 trans._(
                     "'layer.events.interpolation' is deprecated please use `interpolation2d` and `interpolation3d`",
@@ -255,7 +235,6 @@ class ScalarFieldBase(Layer, ABC):
             interpolation2d=Event,
             interpolation3d=Event,
             iso_threshold=Event,
-            plane=Event,
             rendering=Event,
         )
 
@@ -287,7 +266,6 @@ class ScalarFieldBase(Layer, ABC):
             rgb=len(self.data.shape) != self.ndim,
         )
 
-        self._plane = SlicingPlane(thickness=1)
         # Whether to calculate clims on the next set_view_slice
         self._should_calc_clims = False
         # using self.colormap = colormap uses the setter in *derived* classes,
@@ -296,10 +274,6 @@ class ScalarFieldBase(Layer, ABC):
         # we don't want to use get_color before set_view_slice has been
         # triggered (self.refresh(), below).
         self.rendering = rendering
-        self.depiction = depiction
-        if plane is not None:
-            self.plane = plane
-        connect_no_arg(self.plane.events, self.events, "plane")
         self.custom_interpolation_kernel_2d = custom_interpolation_kernel_2d
 
     def _post_init(self):
@@ -384,56 +358,6 @@ class ScalarFieldBase(Layer, ABC):
     def downsample_factors(self) -> np.ndarray:
         """list: Downsample factors for each level of the multiscale."""
         return np.divide(self.level_shapes[0], self.level_shapes)
-
-    @property
-    def depiction(self):
-        """The current 3D depiction mode.
-
-        Selects a preset depiction mode in vispy
-            * volume: images are rendered as 3D volumes.
-            * plane: images are rendered as 2D planes embedded in 3D.
-                plane position, normal, and thickness are attributes of
-                layer.plane which can be modified directly.
-        """
-        return str(self._depiction)
-
-    @depiction.setter
-    def depiction(self, depiction: str | VolumeDepiction) -> None:
-        """Set the current 3D depiction mode."""
-        self._depiction = VolumeDepiction(depiction)
-        self._update_plane_callbacks()
-        self.events.depiction()
-
-    def _reset_plane_parameters(self):
-        """Set plane attributes to something valid."""
-        self.plane.position = np.array(self.data.shape) / 2
-        self.plane.normal = (1, 0, 0)
-
-    def _update_plane_callbacks(self):
-        """Set plane callbacks depending on depiction mode."""
-        plane_drag_callback_connected = plane_drag_callback in self.mouse_drag_callbacks
-        double_click_callback_connected = (
-            plane_double_click_callback in self.mouse_double_click_callbacks
-        )
-        if self.depiction == VolumeDepiction.VOLUME:
-            if plane_drag_callback_connected:
-                self.mouse_drag_callbacks.remove(plane_drag_callback)
-            if double_click_callback_connected:
-                self.mouse_double_click_callbacks.remove(plane_double_click_callback)
-        elif self.depiction == VolumeDepiction.PLANE:
-            if not plane_drag_callback_connected:
-                self.mouse_drag_callbacks.append(plane_drag_callback)
-            if not double_click_callback_connected:
-                self.mouse_double_click_callbacks.append(plane_double_click_callback)
-
-    @property
-    def plane(self):
-        return self._plane
-
-    @plane.setter
-    def plane(self, value: dict | SlicingPlane) -> None:
-        self._plane.update(value)
-        self.events.plane()
 
     @property
     def custom_interpolation_kernel_2d(self):

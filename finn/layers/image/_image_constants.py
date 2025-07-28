@@ -1,9 +1,7 @@
-from collections import OrderedDict
 from enum import auto
 from typing import Literal
 
 from finn.utils.misc import StringEnum
-from finn.utils.translations import trans
 
 InterpolationStr = Literal[
     "bessel",
@@ -117,26 +115,6 @@ ImageRenderingStr = Literal[
     "attenuated_mip",
     "average",
 ]
-
-
-class VolumeDepiction(StringEnum):
-    """Depiction: 3D depiction mode for images.
-
-    Selects a preset depiction mode in vispy
-            * volume: images are rendered as 3D volumes.
-            * plane: images are rendered as 2D planes embedded in 3D.
-    """
-
-    VOLUME = auto()
-    PLANE = auto()
-
-
-VOLUME_DEPICTION_TRANSLATION = OrderedDict(
-    [
-        (VolumeDepiction.VOLUME, trans._("volume")),
-        (VolumeDepiction.PLANE, trans._("plane")),
-    ]
-)
 
 
 class ImageProjectionMode(StringEnum):

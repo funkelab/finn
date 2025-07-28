@@ -61,6 +61,10 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
     cache : bool
         Whether slices of out-of-core datasets should be cached upon retrieval.
         Currently, this only applies to dask arrays.
+    clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
+        Each dict defines a clipping plane in 3D in data coordinates.
+        Valid dictionary keys are {'position', 'normal', and 'enabled'}.
+        Values on the negative side of the normal are discarded if the plane is enabled.
     colormap : str, finn.utils.Colormap, tuple, dict
         Colormaps to use for luminance images. If a string, it can be the name
         of a supported colormap from vispy or matplotlib or the name of
@@ -75,13 +79,6 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         the image.
     custom_interpolation_kernel_2d : np.ndarray
         Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
-    depiction : str
-        3D Depiction mode. Must be one of {'volume', 'plane'}.
-        The default value is 'volume'.
-    experimental_clipping_planes : list of dicts, list of ClippingPlane, or ClippingPlaneList
-        Each dict defines a clipping plane in 3D in data coordinates.
-        Valid dictionary keys are {'position', 'normal', and 'enabled'}.
-        Values on the negative side of the normal are discarded if the plane is enabled.
     gamma : float
         Gamma correction for determining colormap linearity; defaults to 1.
     interpolation2d : str
@@ -110,10 +107,6 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         Name of the layer.
     opacity : float
         Opacity of the layer visual, between 0.0 and 1.0.
-    plane : dict or SlicingPlane
-        Properties defining plane rendering in 3D. Properties are defined in
-        data coordinates. Valid dictionary keys are
-        {'position', 'normal', 'thickness', and 'enabled'}.
     projection_mode : str
         How data outside the viewed dimensions, but inside the thick Dims slice will
         be projected onto the viewed dimensions. Must fit to ImageProjectionMode
@@ -198,16 +191,11 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
     rendering : str
         Rendering mode used by vispy. Must be one of our supported
         modes.
-    depiction : str
-        3D Depiction mode used by vispy. Must be one of our supported modes.
     iso_threshold : float
         Threshold for isosurface.
     attenuation : float
         Attenuation rate for attenuated maximum intensity projection.
-    plane : SlicingPlane or dict
-        Properties defining plane rendering in 3D. Valid dictionary keys are
-        {'position', 'normal', 'thickness'}.
-    experimental_clipping_planes : ClippingPlaneList
+    clipping_planes : ClippingPlaneList
         Clipping planes defined in data coordinates, used to clip the volume.
     custom_interpolation_kernel_2d : np.ndarray
         Convolution kernel used with the 'custom' interpolation mode in 2D rendering.
@@ -238,11 +226,10 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         axis_labels=None,
         blending="translucent",
         cache=True,
+        clipping_planes=None,
         colormap="gray",
         contrast_limits=None,
         custom_interpolation_kernel_2d=None,
-        depiction="volume",
-        experimental_clipping_planes=None,
         gamma=1.0,
         interpolation2d="nearest",
         interpolation3d="linear",
@@ -251,7 +238,6 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
         multiscale=None,
         name=None,
         opacity=1.0,
-        plane=None,
         projection_mode="none",
         rendering="mip",
         rgb=None,
@@ -280,15 +266,13 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
             axis_labels=axis_labels,
             blending=blending,
             cache=cache,
+            clipping_planes=clipping_planes,
             custom_interpolation_kernel_2d=custom_interpolation_kernel_2d,
-            depiction=depiction,
-            experimental_clipping_planes=experimental_clipping_planes,
             metadata=metadata,
             multiscale=multiscale,
             name=name,
             ndim=len(data_shape) - 1 if rgb else len(data_shape),
             opacity=opacity,
-            plane=plane,
             projection_mode=projection_mode,
             rendering=rendering,
             rotate=rotate,
@@ -385,8 +369,6 @@ class Image(IntensityVisualizationMixin, ScalarFieldBase):
                 "interpolation2d": self.interpolation2d,
                 "interpolation3d": self.interpolation3d,
                 "rendering": self.rendering,
-                "depiction": self.depiction,
-                "plane": self.plane.dict(),
                 "iso_threshold": self.iso_threshold,
                 "attenuation": self.attenuation,
                 "gamma": self.gamma,
