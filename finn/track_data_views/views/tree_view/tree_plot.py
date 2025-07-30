@@ -39,6 +39,8 @@ class TreePlot(QWidget):
         self.feature = "tree"  # options: "tree", "area"
         self.view_direction = "vertical"  # options: "horizontal", "vertical"
 
+        self.label_fontsize = 15
+
         self.canvas = WgpuCanvas()
         self.renderer = gfx.WgpuRenderer(self.canvas)
         self.scene = gfx.Scene()
@@ -584,7 +586,7 @@ class TreePlot(QWidget):
         self.scene.add(self.ruler)
         self.label = gfx.Text(
             text="time",
-            font_size=15,
+            font_size=self.label_fontsize,
             screen_space=True,
             material=gfx.TextMaterial(color="#ffffff"),
         )
@@ -594,8 +596,6 @@ class TreePlot(QWidget):
 
     def update(self):
         """sets the position and color of all the plot widgets and glyphs etc"""
-        if self.mode == "lineage" and len(self.selected_nodes) == 0:
-            return
         ilineage = idisplayed = 0
         for itree in range(len(self.lineages)):
             # skip if not selected
@@ -766,5 +766,14 @@ class TreePlot(QWidget):
                 -self.time_range / 2,
                 0,
             )
+
+        if idisplayed == 0:
+            self.label.font_size = 0
+            self.ruler._line.material.color = (1, 1, 1, 0)
+            self.ruler._points.material.color = (1, 1, 1, 0)
+        else:
+            self.label.font_size = self.label_fontsize
+            self.ruler._line.material.color = (1, 1, 1, 1)
+            self.ruler._points.material.color = (1, 1, 1, 1)
 
         self.actuate_view_direction()
