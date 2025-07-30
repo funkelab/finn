@@ -107,14 +107,14 @@ class TreeWidget(QWidget):
         tracks = self.tracks_viewer.tracks
         time = tracks.get_time(node)
         area = tracks.get_area(node)
-        trackid = tracks.node_id_to_track_id[node]
+        trackid = tracks.get_track_id(node)
         _lineage = [VertexData("square", node, time, area, trackid)]
         succs = tracks.successors(node)
         while len(succs) == 1:
             node = succs[0]
             time = tracks.get_time(node)
             area = tracks.get_area(node)
-            trackid = tracks.node_id_to_track_id[node]
+            trackid = tracks.get_track_id(node)
             _lineage.append(VertexData("circle", node, time, area, trackid))
             succs = tracks.successors(node)
         if len(succs) == 0:
