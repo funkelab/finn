@@ -261,7 +261,7 @@ class TracksList(QGroupBox):
             directory = Path(self.file_dialog.selectedFiles()[0])
             name = directory.stem
             try:
-                tracks = SolutionTracks.load(directory)
+                tracks = SolutionTracks.load(directory, solution=True)
                 self.add_tracks(tracks, name, select=True)
             except (ValueError, FileNotFoundError) as e:
                 warn(f"Could not load tracks from {directory}: {e}", stacklevel=2)
