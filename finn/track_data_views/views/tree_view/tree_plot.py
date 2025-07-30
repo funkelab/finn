@@ -316,8 +316,8 @@ class TreePlot(QWidget):
         nd, vi = self.selected_nodes_data[node]
         track = self.displayed_lineages[nd.itree][nd.itrack]
         icell = vi + nd.icell
-        time = -track[icell].time
-        feature = nd.areas[icell]
+        time = track[icell].time
+        feature = track[icell].area
         feature_next = np.inf
         found = False
         for itree in range(len(self.displayed_lineages)):
@@ -357,8 +357,8 @@ class TreePlot(QWidget):
         nd, vi = self.selected_nodes_data[node]
         track = self.displayed_lineages[nd.itree][nd.itrack]
         icell = vi + nd.icell
-        time = -track[icell].time
-        feature = nd.areas[icell]
+        time = track[icell].time
+        feature = track[icell].area
         feature_prev = 0
         found = False
         for itree in range(len(self.displayed_lineages)):
