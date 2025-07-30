@@ -3,7 +3,7 @@ from pathlib import Path
 from warnings import warn
 
 from fonticon_fa6 import FA6S
-from funtracks.data_model import SolutionTracks, Tracks
+from funtracks.data_model import Tracks
 from funtracks.import_export.export_to_geff import export_to_geff
 from qtpy.QtCore import Signal
 from qtpy.QtWidgets import (
@@ -261,7 +261,7 @@ class TracksList(QGroupBox):
             directory = Path(self.file_dialog.selectedFiles()[0])
             name = directory.stem
             try:
-                tracks = SolutionTracks.load(directory, solution=True)
+                tracks = Tracks.load(directory, solution=True)
                 self.add_tracks(tracks, name, select=True)
             except (ValueError, FileNotFoundError) as e:
                 warn(f"Could not load tracks from {directory}: {e}", stacklevel=2)
