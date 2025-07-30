@@ -124,11 +124,8 @@ class StandardFieldMapWidget(QWidget):
                 row_layout = QHBoxLayout()
                 attr_checkbox = QCheckBox(attribute)
                 recompute_checkbox = QCheckBox("Recompute")
-                recompute_checkbox.setEnabled(
-                    False
-                ) if attribute != NodeAttr.AREA.value else recompute_checkbox.setEnabled(
-                    True
-                )
+                activate_checkbox = bool(attribute == NodeAttr.AREA.value and seg)
+                recompute_checkbox.setEnabled(activate_checkbox)
                 row_layout.addWidget(attr_checkbox)
                 row_layout.addWidget(recompute_checkbox)
                 self.optional_mapping_layout.addLayout(row_layout)

@@ -164,6 +164,9 @@ class ImportGeffDialog(QDialog):
         if len(self.prop_map_widget.mapping_widgets) > 0:
             self.prop_map_widget.mapping_widgets["seg_id"].setVisible(not checked)
             self.prop_map_widget.mapping_labels["seg_id"].setVisible(not checked)
+            self.prop_map_widget.optional_features["area"]["recompute"].setEnabled(
+                not checked
+            )
 
         self._update_finish_button()
         self._resize_dialog()
