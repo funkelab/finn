@@ -407,14 +407,14 @@ class TreePlot(QWidget):
             self.scene.local.rotation = la.quat_from_axis_angle(
                 [0.0, 0.0, 1.0], 3.14159 / 2
             )
-            self.camera.width = self.time_range
-            self.camera.height = self.feature_range
+            self.camera.width = self.time_range + 1
+            self.camera.height = self.feature_range + 1
             self.label.anchor_offset = 20
             self.label.anchor = "top-center"
         else:
             self.scene.local.rotation = [0.0, 0.0, 0.0, 1.0]
-            self.camera.width = self.feature_range
-            self.camera.height = self.time_range
+            self.camera.width = self.feature_range + 1
+            self.camera.height = self.time_range + 1
             self.label.anchor_offset = 40
             self.label.anchor = "middle-right"
         if self.lineages:
