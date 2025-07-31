@@ -107,6 +107,8 @@ class TreePlot(QWidget):
                                 )
                                 break
         self.draw_selected_nodes()
+        if len(self.selected_nodes)>0:
+            self.camera.show_object(self.selected_points)
 
     def _select_nodes(self, event):
         """called when a node is selected in the tree view"""
@@ -135,12 +137,7 @@ class TreePlot(QWidget):
                 )
                 + nd.itrack
             )
-            self.selected_points.geometry.colors.data[i] = [
-                0.68,
-                0.85,
-                0.90,
-                1,
-            ]  # light blue
+            self.selected_points.geometry.colors.data[i,3] = 1
             self.selected_points.geometry.colors.update_range(i)
             self.selected_points.geometry.positions.data[i, 0] = (
                 ilineage * 10 if self.feature == "tree" else track[vi + nd.icell].area
@@ -150,9 +147,10 @@ class TreePlot(QWidget):
             ].time
             self.selected_points.geometry.positions.update_range(i)
         for i in range(len(self.selected_nodes), 100):
-            self.selected_points.geometry.colors.data[i] = [0, 0, 0, 0]
+            self.selected_points.geometry.colors.data[i,3] = 0
             self.selected_points.geometry.colors.update_range(i)
-            self.selected_points.geometry.positions.data[i, :] = 0
+            self.selected_points.geometry.positions.data[i, :] = \
+                    self.selected_points.geometry.positions.data[0, :]
             self.selected_points.geometry.positions.update_range(i)
         self.canvas.request_draw()
 
@@ -451,7 +449,7 @@ class TreePlot(QWidget):
         self.selected_points = gfx.Points(
             gfx.Geometry(
                 positions=[(0, 0, 0) for _ in range(100)],
-                colors=[[0, 0, 0, 0] for _ in range(100)],
+                colors=[[0.68, 0.85, 0.90, 0] for _ in range(100)], # light blue
             ),
             gfx.PointsMarkerMaterial(
                 marker="circle", color_mode="vertex", size=15, size_space="screen"
