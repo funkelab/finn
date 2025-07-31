@@ -152,7 +152,7 @@ class TreeWidget(QWidget):
             self.tree_plot.only_y()
         if arg["event_type"] == "key_up":
             self.tree_plot.both_xy()
-        if arg["event_type"] == "pointer_up" and arg["button"] == 2:
+        if arg["event_type"] == "double_click":
             self.tree_plot.reset_fov()
         if arg["event_type"] == "key_up" and arg["key"] == "ArrowLeft":
             if self.tree_plot.get_view_direction() == "horizontal":
