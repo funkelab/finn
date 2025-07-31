@@ -456,7 +456,7 @@ class TreePlot(QWidget):
             gfx.PointsMarkerMaterial(
                 marker="circle", color_mode="vertex", size=15, size_space="screen"
             ),
-            render_order=3,
+            render_order=0,
         )
         self.scene.add(self.selected_points)
 
