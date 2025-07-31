@@ -419,20 +419,25 @@ class TreePlot(QWidget):
             )
             self.camera.width = self.time_range + 1
             self.camera.height = self.feature_range + 1
-            self.label.anchor_offset = 20
-            self.label.anchor = "top-center"
+            self.label_time.anchor_offset = 20
+            self.label_time.anchor = "top-center"
+            self.label_feature.anchor_offset = -60
+            self.label_feature.anchor = "middle-right"
         else:
             self.scene.local.rotation = [0.0, 0.0, 0.0, 1.0]
             self.camera.width = self.feature_range + 1
             self.camera.height = self.time_range + 1
-            self.label.anchor_offset = 40
-            self.label.anchor = "middle-right"
+            self.label_time.anchor_offset = 40
+            self.label_time.anchor = "middle-right"
+            self.label_feature.anchor_offset = 20
+            self.label_feature.anchor = "top-center"
         if self.lineages:
             self.camera.show_object(self.scene)
         self.camera_state0 = copy.deepcopy(self.camera.get_state())
         self.canvas.update()
         if self.lineages:
-            self.ruler.update(self.camera, self.canvas.get_logical_size())
+            self.ruler_time.update(self.camera, self.canvas.get_logical_size())
+            self.ruler_feature.update(self.camera, self.canvas.get_logical_size())
         self.canvas.update()
 
     def reset_fov(self):
@@ -576,15 +581,25 @@ class TreePlot(QWidget):
                 ilineage += 1
 
         # needs https://github.com/pygfx/pygfx/pull/1130
-        self.ruler = gfx.Ruler(tick_side="right", start_value=0)
-        self.scene.add(self.ruler)
-        self.label = gfx.Text(
+        self.ruler_time = gfx.Ruler(tick_side="right", start_value=0)
+        self.scene.add(self.ruler_time)
+        self.label_time = gfx.Text(
             text="time",
             font_size=self.label_fontsize,
             screen_space=True,
             material=gfx.TextMaterial(color="#ffffff"),
         )
-        self.scene.add(self.label)
+        self.scene.add(self.label_time)
+
+        self.ruler_feature = gfx.Ruler(tick_side="right", start_value=0)
+        self.scene.add(self.ruler_feature)
+        self.label_feature = gfx.Text(
+            text="area",
+            font_size=self.label_fontsize,
+            screen_space=True,
+            material=gfx.TextMaterial(color="#ffffff"),
+        )
+        self.scene.add(self.label_feature)
 
         self.update()
 
@@ -760,21 +775,42 @@ class TreePlot(QWidget):
             self.feature_range = np.max(f) - np.min(f)
             self.time_range = np.max(t) - np.min(t)
 
-            self.ruler.start_pos = (-0.1 * self.feature_range, 0, 0)
-            self.ruler.end_pos = (-0.1 * self.feature_range, -self.time_range, 0)
-            self.label.local.position = (
+            self.ruler_time.start_pos = (-0.1 * self.feature_range, 0, 0)
+            self.ruler_time.end_pos = (-0.1 * self.feature_range, -self.time_range, 0)
+            self.label_time.local.position = (
                 -0.1 * self.feature_range,
                 -self.time_range / 2,
                 0,
             )
 
-        if idisplayed == 0:
-            self.label.font_size = 0
-            self.ruler._line.material.color = (1, 1, 1, 0)
-            self.ruler._points.material.color = (1, 1, 1, 0)
+        if self.feature == "tree":
+            self.ruler_feature.start_pos = (0, -1.1 * self.time_range, 0)
+            self.ruler_feature.end_pos = (0, -1.1 * self.time_range, 0)
         else:
-            self.label.font_size = self.label_fontsize
-            self.ruler._line.material.color = (1, 1, 1, 1)
-            self.ruler._points.material.color = (1, 1, 1, 1)
+            self.ruler_feature.start_pos = (0, -1.1 * self.time_range, 0)
+            self.ruler_feature.end_pos = (self.feature_range, -1.1 * self.time_range, 0)
+        self.label_feature.local.position = (
+            self.feature_range / 2,
+            -1.1 * self.time_range,
+            0,
+        )
+
+        if idisplayed == 0:
+            self.label_time.font_size = 0
+            self.ruler_time._line.material.color = (1, 1, 1, 0)
+            self.ruler_time._points.material.color = (1, 1, 1, 0)
+        else:
+            self.label_time.font_size = self.label_fontsize
+            self.ruler_time._line.material.color = (1, 1, 1, 1)
+            self.ruler_time._points.material.color = (1, 1, 1, 1)
+
+        if idisplayed == 0 or self.feature == "tree":
+            self.label_feature.font_size = 0
+            self.ruler_feature._line.material.color = (1, 1, 1, 0)
+            self.ruler_feature._points.material.color = (1, 1, 1, 0)
+        else:
+            self.label_feature.font_size = self.label_fontsize
+            self.ruler_feature._line.material.color = (1, 1, 1, 1)
+            self.ruler_feature._points.material.color = (1, 1, 1, 1)
 
         self.actuate_view_direction()
