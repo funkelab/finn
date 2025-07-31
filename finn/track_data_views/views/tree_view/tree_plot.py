@@ -232,7 +232,7 @@ class TreePlot(QWidget):
             self.label_feature.anchor_offset = 20
             self.label_feature.anchor = "top-center"
         if self.lineages:
-            self.camera.show_object(self.scene)
+            self.camera.show_object(self.scene, match_aspect=True)
         self.camera_state0 = copy.deepcopy(self.camera.get_state())
         self.canvas.update()
         if self.lineages:
