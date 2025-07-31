@@ -2,6 +2,7 @@ from qtpy.QtWidgets import QScrollArea, QTabWidget, QVBoxLayout
 
 import finn
 from finn.track_application_menus.editing_menu import EditingMenu
+from finn.track_data_views.views.view_3d.orthogonal_views import OrthogonalViews
 from finn.track_data_views.views_coordinator.tracks_viewer import TracksViewer
 
 # from motile_tracker.motile.menus.motile_widget import MotileWidget
@@ -17,10 +18,11 @@ class MenuWidget(QScrollArea):
 
         # motile_widget = MotileWidget(viewer)
         editing_widget = EditingMenu(viewer)
+        self.orth_views = OrthogonalViews(viewer)
 
         self.tabwidget = QTabWidget()
-
         # tabwidget.addTab(motile_widget, "Track with Motile")
+        self.tabwidget.addTab(self.orth_views, "Orthogonal Views")
         self.tabwidget.addTab(tracks_viewer.tracks_list, "Tracks List")
         self.tabwidget.addTab(editing_widget, "Edit Tracks")
 

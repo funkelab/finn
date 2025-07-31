@@ -1,8 +1,8 @@
 import time
 
-from qtpy.QtCore import Qt
 from qtpy.QtWidgets import (
-    QSplitter,
+    QVBoxLayout,
+    QWidget,
 )
 
 import finn
@@ -307,7 +307,7 @@ class DockableViewerModel:
         self._block = False
 
 
-class MultipleViewerWidget(QSplitter):
+class MultipleViewerWidget(QWidget):
     """The main widget of the example."""
 
     def __init__(self, viewer: finn.Viewer):
@@ -319,13 +319,12 @@ class MultipleViewerWidget(QSplitter):
         self.viewer_model2 = DockableViewerModel(title="model2", rel_order=(-1, -2, -3))
         self.qt_viewer1 = QtViewer(self.viewer_model1.viewer_model)
         self.qt_viewer2 = QtViewer(self.viewer_model2.viewer_model)
-        viewer_splitter = QSplitter()
-        viewer_splitter.setOrientation(Qt.Vertical)
+        viewer_splitter = QVBoxLayout()
         viewer_splitter.addWidget(self.qt_viewer1)
         viewer_splitter.addWidget(self.qt_viewer2)
         viewer_splitter.setContentsMargins(0, 0, 0, 0)
 
-        self.addWidget(viewer_splitter)
+        self.setLayout(viewer_splitter)
 
         # Add the layers currently in the viewer
         for i, layer in enumerate(self.viewer.layers):
