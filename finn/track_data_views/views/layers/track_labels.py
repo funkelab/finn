@@ -5,7 +5,6 @@ import time
 from typing import TYPE_CHECKING
 
 import numpy as np
-from psygnal import Signal
 
 import finn
 from finn.layers import Labels
@@ -72,8 +71,6 @@ class TrackLabels(Labels):
     """Extended labels layer that holds the track information and emits
     and responds to dynamics visualization signals"""
 
-    update_group_labels = Signal()
-
     @property
     def _type_string(self) -> str:
         return (
@@ -105,7 +102,6 @@ class TrackLabels(Labels):
         self.viewer.dims.events.ndisplay.connect(
             lambda: self.update_label_colormap(visible=None)
         )
-        self.group_labels = None
 
         # Key bindings (should be specified both on the viewer (in tracks_viewer)
         # and on the layer to overwrite finn defaults)
@@ -337,9 +333,6 @@ class TrackLabels(Labels):
         with self.events.selected_label.blocker():
             highlighted = self.tracks_viewer.selected_nodes
 
-            if visible is None:
-                visible = self.group_labels if self.group_labels is not None else "all"
-
             # update the opacity of the cyclic label colormap values according
             # to whether nodes are visible/invisible/highlighted
             self.colormap.color_dict = {
@@ -353,9 +346,6 @@ class TrackLabels(Labels):
             # update the opacity of the cyclic label colormap values according
             # to whether nodes are visible/invisible/highlighted
             if visible == "all":
-                self.contour = 0
-                self.group_labels = None
-                self.update_group_labels.emit(self.group_labels)
                 self.colormap.color_dict = {
                     key: np.array(
                         [
@@ -368,18 +358,13 @@ class TrackLabels(Labels):
                 }
 
             else:
-                if self.viewer.dims.ndisplay == 2:
-                    self.contour = 1
-                    self.group_labels = visible + highlighted._list
-                    self.update_group_labels.emit(self.group_labels)
-                else:
-                    self.colormap.color_dict = {
-                        key: np.array([*value[:-1], 0], dtype=np.float32)
-                        for key, value in self.colormap.color_dict.items()
-                    }
-                    for node in visible:
-                        # find the index in the colormap
-                        self.colormap.color_dict[node][-1] = 0.6
+                self.colormap.color_dict = {
+                    key: np.array([*value[:-1], 0], dtype=np.float32)
+                    for key, value in self.colormap.color_dict.items()
+                }
+                for node in visible:
+                    # find the index in the colormap
+                    self.colormap.color_dict[node][-1] = 0.6
 
             for node in highlighted:
                 self.colormap.color_dict[node][-1] = 1  # full opacity
