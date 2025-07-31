@@ -3,7 +3,7 @@ from pathlib import Path
 from warnings import warn
 
 from fonticon_fa6 import FA6S
-from funtracks.data_model import SolutionTracks, Tracks
+from funtracks.data_model import Tracks
 from funtracks.import_export.export_to_geff import export_to_geff
 from qtpy.QtCore import Signal
 from qtpy.QtWidgets import (
@@ -27,6 +27,9 @@ import finn
 from finn._qt.qt_resources import QColoredSVGIcon
 from finn.track_import_export.menus.import_external_tracks_dialog import (
     ImportTracksDialog,
+)
+from finn.track_import_export.menus.import_from_geff.geff_import_dialog import (
+    ImportGeffDialog,
 )
 
 
@@ -110,7 +113,9 @@ class TracksList(QGroupBox):
 
         load_menu = QHBoxLayout()
         self.dropdown_menu = QComboBox()
-        self.dropdown_menu.addItems(["Motile Run", "External tracks from CSV"])
+        self.dropdown_menu.addItems(
+            ["Motile Run", "External tracks from CSV", "External tracks from geff"]
+        )
 
         load_button = QPushButton("Load")
         load_button.clicked.connect(self.load_tracks)
@@ -122,6 +127,14 @@ class TracksList(QGroupBox):
         layout.addWidget(self.tracks_list)
         layout.addLayout(load_menu)
         self.setLayout(layout)
+
+    def _load_tracks_from_geff(self):
+        dialog = ImportGeffDialog()
+        if dialog.exec_() == QDialog.Accepted:
+            tracks = dialog.tracks
+            name = dialog.name
+            if tracks is not None:
+                self.add_tracks(tracks, name, select=True)
 
     def _load_external_tracks(self):
         dialog = ImportTracksDialog()
@@ -251,6 +264,8 @@ class TracksList(QGroupBox):
             self.load_motile_run()
         elif self.dropdown_menu.currentText() == "External tracks from CSV":
             self._load_external_tracks()
+        elif self.dropdown_menu.currentText() == "External tracks from geff":
+            self._load_tracks_from_geff()
 
     def load_motile_run(self):
         """Load a set of tracks from disk. The user selects the directory created
@@ -261,7 +276,7 @@ class TracksList(QGroupBox):
             directory = Path(self.file_dialog.selectedFiles()[0])
             name = directory.stem
             try:
-                tracks = SolutionTracks.load(directory)
+                tracks = Tracks.load(directory, solution=True)
                 self.add_tracks(tracks, name, select=True)
             except (ValueError, FileNotFoundError) as e:
                 warn(f"Could not load tracks from {directory}: {e}", stacklevel=2)
