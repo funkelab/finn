@@ -8,6 +8,7 @@ import numpy as np
 from psygnal import Signal
 
 import finn
+from finn.layers import Labels
 from finn.utils import DirectLabelColormap
 from finn.utils.action_manager import action_manager
 from finn.utils.notifications import show_info, show_warning
@@ -16,8 +17,6 @@ from finn.utils.translations import trans
 if TYPE_CHECKING:
     from finn.track_data_views.views_coordinator.tracks_viewer import TracksViewer
     from finn.utils.events import Event
-
-from finn.track_data_views.views.layers.contour_labels import ContourLabels
 
 
 def new_label(layer: TrackLabels):
@@ -69,7 +68,7 @@ def _new_label(layer: TrackLabels, new_track_id=True):
         show_info(trans._("Calculating empty label on non-numpy array is not supported"))
 
 
-class TrackLabels(ContourLabels):
+class TrackLabels(Labels):
     """Extended labels layer that holds the track information and emits
     and responds to dynamics visualization signals"""
 

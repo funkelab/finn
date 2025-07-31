@@ -9,7 +9,6 @@ import finn
 from finn.components.viewer_model import ViewerModel
 from finn.layers import Labels, Layer, Points, Shapes
 from finn.qt import QtViewer
-from finn.track_data_views.views.layers.contour_labels import ContourLabels
 from finn.track_data_views.views.layers.track_graph import TrackGraph
 from finn.track_data_views.views.layers.track_labels import TrackLabels
 from finn.track_data_views.views.layers.track_points import TrackPoints
@@ -29,15 +28,12 @@ def copy_layer(layer: Layer, name: str = ""):
         )
 
     elif isinstance(layer, TrackLabels):
-        res_layer = ContourLabels(
+        res_layer = Labels(
             data=layer.data,
             name=layer.name,
-            colormap=layer.colormap,
             opacity=layer.opacity,
             scale=layer.scale,
         )
-        layer.update_group_labels.connect(res_layer.set_group_labels)
-        res_layer.group_labels = layer.group_labels
     elif isinstance(layer, TrackPoints):
         res_layer = Points(
             data=layer.data,
@@ -158,7 +154,7 @@ class DockableViewerModel:
             copied_layer.bind_key("z")(orig_layer.tracks_viewer.undo)
             copied_layer.bind_key("r")(orig_layer.tracks_viewer.redo)
 
-        # if the original layer is a TrackLabels instance, forward paint events on its derived ContourLabels instances to the original layer
+        # if the original layer is a TrackLabels instance, forward paint events on its derived TrackLabels instances to the original layer
         if isinstance(orig_layer, TrackLabels):
 
             def paint_wrapper(event):
@@ -255,13 +251,13 @@ class DockableViewerModel:
     def click(
         self,
         orig_layer: TrackLabels | TrackPoints,
-        layer: ContourLabels | Points,
+        layer: TrackLabels | Points,
         event: Event,
     ):
         """Forward the click event from the ViewerModel to the original TracksLabels layer
         args:
             orig_layer: original TrackLabels or TrackPoints layer
-            layer: the ContourLabels or Points layer on this ViewerModel
+            layer: the TrackLabels or Points layer on this ViewerModel
             event: the click event
         """
         if layer.mode == "pan_zoom":
@@ -276,7 +272,7 @@ class DockableViewerModel:
                 dragged = False  # suppress micro drag events and treat them as click
             # on release
             if not dragged:
-                if isinstance(layer, ContourLabels):
+                if isinstance(layer, TrackLabels):
                     label = layer.get_value(
                         event.position,
                         view_direction=event.view_direction,
