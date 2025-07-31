@@ -71,6 +71,47 @@ class TreePlot(QWidget):
         return hint
 
     def animate(self):
+        state = self.camera.get_state()
+
+        left = state['position'][0] - state['width'] / 2
+        right = state['position'][0] + state['width'] / 2
+        bottom = state['position'][1] - state['height'] / 2
+        top = state['position'][1] + state['height'] / 2
+
+        self.ruler_time.start_value = -top
+        if self.view_direction == "vertical":
+            self.ruler_time.start_pos = (left, top, 0)
+            self.ruler_time.end_pos = (left, bottom, 0)
+        else:
+            self.ruler_time.start_pos = (bottom, top, 0)
+            self.ruler_time.end_pos = (bottom, bottom, 0)
+        self.label_time.local.position = (
+            left,
+            (top - bottom) / 2,
+            0,
+        )
+        self.ruler_time.update(self.camera, self.canvas.get_logical_size())
+
+        self.ruler_feature.start_value = left
+        if self.feature == "tree":
+            self.ruler_feature.start_pos = (left, bottom, 0)
+            self.ruler_feature.end_pos = (left, bottom, 0)
+        else:
+            if self.view_direction == "vertical":
+                self.ruler_feature.tick_side = "left"
+                self.ruler_feature.start_pos = (left, bottom, 0)
+                self.ruler_feature.end_pos = (right, bottom, 0)
+            else:
+                self.ruler_feature.tick_side = "right"
+                self.ruler_feature.start_pos = (left, -left, 0)
+                self.ruler_feature.end_pos = (right, -left, 0)
+        self.label_feature.local.position = (
+            (right - left) / 2,
+            bottom,
+            0,
+        )
+        self.ruler_feature.update(self.camera, self.canvas.get_logical_size())
+
         self.renderer.render(self.scene, self.camera)
 
     def set_event_handler(self, f):
@@ -581,7 +622,7 @@ class TreePlot(QWidget):
                 ilineage += 1
 
         # needs https://github.com/pygfx/pygfx/pull/1130
-        self.ruler_time = gfx.Ruler(tick_side="right", start_value=0)
+        self.ruler_time = gfx.Ruler(tick_side="left")
         self.scene.add(self.ruler_time)
         self.label_time = gfx.Text(
             text="time",
@@ -591,7 +632,7 @@ class TreePlot(QWidget):
         )
         self.scene.add(self.label_time)
 
-        self.ruler_feature = gfx.Ruler(tick_side="right", start_value=0)
+        self.ruler_feature = gfx.Ruler(tick_side="left")
         self.scene.add(self.ruler_feature)
         self.label_feature = gfx.Text(
             text="area",
@@ -774,26 +815,6 @@ class TreePlot(QWidget):
             t = [y for x in t for y in x]
             self.feature_range = np.max(f) - np.min(f)
             self.time_range = np.max(t) - np.min(t)
-
-            self.ruler_time.start_pos = (-0.1 * self.feature_range, 0, 0)
-            self.ruler_time.end_pos = (-0.1 * self.feature_range, -self.time_range, 0)
-            self.label_time.local.position = (
-                -0.1 * self.feature_range,
-                -self.time_range / 2,
-                0,
-            )
-
-        if self.feature == "tree":
-            self.ruler_feature.start_pos = (0, -1.1 * self.time_range, 0)
-            self.ruler_feature.end_pos = (0, -1.1 * self.time_range, 0)
-        else:
-            self.ruler_feature.start_pos = (0, -1.1 * self.time_range, 0)
-            self.ruler_feature.end_pos = (self.feature_range, -1.1 * self.time_range, 0)
-        self.label_feature.local.position = (
-            self.feature_range / 2,
-            -1.1 * self.time_range,
-            0,
-        )
 
         if idisplayed == 0:
             self.label_time.font_size = 0
