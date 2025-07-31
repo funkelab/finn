@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import time
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -13,11 +14,17 @@ from finn.utils.notifications import show_info
 if TYPE_CHECKING:
     from finn.track_data_views.views_coordinator.tracks_viewer import TracksViewer
 
+from psygnal import Signal
+
+from finn.utils.events import Event
+
 
 class TrackPoints(finn.layers.Points):
     """Extended points layer that holds the track information and emits and
     responds to dynamics visualization signals
     """
+
+    data_updated = Signal()
 
     @property
     def _type_string(self) -> str:
@@ -77,17 +84,25 @@ class TrackPoints(finn.layers.Points):
         @self.mouse_drag_callbacks.append
         def click(layer, event):
             if event.type == "mouse_press":
-                # is the value passed from the click event?
-                point_index = layer.get_value(
-                    event.position,
-                    view_direction=event.view_direction,
-                    dims_displayed=event.dims_displayed,
-                    world=True,
-                )
-                if point_index is not None:
-                    node_id = self.nodes[point_index]
-                    append = "Shift" in event.modifiers
-                    self.tracks_viewer.selected_nodes.add(node_id, append)
+                # differentiate between click and drag
+                mouse_press_time = time.time()
+                dragged = False
+                yield
+                # on move
+                while event.type == "mouse_move":
+                    dragged = True
+                    yield
+                if dragged and time.time() - mouse_press_time < 0.5:
+                    dragged = False  # suppress micro drag events and treat them as click
+                if not dragged:
+                    # is the value passed from the click event?
+                    point_index = layer.get_value(
+                        event.position,
+                        view_direction=event.view_direction,
+                        dims_displayed=event.dims_displayed,
+                        world=True,
+                    )
+                    self.process_point_click(point_index, event)
 
         # listen to updates of the data
         self.events.data.connect(self._update_data)
@@ -101,11 +116,22 @@ class TrackPoints(finn.layers.Points):
         # to update the nodes in self.tracks_viewer.selected_nodes
         self.selected_data.events.items_changed.connect(self._update_selection)
 
+    def process_point_click(self, point_index: int | None, event: Event):
+        """Select the clicked point(s)"""
+
+        if point_index is None:
+            self.tracks_viewer.selected_nodes.reset()
+        else:
+            node_id = self.nodes[point_index]
+            append = "Shift" in event.modifiers
+            self.tracks_viewer.selected_nodes.add(node_id, append)
+
     def set_point_size(self, size: int) -> None:
         """Sets a new default point size"""
 
         self.default_size = size
-        self._refresh()
+        self.size = self.default_size
+        self.border_color = self.border_color  # emits border color event which triggers updating the sizes as well (size does not have its own event)
 
     def _refresh(self):
         """Refresh the data in the points layer"""
@@ -113,15 +139,18 @@ class TrackPoints(finn.layers.Points):
         self.events.data.disconnect(
             self._update_data
         )  # do not listen to new events until updates are complete
-        self.nodes = list(self.tracks_viewer.tracks.graph.nodes)
 
+        self.nodes = list(self.tracks_viewer.tracks.graph.nodes)
         self.node_index_dict = {node: idx for idx, node in enumerate(self.nodes)}
 
         track_ids = [
             self.tracks_viewer.tracks.graph.nodes[node][NodeAttr.TRACK_ID.value]
             for node in self.nodes
         ]
+        # this submits two events one where the action is 'ongoing' and one when it is finished
         self.data = self.tracks_viewer.tracks.get_positions(self.nodes, incl_time=True)
+        self.data_updated.emit()  # emit update signal for the orthogonal views to connect to
+
         self.symbol = self.get_symbols(
             self.tracks_viewer.tracks, self.tracks_viewer.symbolmap
         )
@@ -129,8 +158,10 @@ class TrackPoints(finn.layers.Points):
             self.tracks_viewer.colormap.map(track_id) for track_id in track_ids
         ]
         self.properties = {"node_id": self.nodes, "track_id": track_ids}
-        self.size = self.default_size
-        self.border_color = [1, 1, 1, 1]
+
+        with self.events.border_color.blocker():  # no need to submit events for this
+            self.size = self.default_size
+            self.border_color = [1, 1, 1, 1]
 
         self.events.data.connect(
             self._update_data
@@ -227,8 +258,12 @@ class TrackPoints(finn.layers.Points):
             self.shown[indices] = True
 
         # set border color for selected item
-        self.border_color = [1, 1, 1, 1]
-        self.size = self.default_size
+        with (
+            self.events.border_color.blocker()
+        ):  # block the event emitter here to not trigger update in orthogonal views
+            self.border_color = [1, 1, 1, 1]
+        with self.events.size.blocker():
+            self.size = self.default_size
         for node in self.tracks_viewer.selected_nodes:
             index = self.node_index_dict[node]
             self.border_color[index] = (
@@ -238,4 +273,13 @@ class TrackPoints(finn.layers.Points):
                 1,
             )
             self.size[index] = math.ceil(self.default_size + 0.3 * self.default_size)
+
+        # if len(self.tracks_viewer.selected_nodes) > 0:
+        #     self.selected_track = self.tracks_viewer.tracks._get_node_attr(
+        #         self.tracks_viewer.selected_nodes[0], NodeAttr.TRACK_ID.value
+        #     )
+
+        # emit the event to trigger update in orthogonal views
+        self.border_color = self.border_color
+        self.size = self.size
         self.refresh()
