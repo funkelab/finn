@@ -60,7 +60,7 @@ class MainApp(QWidget):
 
         if self.viewer.dims.ndim > 2:
             self.collapse_btn.show()
-            self.splitter.setSizes([300, 300])
+            self.splitter.setSizes([0, 300])
             self.orth_views.show()
             self.adjustSize()
         else:
