@@ -13,13 +13,11 @@ class MainApp(QWidget):
 
     def __init__(self, viewer: finn.Viewer):
         super().__init__()
+        self.viewer = viewer
 
         self.menu_widget = MenuWidget(viewer)
         tree_widget = TreeWidget(viewer)
-
         viewer.window.add_dock_widget(tree_widget, area="bottom", name="Tree View")
-
         layout = QVBoxLayout()
         layout.addWidget(self.menu_widget)
-
         self.setLayout(layout)
