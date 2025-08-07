@@ -84,9 +84,9 @@ class own_partial:
         return self.func(*(self.args + args), **{**self.kwargs, **kwargs})
 
 
-class DockableViewerModel:
+class ViewerModelContainer:
     """
-    A dockable container that holds a ViewerModel and manages synchronization.
+    A container that holds a ViewerModel and manages synchronization across different views.
     """
 
     def __init__(self, title: str, rel_order: tuple[int]):
@@ -315,8 +315,8 @@ class MultipleViewerWidget(QWidget):
         self.viewer = viewer
         self.viewer.axes.visible = True
         self.viewer.axes.events.visible.connect(self.set_orth_views_dims_order)
-        self.viewer_model1 = DockableViewerModel(title="model1", rel_order=(-2, -3, -1))
-        self.viewer_model2 = DockableViewerModel(title="model2", rel_order=(-1, -2, -3))
+        self.viewer_model1 = ViewerModelContainer(title="model1", rel_order=(-2, -3, -1))
+        self.viewer_model2 = ViewerModelContainer(title="model2", rel_order=(-1, -2, -3))
         self.qt_viewer1 = QtViewer(self.viewer_model1.viewer_model)
         self.qt_viewer2 = QtViewer(self.viewer_model2.viewer_model)
         viewer_splitter = QVBoxLayout()
