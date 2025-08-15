@@ -41,6 +41,9 @@ class TreeWidget(QWidget):
         self.feature = "tree"  # options: "tree", "area"
         self.view_direction = "vertical"  # options: "horizontal", "vertical"
 
+        self.lineages = []
+        self.selected_nodes_data = {}
+
         self.tracks_viewer.tracks_updated.connect(self._update_track_data)
 
         # Construct the tree view pyqtgraph widget
@@ -54,20 +57,29 @@ class TreeWidget(QWidget):
         self.feature_widget = TreeViewFeatureWidget()
         self.feature_widget.change_feature.connect(self._set_feature)
 
+        # Add widget to flip the axes
+        self.flip_widget = FlipTreeWidget()
+        self.flip_widget.flip_tree.connect(self._flip_axes)
+
+        self.tree_plot: TreePlot = TreePlot(
+            self.tracks_viewer.colormap,
+            self.tracks_viewer.selected_nodes,
+            self.selected_nodes_data,
+        )
+        self.tree_plot.set_event_handler(self.my_handler)
+        self.tree_plot.init()
+
         # Add navigation widget
         self.navigation_widget = NavigationWidget(
             # navigation_widget.py/get_next_track_node and friends are now
             # implemented in tree_plot.py/select_next_cell
-            None,
-            None,
-            self.view_direction,
+            self.lineages,
+            self.tree_plot.displayed_lineages,
             self.tracks_viewer.selected_nodes,
-            self.feature,
+            self.selected_nodes_data,
+            self.tree_plot.get_view_direction,
+            self.tree_plot.get_feature,
         )
-
-        # Add widget to flip the axes
-        self.flip_widget = FlipTreeWidget()
-        self.flip_widget.flip_tree.connect(self._flip_axes)
 
         # Construct a toolbar and set main layout
         panel_layout = QHBoxLayout()
@@ -91,30 +103,23 @@ class TreeWidget(QWidget):
         collapsable_widget.collapse(animate=False)
 
         self.layout.addWidget(collapsable_widget)
+        self.layout.addWidget(self.tree_plot)
         self.layout.setSpacing(0)
         self.setLayout(self.layout)
-
-        self.lineages = []
-        self.tree_plot: TreePlot = TreePlot(
-            self.tracks_viewer.colormap, self.tracks_viewer.selected_nodes
-        )
-        self.tree_plot.set_event_handler(self.my_handler)
-        self.tree_plot.init()
-        self.layout.addWidget(self.tree_plot)
 
     def recurse_tree(self, node, lineage):
         """returns a list of lists (trees) of lists (tracks)"""
         tracks = self.tracks_viewer.tracks
         time = tracks.get_time(node)
         area = tracks.get_area(node)
-        trackid = tracks.node_id_to_track_id[node]
+        trackid = tracks.get_track_id(node)
         _lineage = [VertexData("square", node, time, area, trackid)]
         succs = tracks.successors(node)
         while len(succs) == 1:
             node = succs[0]
             time = tracks.get_time(node)
             area = tracks.get_area(node)
-            trackid = tracks.node_id_to_track_id[node]
+            trackid = tracks.get_track_id(node)
             _lineage.append(VertexData("circle", node, time, area, trackid))
             succs = tracks.successors(node)
         if len(succs) == 0:
@@ -131,11 +136,12 @@ class TreeWidget(QWidget):
     def _update_track_data(self):
         """transform tracks into a structure more amenable to plotting"""
         if self.tracks_viewer.tracks is not None:
-            self.lineages = []
+            self.lineages.clear()
             nodes = self.tracks_viewer.tracks.nodes()
             in_degrees = self.tracks_viewer.tracks.in_degree(nodes)
             for iprogenitor in np.nonzero(in_degrees == 0)[0]:
                 self.lineages.append(self.recurse_tree(nodes[iprogenitor].item(), []))
+            self.selected_nodes_data.clear()
             self.tree_plot.set_lineages(self.lineages)
             self.tree_plot.init()
 
@@ -152,48 +158,17 @@ class TreeWidget(QWidget):
             self.tree_plot.only_y()
         if arg["event_type"] == "key_up":
             self.tree_plot.both_xy()
-        if arg["event_type"] == "pointer_up" and arg["button"] == 2:
+        if arg["event_type"] == "double_click":
             self.tree_plot.reset_fov()
-        if arg["event_type"] == "key_up" and arg["key"] == "ArrowLeft":
-            if self.tree_plot.mode != "all":
-                return
-            if self.tree_plot.get_view_direction() == "horizontal":
-                self.tree_plot.select_prev_cell()
-            else:
-                if self.tree_plot.get_feature() == "tree":
-                    self.tree_plot.select_prev_lineage()
-                else:
-                    self.tree_plot.select_prev_feature()
-        if arg["event_type"] == "key_up" and arg["key"] == "ArrowRight":
-            if self.tree_plot.mode != "all":
-                return
-            if self.tree_plot.get_view_direction() == "horizontal":
-                self.tree_plot.select_next_cell()
-            else:
-                if self.tree_plot.get_feature() == "tree":
-                    self.tree_plot.select_next_lineage()
-                else:
-                    self.tree_plot.select_next_feature()
-        if arg["event_type"] == "key_up" and arg["key"] == "ArrowUp":
-            if self.tree_plot.mode != "all":
-                return
-            if self.tree_plot.get_view_direction() == "vertical":
-                self.tree_plot.select_prev_cell()
-            else:
-                if self.tree_plot.get_feature() == "tree":
-                    self.tree_plot.select_next_lineage()
-                else:
-                    self.tree_plot.select_next_feature()
-        if arg["event_type"] == "key_up" and arg["key"] == "ArrowDown":
-            if self.tree_plot.mode != "all":
-                return
-            if self.tree_plot.get_view_direction() == "vertical":
-                self.tree_plot.select_next_cell()
-            else:
-                if self.tree_plot.get_feature() == "tree":
-                    self.tree_plot.select_prev_lineage()
-                else:
-                    self.tree_plot.select_prev_feature()
+        if arg["event_type"] == "key_up":
+            if arg["key"] == "ArrowLeft":
+                self.navigation_widget.move_left()
+            if arg["key"] == "ArrowRight":
+                self.navigation_widget.move_right()
+            if arg["key"] == "ArrowUp":
+                self.navigation_widget.move_up()
+            if arg["key"] == "ArrowDown":
+                self.navigation_widget.move_down()
 
     def _flip_axes(self):
         """Flip the axes of the plot"""
