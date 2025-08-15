@@ -150,6 +150,11 @@ class TreePlot(QWidget):
         self.draw_selected_nodes()
         if len(self.selected_nodes) > 0:
             self.camera.show_object(self.selected_points)
+        if len(self.selected_nodes) == 1:
+            state = self.camera.get_state()
+            state["width"] = 50
+            state["height"] = 5
+            self.camera.set_state(state)
 
     def _select_nodes(self, event):
         """called when a node is selected in the tree view"""
