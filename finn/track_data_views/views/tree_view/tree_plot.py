@@ -150,6 +150,7 @@ class TreePlot(QWidget):
             node = self.selected_nodes[-1]
             if node not in self.selected_nodes_data:
                 self.update_selected_nodes_data(node)
+        self.update()
         self.draw_selected_nodes()
         if len(self.selected_nodes) > 0:
             self.camera.show_object(self.selected_points)
@@ -321,7 +322,6 @@ class TreePlot(QWidget):
                         gfx.Geometry(
                             positions=[(0, 0, 0) for _ in track[1:-1]],
                             edge_colors=[self.colors.map(trackid) for _ in track[1:-1]],
-
                         ),
                         gfx.PointsMarkerMaterial(
                             marker=track[1].marker,
