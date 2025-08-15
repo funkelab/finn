@@ -141,6 +141,7 @@ class TreeWidget(QWidget):
             in_degrees = self.tracks_viewer.tracks.in_degree(nodes)
             for iprogenitor in np.nonzero(in_degrees == 0)[0]:
                 self.lineages.append(self.recurse_tree(nodes[iprogenitor].item(), []))
+            self.selected_nodes_data.clear()
             self.tree_plot.set_lineages(self.lineages)
             self.tree_plot.init()
 

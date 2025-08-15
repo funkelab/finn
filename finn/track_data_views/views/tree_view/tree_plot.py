@@ -133,20 +133,23 @@ class TreePlot(QWidget):
         self.controller_xy.enabled = False
         self.controller_y.enabled = True
 
+    def update_selected_nodes_data(self, node):
+        for itree in range(len(self.lineages)):
+            for itrack in range(len(self.lineages[itree])):
+                for icell in range(len(self.lineages[itree][itrack])):
+                    if node == self.lineages[itree][itrack][icell].node:
+                        self.selected_nodes_data[node] = (
+                            NameData(itree, itrack, icell),
+                            0,
+                        )
+                        break
+
     def __select_nodes(self):
         """called when a node is selected in the data view"""
         if len(self.selected_nodes) > 0:
             node = self.selected_nodes[-1]
             if node not in self.selected_nodes_data:
-                for itree in range(len(self.lineages)):
-                    for itrack in range(len(self.lineages[itree])):
-                        for icell in range(len(self.lineages[itree][itrack])):
-                            if node == self.lineages[itree][itrack][icell].node:
-                                self.selected_nodes_data[node] = (
-                                    NameData(itree, itrack, icell),
-                                    0,
-                                )
-                                break
+                self.update_selected_nodes_data(node)
         self.draw_selected_nodes()
         if len(self.selected_nodes) > 0:
             self.camera.show_object(self.selected_points)
@@ -175,8 +178,10 @@ class TreePlot(QWidget):
 
     def draw_selected_nodes(self):
         """called whenever a node is (de-)selected"""
-        for i, n in enumerate(self.selected_nodes):
-            nd, vi = self.selected_nodes_data[n]
+        for i, node in enumerate(self.selected_nodes):
+            if node not in self.selected_nodes_data:
+                self.update_selected_nodes_data(node)
+            nd, vi = self.selected_nodes_data[node]
             track = self.lineages[nd.itree][nd.itrack]
             ilineage = (
                 sum(
