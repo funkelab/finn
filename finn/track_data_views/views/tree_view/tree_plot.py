@@ -150,10 +150,15 @@ class TreePlot(QWidget):
         self.draw_selected_nodes()
         if len(self.selected_nodes) > 0:
             self.camera.show_object(self.selected_points)
-        if len(self.selected_nodes) == 1:
-            state = self.camera.get_state()
+        state = self.camera.get_state()
+        doit = False
+        if state["width"] < 50:
             state["width"] = 50
+            doit = True
+        if state["height"] < 5:
             state["height"] = 5
+            doit = True
+        if doit:
             self.camera.set_state(state)
 
     def _select_nodes(self, event):
