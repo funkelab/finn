@@ -391,7 +391,7 @@ xarray = "xr"
 [tool.pytest.ini_options]
 # These follow standard library warnings filters syntax.  See more here:
 # https://docs.python.org/3/library/warnings.html#describing-warning-filters
-addopts = ["--maxfail=5",  "--durations=10",  "-ra", "--strict-markers", "--strict-config"]
+addopts = ["--maxfail=5",  "--durations=10",  "-ra", "--strict-markers", "--strict-config", "-p no:napari"]
 console_output_style = "count"
 minversion = "8"
 # log_cli_level = "INFO"
