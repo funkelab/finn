@@ -8,6 +8,7 @@ from finn.track_data_views.views.layers.track_graph import TrackGraph
 from finn.track_data_views.views.layers.track_labels import TrackLabels
 from finn.track_data_views.views.layers.track_points import TrackPoints
 from finn.utils.events import Event
+from finn.utils.notifications import show_info
 
 
 def convert_napari_to_finn(napari_name: str, finn_name: str):
@@ -32,11 +33,14 @@ def convert_napari_to_finn(napari_name: str, finn_name: str):
 convert_napari_to_finn("napari", "finn")
 convert_napari_to_finn("napari.components", "finn.components")
 convert_napari_to_finn("napari.components.viewer_model", "finn.components.viewer_model")
+convert_napari_to_finn("napari.components.overlays.base", "finn.components.overlays.base")
 convert_napari_to_finn("napari.layers", "finn.layers")
 convert_napari_to_finn("napari.qt", "finn.qt")
 convert_napari_to_finn("napari.utils", "finn.utils")
 convert_napari_to_finn("napari.utils.events", "finn.utils.events")
 convert_napari_to_finn("napari.utils.events.event", "finn.utils.events.event")
+convert_napari_to_finn("napari._vispy.overlays.base", "finn._vispy.overlays.base")
+convert_napari_to_finn("napari._vispy.utils.visual", "finn._vispy.utils.visual")
 
 
 # redefinition of copy_layer function
@@ -78,9 +82,10 @@ def copy_layer(layer: Layer, name: str = ""):
     res_layer.metadata["viewer_name"] = name
     return res_layer
 
+
 # do not let ruff move these import statements!
-from napari_orthogonal_views.ortho_view_manager import _get_manager
-import napari_orthogonal_views.ortho_view_widget as ov_widget
+from napari_orthogonal_views.ortho_view_manager import _get_manager  # noqa
+import napari_orthogonal_views.ortho_view_widget as ov_widget  # noqa
 
 ov_widget.copy_layer = copy_layer  # replace the copy layer with the customized version
 # defined here
@@ -211,7 +216,12 @@ def paint_event_hook(orig_layer: TrackLabels, copied_layer: Labels) -> None:
     def sync_paint(orig_layer: TrackLabels, copied_layer: Labels, event: Event):
         """Process paint event on original TrackLabels instance."""
 
-        orig_layer._on_paint(event, copied_layer)
+        if copied_layer.data.ndim > 3:
+            orig_layer._on_paint(event, copied_layer)
+        else:
+            show_info("Painting in the time dimension is not supported")
+            orig_layer._revert_paint(event, copied_layer)
+            orig_layer.refresh()
 
     def paint_wrapper(event: Event):
         """Wrap paint event and send to original layer."""
