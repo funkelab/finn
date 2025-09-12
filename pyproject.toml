@@ -76,7 +76,7 @@ dependencies = [
     "fonticon-fontawesome6",
     "zarr<3",
     "imagecodecs", # for unzipping sample data
-    "napari-orthogonal-views @ git+https://github.com/AnniekStok/napari-orthogonal-views.git@v0.0.1"
+    "napari-orthogonal-views @ git+https://github.com/AnniekStok/napari-orthogonal-views.git@db1ac78ec240bfd6657a319828d7d0c7be712ebd"
 
 ]
 dynamic = [
