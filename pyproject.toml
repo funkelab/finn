@@ -76,6 +76,8 @@ dependencies = [
     "fonticon-fontawesome6",
     "zarr<3",
     "imagecodecs", # for unzipping sample data
+    "napari-orthogonal-views @ git+https://github.com/AnniekStok/napari-orthogonal-views.git@db1ac78ec240bfd6657a319828d7d0c7be712ebd"
+
 ]
 dynamic = [
     "version",
@@ -389,7 +391,7 @@ xarray = "xr"
 [tool.pytest.ini_options]
 # These follow standard library warnings filters syntax.  See more here:
 # https://docs.python.org/3/library/warnings.html#describing-warning-filters
-addopts = ["--maxfail=5",  "--durations=10",  "-ra", "--strict-markers", "--strict-config"]
+addopts = ["--maxfail=5",  "--durations=10",  "-ra", "--strict-markers", "--strict-config", "-p no:napari"]
 console_output_style = "count"
 minversion = "8"
 # log_cli_level = "INFO"
