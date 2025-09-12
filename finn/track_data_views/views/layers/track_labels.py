@@ -8,7 +8,7 @@ import numpy as np
 import finn
 from finn.utils import DirectLabelColormap
 from finn.utils.action_manager import action_manager
-from finn.utils.notifications import show_info, show_warning
+from finn.utils.notifications import show_info
 
 if TYPE_CHECKING:
     from finn.track_data_views.views_coordinator.tracks_viewer import TracksViewer
@@ -229,53 +229,8 @@ class TrackLabels(finn.layers.Labels):
                 0
             ]  # also pass on the current time point to know which node to select later
             new_value, updated_pixels = self._parse_paint_event(event.value)
-            # updated_pixels is a list of tuples. Each tuple is (indices, old_value)
-            to_delete = []  # (node_ids, pixels)
-            to_update_smaller = []  # (node_id, pixels)
-            to_update_bigger = []  # (node_id, pixels)
-            to_add = []  # (node_id, track_id, pixels)
-            for pixels, old_value in updated_pixels:
-                ndim = len(pixels)
-                if old_value == 0:
-                    continue
-                time = pixels[0][0]
-                removed_node = old_value
-                assert removed_node is not None, (
-                    f"Node with label {old_value} in time {time} was not found"
-                )
-                # check if all pixels of old_value are removed
-                if np.sum(self.data[time] == old_value) == 0:
-                    to_delete.append((removed_node, pixels))
-                else:
-                    to_update_smaller.append((removed_node, pixels))
-            if new_value != 0:
-                all_pixels = tuple(
-                    np.concatenate([pixels[dim] for pixels, _ in updated_pixels])
-                    for dim in range(ndim)
-                )
-                for _ in np.unique(all_pixels[0]):
-                    existing_node = self.tracks_viewer.tracks.graph.has_node(new_value)
-                    if existing_node:
-                        to_update_bigger.append((new_value, all_pixels))
-                    else:
-                        to_add.append((new_value, self.selected_track, all_pixels))
-
-            if len(to_delete) > 0 and len(to_add) > 0:
-                show_warning(
-                    "This paint or fill operation completely replaced one label with a "
-                    "new label. This is currently not supported."
-                    " If you want to update the track id of the node, please edit the "
-                    "edges directly instead."
-                )
-                self._revert_paint(event)
-                self.refresh()
-                return
             self.tracks_viewer.tracks_controller.update_segmentations(
-                to_delete,
-                to_update_smaller,
-                to_update_bigger,
-                to_add,
-                current_timepoint,
+                new_value, updated_pixels, current_timepoint
             )
 
     def _refresh(self):
