@@ -261,8 +261,11 @@ def tracks_from_df(
     ):
         nodes = tracks.graph.nodes
         times = tracks.get_times(nodes)
-        computed_attrs = tracks._compute_node_attrs(nodes, times)
-        areas = computed_attrs[NodeAttr.AREA.value]
+        computed_attrs = [
+            tracks._compute_node_attrs(node, time)
+            for node, time in zip(nodes, times, strict=False)
+        ]
+        areas = [attrs[NodeAttr.AREA.value] for attrs in computed_attrs]
         tracks._set_nodes_attr(nodes, NodeAttr.AREA.value, areas)
 
     return tracks
