@@ -230,7 +230,7 @@ class TrackLabels(finn.layers.Labels):
             ]  # also pass on the current time point to know which node to select later
             new_value, updated_pixels = self._parse_paint_event(event.value)
             self.tracks_viewer.tracks_controller.update_segmentations(
-                new_value, updated_pixels, current_timepoint
+                new_value, updated_pixels, current_timepoint, self.selected_track
             )
 
     def _refresh(self):
