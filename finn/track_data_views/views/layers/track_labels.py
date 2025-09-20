@@ -82,6 +82,7 @@ class TrackLabels(finn.layers.Labels):
             opacity=opacity,
             colormap=colormap,
             scale=scale,
+            blending="translucent",
         )
 
         self.viewer = viewer

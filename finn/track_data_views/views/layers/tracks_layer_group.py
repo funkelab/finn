@@ -40,7 +40,7 @@ class TracksLayerGroup:
                 viewer=self.viewer,
                 data=self.tracks.segmentation,
                 name=self.name + "_seg",
-                opacity=0.9,
+                opacity=0.7,
                 scale=self.tracks.scale,
                 tracks_viewer=self.tracks_viewer,
             )
@@ -82,10 +82,10 @@ class TracksLayerGroup:
 
         if self.tracks_layer is not None:
             self.viewer.add_layer(self.tracks_layer)
-        if self.seg_layer is not None:
-            self.viewer.add_layer(self.seg_layer)
         if self.points_layer is not None:
             self.viewer.add_layer(self.points_layer)
+        if self.seg_layer is not None:
+            self.viewer.add_layer(self.seg_layer)
         self.link_clipping_planes()
 
     def link_clipping_planes(self):
