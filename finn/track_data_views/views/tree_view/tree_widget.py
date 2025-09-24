@@ -3,7 +3,6 @@
 
 from typing import NamedTuple
 
-import numpy as np
 from qtpy.QtWidgets import (
     QHBoxLayout,
     QVBoxLayout,
@@ -14,7 +13,6 @@ from superqt import QCollapsible
 import finn
 from finn.layers.tracks.tracks import Tracks
 from finn.track_data_views.views.tree_view.flip_axes_widget import FlipTreeWidget
-from finn.track_data_views.views.tree_view.navigation_widget import NavigationWidget
 from finn.track_data_views.views.tree_view.tree_plot import TreePlot
 from finn.track_data_views.views.tree_view.tree_view_feature_widget import (
     TreeViewFeatureWidget,
@@ -64,28 +62,25 @@ class TreeWidget(QWidget):
         self.tree_plot: TreePlot = TreePlot(
             self.tracks_viewer.colormap,
             self.tracks_viewer.selected_nodes,
-            self.selected_nodes_data,
         )
-        self.tree_plot.set_event_handler(self.my_handler)
-        self.tree_plot.init()
 
         # Add navigation widget
-        self.navigation_widget = NavigationWidget(
-            # navigation_widget.py/get_next_track_node and friends are now
-            # implemented in tree_plot.py/select_next_cell
-            self.lineages,
-            self.tree_plot.displayed_lineages,
-            self.tracks_viewer.selected_nodes,
-            self.selected_nodes_data,
-            self.tree_plot.get_view_direction,
-            self.tree_plot.get_feature,
-        )
+        # self.navigation_widget = NavigationWidget(
+        # # navigation_widget.py/get_next_track_node and friends are now
+        # # implemented in tree_plot.py/select_next_cell
+        # self.lineages,
+        # self.tree_plot.displayed_lineages,
+        # self.tracks_viewer.selected_nodes,
+        # self.selected_nodes_data,
+        # self.tree_plot.get_view_direction,
+        # self.tree_plot.get_feature,
+        # )
 
         # Construct a toolbar and set main layout
         panel_layout = QHBoxLayout()
         panel_layout.addWidget(self.mode_widget)
         panel_layout.addWidget(self.feature_widget)
-        panel_layout.addWidget(self.navigation_widget)
+        # panel_layout.addWidget(self.navigation_widget)
         panel_layout.addWidget(self.flip_widget)
         panel_layout.setSpacing(0)
         panel_layout.setContentsMargins(0, 0, 0, 0)
@@ -134,16 +129,7 @@ class TreeWidget(QWidget):
         return "just to make ruff CI happy"
 
     def _update_track_data(self):
-        """transform tracks into a structure more amenable to plotting"""
-        if self.tracks_viewer.tracks is not None:
-            self.lineages.clear()
-            nodes = self.tracks_viewer.tracks.nodes()
-            in_degrees = self.tracks_viewer.tracks.in_degree(nodes)
-            for iprogenitor in np.nonzero(in_degrees == 0)[0]:
-                self.lineages.append(self.recurse_tree(nodes[iprogenitor].item(), []))
-            self.selected_nodes_data.clear()
-            self.tree_plot.set_lineages(self.lineages)
-            self.tree_plot.init()
+        self.tree_plot.on_solution_changed(self.tracks_viewer.tracks)
 
     def my_handler(self, arg):
         if arg["event_type"] == "char" and arg["char_str"] == "q":
@@ -152,23 +138,23 @@ class TreeWidget(QWidget):
             self.feature_widget._toggle_feature_mode()
         if arg["event_type"] == "char" and arg["char_str"] == "f":
             self._flip_axes()
-        if arg["event_type"] == "key_down" and arg["key"] == "x":
-            self.tree_plot.only_x()
-        if arg["event_type"] == "key_down" and arg["key"] == "y":
-            self.tree_plot.only_y()
-        if arg["event_type"] == "key_up":
-            self.tree_plot.both_xy()
-        if arg["event_type"] == "double_click":
-            self.tree_plot.reset_fov()
-        if arg["event_type"] == "key_up":
-            if arg["key"] == "ArrowLeft":
-                self.navigation_widget.move_left()
-            if arg["key"] == "ArrowRight":
-                self.navigation_widget.move_right()
-            if arg["key"] == "ArrowUp":
-                self.navigation_widget.move_up()
-            if arg["key"] == "ArrowDown":
-                self.navigation_widget.move_down()
+        # if arg["event_type"] == "key_down" and arg["key"] == "x":
+        # self.tree_plot.only_x()
+        # if arg["event_type"] == "key_down" and arg["key"] == "y":
+        # self.tree_plot.only_y()
+        # if arg["event_type"] == "key_up":
+        # self.tree_plot.both_xy()
+        # if arg["event_type"] == "double_click":
+        # self.tree_plot.reset_fov()
+        # if arg["event_type"] == "key_up":
+        # if arg["key"] == "ArrowLeft":
+        # self.navigation_widget.move_left()
+        # if arg["key"] == "ArrowRight":
+        # self.navigation_widget.move_right()
+        # if arg["key"] == "ArrowUp":
+        # self.navigation_widget.move_up()
+        # if arg["key"] == "ArrowDown":
+        # self.navigation_widget.move_down()
 
     def _flip_axes(self):
         """Flip the axes of the plot"""
@@ -176,8 +162,8 @@ class TreeWidget(QWidget):
             self.view_direction = "vertical"
         else:
             self.view_direction = "horizontal"
-        self.tree_plot.set_view_direction(self.view_direction)
-        self.tree_plot.actuate_view_direction()
+        # self.tree_plot.set_view_direction(self.view_direction)
+        # self.tree_plot.actuate_view_direction()
 
     def _update_selected(self):
         """Called whenever the selection list is updated."""
@@ -195,13 +181,13 @@ class TreeWidget(QWidget):
             mode (str): The mode to set the view to. Options are "all" or "lineage"
 
         """
-        self.tree_plot.set_mode(mode)
-        if mode == "all":
-            self.view_direction = "vertical"
-        else:
-            self.view_direction = "horizontal"
-        self.tree_plot.set_view_direction(self.view_direction)
-        self.tree_plot.update()
+        # self.tree_plot.set_mode(mode)
+        # if mode == "all":
+        # self.view_direction = "vertical"
+        # else:
+        # self.view_direction = "horizontal"
+        # self.tree_plot.set_view_direction(self.view_direction)
+        # self.tree_plot.update()
 
     def _set_feature(self, feature: str) -> None:
         """Set the feature mode to 'tree' or 'area'. For this the view is always
@@ -213,8 +199,8 @@ class TreeWidget(QWidget):
         """
         if feature not in ["tree", "area"]:
             raise ValueError(f"Feature must be 'tree' or 'area', got {feature}")
-        self.tree_plot.set_feature(feature)
-        self.tree_plot.update()
+        # self.tree_plot.set_feature(feature)
+        # self.tree_plot.update()
 
     def _update_lineage_df(self) -> None:
         """Subset dataframe to include only nodes belonging to the current lineage"""
