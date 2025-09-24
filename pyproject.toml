@@ -522,3 +522,7 @@ ignore_imports = [
     # TODO: remove once npe1 deprecated
     "finn._qt.qt_main_window -> finn._qt._qplugins",
 ]
+
+# duplicating this so uv includes it by default
+[dependency-groups]
+dev = ["ruff", "mypy", "pyqt5"]
