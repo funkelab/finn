@@ -7,11 +7,6 @@ Many thanks to the napari community for providing an excellent starting point an
 
 ## Installation
 
-finn is not yet on pypi - you must clone and install from source code
-```
-git clone git@github.com:funkelab/finn.git
-cd finn
-conda create -n finn python=3.10
-conda activate finn
-pip install '.[all]'
-```
+`pip install finn-viewer[pyqt5]` or your favorite `qt` python binding library.
+
+Alternatively, use `uv` to install and run `finn`.
