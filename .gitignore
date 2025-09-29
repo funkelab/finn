@@ -1,4 +1,5 @@
 docs
+uv.lock
 # Byte-compiled / optimized / DLL files
 tools/vendored_modules.txt
 tools/matplotlib
