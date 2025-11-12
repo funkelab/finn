@@ -13,7 +13,11 @@ from finn.utils.colormaps import Colormap
 
 class TreePlot(QWidget):
     PointSize = 3
+    # for some reason, lines are much thicker than points even when the size
+    # is the same, so we go with a much lower value here then for points
+    LineSize = 0.3
     SelectedSize = 5
+    HoverColor = (0.6, 0.6, 0.7)
     HighlightColor = (0.9, 0.05, 0.8, 1.0)
 
     def __init__(
@@ -46,6 +50,8 @@ class TreePlot(QWidget):
         self.controller_y.add_camera(self.camera, include_state={"y", "height"})
         self.layout.addWidget(self.canvas)
         self.canvas.request_draw(self.redraw)
+        self.canvas.add_event_handler(self.on_pointer_move, "pointer_move")
+        self.canvas.add_event_handler(self.on_pointer_down, "pointer_down")
         # self.setMinimumHeight(200)
 
         self.solution_changed = False
@@ -53,6 +59,7 @@ class TreePlot(QWidget):
         self.selection.list_updated.connect(self.on_selection_changed)
 
     def on_selection_changed(self):
+        print("The selection changed!")
         self.selection_changed = True
         self.canvas.request_draw()
 
@@ -61,17 +68,26 @@ class TreePlot(QWidget):
         self.solution_changed = True
 
         num_nodes = self.solution.graph.number_of_nodes()
-        sizes = np.ones((num_nodes,), dtype=np.float32) * TreePlot.PointSize
-        positions = np.zeros((num_nodes, 3), dtype=np.float32)
-        colors = np.ones((num_nodes, 4), dtype=np.float32)
-        edge_colors = np.ones((num_nodes, 4), dtype=np.float32)
+        num_edges = self.solution.graph.number_of_edges()
 
-        self.points = gfx.Points(
+        node_sizes = np.ones((num_nodes,), dtype=np.float32) * TreePlot.PointSize
+        node_positions = np.zeros((num_nodes, 3), dtype=np.float32)
+        node_colors = np.ones((num_nodes, 4), dtype=np.float32)
+        node_outline_colors = np.ones((num_nodes, 4), dtype=np.float32)
+        node_ids = np.zeros((num_nodes,), dtype=np.uint32)
+
+        edge_positions = np.zeros((num_edges * 3, 3), dtype=np.float32)
+        edge_positions[2::3] = np.nan  # every third entry has to be NaN
+        edge_colors = np.ones((num_edges * 3, 4), dtype=np.float32)
+        edge_ids = np.zeros((num_edges, 2), dtype=np.uint32)
+
+        self.nodes = gfx.Points(
             gfx.Geometry(
-                positions=positions,
-                colors=colors,
-                edge_colors=edge_colors,
-                sizes=sizes,
+                positions=node_positions,
+                colors=node_colors,
+                edge_colors=node_outline_colors,
+                sizes=node_sizes,
+                node_ids=node_ids,
             ),
             gfx.PointsMarkerMaterial(
                 marker="circle",
@@ -79,11 +95,73 @@ class TreePlot(QWidget):
                 edge_color_mode="vertex",
                 size_mode="vertex",
                 size_space="world",
+                depth_write=False,
             ),
+            render_order=2,
+        )
+        self.nodes.material.pick_write = True
+
+        self.hover_node = gfx.Points(
+            gfx.Geometry(
+                positions=np.zeros((1, 3), dtype=np.float32),
+            ),
+            gfx.PointsGaussianBlobMaterial(
+                color=TreePlot.HoverColor,
+                size=6.0 * TreePlot.PointSize,
+                size_space="world",
+                depth_write=False,
+            ),
+            render_order=0,
+            visible=False,
         )
 
+        self.edges = gfx.Line(
+            gfx.Geometry(
+                positions=edge_positions,
+                colors=edge_colors,
+                edge_ids=edge_ids,
+            ),
+            gfx.LineMaterial(
+                thickness=TreePlot.LineSize,
+                thickness_space="world",
+                color_mode="vertex",
+                depth_write=False,
+                aa=True,
+            ),
+            render_order=1,
+        )
+        self.edges.material.pick_write = True
+
         self.scene = self._create_scene()
-        self.scene.add(self.points)
+        self.scene.add(self.nodes)
+        self.scene.add(self.edges)
+        self.scene.add(self.hover_node)
+        self.canvas.request_draw()
+
+    def on_pointer_move(self, event):
+        # TODO :)
+        pass
+
+    def on_pointer_move(self, event):
+        position = event["x"], event["y"]
+        info = self.renderer.get_pick_info(position)
+        print(info)
+        world_object = info["world_object"]
+        if isinstance(world_object, gfx.Points):
+            point_index = info["vertex_index"]
+            self.hover_node.visible = True
+            self.hover_node.geometry.positions.data[0] = (
+                self.nodes.geometry.positions.data[point_index]
+            )
+            self.hover_node.geometry.positions.update_indices([0])
+        else:
+            self.hover_node.visible = False
+
+        # TODO
+        # if isinstance(world_object, gfx.Line):
+        #     edge_index = info["vertex_index"] // 3
+        #     (u, v) = self.lines.geometry.edge_ids.data[edge_index]
+
         self.canvas.request_draw()
 
     def redraw(self):
@@ -110,26 +188,39 @@ class TreePlot(QWidget):
         self.node_id_to_index = {
             node_id: i for i, node_id in enumerate(self.solution.nodes())
         }
+
         for i, node_id in enumerate(self.solution.nodes()):
-            self.points.geometry.positions.data[i, :2] = self._get_position(
+            self.nodes.geometry.positions.data[i, :2] = self._get_position(
                 node_id, tracklet_id_to_index
             )
             color = self._get_color(node_id)
-            self.points.geometry.colors.data[i] = color
-            self.points.geometry.edge_colors.data[i] = color
+            self.nodes.geometry.colors.data[i] = color
+            self.nodes.geometry.edge_colors.data[i] = color
+            self.nodes.geometry.node_ids.data[i] = node_id
+
+        for i, (u, v) in enumerate(self.solution.edges()):
+            self.edges.geometry.positions.data[i * 3, :2] = np.array(
+                self._get_position(u, tracklet_id_to_index)
+            )
+            self.edges.geometry.positions.data[i * 3 + 1, :2] = np.array(
+                self._get_position(v, tracklet_id_to_index)
+            )
+            self.edges.geometry.colors.data[i * 3] = self._get_color(u)
+            self.edges.geometry.colors.data[i * 3 + 1] = self._get_color(v)
+            self.edges.geometry.edge_ids.data[i] = (u, v)
 
     def _apply_selection(self):
         changed_indices = []
         for node_id in self.selection:
             index = self.node_id_to_index[node_id]
             # increase size
-            self.points.geometry.sizes.data[index] = TreePlot.SelectedSize
+            self.nodes.geometry.sizes.data[index] = TreePlot.SelectedSize
             # highlight edge
-            self.points.geometry.edge_colors.data[index] = TreePlot.HighlightColor
+            self.nodes.geometry.edge_colors.data[index] = TreePlot.HighlightColor
             changed_indices.append(index)
 
-        self.points.geometry.sizes.update_indices(changed_indices)
-        self.points.geometry.edge_colors.update_indices(changed_indices)
+        self.nodes.geometry.sizes.update_indices(changed_indices)
+        self.nodes.geometry.edge_colors.update_indices(changed_indices)
 
         self._show_selection()
 
@@ -139,7 +230,7 @@ class TreePlot(QWidget):
 
         focus_node_id = self.selection[-1]
         index = self.node_id_to_index[focus_node_id]
-        position = self.points.geometry.positions.data[index]
+        position = self.nodes.geometry.positions.data[index]
         state = self.camera.get_state()
         camera_view = (
             state["position"][:2] - [state["width"] / 2, state["height"] / 2],

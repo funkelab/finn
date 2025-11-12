@@ -100,6 +100,7 @@ class TreeWidget(QWidget):
         self.layout.addWidget(collapsable_widget)
         self.layout.addWidget(self.tree_plot)
         self.layout.setSpacing(0)
+        self.setMinimumHeight(400)
         self.setLayout(self.layout)
 
     def recurse_tree(self, node, lineage):
